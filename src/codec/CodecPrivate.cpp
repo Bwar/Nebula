@@ -8,8 +8,8 @@
  * Modify history:
  ******************************************************************************/
 #include <netinet/in.h>
-#include "MsgHeadStruct.hpp"
 #include "CodecPrivate.hpp"
+#include "CodecDefine.hpp"
 
 namespace neb
 {

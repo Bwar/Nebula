@@ -18,6 +18,7 @@
 #include "pb/msg.pb.h"
 #include "Definition.hpp"
 #include "cmd/CW.hpp"
+#include "CodecDefine.hpp"
 
 namespace neb
 {

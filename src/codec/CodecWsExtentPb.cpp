@@ -311,12 +311,11 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(loss::CBuffer* pBuff,
                     uiHeadSize, stMsgHead.body_len(), uiPayload);
             return (CODEC_STATUS_ERR);
         }
-        //TODO continue
+
         bool bResult = false;
         if (stMsgHead.encript == 0)       // 未压缩也未加密
         {
-            bResult = oMsgBody.ParseFromArray(pBuff->GetRawReadBuffer(),
-                    stMsgHead.body_len);
+            bResult = oMsgBody.ParseFromArray(pBuff->GetRawReadBuffer(), stMsgHead.body_len);
         }
         else    // 有压缩或加密，先解密再解压，然后用MsgBody反序列化
         {
@@ -325,8 +324,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(loss::CBuffer* pBuff,
             if (gc_uiRc5Bit & oMsgHead.cmd())
             {
                 std::string strRawData;
-                strRawData.assign((const char*) pBuff->GetRawReadBuffer(),
-                        stMsgHead.body_len);
+                strRawData.assign((const char*) pBuff->GetRawReadBuffer(), stMsgHead.body_len);
                 if (!Rc5Decrypt(strRawData, strDecryptData))
                 {
                     LOG4_ERROR("Rc5Decrypt error!");
@@ -346,9 +344,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(loss::CBuffer* pBuff,
                 else
                 {
                     std::string strRawData;
-                    strRawData.assign(
-                            (const char*) pBuff->GetRawReadBuffer(),
-                            stMsgHead.body_len);
+                    strRawData.assign((const char*) pBuff->GetRawReadBuffer(), stMsgHead.body_len);
                     if (!Unzip(strRawData, strUncompressData))
                     {
                         LOG4_ERROR("uncompress error!");
@@ -392,8 +388,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(loss::CBuffer* pBuff,
             }
             else    // 无效的压缩或解密算法，仍然解析原数据
             {
-                bResult = oMsgBody.ParseFromArray(pBuff->GetRawReadBuffer(),
-                        stMsgHead.body_len);
+                bResult = oMsgBody.ParseFromArray(pBuff->GetRawReadBuffer(), stMsgHead.body_len);
             }
         }
         if (bResult)
