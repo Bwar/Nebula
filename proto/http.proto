@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+message HttpMsg
+{
+	int32 type						= 1;		///< http_parser_type 请求或响应
+	int32 http_major				= 2;		///< http大版本号
+	int32 http_minor				= 3;		///< http小版本号
+	int32 content_length			= 4;		///< 内容长度
+	int32 method					= 5;		///< 请求方法
+	int32 status_code				= 6;		///< 响应状态码
+	int32 encoding					= 7;		///< 传输编码（只在encode时使用，当 Transfer-Encoding: chunked 时，用于标识chunk序号，0表示第一个chunk，依次递增）
+	string url						= 8;		///< 地址
+	repeated Header headers			= 9;		///< http头域
+	bytes body						= 10;		///< 消息体（当 Transfer-Encoding: chunked 时，只存储一个chunk）
+	repeated Param params		    = 11;		///< GET方法参数，POST方法表单提交的参数
+	Upgrade upgrade                 = 12;       ///< 升级协议
+	string path				        = 14;		///< Http Decode时从url中解析出来，不需要人为填充（encode时不需要填）
+	bool is_decoding				= 15;		///< 是否正在解码（true 正在解码， false 未解码或已完成解码）
+
+	message Header
+	{
+		string header_name			= 1;		///< 名
+		bytes header_value		    = 2;		///< 值
+	}
+
+	message Param
+	{
+		string name				    = 1;
+		string value				= 2;
+	}
+
+	message Upgrade
+	{
+	    bool is_upgrade             = 1;
+	    string protocol             = 2;
+	}
+}

@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+// import "google/protobuf/any.proto";
+
+/**
+ * @brief 消息头
+ */
+message MsgHead
+{
+    fixed32 cmd                = 1;           ///< 命令字（压缩加密算法占高位1字节）
+    fixed32 seq                = 2;           ///< 序列号
+    fixed32 len                = 3;           ///< 消息体长度
+}
+
+/**
+ * @brief 消息体
+ * @note 消息体主体是content，所有业务逻辑内容均放在content里。req_target是请求目标，用于
+ * 服务端接入路由，请求包必须填充。rsp_result是响应结果，响应包必须填充。
+ */
+message MsgBody
+{
+    oneof msg_type
+    {
+	    Request req_target               = 1;			///< 请求目标（请求包必须填充）
+	    Response rsp_result              = 2;			///< 响应结果（响应包必须填充）
+    }
+    bytes content               = 3;			///< 消息体主体
+    bytes add_on                = 4;			///< 服务端接入层附加在请求包的数据（客户端无须理会）
+    // google.protobuf.Any content          = 3;
+    // google.protobuf.Any add_on           = 4;
+
+    message Request
+    {
+    	uint32 route_id         = 1;		    ///< 路由ID
+        string route            = 2;			///< 路由ID（当route_id用整型无法表达时使用）
+    }
+
+    message Response
+    {
+        int32 err_no            = 1;           ///< 错误码
+        bytes err_msg           = 2;           ///< 错误信息
+    }
+}

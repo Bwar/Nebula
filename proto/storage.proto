@@ -1,0 +1,148 @@
+syntax = "proto3";
+
+package neb;
+
+message Storage
+{
+    uint32 section_factor       = 1;
+    RedisOperate redis_operate  = 2;
+    DbOperate db_operate        = 3;
+
+    message RedisOperate
+    {
+        bytes key_name           = 1;
+        string redis_cmd_read    = 2;
+        string redis_cmd_write   = 3;
+        OPERATE_TYPE op_type     = 4;
+        repeated Field fields    = 5;
+        int32 key_ttl            = 6;
+        int32 redis_structure    = 7;      ///< redis数据类型
+        int32 data_purpose       = 8;      ///< 数据用途
+        bytes hash_key           = 9;      ///< 可选hash key，当has_hash_key()时用hash_key来计算hash值，否则用key_name来计算hash值
+
+        enum OPERATE_TYPE
+        {
+            T_READ  = 0;
+            T_WRITE = 1;
+        }
+    }
+
+    message DbOperate
+    {
+        E_QUERY_TYPE query_type                   = 1;         ///< 查询类型
+        string table_name                         = 2;         ///< 表名
+        repeated Field fields                     = 3;         ///< 列类型
+        repeated ConditionGroup conditions        = 4;         ///< where条件组（由group_relation指定，若不指定则默认为AND关系）
+        repeated string groupby_col               = 5;         ///< group by字段
+        repeated OrderBy orderby_col              = 6;         ///< order by字段
+        ConditionGroup.E_RELATION group_relation  = 7;         ///< where条件组的关系,条件组之间有且只有一种关系（and或者or）
+        uint32 limit                              = 8;         ///< 指定返回的行数的最大值  (limit 200)
+        uint32 limit_from                         = 9;         ///< 指定返回的第一行的偏移量 (limit 100, 200)
+        uint32 mod_factor                         = 10;        ///< 分表取模因子，当这个字段没有时使用section_factor
+
+        enum E_QUERY_TYPE                                      ///< 查询类型
+        {
+            SELECT                        = 0;              ///< select查询
+            INSERT                        = 1;              ///< insert插入
+            INSERT_IGNORE                 = 2;              ///< insert ignore插入，若存在则放弃
+            UPDATE                        = 3;              ///< update更新
+            REPLACE                       = 4;              ///< replace覆盖插入
+            DELETE                        = 5;              ///< delete删除
+        }
+
+        message Condition                                         ///< where条件
+        {
+            E_RELATION relation                  = 1;              ///< 关系（=, !=, >, <, >=, <= 等）
+            E_COL_TYPE col_type                  = 2;              ///< 列类型
+            string col_name                      = 3;              ///< 列名
+            repeated bytes col_values            = 4;              ///< 列值（当且仅当relation为IN时值的个数大于1有效）
+            string col_name_right                = 5;              ///< 关系右边列名（用于where col1=col2这种情况）
+            enum E_RELATION
+            {
+                EQ                        = 0;              ///< 等于=
+                NE                        = 1;              ///< 不等于!=
+                GT                        = 2;              ///< 大于>
+                LT                        = 3;              ///< 小于<
+                GE                        = 4;              ///< 大于等于>=
+                LE                        = 5;              ///< 小于等于<=
+                LIKE                      = 6;              ///< like
+                IN                        = 7;              ///< in (1, 2, 3, 4, 5)
+            }
+        }
+
+        message ConditionGroup                              ///< where条件组合
+        {
+            E_RELATION relation                      = 1;           ///< 条件之间的关系，一个ConditionGroup里的所有Condition之间有且只有一种关系（and或者or）
+            repeated Condition condition             = 2;           ///< 条件
+            enum E_RELATION
+            {
+                AND                        = 0;             ///< and且
+                OR                         = 1;             ///< or或
+            }
+        }
+
+        message OrderBy
+        {
+            E_RELATION relation                      = 1;            ///< 降序或升序
+            string col_name                          = 2;            ///< 列名
+            enum E_RELATION
+            {
+                ASC                         = 0;
+                DESC                        = 1;
+            }
+        }
+    }
+}
+
+enum E_COL_TYPE                               ///< 列类型
+{
+    STRING                        = 0;        ///< char, varchar, text, datetime, timestamp等
+    INT                           = 1;        ///< int
+    BIGINT                        = 2;        ///< bigint
+    FLOAT                         = 3;        ///< float
+    DOUBLE                        = 4;        ///< double
+}
+
+message Record
+{
+    repeated Field field_info     = 1;        ///< value data
+}
+
+message Field                                  ///< 字段
+{
+    string col_name      = 1;         ///< 列名
+    E_COL_TYPE col_type  = 2;         ///< 列类型
+    bytes col_value      = 3;         ///< 列值
+    string col_as        = 4;         ///< as列名
+}
+
+
+
+/**
+ * @brief 查询结果
+ * @note 适用于Redis返回和MySQL返回，当totalcount与curcount相等时表明数据已接收完毕，
+ * 否则表示数据尚未接收完，剩余的数据会在后续数据包继续返回。
+ */
+message Result
+{
+    int32 err_no                                   = 1;
+    bytes err_msg                                  = 2;
+    int32 total_count                              = 3;
+    int32 current_count                            = 4;
+    repeated Record record_data                    = 5;
+    int32 from                                     = 6;  ///< 数据来源 E_RESULT_FROM
+    DataLocate locate                              = 7;  ///< 仅在DataProxy使用
+    enum E_RESULT_FROM
+    {
+        FROM_DB                     = 0;
+        FROM_REDIS                  = 1;
+    }
+    message DataLocate
+    {
+        uint32 section_from    = 1;
+        uint32 section_to      = 2;  ///< 数据所在分段，section_from < MemOperate.section_factor <= section_to
+        uint32 hash            = 3;  ///< 用于做分布的hash值（取模运算时，为取模后的结果）
+        uint32 divisor         = 4;  ///< 取模运算的除数（一致性hash时不需要）
+    }
+}
+

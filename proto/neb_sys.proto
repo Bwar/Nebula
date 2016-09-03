@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package neb;
+
+/**
+ * @brief 更新配置文件
+ * @note 要更新的配置文件信息，对应系统命令字CMD_REQ_UPDATE_CONFIG_FILE
+ */
+message ConfigInfo
+{
+    string file_name      = 1;    ///< 配置文件名
+    string file_content   = 2;    ///< 配置文件内容（所有配置文件内容均必须是标准JSON结构）
+}
+
+/**
+ * @brief Worker进程负载
+ * @note Worker进程负载，对应系统命令字CMD_REQ_UPDATE_WORKER_LOAD
+ */
+message WorkerLoad
+{
+    int32 pid              = 1;    ///< 进程ID
+    int32 load             = 2;    ///< 负载值
+}
+
+/**
+ * @brief 连接Worker信息
+ * @note 连接Worker信息，对应系统命令字 CMD_REQ_CONNECT_TO_WORKER
+ */
+message ConnectWorker
+{
+    int32 worker_index     = 1;    ///< worker进程编号
+}
+
+/**
+ * @brief 目标Server连接标识
+ * @note 目标Server连接标识用于唯一标识一个Worker进程，由ip、port、worker_index三部分构成，三个
+ * 组成部分拼接成类似 192.168.1.235:9987.3 的字符串存储于各Worker进程内存，通过该标识可以查找到对应
+ * 连接文件描述符发送数据。其中ip为目标Server绑定的IP；port为目标Server监听的端口；worker_index
+ * 为连接目标Server对应的Worker进程编号。对应系统命令字CMD_REQ_TELL_WORKER 和
+ * CMD_RSP_TELL_WORKER
+ */
+message TargetWorker
+{
+    string worker_identify = 1;    ///< 目标Server Worker标识
+    string node_type       = 2;    ///< 节点类型
+}
+
+message LogLevel
+{
+	int32 log_level        = 1;	///< 日志级别
+}
+
