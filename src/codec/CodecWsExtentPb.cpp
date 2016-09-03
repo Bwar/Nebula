@@ -312,108 +312,100 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(loss::CBuffer* pBuff,
             return (CODEC_STATUS_ERR);
         }
         //TODO continue
-        if (pBuff->ReadableBytes() >= stMsgHead.body_len)
+        bool bResult = false;
+        if (stMsgHead.encript == 0)       // 未压缩也未加密
         {
-            bool bResult = false;
-            if (stMsgHead.encript == 0)       // 未压缩也未加密
+            bResult = oMsgBody.ParseFromArray(pBuff->GetRawReadBuffer(),
+                    stMsgHead.body_len);
+        }
+        else    // 有压缩或加密，先解密再解压，然后用MsgBody反序列化
+        {
+            std::string strUncompressData;
+            std::string strDecryptData;
+            if (gc_uiRc5Bit & oMsgHead.cmd())
+            {
+                std::string strRawData;
+                strRawData.assign((const char*) pBuff->GetRawReadBuffer(),
+                        stMsgHead.body_len);
+                if (!Rc5Decrypt(strRawData, strDecryptData))
+                {
+                    LOG4_ERROR("Rc5Decrypt error!");
+                    return (CODEC_STATUS_ERR);
+                }
+            }
+            if (gc_uiZipBit & oMsgHead.cmd())
+            {
+                if (strDecryptData.size() > 0)
+                {
+                    if (!Unzip(strDecryptData, strUncompressData))
+                    {
+                        LOG4_ERROR("uncompress error!");
+                        return (CODEC_STATUS_ERR);
+                    }
+                }
+                else
+                {
+                    std::string strRawData;
+                    strRawData.assign(
+                            (const char*) pBuff->GetRawReadBuffer(),
+                            stMsgHead.body_len);
+                    if (!Unzip(strRawData, strUncompressData))
+                    {
+                        LOG4_ERROR("uncompress error!");
+                        return (CODEC_STATUS_ERR);
+                    }
+                }
+            }
+            else if (gc_uiGzipBit & oMsgHead.cmd())
+            {
+                if (strDecryptData.size() > 0)
+                {
+                    if (!Gunzip(strDecryptData, strUncompressData))
+                    {
+                        LOG4_ERROR("uncompress error!");
+                        return (CODEC_STATUS_ERR);
+                    }
+                }
+                else
+                {
+                    std::string strRawData;
+                    strRawData.assign(
+                            (const char*) pBuff->GetRawReadBuffer(),
+                            stMsgHead.body_len);
+                    if (!Gunzip(strRawData, strUncompressData))
+                    {
+                        LOG4_ERROR("uncompress error!");
+                        return (CODEC_STATUS_ERR);
+                    }
+                }
+            }
+
+            if (strUncompressData.size() > 0)       // 解压后的数据
+            {
+                oMsgHead.set_len(strUncompressData.size());
+                bResult = oMsgBody.ParseFromString(strUncompressData);
+            }
+            else if (strDecryptData.size() > 0)     // 解密后的数据
+            {
+                oMsgHead.set_len(strDecryptData.size());
+                bResult = oMsgBody.ParseFromString(strDecryptData);
+            }
+            else    // 无效的压缩或解密算法，仍然解析原数据
             {
                 bResult = oMsgBody.ParseFromArray(pBuff->GetRawReadBuffer(),
                         stMsgHead.body_len);
             }
-            else    // 有压缩或加密，先解密再解压，然后用MsgBody反序列化
-            {
-                std::string strUncompressData;
-                std::string strDecryptData;
-                if (gc_uiRc5Bit & oMsgHead.cmd())
-                {
-                    std::string strRawData;
-                    strRawData.assign((const char*) pBuff->GetRawReadBuffer(),
-                            stMsgHead.body_len);
-                    if (!Rc5Decrypt(strRawData, strDecryptData))
-                    {
-                        LOG4_ERROR("Rc5Decrypt error!");
-                        return (CODEC_STATUS_ERR);
-                    }
-                }
-                if (gc_uiZipBit & oMsgHead.cmd())
-                {
-                    if (strDecryptData.size() > 0)
-                    {
-                        if (!Unzip(strDecryptData, strUncompressData))
-                        {
-                            LOG4_ERROR("uncompress error!");
-                            return (CODEC_STATUS_ERR);
-                        }
-                    }
-                    else
-                    {
-                        std::string strRawData;
-                        strRawData.assign(
-                                (const char*) pBuff->GetRawReadBuffer(),
-                                stMsgHead.body_len);
-                        if (!Unzip(strRawData, strUncompressData))
-                        {
-                            LOG4_ERROR("uncompress error!");
-                            return (CODEC_STATUS_ERR);
-                        }
-                    }
-                }
-                else if (gc_uiGzipBit & oMsgHead.cmd())
-                {
-                    if (strDecryptData.size() > 0)
-                    {
-                        if (!Gunzip(strDecryptData, strUncompressData))
-                        {
-                            LOG4_ERROR("uncompress error!");
-                            return (CODEC_STATUS_ERR);
-                        }
-                    }
-                    else
-                    {
-                        std::string strRawData;
-                        strRawData.assign(
-                                (const char*) pBuff->GetRawReadBuffer(),
-                                stMsgHead.body_len);
-                        if (!Gunzip(strRawData, strUncompressData))
-                        {
-                            LOG4_ERROR("uncompress error!");
-                            return (CODEC_STATUS_ERR);
-                        }
-                    }
-                }
-
-                if (strUncompressData.size() > 0)       // 解压后的数据
-                {
-                    oMsgHead.set_len(strUncompressData.size());
-                    bResult = oMsgBody.ParseFromString(strUncompressData);
-                }
-                else if (strDecryptData.size() > 0)     // 解密后的数据
-                {
-                    oMsgHead.set_len(strDecryptData.size());
-                    bResult = oMsgBody.ParseFromString(strDecryptData);
-                }
-                else    // 无效的压缩或解密算法，仍然解析原数据
-                {
-                    bResult = oMsgBody.ParseFromArray(pBuff->GetRawReadBuffer(),
-                            stMsgHead.body_len);
-                }
-            }
-            if (bResult)
-            {
-                pBuff->SkipBytes(oMsgBody.ByteSize());
-                return (CODEC_STATUS_OK);
-            }
-            else
-            {
-                LOG4_ERROR("cmd[%u], seq[%lu] oMsgBody.ParseFromArray() error!",
-                        oMsgHead.cmd(), oMsgHead.seq());
-                return (CODEC_STATUS_ERR);
-            }
+        }
+        if (bResult)
+        {
+            pBuff->SkipBytes(oMsgBody.ByteSize());
+            return (CODEC_STATUS_OK);
         }
         else
         {
-            pBuff->SetReadIndex(iReadIdx);
-            return (CODEC_STATUS_PAUSE);
+            LOG4_ERROR("cmd[%u], seq[%lu] oMsgBody.ParseFromArray() error!",
+                    oMsgHead.cmd(), oMsgHead.seq());
+            return (CODEC_STATUS_ERR);
         }
     }
     else
