@@ -7,6 +7,7 @@
  * @note
  * Modify history:
  ******************************************************************************/
+#include <google/protobuf/util/json_util.h>
 #include "CodecWsExtentJson.hpp"
 
 namespace neb
@@ -69,14 +70,23 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
     }
     else
     {
+        std::string strJsonBody;
+        google::protobuf::util::JsonPrintOptions oJsonOption;
+        google::protobuf::util::Status oStatus;
         ucFirstByte |= WEBSOCKET_FIN;
         ucFirstByte |= WEBSOCKET_FRAME_BINARY;
         ucSecondByte &= (~WEBSOCKET_PAYLOAD_LEN);
         std::string strCompressData;
         std::string strEncryptData;
+        oStatus = google::protobuf::util::MessageToJsonString(oMsgBody, &strJsonBody, oJsonOption);
+        if (!oStatus.ok())
+        {
+            LOG4_ERROR("MsgBody to json string error!");
+            return (CODEC_STATUS_ERR);
+        }
         if (gc_uiZipBit & oMsgHead.cmd())
         {
-            if (!Zip(oMsgBody.SerializeAsString(), strCompressData))
+            if (!Zip(strJsonBody, strCompressData))
             {
                 LOG4_ERROR("zip error!");
                 return (CODEC_STATUS_ERR);
@@ -84,7 +94,7 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
         }
         else if (gc_uiGzipBit & oMsgHead.cmd())
         {
-            if (!Gzip(oMsgBody.SerializeAsString(), strCompressData))
+            if (!Gzip(strJsonBody, strCompressData))
             {
                 LOG4_ERROR("gzip error!");
                 return (CODEC_STATUS_ERR);
@@ -102,7 +112,7 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
             }
             else
             {
-                if (!Rc5Encrypt(oMsgBody.SerializeAsString(), strEncryptData))
+                if (!Rc5Encrypt(strJsonBody, strEncryptData))
                 {
                     LOG4_ERROR("Rc5Encrypt error!");
                     return (CODEC_STATUS_ERR);
@@ -120,7 +130,7 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
         }
         else    // 不需要压缩加密或无效的压缩或加密算法，打包原数据
         {
-            iNeedWriteLen = oMsgBody.ByteSize();
+            iNeedWriteLen = strJsonBody.size();
         }
 
         iNeedWriteLen = sizeof(stMsgHead) + oMsgHead.len();
@@ -181,7 +191,7 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
         else    // 无效的压缩或加密算法，打包原数据
         {
             iNeedWriteLen = oMsgBody.ByteSize();
-            iWriteLen = pBuff->Write(oMsgBody.SerializeAsString().c_str(), oMsgBody.ByteSize());
+            iWriteLen = pBuff->Write(strJsonBody.c_str(), strJsonBody.size());
         }
         if (iWriteLen != iNeedWriteLen)
         {
@@ -311,10 +321,14 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(loss::CBuffer* pBuff,
             return (CODEC_STATUS_ERR);
         }
 
-        bool bResult = false;
+        std::string strJsonBody;
+        google::protobuf::util::JsonParseOptions oParseOptions;
+        google::protobuf::util::Status oStatus;
         if (stMsgHead.encript == 0)       // 未压缩也未加密
         {
-            bResult = oMsgBody.ParseFromArray(pBuff->GetRawReadBuffer(), stMsgHead.body_len);
+            strJsonBody.resize(stMsgHead.body_len);
+            strJsonBody.assign(pBuff->GetRawReadBuffer(), stMsgHead.body_len);
+            oStatus = google::protobuf::util::JsonStringToMessage(strJsonBody, &oMsgBody, oParseOptions);
         }
         else    // 有压缩或加密，先解密再解压，然后用MsgBody反序列化
         {
@@ -377,27 +391,29 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(loss::CBuffer* pBuff,
 
             if (strUncompressData.size() > 0)       // 解压后的数据
             {
-                oMsgHead.set_len(strUncompressData.size());
-                bResult = oMsgBody.ParseFromString(strUncompressData);
+                oStatus = google::protobuf::util::JsonStringToMessage(strDecryptData, &oMsgBody, oParseOptions);
+                oMsgHead.set_len(oMsgBody.ByteSize());
             }
             else if (strDecryptData.size() > 0)     // 解密后的数据
             {
-                oMsgHead.set_len(strDecryptData.size());
-                bResult = oMsgBody.ParseFromString(strDecryptData);
+                oStatus = google::protobuf::util::JsonStringToMessage(strDecryptData, &oMsgBody, oParseOptions);
+                oMsgHead.set_len(oMsgBody.ByteSize());
             }
             else    // 无效的压缩或解密算法，仍然解析原数据
             {
-                bResult = oMsgBody.ParseFromArray(pBuff->GetRawReadBuffer(), stMsgHead.body_len);
+                strJsonBody.resize(stMsgHead.body_len);
+                strJsonBody.assign(pBuff->GetRawReadBuffer(), stMsgHead.body_len);
+                oStatus = google::protobuf::util::JsonStringToMessage(strJsonBody, &oMsgBody, oParseOptions);
             }
         }
-        if (bResult)
+        if (oStatus.ok())
         {
             pBuff->SkipBytes(oMsgBody.ByteSize());
             return (CODEC_STATUS_OK);
         }
         else
         {
-            LOG4_ERROR("cmd[%u], seq[%lu] oMsgBody.ParseFromArray() error!",
+            LOG4_ERROR("cmd[%u], seq[%lu] json string to MsgBody error!",
                     oMsgHead.cmd(), oMsgHead.seq());
             return (CODEC_STATUS_ERR);
         }
