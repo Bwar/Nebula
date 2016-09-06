@@ -205,7 +205,7 @@ bool Worker::CheckParent()
     oJsonLoad.Add("send_byte", m_iSendByte);
     oJsonLoad.Add("client", int32(m_mapChannel.size() - m_mapInnerFd.size()));
     LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
-    oMsgBody.set_content(oJsonLoad.ToString());
+    oMsgBody.set_data(oJsonLoad.ToString());
     oMsgHead.set_cmd(CMD_REQ_UPDATE_WORKER_LOAD);
     oMsgHead.set_seq(GetSequence());
     oMsgHead.set_len(oMsgBody.ByteSize());
@@ -2547,7 +2547,7 @@ void Worker::ChannelNotice(const tagChannelContext& stCtx, const std::string& st
         MsgHead oMsgHead;
         MsgBody oMsgBody;
         oMsgBody.mutable_req_target()->set_route_id(0);
-        oMsgBody.set_content(strIdentify);
+        oMsgBody.set_data(strIdentify);
         oMsgBody.set_add_on(strClientData);
         oMsgHead.set_cmd(CMD_REQ_DISCONNECT);
         oMsgHead.set_seq(GetSequence());
@@ -2585,7 +2585,7 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
                 if (CMD_REQ_SET_LOG_LEVEL == oMsgHead.cmd())
                 {
                     LogLevel oLogLevel;
-                    oLogLevel.ParseFromString(oMsgBody.content());
+                    oLogLevel.ParseFromString(oMsgBody.data());
                     LOG4_INFO("log level set to %d", oLogLevel.log_level());
                     m_oLogger.setLogLevel(oLogLevel.log_level());
                 }
@@ -2642,8 +2642,8 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
 #else
                     snprintf(m_pErrBuff, gc_iErrBuffLen, "no handler to dispose cmd %u!", oMsgHead.cmd());
                     LOG4_ERROR(m_pErrBuff);
-                    oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_UNKNOWN_CMD);
-                    oOutMsgBody.mutable_rsp_result()->set_err_msg(m_pErrBuff);
+                    oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
+                    oOutMsgBody.mutable_rsp_result()->set_msg(m_pErrBuff);
                     oOutMsgHead.set_cmd(CMD_RSP_SYS_ERROR);
                     oOutMsgHead.set_seq(oMsgHead.seq());
                     oOutMsgHead.set_len(oOutMsgBody.ByteSize());

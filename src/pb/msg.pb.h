@@ -291,30 +291,30 @@ class MsgBody_Response : public ::google::protobuf::Message /* @@protoc_insertio
 
   // accessors -------------------------------------------------------
 
-  // optional int32 err_no = 1;
-  void clear_err_no();
-  static const int kErrNoFieldNumber = 1;
-  ::google::protobuf::int32 err_no() const;
-  void set_err_no(::google::protobuf::int32 value);
+  // optional int32 code = 1;
+  void clear_code();
+  static const int kCodeFieldNumber = 1;
+  ::google::protobuf::int32 code() const;
+  void set_code(::google::protobuf::int32 value);
 
-  // optional bytes err_msg = 2;
-  void clear_err_msg();
-  static const int kErrMsgFieldNumber = 2;
-  const ::std::string& err_msg() const;
-  void set_err_msg(const ::std::string& value);
-  void set_err_msg(const char* value);
-  void set_err_msg(const void* value, size_t size);
-  ::std::string* mutable_err_msg();
-  ::std::string* release_err_msg();
-  void set_allocated_err_msg(::std::string* err_msg);
+  // optional bytes msg = 2;
+  void clear_msg();
+  static const int kMsgFieldNumber = 2;
+  const ::std::string& msg() const;
+  void set_msg(const ::std::string& value);
+  void set_msg(const char* value);
+  void set_msg(const void* value, size_t size);
+  ::std::string* mutable_msg();
+  ::std::string* release_msg();
+  void set_allocated_msg(::std::string* msg);
 
   // @@protoc_insertion_point(class_scope:MsgBody.Response)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
-  ::google::protobuf::internal::ArenaStringPtr err_msg_;
-  ::google::protobuf::int32 err_no_;
+  ::google::protobuf::internal::ArenaStringPtr msg_;
+  ::google::protobuf::int32 code_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_msg_2eproto();
   friend void protobuf_AssignDesc_msg_2eproto();
@@ -412,16 +412,16 @@ class MsgBody : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::MsgBody_Response* release_rsp_result();
   void set_allocated_rsp_result(::MsgBody_Response* rsp_result);
 
-  // optional bytes content = 3;
-  void clear_content();
-  static const int kContentFieldNumber = 3;
-  const ::std::string& content() const;
-  void set_content(const ::std::string& value);
-  void set_content(const char* value);
-  void set_content(const void* value, size_t size);
-  ::std::string* mutable_content();
-  ::std::string* release_content();
-  void set_allocated_content(::std::string* content);
+  // optional bytes data = 3;
+  void clear_data();
+  static const int kDataFieldNumber = 3;
+  const ::std::string& data() const;
+  void set_data(const ::std::string& value);
+  void set_data(const char* value);
+  void set_data(const void* value, size_t size);
+  ::std::string* mutable_data();
+  ::std::string* release_data();
+  void set_allocated_data(::std::string* data);
 
   // optional bytes add_on = 4;
   void clear_add_on();
@@ -446,7 +446,7 @@ class MsgBody : public ::google::protobuf::Message /* @@protoc_insertion_point(c
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
-  ::google::protobuf::internal::ArenaStringPtr content_;
+  ::google::protobuf::internal::ArenaStringPtr data_;
   ::google::protobuf::internal::ArenaStringPtr add_on_;
   union MsgTypeUnion {
     MsgTypeUnion() {}
@@ -579,62 +579,62 @@ inline void MsgBody_Request::set_allocated_route(::std::string* route) {
 
 // MsgBody_Response
 
-// optional int32 err_no = 1;
-inline void MsgBody_Response::clear_err_no() {
-  err_no_ = 0;
+// optional int32 code = 1;
+inline void MsgBody_Response::clear_code() {
+  code_ = 0;
 }
-inline ::google::protobuf::int32 MsgBody_Response::err_no() const {
-  // @@protoc_insertion_point(field_get:MsgBody.Response.err_no)
-  return err_no_;
+inline ::google::protobuf::int32 MsgBody_Response::code() const {
+  // @@protoc_insertion_point(field_get:MsgBody.Response.code)
+  return code_;
 }
-inline void MsgBody_Response::set_err_no(::google::protobuf::int32 value) {
+inline void MsgBody_Response::set_code(::google::protobuf::int32 value) {
   
-  err_no_ = value;
-  // @@protoc_insertion_point(field_set:MsgBody.Response.err_no)
+  code_ = value;
+  // @@protoc_insertion_point(field_set:MsgBody.Response.code)
 }
 
-// optional bytes err_msg = 2;
-inline void MsgBody_Response::clear_err_msg() {
-  err_msg_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+// optional bytes msg = 2;
+inline void MsgBody_Response::clear_msg() {
+  msg_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline const ::std::string& MsgBody_Response::err_msg() const {
-  // @@protoc_insertion_point(field_get:MsgBody.Response.err_msg)
-  return err_msg_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline const ::std::string& MsgBody_Response::msg() const {
+  // @@protoc_insertion_point(field_get:MsgBody.Response.msg)
+  return msg_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void MsgBody_Response::set_err_msg(const ::std::string& value) {
+inline void MsgBody_Response::set_msg(const ::std::string& value) {
   
-  err_msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:MsgBody.Response.err_msg)
+  msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:MsgBody.Response.msg)
 }
-inline void MsgBody_Response::set_err_msg(const char* value) {
+inline void MsgBody_Response::set_msg(const char* value) {
   
-  err_msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:MsgBody.Response.err_msg)
+  msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:MsgBody.Response.msg)
 }
-inline void MsgBody_Response::set_err_msg(const void* value, size_t size) {
+inline void MsgBody_Response::set_msg(const void* value, size_t size) {
   
-  err_msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:MsgBody.Response.err_msg)
+  // @@protoc_insertion_point(field_set_pointer:MsgBody.Response.msg)
 }
-inline ::std::string* MsgBody_Response::mutable_err_msg() {
+inline ::std::string* MsgBody_Response::mutable_msg() {
   
-  // @@protoc_insertion_point(field_mutable:MsgBody.Response.err_msg)
-  return err_msg_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  // @@protoc_insertion_point(field_mutable:MsgBody.Response.msg)
+  return msg_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* MsgBody_Response::release_err_msg() {
-  // @@protoc_insertion_point(field_release:MsgBody.Response.err_msg)
+inline ::std::string* MsgBody_Response::release_msg() {
+  // @@protoc_insertion_point(field_release:MsgBody.Response.msg)
   
-  return err_msg_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  return msg_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void MsgBody_Response::set_allocated_err_msg(::std::string* err_msg) {
-  if (err_msg != NULL) {
+inline void MsgBody_Response::set_allocated_msg(::std::string* msg) {
+  if (msg != NULL) {
     
   } else {
     
   }
-  err_msg_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), err_msg);
-  // @@protoc_insertion_point(field_set_allocated:MsgBody.Response.err_msg)
+  msg_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), msg);
+  // @@protoc_insertion_point(field_set_allocated:MsgBody.Response.msg)
 }
 
 // -------------------------------------------------------------------
@@ -737,48 +737,48 @@ inline void MsgBody::set_allocated_rsp_result(::MsgBody_Response* rsp_result) {
   // @@protoc_insertion_point(field_set_allocated:MsgBody.rsp_result)
 }
 
-// optional bytes content = 3;
-inline void MsgBody::clear_content() {
-  content_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+// optional bytes data = 3;
+inline void MsgBody::clear_data() {
+  data_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline const ::std::string& MsgBody::content() const {
-  // @@protoc_insertion_point(field_get:MsgBody.content)
-  return content_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+inline const ::std::string& MsgBody::data() const {
+  // @@protoc_insertion_point(field_get:MsgBody.data)
+  return data_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void MsgBody::set_content(const ::std::string& value) {
+inline void MsgBody::set_data(const ::std::string& value) {
   
-  content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
-  // @@protoc_insertion_point(field_set:MsgBody.content)
+  data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:MsgBody.data)
 }
-inline void MsgBody::set_content(const char* value) {
+inline void MsgBody::set_data(const char* value) {
   
-  content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:MsgBody.content)
+  data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:MsgBody.data)
 }
-inline void MsgBody::set_content(const void* value, size_t size) {
+inline void MsgBody::set_data(const void* value, size_t size) {
   
-  content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+  data_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:MsgBody.content)
+  // @@protoc_insertion_point(field_set_pointer:MsgBody.data)
 }
-inline ::std::string* MsgBody::mutable_content() {
+inline ::std::string* MsgBody::mutable_data() {
   
-  // @@protoc_insertion_point(field_mutable:MsgBody.content)
-  return content_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  // @@protoc_insertion_point(field_mutable:MsgBody.data)
+  return data_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* MsgBody::release_content() {
-  // @@protoc_insertion_point(field_release:MsgBody.content)
+inline ::std::string* MsgBody::release_data() {
+  // @@protoc_insertion_point(field_release:MsgBody.data)
   
-  return content_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  return data_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void MsgBody::set_allocated_content(::std::string* content) {
-  if (content != NULL) {
+inline void MsgBody::set_allocated_data(::std::string* data) {
+  if (data != NULL) {
     
   } else {
     
   }
-  content_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), content);
-  // @@protoc_insertion_point(field_set_allocated:MsgBody.content)
+  data_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), data);
+  // @@protoc_insertion_point(field_set_allocated:MsgBody.data)
 }
 
 // optional bytes add_on = 4;

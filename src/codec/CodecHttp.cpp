@@ -90,7 +90,7 @@ E_CODEC_STATUS CodecHttp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBod
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     HttpMsg oHttpMsg;
-    if (oHttpMsg.ParseFromString(oMsgBody.content()))
+    if (oHttpMsg.ParseFromString(oMsgBody.data()))
     {
         char szValue[16] = {0};
         HttpMsg::Header* header = oHttpMsg.add_headers();
@@ -122,7 +122,7 @@ E_CODEC_STATUS CodecHttp::Decode(loss::CBuffer* pBuff, MsgHead& oMsgHead, MsgBod
     E_CODEC_STATUS eCodecStatus = Decode(pBuff, oHttpMsg);
     if (CODEC_STATUS_OK == eCodecStatus)
     {
-        oMsgBody.set_content(oHttpMsg.body());
+        oMsgBody.set_data(oHttpMsg.body());
         oMsgHead.set_len(oMsgBody.ByteSize());
         for (int i = 0; i < oHttpMsg.headers_size(); ++i)
         {

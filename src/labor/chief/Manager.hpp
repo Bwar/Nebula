@@ -104,7 +104,7 @@ protected:
     bool DelEvents(ev_timer* timer_watcher);
     bool AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout = 1.0);
     bool AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout = 60.0);
-    Channel* CreateChannel(int iFd, loss::E_CODEC_TYPE eCodecType);
+    Channel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
     bool DestroyConnect(std::map<int, Channel*>::iterator iter);
     bool DestroyConnect(Channel* pChannel);
     std::pair<int, int> GetMinLoadWorkerDataFd();
@@ -155,7 +155,7 @@ private:
     int32 m_iPortForClient;                 ///< 对Client通信监听端口，对应 m_iC2SListenFd
     int32 m_iGatewayPort;                   ///< 对Client服务的真实端口
     uint32 m_uiWorkerNum;                   ///< Worker子进程数量
-    loss::E_CODEC_TYPE m_eCodec;            ///< 接入端编解码器
+    E_CODEC_TYPE m_eCodec;            ///< 接入端编解码器
     ev_tstamp m_dAddrStatInterval;          ///< IP地址数据统计时间间隔
     int32  m_iAddrPermitNum;                ///< IP地址统计时间内允许连接次数
     int m_iLogLevel;

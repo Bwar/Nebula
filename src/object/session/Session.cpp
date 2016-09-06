@@ -12,15 +12,23 @@
 namespace neb
 {
 
-Session::Session()
+Session::Session(uint32 ulSessionId, ev_tstamp dSessionTimeout, const std::string& strSessionClass)
+    : m_strSessionId(ulSessionId), m_strSessionClassName(strSessionClass)
 {
-    // TODO Auto-generated constructor stub
+    char szSessionId[16] = {0};
+    snprintf(szSessionId, sizeof(szSessionId), "%u", ulSessionId);
+    m_strSessionId = szSessionId;
+    SetTimeout(dSessionTimeout);
+}
 
+Session::Session(const std::string& strSessionId, ev_tstamp dSessionTimeout, const std::string& strSessionClass)
+    : m_strSessionId(strSessionId), m_strSessionClassName(strSessionClass)
+{
+    SetTimeout(dSessionTimeout);
 }
 
 Session::~Session()
 {
-    // TODO Auto-generated destructor stub
 }
 
 } /* namespace neb */

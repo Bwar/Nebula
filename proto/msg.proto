@@ -24,7 +24,7 @@ message MsgBody
 	    Request req_target               = 1;			///< 请求目标（请求包必须填充）
 	    Response rsp_result              = 2;			///< 响应结果（响应包必须填充）
     }
-    bytes content               = 3;			///< 消息体主体
+    bytes data                  = 3;			///< 消息体主体
     bytes add_on                = 4;			///< 服务端接入层附加在请求包的数据（客户端无须理会）
     // google.protobuf.Any content          = 3;
     // google.protobuf.Any add_on           = 4;
@@ -37,7 +37,7 @@ message MsgBody
 
     message Response
     {
-        int32 err_no            = 1;           ///< 错误码
-        bytes err_msg           = 2;           ///< 错误信息
+        int32 code            = 1;           ///< 错误码
+        bytes msg           = 2;           ///< 错误信息
     }
 }

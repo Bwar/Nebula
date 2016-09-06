@@ -10,6 +10,8 @@
 #ifndef SRC_DEFINITION_HPP_
 #define SRC_DEFINITION_HPP_
 
+#include <stddef.h>
+
 
 #ifndef NODE_BEAT
 #define NODE_BEAT 1.0

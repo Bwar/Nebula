@@ -33,7 +33,7 @@ E_CMD_STATUS StepTellWorker::Emit(
     oTargetWorker.set_worker_identify(GetWorkerIdentify());
     oTargetWorker.set_node_type(GetNodeType());
     oTargetWorker.set_err_msg("OK");
-    oOutMsgBody.set_content(oTargetWorker.SerializeAsString());
+    oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
     oOutMsgHead.set_cmd(CMD_REQ_TELL_WORKER);
     oOutMsgHead.set_seq(GetSequence());
     oOutMsgHead.set_len(oOutMsgBody.ByteSize());

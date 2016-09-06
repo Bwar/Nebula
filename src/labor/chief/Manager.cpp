@@ -100,7 +100,7 @@ void Manager::ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, struct ev
 Manager::Manager(const std::string& strConfFile)
     : m_ulSequence(0), m_bInitLogger(false), m_dIoTimeout(480), m_strConfFile(strConfFile),
       m_uiNodeId(0), m_iPortForServer(9988), m_iPortForClient(0), m_iGatewayPort(0), m_uiWorkerNum(10),
-      m_eCodec(loss::CODEC_PROTOBUF), m_dAddrStatInterval(60.0), m_iAddrPermitNum(10),
+      m_eCodec(CODEC_PROTOBUF), m_dAddrStatInterval(60.0), m_iAddrPermitNum(10),
       m_iLogLevel(log4cplus::INFO_LOG_LEVEL), m_iWorkerBeat(11), m_iRefreshCalc(0),
       m_iS2SListenFd(-1), m_iC2SListenFd(-1), m_loop(NULL), m_pPeriodicTaskWatcher(NULL)//, m_pCmdConnect(NULL)
 {
@@ -308,7 +308,7 @@ bool Manager::AcceptServerConn(int iFd)
         }
         uint32 ulSeq = GetSequence();
         x_sock_set_block(iAcceptFd, 0);
-        Channel* pChannel = CreateChannel(iAcceptFd, loss::CODEC_PROTOBUF);
+        Channel* pChannel = CreateChannel(iAcceptFd, CODEC_PROTOBUF);
         if (NULL != pChannel)
         {
             AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
@@ -322,7 +322,7 @@ bool Manager::DataRecvAndHandle(Channel* pChannel)
 {
     LOG4_DEBUG("fd %d, seq %llu", pChannel->GetFd(), pChannel->GetSequence());
     E_CODEC_STATUS eCodecStatus;
-    if (loss::CODEC_HTTP == pChannel->GetCodecType())   // Manager只有pb协议编解码
+    if (CODEC_HTTP == pChannel->GetCodecType())   // Manager只有pb协议编解码
     {
 //        HttpMsg oHttpMsg;
 //        eCodecStatus = pChannel->Recv(oHttpMsg);
@@ -395,7 +395,7 @@ bool Manager::IoWrite(Channel* pChannel)
             MsgBody oMsgBody;
             ConnectWorker oConnWorker;
             oConnWorker.set_worker_index(index_iter->second);
-            oMsgBody.set_content(oConnWorker.SerializeAsString());
+            oMsgBody.set_data(oConnWorker.SerializeAsString());
             oMsgHead.set_cmd(CMD_REQ_CONNECT_TO_WORKER);
             oMsgHead.set_seq(GetSequence());
             oMsgHead.set_len(oMsgBody.ByteSize());
@@ -658,7 +658,7 @@ bool Manager::AutoSend(const std::string& strIdentify, const MsgHead& oMsgHead, 
     x_sock_set_block(iFd, 0);
     int reuse = 1;
     ::setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-    Channel* pChannel = CreateChannel(iFd, loss::CODEC_PROTOBUF);
+    Channel* pChannel = CreateChannel(iFd, CODEC_PROTOBUF);
     if (NULL != pChannel)
     {
         AddIoTimeout(pChannel, 1.5);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
@@ -735,7 +735,7 @@ bool Manager::GetConf()
         int32 iCodec;
         if (m_oCurrentConf.Get("access_codec", iCodec))
         {
-            m_eCodec = loss::E_CODEC_TYPE(iCodec);
+            m_eCodec = E_CODEC_TYPE(iCodec);
         }
         m_oCurrentConf["permission"]["addr_permit"].Get("stat_interval", m_dAddrStatInterval);
         m_oCurrentConf["permission"]["addr_permit"].Get("permit_num", m_iAddrPermitNum);
@@ -943,8 +943,8 @@ void Manager::CreateWorker()
             m_mapWorker.insert(std::pair<int, tagWorkerAttr>(iPid, stWorkerAttr));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFds[0], iPid));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFds[0], iPid));
-            Channel* pChannelData = CreateChannel(iControlFds[0], loss::CODEC_PROTOBUF);
-            Channel* pChannelControl = CreateChannel(iDataFds[0], loss::CODEC_PROTOBUF);
+            Channel* pChannelData = CreateChannel(iControlFds[0], CODEC_PROTOBUF);
+            Channel* pChannelControl = CreateChannel(iDataFds[0], CODEC_PROTOBUF);
             AddIoReadEvent(pChannelData);
             AddIoReadEvent(pChannelControl);
         }
@@ -963,7 +963,7 @@ bool Manager::CreateEvents()
     {
         return(false);
     }
-    Channel* pChannelListen = CreateChannel(m_iS2SListenFd, loss::CODEC_PROTOBUF);
+    Channel* pChannelListen = CreateChannel(m_iS2SListenFd, CODEC_PROTOBUF);
     AddIoReadEvent(pChannelListen);
 //    AddIoErrorEvent(m_iS2SListenFd);
 #ifdef NODE_TYPE_ACCESS
@@ -1078,7 +1078,7 @@ bool Manager::RegisterToKeeper()
     oReportData["node"].Add("send_num", iSendNum);
     oReportData["node"].Add("send_byte", iSendByte);
     oReportData["node"].Add("client", iClientNum);
-    oMsgBody.set_content(oReportData.ToString());
+    oMsgBody.set_data(oReportData.ToString());
     oMsgHead.set_cmd(CMD_REQ_NODE_REGISTER);
     oMsgHead.set_seq(GetSequence());
     oMsgHead.set_len(oMsgBody.ByteSize());
@@ -1177,8 +1177,8 @@ bool Manager::RestartWorker(int iDeathPid)
             m_mapWorker.insert(std::pair<int, tagWorkerAttr>(iNewPid, stWorkerAttr));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFds[0], iNewPid));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFds[0], iNewPid));
-            Channel* pChannelData = CreateChannel(iControlFds[0], loss::CODEC_PROTOBUF);
-            Channel* pChannelControl = CreateChannel(iDataFds[0], loss::CODEC_PROTOBUF);
+            Channel* pChannelData = CreateChannel(iControlFds[0], CODEC_PROTOBUF);
+            Channel* pChannelControl = CreateChannel(iDataFds[0], CODEC_PROTOBUF);
             AddIoReadEvent(pChannelData);
             AddIoReadEvent(pChannelControl);
             restart_num_iter = m_mapWorkerRestartNum.find(iWorkerIndex);
@@ -1351,7 +1351,7 @@ bool Manager::AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout)
     return(true);
 }
 
-Channel* Manager::CreateChannel(int iFd, loss::E_CODEC_TYPE eCodecType)
+Channel* Manager::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
 {
     LOG4_DEBUG("%s(iFd %d)", __FUNCTION__, iFd);
     std::map<int, Channel*>::iterator iter;
@@ -1525,7 +1525,7 @@ void Manager::RefreshServer()
             MsgBody oMsgBody;
             LogLevel oLogLevel;
             oLogLevel.set_log_level(m_iLogLevel);
-            oMsgBody.set_content(oLogLevel.SerializeAsString());
+            oMsgBody.set_data(oLogLevel.SerializeAsString());
             oMsgHead.set_cmd(CMD_REQ_SET_LOG_LEVEL);
             oMsgHead.set_seq(GetSequence());
             oMsgHead.set_len(oMsgBody.ByteSize());
@@ -1537,7 +1537,7 @@ void Manager::RefreshServer()
         {
             MsgHead oMsgHead;
             MsgBody oMsgBody;
-            oMsgBody.set_content(m_oCurrentConf["so"].ToString());
+            oMsgBody.set_data(m_oCurrentConf["so"].ToString());
             oMsgHead.set_cmd(CMD_REQ_RELOAD_SO);
             oMsgHead.set_seq(GetSequence());
             oMsgHead.set_len(oMsgBody.ByteSize());
@@ -1547,7 +1547,7 @@ void Manager::RefreshServer()
         {
             MsgHead oMsgHead;
             MsgBody oMsgBody;
-            oMsgBody.set_content(m_oCurrentConf["module"].ToString());
+            oMsgBody.set_data(m_oCurrentConf["module"].ToString());
             oMsgHead.set_cmd(CMD_REQ_RELOAD_MODULE);
             oMsgHead.set_seq(GetSequence());
             oMsgHead.set_len(oMsgBody.ByteSize());
@@ -1647,7 +1647,7 @@ bool Manager::ReportToKeeper()
     oReportData["node"].Add("send_num", iSendNum);
     oReportData["node"].Add("send_byte", iSendByte);
     oReportData["node"].Add("client", iClientNum);
-    oMsgBody.set_content(oReportData.ToString());
+    oMsgBody.set_data(oReportData.ToString());
     oMsgHead.set_cmd(CMD_REQ_NODE_STATUS_REPORT);
     oMsgHead.set_seq(GetSequence());
     oMsgHead.set_len(oMsgBody.ByteSize());
@@ -1707,7 +1707,7 @@ bool Manager::HandleDataFromWorker(Channel* pChannel, const MsgHead& oInMsgHead,
         if (iter != m_mapWorkerFdPid.end())
         {
             loss::CJsonObject oJsonLoad;
-            oJsonLoad.Parse(oInMsgBody.content());
+            oJsonLoad.Parse(oInMsgBody.data());
             SetWorkerLoad(iter->second, oJsonLoad);
         }
     }
@@ -1728,7 +1728,7 @@ bool Manager::HandleDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHe
     LOG4_TRACE("oInMsgHead.cmd() = %u, seq() = %u", oInMsgHead.cmd(), oInMsgHead.seq());
     if (oInMsgHead.cmd() == CMD_REQ_CONNECT_TO_WORKER)
     {
-        if (oConnWorker.ParseFromString(oInMsgBody.content()))
+        if (oConnWorker.ParseFromString(oInMsgBody.data()))
         {
             std::map<int, tagWorkerAttr>::iterator worker_iter;
             for (worker_iter = m_mapWorker.begin();
@@ -1737,8 +1737,8 @@ bool Manager::HandleDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHe
                 if (oConnWorker.worker_index() == worker_iter->second.iWorkerIndex)
                 {
                     // TODO 这里假设传送文件描述符都成功，是因为对传送文件描述符成功后Manager顺利回复消息，需要一个更好的解决办法
-                    oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_OK);
-                    oOutMsgBody.mutable_rsp_result()->set_err_msg("OK");
+                    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+                    oOutMsgBody.mutable_rsp_result()->set_msg("OK");
                     oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
                     oOutMsgHead.set_seq(oInMsgHead.seq());
                     oOutMsgHead.set_len(oOutMsgBody.ByteSize());
@@ -1759,7 +1759,7 @@ bool Manager::HandleDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHe
 
                     char szIp[16] = {0};
                     strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
-                    int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->GetFd(), szIp, 16, loss::CODEC_PROTOBUF);
+                    int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->GetFd(), szIp, 16, CODEC_PROTOBUF);
                     //int iErrno = send_fd(worker_iter->second.iDataFd, stCtx.iFd);
                     if (iErrno != 0)
                     {
@@ -1772,21 +1772,21 @@ bool Manager::HandleDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHe
             }
             if (worker_iter == m_mapWorker.end())
             {
-                oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_NO_SUCH_WORKER_INDEX);
-                oOutMsgBody.mutable_rsp_result()->set_err_msg("no such worker index!");
+                oOutMsgBody.mutable_rsp_result()->set_code(ERR_NO_SUCH_WORKER_INDEX);
+                oOutMsgBody.mutable_rsp_result()->set_msg("no such worker index!");
             }
         }
         else
         {
-            oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_PARASE_PROTOBUF);
-            oOutMsgBody.mutable_rsp_result()->set_err_msg("oConnWorker.ParseFromString() error!");
+            oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
+            oOutMsgBody.mutable_rsp_result()->set_msg("oConnWorker.ParseFromString() error!");
             LOG4_ERROR("oConnWorker.ParseFromString() error!");
         }
     }
     else
     {
-        oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_UNKNOWN_CMD);
-        oOutMsgBody.mutable_rsp_result()->set_err_msg("unknow cmd!");
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
+        oOutMsgBody.mutable_rsp_result()->set_msg("unknow cmd!");
         LOG4_DEBUG("unknow cmd %d!", oInMsgHead.cmd());
         oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
         oOutMsgHead.set_seq(oInMsgHead.seq());
@@ -1840,8 +1840,8 @@ bool Manager::HandleDataFromKeeper(Channel* pChannel, const MsgHead& oInMsgHead,
         SendToWorker(oInMsgHead, oInMsgBody);
         MsgHead oOutMsgHead;
         MsgBody oOutMsgBody;
-        oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_OK);
-        oOutMsgBody.mutable_rsp_result()->set_err_msg("OK");
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+        oOutMsgBody.mutable_rsp_result()->set_msg("OK");
         oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
         oOutMsgHead.set_seq(oInMsgHead.seq());
         oOutMsgHead.set_len(oOutMsgBody.ByteSize());
@@ -1865,7 +1865,7 @@ bool Manager::HandleDataFromKeeper(Channel* pChannel, const MsgHead& oInMsgHead,
     {
         if (CMD_RSP_NODE_REGISTER == oInMsgHead.cmd()) //Manager这层只有向center注册会收到回调，上报状态不收回调或者收到回调不必处理
         {
-            loss::CJsonObject oNode(oInMsgBody.content());
+            loss::CJsonObject oNode(oInMsgBody.data());
             int iErrno = 0;
             oNode.Get("errcode", iErrno);
             if (0 == iErrno)
@@ -1892,9 +1892,9 @@ bool Manager::HandleDataFromKeeper(Channel* pChannel, const MsgHead& oInMsgHead,
             snprintf(szWorkerIdentify, 64, "%s:%d", m_strHostForServer.c_str(), m_iPortForServer);
             oTargetWorker.set_worker_identify(szWorkerIdentify);
             oTargetWorker.set_node_type(GetNodeType());
-            oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_OK);
-            oOutMsgBody.mutable_rsp_result()->set_err_msg("OK");
-            oOutMsgBody.set_content(oTargetWorker.SerializeAsString());
+            oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+            oOutMsgBody.mutable_rsp_result()->set_msg("OK");
+            oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
             oOutMsgHead.set_cmd(CMD_REQ_TELL_WORKER);
             oOutMsgHead.set_seq(GetSequence());
             oOutMsgHead.set_len(oOutMsgBody.ByteSize());
