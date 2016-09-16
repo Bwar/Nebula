@@ -13,6 +13,7 @@ namespace neb
 {
 
 Module::Module()
+    : Object(OBJ_MODULE)
 {
 }
 

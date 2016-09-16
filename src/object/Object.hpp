@@ -15,6 +15,7 @@
 #include "log4cplus/logger.h"
 #include "log4cplus/fileappender.h"
 #include "log4cplus/loggingmacros.h"
+#include "Error.hpp"
 #include "Definition.hpp"
 #include "pb/msg.pb.h"
 #include "pb/http.pb.h"
@@ -36,7 +37,7 @@ enum OBJECT_TYPE
     OBJ_REDIS_STEP          = 7,        ///< Step步骤对象，处理redis请求或响应
 };
 
-class OssWorker;
+class Worker;
 class CmdUpdateNodeId;
 class StepIoTimeout;
 
@@ -100,7 +101,7 @@ protected:
      * @brief 获取Server自定义配置
      * @return Server自定义配置
      */
-    const loss::CJsonObject& GetCustomConf() const;
+    const CJsonObject& GetCustomConf() const;
 
     /**
      * @brief 获取当前时间
@@ -330,7 +331,7 @@ private:
     log4cplus::Logger* m_pLogger;
     ev_timer* m_pTimerWatcher;
 
-    friend class OssWorker;
+    friend class Worker;
     friend class CmdUpdateNodeId;
     friend class StepIoTimeout;
 };

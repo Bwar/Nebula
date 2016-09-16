@@ -309,9 +309,9 @@ bool ConfigInfo::MergePartialFromCodedStream(
         if (tag == 18) {
          parse_file_content:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
-                input, this->mutable_file_content()));
+                input, this->mutable_file_data()));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-            this->file_content().data(), this->file_content().length(),
+            this->file_data().data(), this->file_data().length(),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "neb.ConfigInfo.file_content"));
         } else {
@@ -356,13 +356,13 @@ void ConfigInfo::SerializeWithCachedSizes(
   }
 
   // optional string file_content = 2;
-  if (this->file_content().size() > 0) {
+  if (this->file_data().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->file_content().data(), this->file_content().length(),
+      this->file_data().data(), this->file_data().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "neb.ConfigInfo.file_content");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      2, this->file_content(), output);
+      2, this->file_data(), output);
   }
 
   // @@protoc_insertion_point(serialize_end:neb.ConfigInfo)
@@ -383,14 +383,14 @@ void ConfigInfo::SerializeWithCachedSizes(
   }
 
   // optional string file_content = 2;
-  if (this->file_content().size() > 0) {
+  if (this->file_data().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
-      this->file_content().data(), this->file_content().length(),
+      this->file_data().data(), this->file_data().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "neb.ConfigInfo.file_content");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->file_content(), target);
+        2, this->file_data(), target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:neb.ConfigInfo)
@@ -409,10 +409,10 @@ int ConfigInfo::ByteSize() const {
   }
 
   // optional string file_content = 2;
-  if (this->file_content().size() > 0) {
+  if (this->file_data().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
-        this->file_content());
+        this->file_data());
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -447,7 +447,7 @@ void ConfigInfo::MergeFrom(const ConfigInfo& from) {
 
     file_name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.file_name_);
   }
-  if (from.file_content().size() > 0) {
+  if (from.file_data().size() > 0) {
 
     file_content_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.file_content_);
   }
@@ -539,40 +539,40 @@ void ConfigInfo::clear_file_name() {
 }
 
 // optional string file_content = 2;
-void ConfigInfo::clear_file_content() {
+void ConfigInfo::clear_file_data() {
   file_content_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- const ::std::string& ConfigInfo::file_content() const {
+ const ::std::string& ConfigInfo::file_data() const {
   // @@protoc_insertion_point(field_get:neb.ConfigInfo.file_content)
   return file_content_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void ConfigInfo::set_file_content(const ::std::string& value) {
+ void ConfigInfo::set_file_data(const ::std::string& value) {
   
   file_content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:neb.ConfigInfo.file_content)
 }
- void ConfigInfo::set_file_content(const char* value) {
+ void ConfigInfo::set_file_data(const char* value) {
   
   file_content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:neb.ConfigInfo.file_content)
 }
- void ConfigInfo::set_file_content(const char* value, size_t size) {
+ void ConfigInfo::set_file_data(const char* value, size_t size) {
   
   file_content_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:neb.ConfigInfo.file_content)
 }
- ::std::string* ConfigInfo::mutable_file_content() {
+ ::std::string* ConfigInfo::mutable_file_data() {
   
   // @@protoc_insertion_point(field_mutable:neb.ConfigInfo.file_content)
   return file_content_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* ConfigInfo::release_file_content() {
+ ::std::string* ConfigInfo::release_file_data() {
   // @@protoc_insertion_point(field_release:neb.ConfigInfo.file_content)
   
   return file_content_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void ConfigInfo::set_allocated_file_content(::std::string* file_content) {
+ void ConfigInfo::set_allocated_file_data(::std::string* file_content) {
   if (file_content != NULL) {
     
   } else {

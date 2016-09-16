@@ -10,7 +10,15 @@
 #ifndef SRC_LABOR_LABOR_HPP_
 #define SRC_LABOR_LABOR_HPP_
 
+#include "ev.h"
+#include "hiredis/async.h"
+#include "util/json/CJsonObject.hpp"
+#include "util/CBuffer.hpp"
+#include "Error.hpp"
 #include "Definition.hpp"
+#include "pb/msg.pb.h"
+#include "pb/http.pb.h"
+#include "codec/Codec.hpp"
 
 namespace neb
 {
@@ -36,7 +44,7 @@ public:     // Labor相关设置（由Cmd类或Step类调用这些方法完成La
      * @param oJsonConf 配置信息
      * @return 是否设置成功
      */
-    virtual bool SetProcessName(const loss::CJsonObject& oJsonConf) = 0;
+    virtual bool SetProcessName(const CJsonObject& oJsonConf) = 0;
 
     /** @brief 设置日志级别 */
     virtual void ResetLogLevel(log4cplus::LogLevel iLogLevel) = 0;
@@ -152,7 +160,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @brief 获取自定义配置
      * @return 自定义配置
      */
-    virtual const loss::CJsonObject& GetCustomConf() const
+    virtual const CJsonObject& GetCustomConf() const
     {
         return(m_oCustomConfTmp);
     }
@@ -193,7 +201,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
         return(300);
     }
 
-    virtual bool IoTimeout(struct ev_timer* watcher, bool bCheckBeat = true)
+    virtual bool IoTimeout(ev_timer* watcher, bool bCheckBeat = true)
     {
         return(false);
     }
@@ -210,12 +218,11 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
     }
 
     /**
-     * @brief 延迟Step超时时间（重新设置超时时间）
-     * @param pStep 被延迟的Step
-     * @param watcher Step的定时观察对象
+     * @brief 延迟Object超时时间（重新设置超时时间）
+     * @param pObject 被延迟的Object
      * @return 是否设置成功
      */
-    virtual bool ResetTimeout(Object* pObject, struct ev_timer* watcher)
+    virtual bool ResetTimeout(Object* pObject)
     {
         return(false);
     }
@@ -295,17 +302,6 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @return 是否注册成功
      */
     virtual bool Register(const redisAsyncContext* pRedisContext, RedisStep* pRedisStep)
-    {
-        return(false);
-    }
-
-    /**
-     * @brief 延迟Step超时时间（重新设置超时时间）
-     * @param pStep 被延迟的Step
-     * @param watcher Step的定时观察对象
-     * @return 是否设置成功
-     */
-    virtual bool ResetTimeout(Step* pStep, struct ev_timer* watcher)
     {
         return(false);
     }
@@ -427,7 +423,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @param oBuff 客户端连接相关数据
      * @return 是否设置成功
      */
-    virtual bool SetClientData(const tagChannelContext& stCtx, loss::CBuffer* pBuff)
+    virtual bool SetClientData(const tagChannelContext& stCtx, CBuffer* pBuff)
     {
         return(false);
     }
@@ -463,7 +459,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
         return(false);
     }
 
-    virtual bool SentTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, HttpStep* pHttpStep = NULL)
+    virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, Object* pHttpStep = NULL)
     {
         return(false);
     }
@@ -566,7 +562,10 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @param eCodecType 目标编解码器
      * @return 是否成功转换
      */
-    virtual bool SwitchCodec(const tagChannelContext& stCtx, E_CODEC_TYPE eCodecType);
+    virtual bool SwitchCodec(const tagChannelContext& stCtx, E_CODEC_TYPE eCodecType)
+    {
+        return(false);
+    }
 
     /**
      * @brief 执行下一步
@@ -585,7 +584,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
 private:
     std::string m_strNodeTypeTmp;
     std::string m_strHostForServerTmp;
-    loss::CJsonObject m_oCustomConfTmp;
+    CJsonObject m_oCustomConfTmp;
 };
 
 } /* namespace neb */

@@ -7,6 +7,7 @@
  * @note
  * Modify history:
  ******************************************************************************/
+#include "labor/chief/Worker.hpp"
 #include "StepIoTimeout.hpp"
 
 namespace neb
@@ -24,7 +25,7 @@ StepIoTimeout::~StepIoTimeout()
 E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
         void* data)
 {
-    tagChannelContext* pCtx = tagChannelContext*(data);
+    tagChannelContext* pCtx = (tagChannelContext*)(data);
     MsgHead oOutMsgHead;
     MsgBody oOutMsgBody;
     oOutMsgHead.set_cmd(CMD_REQ_BEAT);

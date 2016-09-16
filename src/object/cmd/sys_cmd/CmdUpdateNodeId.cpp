@@ -25,8 +25,8 @@ bool CmdUpdateNodeId::AnyMessage(
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
 {
-    loss::CJsonObject oNode;
-    if (oNode.Parse(oInMsgBody.content()))
+    CJsonObject oNode;
+    if (oNode.Parse(oInMsgBody.data()))
     {
         uint32 uiNodeId = 0;
         oNode.Get("node_id", uiNodeId);

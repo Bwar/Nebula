@@ -10,6 +10,7 @@
 #ifndef SRC_CODEC_CODECUTIL_HPP_
 #define SRC_CODEC_CODECUTIL_HPP_
 
+#include <netinet/in.h>
 #include <endian.h>
 
 namespace neb

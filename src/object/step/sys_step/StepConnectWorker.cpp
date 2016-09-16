@@ -40,7 +40,7 @@ E_CMD_STATUS StepConnectWorker::Callback(
 {
     if (oInMsgBody.has_rsp_result())
     {
-        if (ERR_OK == oInMsgBody.rsp_result().err_no())
+        if (ERR_OK == oInMsgBody.rsp_result().code())
         {
             for (int i = 0; i < 3; ++i)
             {
@@ -65,7 +65,7 @@ E_CMD_STATUS StepConnectWorker::Callback(
         }
         else
         {
-            LOG4_ERROR("error %d: %s!", oInMsgBody.rsp_result().err_no(), oInMsgBody.rsp_result().err_msg().c_str());
+            LOG4_ERROR("error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
             return(CMD_STATUS_FAULT);
         }
     }

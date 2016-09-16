@@ -148,7 +148,7 @@ const std::string& Object::GetWorkerIdentify()
     return(m_strWorkerIdentify);
 }
 
-const loss::CJsonObject& Object::GetCustomConf() const
+const CJsonObject& Object::GetCustomConf() const
 {
     return(m_pLabor->GetCustomConf());
 }
@@ -213,6 +213,11 @@ bool Object::SendTo(const std::string& strIdentify, const MsgHead& oMsgHead, con
     return(m_pLabor->SendTo(strIdentify, oMsgHead, oMsgBody));
 }
 
+bool Object::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg)
+{
+    return(m_pLabor->SendTo(strHost, iPort, strUrlPath, oHttpMsg, this));
+}
+
 bool Object::SendToNext(const std::string& strNodeType, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
 {
     return(m_pLabor->SendToNext(strNodeType, oMsgHead, oMsgBody));
@@ -232,7 +237,7 @@ void Object::DelayTimeout()
 {
     if (IsRegistered())
     {
-        m_pLabor->ResetTimeout(this, m_pTimerWatcher);
+        m_pLabor->ResetTimeout(this);
     }
     else
     {

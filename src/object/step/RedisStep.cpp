@@ -15,7 +15,7 @@ namespace neb
 RedisStep::RedisStep(Step* pNextStep)
     : Step(OBJ_REDIS_STEP, pNextStep), m_pRedisCmd(NULL)
 {
-    m_pRedisCmd = new loss::RedisCmd();
+    m_pRedisCmd = new RedisCmd();
 }
 
 RedisStep::RedisStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody, Step* pNextStep)
@@ -23,7 +23,7 @@ RedisStep::RedisStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead,
       m_stCtx(stCtx), m_oReqMsgHead(oReqMsgHead), m_oReqMsgBody(oReqMsgBody),
       m_pRedisCmd(NULL)
 {
-    m_pRedisCmd = new loss::RedisCmd();
+    m_pRedisCmd = new RedisCmd();
 }
 
 RedisStep::~RedisStep()

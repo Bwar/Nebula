@@ -24,7 +24,7 @@ CodecWsExtentJson::~CodecWsExtentJson()
 }
 
 E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
-        const MsgBody& oMsgBody, loss::CBuffer* pBuff)
+        const MsgBody& oMsgBody, CBuffer* pBuff)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     uint8 ucFirstByte = 0;
@@ -54,7 +54,7 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
             if (uiBeatSeq > 0)
             {
                 LOG4_WARN("sending a new beat while last beat had not been callback.");
-                return(false);
+                return(CODEC_STATUS_OK);
             }
             uiBeatCmd = oMsgHead.cmd();
             uiBeatSeq = oMsgHead.seq();
@@ -206,7 +206,7 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
     return (CODEC_STATUS_OK);
 }
 
-E_CODEC_STATUS CodecWsExtentJson::Decode(loss::CBuffer* pBuff,
+E_CODEC_STATUS CodecWsExtentJson::Decode(CBuffer* pBuff,
         MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s() pBuff->ReadableBytes() = %u", __FUNCTION__, pBuff->ReadableBytes());
@@ -243,7 +243,7 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(loss::CBuffer* pBuff,
 
         char cData;
         const char* pRawData;
-        uint32 uiMaskKey = 0;
+        char szMaskKey[4] = {0};
         uint32 uiPayload = 0;
         if (WEBSOCKET_PAYLOAD_LEN_UINT64 == (WEBSOCKET_PAYLOAD_LEN & ucSecondByte))
         {
@@ -254,7 +254,7 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(loss::CBuffer* pBuff,
                 return (CODEC_STATUS_PAUSE);
             }
             pBuff->Read(&ullPayload, 8);
-            pBuff->Read(&uiMaskKey, 4);
+            pBuff->Read(&szMaskKey, 4);
             if (pBuff->ReadableBytes() < ullPayload)
             {
                 pBuff->SetReadIndex(iReadIdx);
@@ -271,7 +271,7 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(loss::CBuffer* pBuff,
                 return (CODEC_STATUS_PAUSE);
             }
             pBuff->Read(&unPayload, 2);
-            pBuff->Read(&uiMaskKey, 4);
+            pBuff->Read(&szMaskKey, 4);
             if (pBuff->ReadableBytes() < unPayload)
             {
                 pBuff->SetReadIndex(iReadIdx);
@@ -288,7 +288,7 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(loss::CBuffer* pBuff,
                 return (CODEC_STATUS_PAUSE);
             }
             ucPayload = WEBSOCKET_PAYLOAD_LEN & ucSecondByte;
-            pBuff->Read(&uiMaskKey, 4);
+            pBuff->Read(&szMaskKey, 4);
             if (pBuff->ReadableBytes() < ucPayload)
             {
                 pBuff->SetReadIndex(iReadIdx);
@@ -299,7 +299,7 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(loss::CBuffer* pBuff,
         pRawData = pBuff->GetRawReadBuffer();
         for (int i = pBuff->GetReadIndex(), j = 0; j < uiPayload; ++i, ++j)
         {
-            cData = pRawData[i] ^ uiMaskKey[j % 4];
+            cData = pRawData[i] ^ szMaskKey[j % 4];
             pBuff->SetBytes(&cData, 1, i);
         }
         tagMsgHead stMsgHead;
@@ -316,8 +316,8 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(loss::CBuffer* pBuff,
         oMsgHead.set_seq(stMsgHead.seq);
         if (uiHeadSize + stMsgHead.body_len != uiPayload)      // 数据包错误
         {
-            LOG4_ERROR("uiHeadSize(%u) + stMsgHead.body_len()%u != uiPayload(%u)",
-                    uiHeadSize, stMsgHead.body_len(), uiPayload);
+            LOG4_ERROR("uiHeadSize(%u) + stMsgHead.body_len(%u) != uiPayload(%u)",
+                    uiHeadSize, stMsgHead.body_len, uiPayload);
             return (CODEC_STATUS_ERR);
         }
 

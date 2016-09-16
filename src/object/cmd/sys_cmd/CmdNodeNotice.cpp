@@ -28,15 +28,15 @@ bool CmdNodeNotice::AnyMessage(
                 const MsgHead& oInMsgHead,
                 const MsgBody& oInMsgBody)
 {
-    loss::CBuffer oBuff;
+    CBuffer oBuff;
     MsgHead oOutMsgHead;
     MsgBody oOutMsgBody;
 
-    loss::CJsonObject oJson;
-    if (oJson.Parse(oInMsgBody.content()))
+    CJsonObject oJson;
+    if (oJson.Parse(oInMsgBody.data()))
     {
         LOG4_DEBUG("CmdNodeNotice seq[%llu] jsonbuf[%s] Parse is ok",
-            oInMsgHead.seq(),oInMsgBody.content().c_str());
+            oInMsgHead.seq(),oInMsgBody.data().c_str());
 
         Step* pStep = new StepNodeNotice(oInMsgBody);
         if (pStep == NULL)
@@ -60,7 +60,7 @@ bool CmdNodeNotice::AnyMessage(
     }
     else
     {
-        LOG4_ERROR("failed to parse %s", oInMsgBody.content().c_str());
+        LOG4_ERROR("failed to parse %s", oInMsgBody.data().c_str());
     }
 
     return(false);

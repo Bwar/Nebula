@@ -10,6 +10,7 @@
 #ifndef SRC_OBJECT_STEP_SYS_STEP_STEPIOTIMEOUT_HPP_
 #define SRC_OBJECT_STEP_SYS_STEP_STEPIOTIMEOUT_HPP_
 
+#include "Definition.hpp"
 #include "object/step/PbStep.hpp"
 
 namespace neb

@@ -14,6 +14,7 @@ message HttpMsg
 	bytes body						= 10;		///< 消息体（当 Transfer-Encoding: chunked 时，只存储一个chunk）
 	repeated Param params		    = 11;		///< GET方法参数，POST方法表单提交的参数
 	Upgrade upgrade                 = 12;       ///< 升级协议
+	float keep_alive				= 13;		///< keep alive time
 	string path				        = 14;		///< Http Decode时从url中解析出来，不需要人为填充（encode时不需要填）
 	bool is_decoding				= 15;		///< 是否正在解码（true 正在解码， false 未解码或已完成解码）
 

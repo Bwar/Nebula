@@ -12,56 +12,11 @@
 
 #include <set>
 #include <list>
-#include "dbi/redis/RedisCmd.hpp"
+#include "storage/dbi/redis/RedisCmd.hpp"
 #include "Step.hpp"
 
 namespace neb
 {
-
-class RedisStep;
-
-/**
- * @brief Redis连接属性
- * @note  Redis连接属性，因内部带有许多指针，并且没有必要提供深拷贝构造，所以不可以拷贝，也无需拷贝
- */
-struct tagRedisAttr
-{
-    uint32 ulSeq;                           ///< redis连接序列号
-    bool bIsReady;                          ///< redis连接是否准备就绪
-    std::list<RedisStep*> listData;         ///< redis连接回调数据
-    std::list<RedisStep*> listWaitData;     ///< redis等待连接成功需执行命令的数据
-
-    tagRedisAttr() : ulSeq(0), bIsReady(false)
-    {
-    }
-
-    ~tagRedisAttr()
-    {
-        //freeReplyObject(pReply);  redisProcessCallbacks()函数中有自动回收
-
-        for (std::list<RedisStep*>::iterator step_iter = listData.begin();
-                        step_iter != listData.end(); ++step_iter)
-        {
-            if (*step_iter != NULL)
-            {
-                delete (*step_iter);
-                *step_iter = NULL;
-            }
-        }
-        listData.clear();
-
-        for (std::list<RedisStep*>::iterator step_iter = listWaitData.begin();
-                        step_iter != listWaitData.end(); ++step_iter)
-        {
-            if (*step_iter != NULL)
-            {
-                delete (*step_iter);
-                *step_iter = NULL;
-            }
-        }
-        listWaitData.clear();
-    }
-};
 
 /**
  * @brief StepRedis在回调后一定会被删除
@@ -93,13 +48,13 @@ public:
     virtual E_CMD_STATUS Timeout(){return(CMD_STATUS_FAULT);}
 
 public:
-    loss::RedisCmd* RedisCmd()
+    RedisCmd* MutableRedisCmd()
     {
         return(m_pRedisCmd);
     }
 
 public:
-    const loss::RedisCmd* GetRedisCmd()
+    const RedisCmd* GetRedisCmd()
     {
         return(m_pRedisCmd);
     }
@@ -110,7 +65,48 @@ protected:  // 请求端的上下文信息，通过Step构造函数初始化，�
     MsgBody m_oReqMsgBody;
 
 private:
-    loss::RedisCmd* m_pRedisCmd;
+    RedisCmd* m_pRedisCmd;
+};
+
+/**
+ * @brief Redis连接属性
+ * @note  Redis连接属性，因内部带有许多指针，并且没有必要提供深拷贝构造，所以不可以拷贝，也无需拷贝
+ */
+struct tagRedisAttr
+{
+    uint32 ulSeq;                           ///< redis连接序列号
+    bool bIsReady;                          ///< redis连接是否准备就绪
+    std::list<RedisStep*> listData;         ///< redis连接回调数据
+    std::list<RedisStep*> listWaitData;     ///< redis等待连接成功需执行命令的数据
+
+    tagRedisAttr() : ulSeq(0), bIsReady(false)
+    {
+    }
+
+    ~tagRedisAttr()
+    {
+        //freeReplyObject(pReply);  redisProcessCallbacks()函数中有自动回收
+
+        for (std::list<RedisStep*>::iterator step_iter = listData.begin();
+                        step_iter != listData.end(); ++step_iter)
+        {
+            if (*step_iter != NULL)
+            {
+                DELETE(*step_iter);
+            }
+        }
+        listData.clear();
+
+        for (std::list<RedisStep*>::iterator step_iter = listWaitData.begin();
+                        step_iter != listWaitData.end(); ++step_iter)
+        {
+            if (*step_iter != NULL)
+            {
+                DELETE(*step_iter);
+            }
+        }
+        listWaitData.clear();
+    }
 };
 
 } /* namespace neb */

@@ -86,7 +86,7 @@ CodecHttp::~CodecHttp()
 {
 }
 
-E_CODEC_STATUS CodecHttp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, loss::CBuffer* pBuff)
+E_CODEC_STATUS CodecHttp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     HttpMsg oHttpMsg;
@@ -110,7 +110,7 @@ E_CODEC_STATUS CodecHttp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBod
     }
 }
 
-E_CODEC_STATUS CodecHttp::Decode(loss::CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
+E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     if (pBuff->ReadableBytes() == 0)
@@ -143,7 +143,7 @@ E_CODEC_STATUS CodecHttp::Decode(loss::CBuffer* pBuff, MsgHead& oMsgHead, MsgBod
     return(eCodecStatus);
 }
 
-E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, loss::CBuffer* pBuff)
+E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
 {
     LOG4_TRACE("%s() pBuff->ReadableBytes() = %u, ReadIndex = %u, WriteIndex = %u",
                     __FUNCTION__, pBuff->ReadableBytes(), pBuff->GetReadIndex(), pBuff->GetWriteIndex());
@@ -619,7 +619,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, loss::CBuffer* pBuff)
     return(CODEC_STATUS_OK);
 }
 
-E_CODEC_STATUS CodecHttp::Decode(loss::CBuffer* pBuff, HttpMsg& oHttpMsg)
+E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     if (pBuff->ReadableBytes() == 0)
@@ -662,6 +662,7 @@ E_CODEC_STATUS CodecHttp::Decode(loss::CBuffer* pBuff, HttpMsg& oHttpMsg)
     {
         m_iHttpMajor = oHttpMsg.http_major();
         m_iHttpMinor = oHttpMsg.http_minor();
+        m_dKeepAlive = oHttpMsg.keep_alive();
     }
     for (int i = 0; i < oHttpMsg.headers_size(); ++i)
     {
@@ -805,17 +806,17 @@ int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
     pHeader->set_header_value(at, len);
     if (pHeader->header_name() == std::string("Keep-Alive"))
     {
-        m_dKeepAlive = atof(at);
+        pHttpMsg->set_keep_alive(atof(at));
     }
     else if (std::string("Connection") == pHeader->header_name())
     {
         if (std::string("keep-alive") == pHeader->header_value())
         {
-            m_dKeepAlive = 0.0;     // 由配置的IoTimeout决定
+            pHttpMsg->set_keep_alive(0.0);     // 由配置的IoTimeout决定
         }
         else if (std::string("close") == pHeader->header_value())
         {
-            m_dKeepAlive = 0.8;
+            pHttpMsg->set_keep_alive(0.8);
         }
 
         if (std::string("Upgrade") == pHeader->header_value())

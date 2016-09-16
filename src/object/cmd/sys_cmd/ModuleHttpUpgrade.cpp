@@ -7,18 +7,19 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#include <cryptopp562/base64.h>
-#include <cryptopp562/sha.h>
-#include <cryptopp562/filters.h>
-#include <cryptopp562/hex.h>
+#include <cryptopp/base64.h>
+#include <cryptopp/sha.h>
+#include <cryptopp/filters.h>
+#include <cryptopp/hex.h>
 #include "ModuleHttpUpgrade.hpp"
 
 namespace neb
 {
 
-std::string ModuleHttpUpgrade::mc_strWebSocketMagicGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+//std::string ModuleHttpUpgrade::mc_strWebSocketMagicGuid = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 
 ModuleHttpUpgrade::ModuleHttpUpgrade()
+    : mc_strWebSocketMagicGuid("258EAFA5-E914-47DA-95CA-C5AB0DC85B11")
 {
 }
 
@@ -36,7 +37,7 @@ bool ModuleHttpUpgrade::AnyMessage(const tagChannelContext& stCtx, const HttpMsg
         }
     }
     HttpMsg oOutHttpMsg;
-    LOG4_ERROR("the upgrade protocol %s not supported!", oHttpMsg.upgrade().protocol());
+    LOG4_ERROR("the upgrade protocol %s not supported!", oHttpMsg.upgrade().protocol().c_str());
     oOutHttpMsg.set_type(HTTP_RESPONSE);
     oOutHttpMsg.set_status_code(400);
     oOutHttpMsg.set_http_major(oHttpMsg.http_major());

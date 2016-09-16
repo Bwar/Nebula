@@ -23,7 +23,7 @@ CodecPrivate::~CodecPrivate()
 {
 }
 
-E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, loss::CBuffer* pBuff)
+E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     tagMsgHead stMsgHead;
@@ -183,7 +183,7 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
     return(CODEC_STATUS_OK);
 }
 
-E_CODEC_STATUS CodecPrivate::Decode(loss::CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
+E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s() pBuff->ReadableBytes() = %u", __FUNCTION__, pBuff->ReadableBytes());
     size_t uiHeadSize = sizeof(tagMsgHead);

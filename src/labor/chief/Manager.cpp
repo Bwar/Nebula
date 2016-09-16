@@ -7,8 +7,8 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#include "unix_util/proctitle_helper.h"
-#include "unix_util/process_helper.h"
+#include "util/proctitle_helper.h"
+#include "util/process_helper.h"
 #include "Manager.hpp"
 
 namespace neb
@@ -61,7 +61,7 @@ void Manager::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revent
     }
 }
 
-void Manager::IoTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents)
+void Manager::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
     if (watcher->data != NULL)
     {
@@ -71,7 +71,7 @@ void Manager::IoTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, 
     }
 }
 
-void Manager::PeriodicTaskCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents)
+void Manager::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
     if (watcher->data != NULL)
     {
@@ -87,7 +87,7 @@ void Manager::PeriodicTaskCallback(struct ev_loop* loop, struct ev_timer* watche
     ev_timer_start (loop, watcher);
 }
 
-void Manager::ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents)
+void Manager::ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
     if (watcher->data != NULL)
     {
@@ -436,7 +436,7 @@ bool Manager::IoTimeout(Channel* pChannel)
     ev_tstamp after = pChannel->GetActiveTime() - ev_now(m_loop) + m_dIoTimeout;
     if (after > 0)    // IO在定时时间内被重新刷新过，重新设置定时器
     {
-        struct ev_timer* watcher = pChannel->MutableTimerWatcher();
+        ev_timer* watcher = pChannel->MutableTimerWatcher();
         ev_timer_stop (m_loop, watcher);
         ev_timer_set (watcher, after + ev_time() - ev_now(m_loop), 0);
         ev_timer_start (m_loop, watcher);
@@ -450,7 +450,7 @@ bool Manager::IoTimeout(Channel* pChannel)
     }
 }
 
-bool Manager::ClientConnFrequencyTimeout(tagClientConnWatcherData* pData, struct ev_timer* watcher)
+bool Manager::ClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher)
 {
     //LOG4_TRACE("%s()", __FUNCTION__);
     bool bRes = false;
@@ -480,7 +480,7 @@ void Manager::Run()
     ev_run (m_loop, 0);
 }
 
-bool Manager::InitLogger(const loss::CJsonObject& oJsonConf)
+bool Manager::InitLogger(const CJsonObject& oJsonConf)
 {
     if (m_bInitLogger)  // 已经被初始化过，只修改日志级别
     {
@@ -528,7 +528,7 @@ bool Manager::InitLogger(const loss::CJsonObject& oJsonConf)
     }
 }
 
-bool Manager::SetProcessName(const loss::CJsonObject& oJsonConf)
+bool Manager::SetProcessName(const CJsonObject& oJsonConf)
 {
     ngx_setproctitle(oJsonConf("server_name").c_str());
     return(true);
@@ -554,15 +554,15 @@ bool Manager::SendTo(const tagChannelContext& stCtx)
             E_CODEC_STATUS eCodecStatus = iter->second->Send();
             if (CODEC_STATUS_OK == eCodecStatus)
             {
-                RemoveIoWriteEvent(pChannel);
+                RemoveIoWriteEvent(iter->second);
             }
             else if (CODEC_STATUS_PAUSE == eCodecStatus)
             {
-                AddIoWriteEvent(pChannel);
+                AddIoWriteEvent(iter->second);
             }
             else
             {
-                DestroyConnect(pChannel);
+                DestroyConnect(iter->second);
             }
         }
     }
@@ -585,15 +585,15 @@ bool Manager::SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, co
             E_CODEC_STATUS eCodecStatus = iter->second->Send(oMsgHead, oMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
-                RemoveIoWriteEvent(pChannel);
+                RemoveIoWriteEvent(iter->second);
             }
             else if (CODEC_STATUS_PAUSE == eCodecStatus)
             {
-                AddIoWriteEvent(pChannel);
+                AddIoWriteEvent(iter->second);
             }
             else
             {
-                DestroyConnect(pChannel);
+                DestroyConnect(iter->second);
             }
             return(true);
         }
@@ -1025,8 +1025,8 @@ bool Manager::RegisterToKeeper()
     int iClientNum = 0;
     MsgHead oMsgHead;
     MsgBody oMsgBody;
-    loss::CJsonObject oReportData;
-    loss::CJsonObject oMember;
+    CJsonObject oReportData;
+    CJsonObject oMember;
     oReportData.Add("node_type", m_strNodeType);
     oReportData.Add("node_id", m_uiNodeId);
     oReportData.Add("node_ip", m_strHostForServer);
@@ -1049,8 +1049,8 @@ bool Manager::RegisterToKeeper()
     }
     oReportData.Add("worker_num", (int)m_mapWorker.size());
     oReportData.Add("active_time", ev_now(m_loop));
-    oReportData.Add("node", loss::CJsonObject("{}"));
-    oReportData.Add("worker", loss::CJsonObject("[]"));
+    oReportData.Add("node", CJsonObject("{}"));
+    oReportData.Add("worker", CJsonObject("[]"));
     std::map<int, tagWorkerAttr>::iterator worker_iter = m_mapWorker.begin();
     for (; worker_iter != m_mapWorker.end(); ++worker_iter)
     {
@@ -1451,7 +1451,7 @@ std::pair<int, int> Manager::GetMinLoadWorkerDataFd()
     return(worker_pid_fd);
 }
 
-void Manager::SetWorkerLoad(int iPid, loss::CJsonObject& oJsonLoad)
+void Manager::SetWorkerLoad(int iPid, CJsonObject& oJsonLoad)
 {
     //LOG4_TRACE("%s()", __FUNCTION__);
     std::map<int, tagWorkerAttr>::iterator iter;
@@ -1594,8 +1594,8 @@ bool Manager::ReportToKeeper()
     int iClientNum = 0;
     MsgHead oMsgHead;
     MsgBody oMsgBody;
-    loss::CJsonObject oReportData;
-    loss::CJsonObject oMember;
+    CJsonObject oReportData;
+    CJsonObject oMember;
     oReportData.Add("node_type", m_strNodeType);
     oReportData.Add("node_id", m_uiNodeId);
     oReportData.Add("node_ip", m_strHostForServer);
@@ -1618,8 +1618,8 @@ bool Manager::ReportToKeeper()
     }
     oReportData.Add("worker_num", (int)m_mapWorker.size());
     oReportData.Add("active_time", ev_now(m_loop));
-    oReportData.Add("node", loss::CJsonObject("{}"));
-    oReportData.Add("worker", loss::CJsonObject("[]"));
+    oReportData.Add("node", CJsonObject("{}"));
+    oReportData.Add("worker", CJsonObject("[]"));
     std::map<int, tagWorkerAttr>::iterator worker_iter = m_mapWorker.begin();
     for (; worker_iter != m_mapWorker.end(); ++worker_iter)
     {
@@ -1683,15 +1683,15 @@ bool Manager::SendToWorker(const MsgHead& oMsgHead, const MsgBody& oMsgBody)
             E_CODEC_STATUS eCodecStatus = worker_conn_iter->second->Send(oMsgHead, oMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
-                RemoveIoWriteEvent(pChannel);
+                RemoveIoWriteEvent(worker_conn_iter->second);
             }
             else if (CODEC_STATUS_PAUSE == eCodecStatus)
             {
-                AddIoWriteEvent(pChannel);
+                AddIoWriteEvent(worker_conn_iter->second);
             }
             else
             {
-                DestroyConnect(pChannel);
+                DestroyConnect(worker_conn_iter->second);
             }
         }
     }
@@ -1706,7 +1706,7 @@ bool Manager::HandleDataFromWorker(Channel* pChannel, const MsgHead& oInMsgHead,
         std::map<int, int>::iterator iter = m_mapWorkerFdPid.find(pChannel->GetFd());
         if (iter != m_mapWorkerFdPid.end())
         {
-            loss::CJsonObject oJsonLoad;
+            CJsonObject oJsonLoad;
             oJsonLoad.Parse(oInMsgBody.data());
             SetWorkerLoad(iter->second, oJsonLoad);
         }
@@ -1865,7 +1865,7 @@ bool Manager::HandleDataFromKeeper(Channel* pChannel, const MsgHead& oInMsgHead,
     {
         if (CMD_RSP_NODE_REGISTER == oInMsgHead.cmd()) //Manager这层只有向center注册会收到回调，上报状态不收回调或者收到回调不必处理
         {
-            loss::CJsonObject oNode(oInMsgBody.data());
+            CJsonObject oNode(oInMsgBody.data());
             int iErrno = 0;
             oNode.Get("errcode", iErrno);
             if (0 == iErrno)

@@ -29,10 +29,10 @@ E_CMD_STATUS StepTellWorker::Emit(
     MsgHead oOutMsgHead;
     MsgBody oOutMsgBody;
     TargetWorker oTargetWorker;
-    oTargetWorker.set_err_no(0);
     oTargetWorker.set_worker_identify(GetWorkerIdentify());
     oTargetWorker.set_node_type(GetNodeType());
-    oTargetWorker.set_err_msg("OK");
+    oOutMsgBody.mutable_rsp_result()->set_code(0);
+    oOutMsgBody.mutable_rsp_result()->set_msg("OK");
     oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
     oOutMsgHead.set_cmd(CMD_REQ_TELL_WORKER);
     oOutMsgHead.set_seq(GetSequence());
@@ -47,10 +47,10 @@ E_CMD_STATUS StepTellWorker::Callback(
         const MsgBody& oInMsgBody,
         void* data)
 {
-    TargetWorker oInTargetWorker;
-    if (oInTargetWorker.ParseFromString(oInMsgBody.content()))
+    if (ERR_OK == oInMsgBody.rsp_result().code())
     {
-        if (oInTargetWorker.err_no() == ERR_OK)
+        TargetWorker oInTargetWorker;
+        if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
         {
             LOG4CPLUS_DEBUG_FMT(GetLogger(), "AddMsgShell(%s, fd %d, seq %llu)!",
                             oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.ulSeq);
@@ -61,13 +61,13 @@ E_CMD_STATUS StepTellWorker::Callback(
         }
         else
         {
-            LOG4_ERROR("error %d: %s!", oInTargetWorker.err_no(), oInTargetWorker.err_msg().c_str());
+            LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
             return(CMD_STATUS_FAULT);
         }
     }
     else
     {
-        LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
+        LOG4_ERROR("error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
         return(CMD_STATUS_FAULT);
     }
 }

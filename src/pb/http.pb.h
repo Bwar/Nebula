@@ -494,6 +494,12 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::HttpMsg_Upgrade* release_upgrade();
   void set_allocated_upgrade(::HttpMsg_Upgrade* upgrade);
 
+  // optional float keep_alive = 13;
+  void clear_keep_alive();
+  static const int kKeepAliveFieldNumber = 13;
+  float keep_alive() const;
+  void set_keep_alive(float value);
+
   // optional string path = 14;
   void clear_path();
   static const int kPathFieldNumber = 14;
@@ -526,10 +532,11 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header > headers_;
   ::google::protobuf::internal::ArenaStringPtr body_;
   ::google::protobuf::int32 encoding_;
-  bool is_decoding_;
+  float keep_alive_;
   ::google::protobuf::RepeatedPtrField< ::HttpMsg_Param > params_;
   ::HttpMsg_Upgrade* upgrade_;
   ::google::protobuf::internal::ArenaStringPtr path_;
+  bool is_decoding_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_http_2eproto();
   friend void protobuf_AssignDesc_http_2eproto();
@@ -1074,6 +1081,20 @@ inline void HttpMsg::set_allocated_upgrade(::HttpMsg_Upgrade* upgrade) {
     
   }
   // @@protoc_insertion_point(field_set_allocated:HttpMsg.upgrade)
+}
+
+// optional float keep_alive = 13;
+inline void HttpMsg::clear_keep_alive() {
+  keep_alive_ = 0;
+}
+inline float HttpMsg::keep_alive() const {
+  // @@protoc_insertion_point(field_get:HttpMsg.keep_alive)
+  return keep_alive_;
+}
+inline void HttpMsg::set_keep_alive(float value) {
+  
+  keep_alive_ = value;
+  // @@protoc_insertion_point(field_set:HttpMsg.keep_alive)
 }
 
 // optional string path = 14;

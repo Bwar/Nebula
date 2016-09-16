@@ -12,7 +12,7 @@
 
 #include "pb/neb_sys.pb.h"
 #include "object/cmd/Cmd.hpp"
-#include "step/sys_step/StepConnectWorker.hpp"
+#include "object/step/sys_step/StepConnectWorker.hpp"
 
 namespace neb
 {

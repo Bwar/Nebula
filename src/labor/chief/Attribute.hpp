@@ -10,6 +10,7 @@
 #ifndef SRC_LABOR_CHIEF_ATTRIBUTE_HPP_
 #define SRC_LABOR_CHIEF_ATTRIBUTE_HPP_
 
+#include <netinet/in.h>
 #include "Definition.hpp"
 
 namespace neb
@@ -114,6 +115,7 @@ struct tagWorkerAttr
         return(*this);
     }
 };
+
 
 }
 

@@ -43,7 +43,7 @@ void protobuf_AssignDesc_http_2eproto() {
       "http.proto");
   GOOGLE_CHECK(file != NULL);
   HttpMsg_descriptor_ = file->message_type(0);
-  static const int HttpMsg_offsets_[14] = {
+  static const int HttpMsg_offsets_[15] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HttpMsg, type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HttpMsg, http_major_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HttpMsg, http_minor_),
@@ -56,6 +56,7 @@ void protobuf_AssignDesc_http_2eproto() {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HttpMsg, body_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HttpMsg, params_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HttpMsg, upgrade_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HttpMsg, keep_alive_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HttpMsg, path_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(HttpMsg, is_decoding_),
   };
@@ -162,18 +163,19 @@ void protobuf_AddDesc_http_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\nhttp.proto\"\275\003\n\007HttpMsg\022\014\n\004type\030\001 \001(\005\022\022"
+    "\n\nhttp.proto\"\321\003\n\007HttpMsg\022\014\n\004type\030\001 \001(\005\022\022"
     "\n\nhttp_major\030\002 \001(\005\022\022\n\nhttp_minor\030\003 \001(\005\022\026"
     "\n\016content_length\030\004 \001(\005\022\016\n\006method\030\005 \001(\005\022\023"
     "\n\013status_code\030\006 \001(\005\022\020\n\010encoding\030\007 \001(\005\022\013\n"
     "\003url\030\010 \001(\t\022 \n\007headers\030\t \003(\0132\017.HttpMsg.He"
     "ader\022\014\n\004body\030\n \001(\014\022\036\n\006params\030\013 \003(\0132\016.Htt"
     "pMsg.Param\022!\n\007upgrade\030\014 \001(\0132\020.HttpMsg.Up"
-    "grade\022\014\n\004path\030\016 \001(\t\022\023\n\013is_decoding\030\017 \001(\010"
-    "\0323\n\006Header\022\023\n\013header_name\030\001 \001(\t\022\024\n\014heade"
-    "r_value\030\002 \001(\014\032$\n\005Param\022\014\n\004name\030\001 \001(\t\022\r\n\005"
-    "value\030\002 \001(\t\032/\n\007Upgrade\022\022\n\nis_upgrade\030\001 \001"
-    "(\010\022\020\n\010protocol\030\002 \001(\tb\006proto3", 468);
+    "grade\022\022\n\nkeep_alive\030\r \001(\002\022\014\n\004path\030\016 \001(\t\022"
+    "\023\n\013is_decoding\030\017 \001(\010\0323\n\006Header\022\023\n\013header"
+    "_name\030\001 \001(\t\022\024\n\014header_value\030\002 \001(\014\032$\n\005Par"
+    "am\022\014\n\004name\030\001 \001(\t\022\r\n\005value\030\002 \001(\t\032/\n\007Upgra"
+    "de\022\022\n\nis_upgrade\030\001 \001(\010\022\020\n\010protocol\030\002 \001(\t"
+    "b\006proto3", 488);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "http.proto", &protobuf_RegisterTypes);
   HttpMsg::default_instance_ = new HttpMsg();
@@ -1050,6 +1052,7 @@ const int HttpMsg::kHeadersFieldNumber;
 const int HttpMsg::kBodyFieldNumber;
 const int HttpMsg::kParamsFieldNumber;
 const int HttpMsg::kUpgradeFieldNumber;
+const int HttpMsg::kKeepAliveFieldNumber;
 const int HttpMsg::kPathFieldNumber;
 const int HttpMsg::kIsDecodingFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
@@ -1087,6 +1090,7 @@ void HttpMsg::SharedCtor() {
   url_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   body_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   upgrade_ = NULL;
+  keep_alive_ = 0;
   path_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   is_decoding_ = false;
 }
@@ -1154,6 +1158,7 @@ void HttpMsg::Clear() {
   body_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (GetArenaNoVirtual() == NULL && upgrade_ != NULL) delete upgrade_;
   upgrade_ = NULL;
+  keep_alive_ = 0;
   path_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   is_decoding_ = false;
 
@@ -1351,6 +1356,21 @@ bool HttpMsg::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
+        if (input->ExpectTag(109)) goto parse_keep_alive;
+        break;
+      }
+
+      // optional float keep_alive = 13;
+      case 13: {
+        if (tag == 109) {
+         parse_keep_alive:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   float, ::google::protobuf::internal::WireFormatLite::TYPE_FLOAT>(
+                 input, &keep_alive_)));
+
+        } else {
+          goto handle_unusual;
+        }
         if (input->ExpectTag(114)) goto parse_path;
         break;
       }
@@ -1480,6 +1500,11 @@ void HttpMsg::SerializeWithCachedSizes(
       12, *this->upgrade_, output);
   }
 
+  // optional float keep_alive = 13;
+  if (this->keep_alive() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteFloat(13, this->keep_alive(), output);
+  }
+
   // optional string path = 14;
   if (this->path().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
@@ -1573,6 +1598,11 @@ void HttpMsg::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::
       InternalWriteMessageNoVirtualToArray(
         12, *this->upgrade_, false, target);
+  }
+
+  // optional float keep_alive = 13;
+  if (this->keep_alive() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteFloatToArray(13, this->keep_alive(), target);
   }
 
   // optional string path = 14;
@@ -1669,6 +1699,11 @@ int HttpMsg::ByteSize() const {
         *this->upgrade_);
   }
 
+  // optional float keep_alive = 13;
+  if (this->keep_alive() != 0) {
+    total_size += 1 + 4;
+  }
+
   // optional string path = 14;
   if (this->path().size() > 0) {
     total_size += 1 +
@@ -1759,6 +1794,9 @@ void HttpMsg::MergeFrom(const HttpMsg& from) {
   if (from.has_upgrade()) {
     mutable_upgrade()->::HttpMsg_Upgrade::MergeFrom(from.upgrade());
   }
+  if (from.keep_alive() != 0) {
+    set_keep_alive(from.keep_alive());
+  }
   if (from.path().size() > 0) {
 
     path_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.path_);
@@ -1804,6 +1842,7 @@ void HttpMsg::InternalSwap(HttpMsg* other) {
   body_.Swap(&other->body_);
   params_.UnsafeArenaSwap(&other->params_);
   std::swap(upgrade_, other->upgrade_);
+  std::swap(keep_alive_, other->keep_alive_);
   path_.Swap(&other->path_);
   std::swap(is_decoding_, other->is_decoding_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
@@ -2349,6 +2388,20 @@ void HttpMsg::set_allocated_upgrade(::HttpMsg_Upgrade* upgrade) {
     
   }
   // @@protoc_insertion_point(field_set_allocated:HttpMsg.upgrade)
+}
+
+// optional float keep_alive = 13;
+void HttpMsg::clear_keep_alive() {
+  keep_alive_ = 0;
+}
+ float HttpMsg::keep_alive() const {
+  // @@protoc_insertion_point(field_get:HttpMsg.keep_alive)
+  return keep_alive_;
+}
+ void HttpMsg::set_keep_alive(float value) {
+  
+  keep_alive_ = value;
+  // @@protoc_insertion_point(field_set:HttpMsg.keep_alive)
 }
 
 // optional string path = 14;

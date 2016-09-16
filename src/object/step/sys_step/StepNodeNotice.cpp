@@ -23,8 +23,8 @@ StepNodeNotice::~StepNodeNotice()
 
 E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void* data)
 {
-    loss::CJsonObject oJson;
-    if (!oJson.Parse(m_oMsgBody.content()))
+    CJsonObject oJson;
+    if (!oJson.Parse(m_oMsgBody.data()))
     {
         LOG4_ERROR("failed to parse msgbody content!");
         return(CMD_STATUS_FAULT);

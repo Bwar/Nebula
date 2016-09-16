@@ -43,8 +43,9 @@
 #include "Attribute.hpp"
 #include "labor/Labor.hpp"
 #include "Worker.hpp"
+#include "channel/Channel.hpp"
 
-#include "cmd/Cmd.hpp"
+#include "object/cmd/Cmd.hpp"
 
 namespace neb
 {
@@ -60,31 +61,32 @@ public:
     static void SignalCallback(struct ev_loop* loop, struct ev_signal* watcher, int revents);
     static void IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int revents);
     static void IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents);
-    static void IoTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents);
-    static void PeriodicTaskCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents);  // 周期任务回调，用于替换IdleCallback
-    static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents);
+    static void IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
+    static void PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents);  // 周期任务回调，用于替换IdleCallback
+    static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     bool ManagerTerminated(struct ev_signal* watcher);
     bool ChildTerminated(struct ev_signal* watcher);
     bool IoRead(Channel* pChannel);
     bool IoWrite(Channel* pChannel);
     bool IoError(Channel* pChannel);
     bool IoTimeout(Channel* pChannel);
-    bool ClientConnFrequencyTimeout(tagClientConnWatcherData* pData, struct ev_timer* watcher);
+    bool ClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher);
 
     void Run();
 
 public:     // Manager相关设置（由专用Cmd类调用这些方法完成Manager自身的初始化和更新）
-    bool InitLogger(const loss::CJsonObject& oJsonConf);
-    virtual bool SetProcessName(const loss::CJsonObject& oJsonConf);
+    bool InitLogger(const CJsonObject& oJsonConf);
+    virtual bool SetProcessName(const CJsonObject& oJsonConf);
     virtual void ResetLogLevel(log4cplus::LogLevel iLogLevel);
     virtual bool SendTo(const tagChannelContext& stCtx);
     virtual bool SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
     virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
     virtual bool AutoSend(const std::string& strIdentify, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    virtual bool AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* pRedisStep){return(false);};
     virtual void SetNodeId(uint32 uiNodeId) {m_uiNodeId = uiNodeId;}
     virtual void AddInnerChannel(const tagChannelContext& stCtx){};
 
-    void SetWorkerLoad(int iPid, loss::CJsonObject& oJsonLoad);
+    void SetWorkerLoad(int iPid, CJsonObject& oJsonLoad);
     void AddWorkerLoad(int iPid, int iLoad = 1);
     const std::map<int, tagWorkerAttr>& GetWorkerAttr() const;
 
@@ -135,8 +137,8 @@ protected:
     }
 
 private:
-    loss::CJsonObject m_oLastConf;          ///< 上次加载的配置
-    loss::CJsonObject m_oCurrentConf;       ///< 当前加载的配置
+    CJsonObject m_oLastConf;          ///< 上次加载的配置
+    CJsonObject m_oCurrentConf;       ///< 当前加载的配置
 
     uint32 m_ulSequence;
     char m_szErrBuff[256];

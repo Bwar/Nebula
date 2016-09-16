@@ -22,7 +22,7 @@ namespace neb
 {
 
 //typedef void (*IoCallbackFun)(struct ev_loop *, struct ev_io*, int);
-//typedef void (*TimerCallbackFun)(struct ev_loop *, struct ev_timer*, int);
+//typedef void (*TimerCallbackFun)(struct ev_loop *, ev_timer*, int);
 
 
 class Labor;
@@ -207,9 +207,9 @@ private:
     ev_tstamp m_dKeepAlive;               ///< 连接保持时间，默认值0为用心跳保持的长连接，大于0的值不做心跳检查，时间到即断连接,小于0为收完数据立即断开连接（主要用于http连接）
     ev_io* m_pIoWatcher;                  ///< 不在结构体析构时回收
     ev_timer* m_pTimerWatcher;            ///< 不在结构体析构时回收
-    loss::CBuffer* m_pRecvBuff;
-    loss::CBuffer* m_pSendBuff;
-    loss::CBuffer* m_pWaitForSendBuff;    ///< 等待发送的数据缓冲区（数据到达时，连接并未建立，等连接建立并且pSendBuff发送完毕后立即发送）
+    CBuffer* m_pRecvBuff;
+    CBuffer* m_pSendBuff;
+    CBuffer* m_pWaitForSendBuff;    ///< 等待发送的数据缓冲区（数据到达时，连接并未建立，等连接建立并且pSendBuff发送完毕后立即发送）
     Codec* m_pCodec;                      ///< 编解码器
     int m_iErrno;
     std::string m_strKey;                 ///< 密钥

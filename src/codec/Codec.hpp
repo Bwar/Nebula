@@ -10,12 +10,13 @@
 #ifndef SRC_CODEC_CODEC_HPP_
 #define SRC_CODEC_CODEC_HPP_
 
-#include <zlib.h>
-#include <zconf.h>
+//#include <zlib.h>
+//#include <zconf.h>
 
 #include "log4cplus/loggingmacros.h"
 #include "util/CBuffer.hpp"
 #include "pb/msg.pb.h"
+#include "Error.hpp"
 #include "Definition.hpp"
 #include "object/cmd/CW.hpp"
 #include "CodecDefine.hpp"
@@ -74,7 +75,7 @@ public:
      * @param[out] pBuff  数据缓冲区
      * @return 编解码状态
      */
-    virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, loss::CBuffer* pBuff) = 0;
+    virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff) = 0;
 
     /**
      * @brief 字节流解码
@@ -83,7 +84,7 @@ public:
      * @param[out] oMsgBody 消息包体
      * @return 编解码状态
      */
-    virtual E_CODEC_STATUS Decode(loss::CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody) = 0;
+    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody) = 0;
 
 
 protected:

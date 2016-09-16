@@ -10,6 +10,7 @@
 #ifndef SRC_OBJECT_CMD_MODULE_HPP_
 #define SRC_OBJECT_CMD_MODULE_HPP_
 
+#include "codec/CodecHttp.hpp"
 #include "object/Object.hpp"
 
 namespace neb

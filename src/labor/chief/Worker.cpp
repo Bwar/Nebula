@@ -7,18 +7,15 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#include "Worker.hpp"
 
-namespace neb
-{
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 #include "hiredis/async.h"
 #include "hiredis/adapters/libev.h"
-#include "unix_util/process_helper.h"
-#include "unix_util/proctitle_helper.h"
+#include "util/process_helper.h"
+#include "util/proctitle_helper.h"
 #ifdef __cplusplus
 }
 #endif
@@ -36,6 +33,8 @@ extern "C" {
 #include "object/cmd/sys_cmd/CmdBeat.hpp"
 #include "object/step/sys_step/StepIoTimeout.hpp"
 
+namespace neb
+{
 
 void Worker::TerminatedCallback(struct ev_loop* loop, struct ev_signal* watcher, int revents)
 {
@@ -72,17 +71,17 @@ void Worker::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents
     }
 }
 
-void Worker::IoTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents)
+void Worker::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
     if (watcher->data != NULL)
     {
         Channel* pChannel = (Channel*)watcher->data;
-        Worker* pWorker = pChannel->m_pLabor;
+        Worker* pWorker = (Worker*)(pChannel->m_pLabor);
         pWorker->IoTimeout(pChannel);
     }
 }
 
-void Worker::PeriodicTaskCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents)
+void Worker::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
     if (watcher->data != NULL)
     {
@@ -96,7 +95,7 @@ void Worker::PeriodicTaskCallback(struct ev_loop* loop, struct ev_timer* watcher
     ev_timer_start (loop, watcher);
 }
 
-void Worker::StepTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents)
+void Worker::StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
     if (watcher->data != NULL)
     {
@@ -105,7 +104,7 @@ void Worker::StepTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher,
     }
 }
 
-void Worker::SessionTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents)
+void Worker::SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
     if (watcher->data != NULL)
     {
@@ -141,7 +140,7 @@ void Worker::RedisCmdCallback(redisAsyncContext *c, void *reply, void *privdata)
     }
 }
 
-Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, loss::CJsonObject& oJsonConf)
+Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf)
     : m_pErrBuff(NULL), m_ulSequence(0), m_bInitLogger(false), m_dIoTimeout(480.0), m_strWorkPath(strWorkPath), m_uiNodeId(0),
       m_iManagerControlFd(iControlFd), m_iManagerDataFd(iDataFd), m_iWorkerIndex(iWorkerIndex), m_iWorkerPid(0),
       m_dMsgStatInterval(60.0), m_iMsgPermitNum(60),
@@ -196,7 +195,7 @@ bool Worker::CheckParent()
     }
     MsgHead oMsgHead;
     MsgBody oMsgBody;
-    loss::CJsonObject oJsonLoad;
+    CJsonObject oJsonLoad;
     oJsonLoad.Add("load", int32(m_mapChannel.size() + m_mapCallbackStep.size()));
     oJsonLoad.Add("connect", int32(m_mapChannel.size()));
     oJsonLoad.Add("recv_num", m_iRecvNum);
@@ -332,7 +331,7 @@ bool Worker::FdTransfer()
         {
             int z;                          /* status return code */
             struct sockaddr_in adr_inet;    /* AF_INET */
-            int len_inet;                   /* length */
+            unsigned int len_inet;                   /* length */
             z = getpeername(iAcceptFd, (struct sockaddr *)&adr_inet, &len_inet);
             pChannel->SetRemoteAddr(inet_ntoa(adr_inet.sin_addr));
             AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
@@ -364,7 +363,7 @@ bool Worker::IoWrite(Channel* pChannel)
             AddInnerChannel(stCtx);
             if (CODEC_PROTOBUF == pChannel->GetCodecType())  // 系统内部Server间通信
             {
-                m_pCmdConnect->Start(stCtx, index_iter->second);
+                ((CmdConnectWorker*)m_pCmdConnect)->Start(stCtx, index_iter->second);
             }
             m_mapSeq2WorkerIndex.erase(index_iter);
             return(false);
@@ -427,7 +426,7 @@ bool Worker::IoTimeout(Channel* pChannel)
         else
         {
             DELETE(pStepIoTimeout);
-            DestroyChannel(iter);
+            DestroyChannel(pChannel);
         }
     }
     else        // 关闭文件描述符并清理相关资源
@@ -444,7 +443,7 @@ bool Worker::IoTimeout(Channel* pChannel)
 
 bool Worker::StepTimeout(Step* pStep)
 {
-    struct ev_timer* watcher = pStep->MutableTimerWatcher();
+    ev_timer* watcher = pStep->MutableTimerWatcher();
     ev_tstamp after = pStep->GetActiveTime() - ev_now(m_loop) + pStep->GetTimeout();
     if (after > 0)    // 在定时时间内被重新刷新过，重新设置定时器
     {
@@ -476,7 +475,7 @@ bool Worker::StepTimeout(Step* pStep)
 
 bool Worker::SessionTimeout(Session* pSession)
 {
-    struct ev_timer* watcher = pSession->MutableTimerWatcher();
+    ev_timer* watcher = pSession->MutableTimerWatcher();
     ev_tstamp after = pSession->GetActiveTime() - ev_now(m_loop) + pSession->GetTimeout();
     if (after > 0)    // 定时时间内被重新刷新过，重新设置定时器
     {
@@ -989,10 +988,10 @@ bool Worker::Register(const redisAsyncContext* pRedisContext, RedisStep* pRedisS
     }
 }
 
-bool Worker::ResetTimeout(Step* pStep)
+bool Worker::ResetTimeout(Object* pObject)
 {
-    struct ev_timer* watcher = pStep->MutableTimerWatcher();
-    ev_tstamp after = ev_now(m_loop) + pStep->GetTimeout();
+    ev_timer* watcher = pObject->MutableTimerWatcher();
+    ev_tstamp after = ev_now(m_loop) + pObject->GetTimeout();
     ev_timer_stop (m_loop, watcher);
     ev_timer_set (watcher, after + ev_time() - ev_now(m_loop), 0);
     ev_timer_start (m_loop, watcher);
@@ -1076,7 +1075,7 @@ bool Worker::Disconnect(const std::string& strIdentify, bool bChannelNotice)
     return(false);
 }
 
-bool Worker::SetProcessName(const loss::CJsonObject& oJsonConf)
+bool Worker::SetProcessName(const CJsonObject& oJsonConf)
 {
     char szProcessName[64] = {0};
     snprintf(szProcessName, sizeof(szProcessName), "%s_W%d", oJsonConf("server_name").c_str(), m_iWorkerIndex);
@@ -1084,7 +1083,7 @@ bool Worker::SetProcessName(const loss::CJsonObject& oJsonConf)
     return(true);
 }
 
-bool Worker::Init(loss::CJsonObject& oJsonConf)
+bool Worker::Init(CJsonObject& oJsonConf)
 {
     char szProcessName[64] = {0};
     snprintf(szProcessName, sizeof(szProcessName), "%s_W%d", oJsonConf("server_name").c_str(), m_iWorkerIndex);
@@ -1116,7 +1115,7 @@ bool Worker::Init(loss::CJsonObject& oJsonConf)
     return(true);
 }
 
-bool Worker::InitLogger(const loss::CJsonObject& oJsonConf)
+bool Worker::InitLogger(const CJsonObject& oJsonConf)
 {
     if (m_bInitLogger)  // 已经被初始化过，只修改日志级别
     {
@@ -1726,7 +1725,7 @@ bool Worker::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, Htt
     }
 }
 
-bool Worker::SentTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, HttpStep* pHttpStep)
+bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, Object* pHttpStep)
 {
     char szIdentify[256] = {0};
     snprintf(szIdentify, sizeof(szIdentify), "%s:%d%s", strHost.c_str(), iPort, strUrlPath.c_str());
@@ -1735,7 +1734,7 @@ bool Worker::SentTo(const std::string& strHost, int iPort, const std::string& st
     if (named_iter == m_mapNamedChannel.end())
     {
         LOG4_TRACE("no channel match %s.", szIdentify);
-        return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, pHttpStep));
+        return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, (HttpStep*)pHttpStep));
     }
     else
     {
@@ -1752,7 +1751,7 @@ bool Worker::SentTo(const std::string& strHost, int iPort, const std::string& st
                 return(false);
             }
         }
-        return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, pHttpStep));
+        return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, (HttpStep*)pHttpStep));
     }
 }
 
@@ -2048,7 +2047,7 @@ void Worker::ExecStep(uint32 uiCallerStepSeq, uint32 uiCalledStepSeq,
     }
 }
 
-void Worker::LoadSo(loss::CJsonObject& oSoConf)
+void Worker::LoadSo(CJsonObject& oSoConf)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     int iCmd = 0;
@@ -2176,7 +2175,7 @@ void Worker::UnloadSoAndDeleteCmd(int iCmd)
     }
 }
 
-void Worker::LoadModule(loss::CJsonObject& oModuleConf)
+void Worker::LoadModule(CJsonObject& oModuleConf)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     std::string strModulePath;
@@ -2387,7 +2386,7 @@ bool Worker::RemoveIoWriteEvent(Channel* pChannel)
     return(true);
 }
 
-bool Worker::AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout = 1.0)
+bool Worker::AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout)
 {
     LOG4_TRACE("%s(%d, %u)", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
     ev_timer* timer_watcher = pChannel->MutableTimerWatcher();
@@ -2591,12 +2590,12 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
                 }
                 else if (CMD_REQ_RELOAD_SO == oMsgHead.cmd())
                 {
-                    loss::CJsonObject oSoConfJson;
+                    CJsonObject oSoConfJson;
                     LoadSo(oSoConfJson);
                 }
                 else if (CMD_REQ_RELOAD_MODULE == oMsgHead.cmd())
                 {
-                    loss::CJsonObject oModuleConfJson;
+                    CJsonObject oModuleConfJson;
                     LoadModule(oModuleConfJson);
                 }
                 else
@@ -2614,8 +2613,8 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
                         {
                             snprintf(m_pErrBuff, gc_iErrBuffLen, "no handler to dispose cmd %u!", oMsgHead.cmd());
                             LOG4_ERROR(m_pErrBuff);
-                            oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_UNKNOWN_CMD);
-                            oOutMsgBody.mutable_rsp_result()->set_err_msg(m_pErrBuff);
+                            oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
+                            oOutMsgBody.mutable_rsp_result()->set_msg(m_pErrBuff);
                             oOutMsgHead.set_cmd(CMD_RSP_SYS_ERROR);
                             oOutMsgHead.set_seq(oMsgHead.seq());
                             oOutMsgHead.set_len(oOutMsgBody.ByteSize());
@@ -2632,8 +2631,8 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
                         {
                             snprintf(m_pErrBuff, gc_iErrBuffLen, "no handler to dispose cmd %u!", oMsgHead.cmd());
                             LOG4_ERROR(m_pErrBuff);
-                            oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_UNKNOWN_CMD);
-                            oOutMsgBody.mutable_rsp_result()->set_err_msg(m_pErrBuff);
+                            oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
+                            oOutMsgBody.mutable_rsp_result()->set_msg(m_pErrBuff);
                             oOutMsgHead.set_cmd(CMD_RSP_SYS_ERROR);
                             oOutMsgHead.set_seq(oMsgHead.seq());
                             oOutMsgHead.set_len(oOutMsgBody.ByteSize());

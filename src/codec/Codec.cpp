@@ -9,10 +9,10 @@
  ******************************************************************************/
 #include "Codec.hpp"
 
-#include "cryptopp562/default.h"
-#include "cryptopp562/cryptlib.h"
-#include "cryptopp562/aes.h"
-#include "cryptopp562/gzip.h"
+#include "cryptopp/default.h"
+#include "cryptopp/cryptlib.h"
+#include "cryptopp/aes.h"
+#include "cryptopp/gzip.h"
 #include "util/encrypt/hconv.h"
 #include "util/encrypt/rc5.h"
 
@@ -30,11 +30,12 @@ Codec::~Codec()
 
 bool Codec::Zip(const std::string& strSrc, std::string& strDest)
 {
+    /*
     int iErr = Z_OK;
     uLongf ulInLen = strSrc.size();
     uLongf ulOutBuffLen = strSrc.size();
     uLongf ulOutlen = 0;
-    z_stream d_stream = { 0 }; /* decompression stream */
+    z_stream d_stream = { 0 }; // decompression stream
     Bytef* pInBuff = (Bytef*) malloc(ulInLen);
     Bytef* pOutBuff = (Bytef*) malloc(ulOutBuffLen);
     d_stream.zalloc = (alloc_func) Z_NULL;
@@ -63,7 +64,7 @@ bool Codec::Zip(const std::string& strSrc, std::string& strDest)
         }
     }
 
-    if (d_stream.avail_in != 0) /* 输出缓冲区不够 */
+    if (d_stream.avail_in != 0) // 输出缓冲区不够
     {
         iErr = deflateEnd(&d_stream);
         free(pInBuff);
@@ -84,16 +85,18 @@ bool Codec::Zip(const std::string& strSrc, std::string& strDest)
     strDest.assign((const char*) pOutBuff, d_stream.total_out);
     free(pInBuff);
     free(pOutBuff);
+    */
     return (true);
 }
 
 bool Codec::Unzip(const std::string& strSrc, std::string& strDest)
 {
+    /*
     int iErr = Z_OK;
     uLongf ulInLen = strSrc.size();
-    uLongf ulOutBuffLen = 1024000; /* PB的Message最大支持1MB */
+    uLongf ulOutBuffLen = 1024000; // PB的Message最大支持1MB
     uLongf ulOutlen = 0;
-    z_stream d_stream = { 0 }; /* decompression stream */
+    z_stream d_stream = { 0 }; // decompression stream
     Bytef* pInBuff = (Bytef*) malloc(ulInLen);
     Bytef* pOutBuff = (Bytef*) malloc(ulOutBuffLen);
     d_stream.zalloc = (alloc_func) Z_NULL;
@@ -112,7 +115,7 @@ bool Codec::Unzip(const std::string& strSrc, std::string& strDest)
     memcpy(pInBuff, strSrc.c_str(), ulInLen);
     while (d_stream.total_out < ulOutBuffLen && d_stream.total_in < ulInLen)
     {
-        /* d_stream.avail_in = d_stream.avail_out = 1; // force small buffers */
+        /* d_stream.avail_in = d_stream.avail_out = 1; // force small buffers
         iErr = inflate(&d_stream, Z_NO_FLUSH);
         if (iErr == Z_STREAM_END)
         {
@@ -138,6 +141,7 @@ bool Codec::Unzip(const std::string& strSrc, std::string& strDest)
     strDest.assign((const char*) pOutBuff, d_stream.total_out);
     free(pInBuff);
     free(pOutBuff);
+    */
     return (true);
 }
 
@@ -188,6 +192,8 @@ bool Codec::Gunzip(const std::string& strSrc, std::string& strDest)
 
 bool Codec::Rc5Encrypt(const std::string& strSrc, std::string& strDest)
 {
+    return(false);
+    /*
     rc5UserKey *pKey;
     rc5CBCAlg *pAlg;
     unsigned char szIv[20] = {"2015-08-10 08:53:47"};
@@ -217,10 +223,13 @@ bool Codec::Rc5Encrypt(const std::string& strSrc, std::string& strDest)
     RC5_Key_Destroy(pKey);
     RC5_CBC_Destroy(pAlg);
     return(true);
+    */
 }
 
 bool Codec::Rc5Decrypt(const std::string& strSrc, std::string& strDest)
 {
+    return(false);
+    /*
     rc5UserKey *pKey;
     rc5CBCAlg *pAlg;
     unsigned char szIv[20] = {"2015-08-10 08:53:47"};
@@ -249,6 +258,7 @@ bool Codec::Rc5Decrypt(const std::string& strSrc, std::string& strDest)
     RC5_Key_Destroy(pKey);
     RC5_CBC_Destroy(pAlg);
     return(true);
+    */
 }
 
 bool Codec::AesEncrypt(const std::string& strSrc, std::string& strDest)

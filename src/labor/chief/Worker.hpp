@@ -28,11 +28,12 @@
 #include "log4cplus/socketappender.h"
 #include "log4cplus/loggingmacros.h"
 #include "hiredis/hiredis.h"
+#include "hiredis/adapters/libev.h"
 
 #include "pb/msg.pb.h"
 #include "pb/http.pb.h"
 #include "pb/neb_sys.pb.h"
-#include "Labor.hpp"
+#include "labor/Labor.hpp"
 #include "Attribute.hpp"
 #include "channel/Channel.hpp"
 #include "object/Object.hpp"
@@ -47,15 +48,13 @@
 namespace neb
 {
 
-class CmdConnectWorker;
-
 class Worker: public Labor
 {
 public:
 public:
     typedef std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > > T_MAP_NODE_TYPE_IDENTIFY;
 public:
-    Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, loss::CJsonObject& oJsonConf);
+    Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf);
     virtual ~Worker();
 
     void Run();
@@ -63,10 +62,10 @@ public:
     static void TerminatedCallback(struct ev_loop* loop, struct ev_signal* watcher, int revents);
     static void IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int revents);
     static void IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents);
-    static void IoTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents);
-    static void PeriodicTaskCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents);  // 周期任务回调，用于替换IdleCallback
-    static void StepTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents);
-    static void SessionTimeoutCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents);
+    static void IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
+    static void PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents);  // 周期任务回调，用于替换IdleCallback
+    static void StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
+    static void SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void RedisConnectCallback(const redisAsyncContext *c, int status);
     static void RedisDisconnectCallback(const redisAsyncContext *c, int status);
     static void RedisCmdCallback(redisAsyncContext *c, void *reply, void *privdata);
@@ -109,7 +108,7 @@ public:     // Cmd类和Step类只需关注这些方法
         return(m_strNodeType);
     }
 
-    virtual const loss::CJsonObject& GetCustomConf() const
+    virtual const CJsonObject& GetCustomConf() const
     {
         return(m_oCustomConf);
     }
@@ -164,14 +163,14 @@ public:     // Cmd类和Step类只需关注这些方法
     virtual bool Register(Session* pSession);
     virtual void Remove(Session* pSession);
     virtual bool Register(const redisAsyncContext* pRedisContext, RedisStep* pRedisStep);
-    virtual bool ResetTimeout(Step* pStep);
+    virtual bool ResetTimeout(Object* pObject);
     virtual Session* GetSession(uint32 uiSessionId, const std::string& strSessionClass = "oss::Session");
     virtual Session* GetSession(const std::string& strSessionId, const std::string& strSessionClass = "oss::Session");
     virtual bool Disconnect(const tagChannelContext& stCtx, bool bChannelNotice = true);
     virtual bool Disconnect(const std::string& strIdentify, bool bChannelNotice = true);
 
 public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worker自身的初始化和更新）
-    virtual bool SetProcessName(const loss::CJsonObject& oJsonConf);
+    virtual bool SetProcessName(const CJsonObject& oJsonConf);
     /** @brief 加载配置，刷新Server */
     virtual void ResetLogLevel(log4cplus::LogLevel iLogLevel);
     virtual bool AddNamedChannel(const std::string& strIdentify, const tagChannelContext& stCtx);
@@ -198,7 +197,7 @@ public:     // 发送数据或从Worker获取数据
     virtual bool SendToWithMod(const std::string& strNodeType, unsigned int uiModFactor, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
     virtual bool Broadcast(const std::string& strNodeType, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
     virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, HttpStep* pHttpStep = NULL);
-    virtual bool SentTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, HttpStep* pHttpStep = NULL);
+    virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, Object* pHttpStep = NULL);
     virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
     virtual bool AutoSend(const std::string& strIdentify, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
     virtual bool AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, HttpStep* pHttpStep = NULL);
@@ -212,9 +211,11 @@ public:     // 发送数据或从Worker获取数据
     virtual void ExecStep(uint32 uiCallerStepSeq, uint32 uiCalledStepSeq,
                     int iErrno, const std::string& strErrMsg, const std::string& strErrShow);
 
+    bool AddIoTimeout(const tagChannelContext& stCtx);
+
 protected:
-    bool Init(loss::CJsonObject& oJsonConf);
-    bool InitLogger(const loss::CJsonObject& oJsonConf);
+    bool Init(CJsonObject& oJsonConf);
+    bool InitLogger(const CJsonObject& oJsonConf);
     bool CreateEvents();
     void PreloadCmd();
     void Destroy();
@@ -226,7 +227,6 @@ protected:
     bool AddIoWriteEvent(Channel* pChannel);
     bool RemoveIoWriteEvent(Channel* pChannel);
     bool AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout = 1.0);
-    bool AddIoTimeout(const tagChannelContext& stCtx);
     Channel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
     bool DestroyChannel(Channel* pChannel, bool bChannelNotice = true);
     void ChannelNotice(const tagChannelContext& stCtx, const std::string& strIdentify, const std::string& strClientData);
@@ -259,10 +259,10 @@ protected:
      */
     bool Handle(Channel* pChannel, const HttpMsg& oHttpMsg);
 
-    void LoadSo(loss::CJsonObject& oSoConf);
+    void LoadSo(CJsonObject& oSoConf);
     tagSo* LoadSoAndGetCmd(int iCmd, const std::string& strSoPath, const std::string& strSymbol, int iVersion);
     void UnloadSoAndDeleteCmd(int iCmd);
-    void LoadModule(loss::CJsonObject& oModuleConf);
+    void LoadModule(CJsonObject& oModuleConf);
     tagModule* LoadSoAndGetModule(const std::string& strModulePath, const std::string& strSoPath, const std::string& strSymbol, int iVersion);
     void UnloadSoAndDeleteModule(const std::string& strModulePath);
 
@@ -279,7 +279,7 @@ private:
     std::string m_strWorkerIdentify;    ///< 进程标识
     int m_iPortForServer;               ///< Server间通信监听端口（用于生成当前Worker标识）
     std::string m_strWorkPath;          ///< 工作路径
-    loss::CJsonObject m_oCustomConf;    ///< 自定义配置
+    CJsonObject m_oCustomConf;    ///< 自定义配置
     uint32 m_uiNodeId;                  ///< 节点ID
     int m_iManagerControlFd;            ///< 与Manager父进程通信fd（控制流）
     int m_iManagerDataFd;               ///< 与Manager父进程通信fd（数据流）
@@ -294,7 +294,7 @@ private:
     int m_iSendByte;                    ///< 发送字节数（已到达系统发送缓冲区，可认为已发送出去）
 
     struct ev_loop* m_loop;
-    CmdConnectWorker* m_pCmdConnect;
+    Cmd* m_pCmdConnect;
     std::map<int, Channel*> m_mapChannel;            ///< 通信通道
     std::map<int, uint32> m_mapInnerFd;              ///< 服务端之间连接的文件描述符（用于区分连接是服务内部还是外部客户端接入）
     std::map<uint32, int> m_mapSeq2WorkerIndex;      ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）

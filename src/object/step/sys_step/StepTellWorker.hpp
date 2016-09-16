@@ -16,7 +16,7 @@
 namespace neb
 {
 
-class StepTellWorker: public Step
+class StepTellWorker: public PbStep
 {
 public:
     StepTellWorker(const tagChannelContext& stCtx);

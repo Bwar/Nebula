@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string>
 #include "pb/storage.pb.h"
+#include "Error.hpp"
 #include "Definition.hpp"
 
 namespace neb

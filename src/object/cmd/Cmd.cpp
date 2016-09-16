@@ -13,7 +13,8 @@ namespace neb
 {
 
 Cmd::Cmd()
-    : m_iCmd(0)
+    : Object(OBJ_CMD),
+      m_iCmd(0)
 {
 }
 

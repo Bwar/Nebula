@@ -35,7 +35,7 @@ bool CmdConnectWorker::Start(const tagChannelContext& stCtx, int iWorkerIndex)
     MsgBody oMsgBody;
     ConnectWorker oConnWorker;
     oConnWorker.set_worker_index(iWorkerIndex);
-    oMsgBody.set_content(oConnWorker.SerializeAsString());
+    oMsgBody.set_data(oConnWorker.SerializeAsString());
     oMsgHead.set_cmd(CMD_REQ_CONNECT_TO_WORKER);
 //    oMsgHead.set_seq(pStepConnectWorker->GetSequence());
     oMsgHead.set_len(oMsgBody.ByteSize());

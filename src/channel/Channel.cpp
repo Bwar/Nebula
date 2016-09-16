@@ -10,6 +10,7 @@
 #include "codec/CodecProto.hpp"
 #include "codec/CodecPrivate.hpp"
 #include "codec/CodecHttp.hpp"
+#include "labor/Labor.hpp"
 #include "Channel.hpp"
 
 namespace neb
@@ -39,12 +40,12 @@ Channel::~Channel()
 
 bool Channel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
 {
-    // NEW_PTR(m_pRecvBuff, loss::CBuffer);
+    // NEW_PTR(m_pRecvBuff, CBuffer);
     try
     {
-        m_pRecvBuff = new loss::CBuffer();
-        m_pSendBuff = new loss::CBuffer();
-        m_pWaitForSendBuff = new loss::CBuffer();
+        m_pRecvBuff = new CBuffer();
+        m_pSendBuff = new CBuffer();
+        m_pWaitForSendBuff = new CBuffer();
         switch (eCodecType)
         {
             case CODEC_PROTOBUF:
@@ -107,7 +108,7 @@ E_CODEC_STATUS Channel::Send()
             m_dActiveTime = m_pLabor->GetNowTime();
             if (iNeedWriteLen == iWriteLen)
             {
-                loss::CBuffer* pExchangeBuff = m_pSendBuff;
+                CBuffer* pExchangeBuff = m_pSendBuff;
                 m_pSendBuff = m_pWaitForSendBuff;
                 m_pWaitForSendBuff = pExchangeBuff;
             }
@@ -135,7 +136,7 @@ E_CODEC_STATUS Channel::Send()
     }
     else
     {
-        loss::CBuffer* pExchangeBuff = m_pSendBuff;
+        CBuffer* pExchangeBuff = m_pSendBuff;
         m_pSendBuff = m_pWaitForSendBuff;
         m_pWaitForSendBuff = pExchangeBuff;
     }

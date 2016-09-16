@@ -7,6 +7,7 @@
  * @note
  * Modify history:
  ******************************************************************************/
+#include "pb/neb_sys.pb.h"
 #include "CmdToldWorker.hpp"
 
 namespace neb
@@ -32,7 +33,7 @@ bool CmdToldWorker::AnyMessage(
     TargetWorker oOutTargetWorker;
     oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
     oOutMsgHead.set_seq(oInMsgHead.seq());
-    if (oInTargetWorker.ParseFromString(oInMsgBody.content()))
+    if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
     {
         bResult = true;
         LOG4_DEBUG("AddMsgShell(%s, fd %d, seq %llu)!",
@@ -42,19 +43,19 @@ bool CmdToldWorker::AnyMessage(
         AddInnerChannel(stCtx);
         oOutTargetWorker.set_worker_identify(GetWorkerIdentify());
         oOutTargetWorker.set_node_type(GetNodeType());
-        oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_OK);
-        oOutMsgBody.mutable_rsp_result()->set_err_msg("OK");
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+        oOutMsgBody.mutable_rsp_result()->set_msg("OK");
     }
     else
     {
         bResult = false;
         oOutTargetWorker.set_worker_identify("unknow");
         oOutTargetWorker.set_node_type(GetNodeType());
-        oOutMsgBody.mutable_rsp_result()->set_err_no(ERR_PARASE_PROTOBUF);
-        oOutMsgBody.mutable_rsp_result()->set_err_msg("WorkerLoad ParseFromString error!");
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
+        oOutMsgBody.mutable_rsp_result()->set_msg("WorkerLoad ParseFromString error!");
         LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
     }
-    oOutMsgBody.set_content(oOutTargetWorker.SerializeAsString());
+    oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
     oOutMsgHead.set_len(oOutMsgBody.ByteSize());
     SendTo(stCtx, oOutMsgHead, oOutMsgBody);
     return(bResult);
