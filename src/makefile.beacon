@@ -1,6 +1,6 @@
 CC = gcc
 CXX = g++
-CFLAGS = -g -O0 #-Wall
+CFLAGS = -g -O2 -fPIC #-Wall
 CPPFLAGS =  -D_GNU_SOURCE=1 -D_REENTRANT -fPIC -DNODE_BEAT=10.0 
 #CXXFLAG = -g -O2 -Wall -fdiagnostics-show-caret -Wextra -pedantic -Wstrict-aliasing -Wstrict-overflow -Woverloaded-virtual -Wold-style-cast -Wc++0x-compat -Wc++11-compat -Wundef -Wshadow -Wformat -Wsuggest-attribute=format -Wsuggest-attribute=noreturn -Wno-variadic-macros -fvisibility=hidden
 CXXFLAG = -O0 -Wall -ggdb -m64 -Wl,--export-dynamic # -lrt -std=c++11 -pthread  #-static-libgcc -static-libstdc++

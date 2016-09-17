@@ -1,6 +1,6 @@
 CC = gcc
 CXX = g++
-CFLAGS = -g -O0 #-Wall
+CFLAGS = -g -O2 -fPIC #-Wall
 CPPFLAGS =  -D_GNU_SOURCE=1 -D_REENTRANT -fPIC -DNODE_BEAT=10.0 
 #CXXFLAG = -g -O2 -Wall -fdiagnostics-show-caret -Wextra -pedantic -Wstrict-aliasing -Wstrict-overflow -Woverloaded-virtual -Wold-style-cast -Wc++0x-compat -Wc++11-compat -Wundef -Wshadow -Wformat -Wsuggest-attribute=format -Wsuggest-attribute=noreturn -Wno-variadic-macros -fvisibility=hidden
 CXXFLAG = -O0 -Wall -ggdb -m64 -Wl,--export-dynamic # -lrt -std=c++11 -pthread  #-static-libgcc -static-libstdc++
@@ -37,7 +37,6 @@ INC := $(INC) \
 
 
 LDFLAGS := $(LDFLAGS) -D_LINUX_OS_ \
-           -L$(NEBULA_PATH)/lib -lloss \
            -L$(LIB3RD_PATH)/lib -lmysqlclient_r \
            -L$(LIB3RD_PATH)/lib -lhiredis \
            -L$(LIB3RD_PATH)/lib -lcryptopp \
@@ -45,7 +44,7 @@ LDFLAGS := $(LDFLAGS) -D_LINUX_OS_ \
            -L$(LIB3RD_PATH)/lib -llog4cplus \
            -L$(LIB3RD_PATH)/lib -lev \
            -L$(SYSTEM_LIB_PATH) -lpthread \
-           -L$(SYSTEM_LIB_PATH) -lz -lc -ldl -lrt
+           -L$(SYSTEM_LIB_PATH) -lc -ldl -lrt
 
 SUB_INCLUDE = object labor codec pb storage util
 COMM_PATH = $(NEBULA_PATH)/src/object \

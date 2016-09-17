@@ -170,14 +170,14 @@ bool Manager::IoRead(Channel* pChannel)
     if (pChannel->GetFd() == m_iS2SListenFd)
     {
 #ifdef UNIT_TEST
-        return(FdTransfer(watcher->fd));
+        return(FdTransfer(pChannel->GetFd()));
 #endif
         return(AcceptServerConn(pChannel->GetFd()));
     }
 #ifdef NODE_TYPE_ACCESS
-    else if (watcher->fd == m_iC2SListenFd)
+    else if (pChannel->GetFd() == m_iC2SListenFd)
     {
-        return(FdTransfer(watcher->fd));
+        return(FdTransfer(pChannel->GetFd()));
     }
 #endif
     else
@@ -965,11 +965,9 @@ bool Manager::CreateEvents()
     }
     Channel* pChannelListen = CreateChannel(m_iS2SListenFd, CODEC_PROTOBUF);
     AddIoReadEvent(pChannelListen);
-//    AddIoErrorEvent(m_iS2SListenFd);
 #ifdef NODE_TYPE_ACCESS
-    CreateChannel(m_iC2SListenFd, GetSequence());
-    AddIoReadEvent(m_iC2SListenFd);
-//    AddIoErrorEvent(m_iC2SListenFd);
+    pChannelListen = CreateChannel(m_iC2SListenFd, m_eCodec);
+    AddIoReadEvent(pChannelListen);
 #endif
 
     ev_signal* child_signal_watcher = new ev_signal();
