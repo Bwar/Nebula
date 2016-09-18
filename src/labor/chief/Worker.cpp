@@ -86,7 +86,7 @@ void Worker::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int r
     if (watcher->data != NULL)
     {
         Worker* pWorker = (Worker*)(watcher->data);
-#ifndef NODE_TYPE_CENTER
+#ifndef NODE_TYPE_BEACON
         pWorker->CheckParent();
 #endif
     }

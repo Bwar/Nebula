@@ -76,7 +76,7 @@ void Manager::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int 
     if (watcher->data != NULL)
     {
         Manager* pManager = (Manager*)(watcher->data);
-#ifndef NODE_TYPE_CENTER
+#ifndef NODE_TYPE_BEACON
         pManager->ReportToKeeper();
 #endif
         pManager->CheckWorker();

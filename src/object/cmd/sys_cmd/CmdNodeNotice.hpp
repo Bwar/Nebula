@@ -21,7 +21,7 @@ namespace neb
  * @brief   节点注册
  * @author  hsc
  * @date    2015年8月9日
- * @note    各个模块启动时需要向CENTER进行注册
+ * @note    各个模块启动时需要向BEACON进行注册
  */
 class CmdNodeNotice : public Cmd
 {
