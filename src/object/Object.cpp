@@ -16,7 +16,7 @@ namespace neb
 
 Object::Object(OBJECT_TYPE eObjectType)
     : m_eObjectType(eObjectType),
-      m_bRegistered(false), m_ulSequence(0), m_dActiveTime(0.0), m_dTimeout(0.0),
+      m_bRegistered(false), m_ulSequence(0), m_ulTraceId(0), m_dActiveTime(0.0), m_dTimeout(0.0),
       m_pLabor(NULL), m_pLogger(NULL), m_pTimerWatcher(NULL)
 {
 }
@@ -49,10 +49,12 @@ bool Object::Register(Object* pObject, ev_tstamp dTimeout)
         case OBJ_PB_STEP:
             if (OBJ_PB_STEP == GetObjectType() || OBJ_HTTP_STEP == GetObjectType() || OBJ_REDIS_STEP ==GetObjectType())
             {
+                pObject->SetTraceId(GetTraceId());
                 return(m_pLabor->Register(GetSequence(), (Step*)pObject, dTimeout));
             }
             else
             {
+                pObject->SetTraceId(m_pLabor->GetSequence());
                 return(m_pLabor->Register((Step*)pObject, dTimeout));
             }
             break;

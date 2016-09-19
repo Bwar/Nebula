@@ -85,6 +85,10 @@ protected:
      * @return 序列号
      */
     uint32 GetSequence();
+    uint32 GetTraceId() const
+    {
+        return(m_ulTraceId);
+    }
     uint32 GetNodeId() const;
     uint32 GetWorkerIndex() const;
     const std::string& GetNodeType() const;
@@ -314,6 +318,11 @@ private:
 
     void DelayTimeout();
 
+    void SetTraceId(uint32 ulTraceId)
+    {
+        m_ulTraceId = ulTraceId;
+    }
+
     ev_timer* AddTimerWatcher();
     ev_timer* MutableTimerWatcher()
     {
@@ -324,6 +333,7 @@ private:
     OBJECT_TYPE m_eObjectType;
     bool m_bRegistered;
     uint32 m_ulSequence;
+    uint32 m_ulTraceId;
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
     std::string m_strWorkerIdentify;
