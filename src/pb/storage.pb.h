@@ -1528,21 +1528,21 @@ class Result : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   // accessors -------------------------------------------------------
 
   // optional int32 err_no = 1;
-  void clear_code();
+  void clear_err_no();
   static const int kErrNoFieldNumber = 1;
-  ::google::protobuf::int32 code() const;
-  void set_code(::google::protobuf::int32 value);
+  ::google::protobuf::int32 err_no() const;
+  void set_err_no(::google::protobuf::int32 value);
 
   // optional bytes err_msg = 2;
-  void clear_msg();
+  void clear_err_msg();
   static const int kErrMsgFieldNumber = 2;
-  const ::std::string& msg() const;
-  void set_msg(const ::std::string& value);
-  void set_msg(const char* value);
-  void set_msg(const void* value, size_t size);
-  ::std::string* mutable_msg();
-  ::std::string* release_msg();
-  void set_allocated_msg(::std::string* err_msg);
+  const ::std::string& err_msg() const;
+  void set_err_msg(const ::std::string& value);
+  void set_err_msg(const char* value);
+  void set_err_msg(const void* value, size_t size);
+  ::std::string* mutable_err_msg();
+  ::std::string* release_err_msg();
+  void set_allocated_err_msg(::std::string* err_msg);
 
   // optional int32 total_count = 3;
   void clear_total_count();
@@ -2764,54 +2764,54 @@ inline void Result_DataLocate::set_divisor(::google::protobuf::uint32 value) {
 // Result
 
 // optional int32 err_no = 1;
-inline void Result::clear_code() {
+inline void Result::clear_err_no() {
   err_no_ = 0;
 }
-inline ::google::protobuf::int32 Result::code() const {
+inline ::google::protobuf::int32 Result::err_no() const {
   // @@protoc_insertion_point(field_get:neb.Result.err_no)
   return err_no_;
 }
-inline void Result::set_code(::google::protobuf::int32 value) {
+inline void Result::set_err_no(::google::protobuf::int32 value) {
   
   err_no_ = value;
   // @@protoc_insertion_point(field_set:neb.Result.err_no)
 }
 
 // optional bytes err_msg = 2;
-inline void Result::clear_msg() {
+inline void Result::clear_err_msg() {
   err_msg_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline const ::std::string& Result::msg() const {
+inline const ::std::string& Result::err_msg() const {
   // @@protoc_insertion_point(field_get:neb.Result.err_msg)
   return err_msg_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void Result::set_msg(const ::std::string& value) {
+inline void Result::set_err_msg(const ::std::string& value) {
   
   err_msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:neb.Result.err_msg)
 }
-inline void Result::set_msg(const char* value) {
+inline void Result::set_err_msg(const char* value) {
   
   err_msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:neb.Result.err_msg)
 }
-inline void Result::set_msg(const void* value, size_t size) {
+inline void Result::set_err_msg(const void* value, size_t size) {
   
   err_msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:neb.Result.err_msg)
 }
-inline ::std::string* Result::mutable_msg() {
+inline ::std::string* Result::mutable_err_msg() {
   
   // @@protoc_insertion_point(field_mutable:neb.Result.err_msg)
   return err_msg_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::std::string* Result::release_msg() {
+inline ::std::string* Result::release_err_msg() {
   // @@protoc_insertion_point(field_release:neb.Result.err_msg)
   
   return err_msg_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void Result::set_allocated_msg(::std::string* err_msg) {
+inline void Result::set_allocated_err_msg(::std::string* err_msg) {
   if (err_msg != NULL) {
     
   } else {

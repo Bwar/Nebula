@@ -5251,7 +5251,7 @@ bool Result::MergePartialFromCodedStream(
         if (tag == 18) {
          parse_err_msg:
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
-                input, this->mutable_msg()));
+                input, this->mutable_err_msg()));
         } else {
           goto handle_unusual;
         }
@@ -5359,14 +5359,14 @@ void Result::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:neb.Result)
   // optional int32 err_no = 1;
-  if (this->code() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->code(), output);
+  if (this->err_no() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->err_no(), output);
   }
 
   // optional bytes err_msg = 2;
-  if (this->msg().size() > 0) {
+  if (this->err_msg().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      2, this->msg(), output);
+      2, this->err_msg(), output);
   }
 
   // optional int32 total_count = 3;
@@ -5403,15 +5403,15 @@ void Result::SerializeWithCachedSizes(
     bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:neb.Result)
   // optional int32 err_no = 1;
-  if (this->code() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->code(), target);
+  if (this->err_no() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->err_no(), target);
   }
 
   // optional bytes err_msg = 2;
-  if (this->msg().size() > 0) {
+  if (this->err_msg().size() > 0) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        2, this->msg(), target);
+        2, this->err_msg(), target);
   }
 
   // optional int32 total_count = 3;
@@ -5452,17 +5452,17 @@ int Result::ByteSize() const {
   int total_size = 0;
 
   // optional int32 err_no = 1;
-  if (this->code() != 0) {
+  if (this->err_no() != 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::Int32Size(
-        this->code());
+        this->err_no());
   }
 
   // optional bytes err_msg = 2;
-  if (this->msg().size() > 0) {
+  if (this->err_msg().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::BytesSize(
-        this->msg());
+        this->err_msg());
   }
 
   // optional int32 total_count = 3;
@@ -5530,10 +5530,10 @@ void Result::MergeFrom(const Result& from) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
   record_data_.MergeFrom(from.record_data_);
-  if (from.code() != 0) {
-    set_code(from.code());
+  if (from.err_no() != 0) {
+    set_err_no(from.err_no());
   }
-  if (from.msg().size() > 0) {
+  if (from.err_msg().size() > 0) {
 
     err_msg_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.err_msg_);
   }
@@ -5658,54 +5658,54 @@ void Result_DataLocate::clear_divisor() {
 // Result
 
 // optional int32 err_no = 1;
-void Result::clear_code() {
+void Result::clear_err_no() {
   err_no_ = 0;
 }
- ::google::protobuf::int32 Result::code() const {
+ ::google::protobuf::int32 Result::err_no() const {
   // @@protoc_insertion_point(field_get:neb.Result.err_no)
   return err_no_;
 }
- void Result::set_code(::google::protobuf::int32 value) {
+ void Result::set_err_no(::google::protobuf::int32 value) {
   
   err_no_ = value;
   // @@protoc_insertion_point(field_set:neb.Result.err_no)
 }
 
 // optional bytes err_msg = 2;
-void Result::clear_msg() {
+void Result::clear_err_msg() {
   err_msg_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- const ::std::string& Result::msg() const {
+ const ::std::string& Result::err_msg() const {
   // @@protoc_insertion_point(field_get:neb.Result.err_msg)
   return err_msg_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void Result::set_msg(const ::std::string& value) {
+ void Result::set_err_msg(const ::std::string& value) {
   
   err_msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:neb.Result.err_msg)
 }
- void Result::set_msg(const char* value) {
+ void Result::set_err_msg(const char* value) {
   
   err_msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:neb.Result.err_msg)
 }
- void Result::set_msg(const void* value, size_t size) {
+ void Result::set_err_msg(const void* value, size_t size) {
   
   err_msg_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:neb.Result.err_msg)
 }
- ::std::string* Result::mutable_msg() {
+ ::std::string* Result::mutable_err_msg() {
   
   // @@protoc_insertion_point(field_mutable:neb.Result.err_msg)
   return err_msg_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::std::string* Result::release_msg() {
+ ::std::string* Result::release_err_msg() {
   // @@protoc_insertion_point(field_release:neb.Result.err_msg)
   
   return err_msg_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void Result::set_allocated_msg(::std::string* err_msg) {
+ void Result::set_allocated_err_msg(::std::string* err_msg) {
   if (err_msg != NULL) {
     
   } else {
