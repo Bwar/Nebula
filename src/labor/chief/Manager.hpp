@@ -117,9 +117,9 @@ protected:
     void RefreshServer();
     bool ReportToKeeper();  // 向管理中心上报负载信息
     bool SendToWorker(const MsgHead& oMsgHead, const MsgBody& oMsgBody);    // 向Worker发送数据
-    bool HandleDataFromWorker(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
-    bool HandleDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
-    bool HandleDataFromKeeper(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool OnWorkerData(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
 
     uint32 GetSequence()
     {

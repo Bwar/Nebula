@@ -12,7 +12,6 @@
 
 #include <stddef.h>
 
-
 #ifndef NODE_BEAT
 #define NODE_BEAT 1.0
 #endif

@@ -342,16 +342,16 @@ bool Manager::DataRecvAndHandle(Channel* pChannel)
                 std::map<std::string, tagChannelContext>::iterator center_iter = m_mapKeeperCtx.find(pChannel->GetIdentify());
                 if (center_iter == m_mapKeeperCtx.end())       // 不是与keeper连接
                 {
-                    HandleDataAndTransferFd(pChannel, oMsgHead, oMsgBody);
+                    OnDataAndTransferFd(pChannel, oMsgHead, oMsgBody);
                 }
                 else    // 与keeper连接
                 {
-                    HandleDataFromKeeper(pChannel, oMsgHead, oMsgBody);
+                    OnBeaconData(pChannel, oMsgHead, oMsgBody);
                 }
             }
             else    // Worker进程发过来的消息
             {
-                HandleDataFromWorker(pChannel, oMsgHead, oMsgBody);
+                OnWorkerData(pChannel, oMsgHead, oMsgBody);
             }
             oMsgHead.Clear();       // 注意protobuf的Clear()使用不当容易造成内存泄露
             oMsgBody.Clear();
@@ -849,11 +849,11 @@ bool Manager::Init()
         exit(iErrno);
     }
 
-    // 创建到Keeper的连接信息
-    for (int i = 0; i < m_oCurrentConf["center"].GetArraySize(); ++i)
+    // 创建到beacon的连接信息
+    for (int i = 0; i < m_oCurrentConf["beacon"].GetArraySize(); ++i)
     {
-        std::string strIdentify = m_oCurrentConf["center"][i]("host") + std::string(":")
-            + m_oCurrentConf["center"][i]("port") + std::string(".0");     // KeeperServer只有一个Worker
+        std::string strIdentify = m_oCurrentConf["beacon"][i]("host") + std::string(":")
+            + m_oCurrentConf["beacon"][i]("port") + std::string(".0");     // KeeperServer只有一个Worker
         tagChannelContext stCtx;
         LOG4_TRACE("m_mapKeeperMsgShell.insert(%s, fd %d, seq %llu) = %u",
                         strIdentify.c_str(), stCtx.iFd, stCtx.ulSeq);
@@ -1696,7 +1696,7 @@ bool Manager::SendToWorker(const MsgHead& oMsgHead, const MsgBody& oMsgBody)
     return(true);
 }
 
-bool Manager::HandleDataFromWorker(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
+bool Manager::OnWorkerData(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
 {
     LOG4_DEBUG("%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
     if (CMD_REQ_UPDATE_WORKER_LOAD == oInMsgHead.cmd())    // 新请求
@@ -1716,7 +1716,7 @@ bool Manager::HandleDataFromWorker(Channel* pChannel, const MsgHead& oInMsgHead,
     return(true);
 }
 
-bool Manager::HandleDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
+bool Manager::OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
 {
     LOG4_DEBUG("%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
     int iErrno = 0;
@@ -1808,13 +1808,13 @@ bool Manager::HandleDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHe
     return(true);
 }
 
-bool Manager::HandleDataFromKeeper(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
+bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
 {
     LOG4_DEBUG("%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
     int iErrno = 0;
-    if (gc_uiCmdReq & oInMsgHead.cmd())    // 新请求，直接转发给Worker，并回复Keeper已收到请求
+    if (gc_uiCmdReq & oInMsgHead.cmd())    // 新请求，直接转发给Worker，并回复beacon已收到请求
     {
-        if (CMD_REQ_BEAT == oInMsgHead.cmd())   // center发过来的心跳包
+        if (CMD_REQ_BEAT == oInMsgHead.cmd())   // beacon发过来的心跳包
         {
             MsgHead oOutMsgHead = oInMsgHead;
             MsgBody oOutMsgBody = oInMsgBody;
@@ -1861,7 +1861,7 @@ bool Manager::HandleDataFromKeeper(Channel* pChannel, const MsgHead& oInMsgHead,
     }
     else    // 回调
     {
-        if (CMD_RSP_NODE_REGISTER == oInMsgHead.cmd()) //Manager这层只有向center注册会收到回调，上报状态不收回调或者收到回调不必处理
+        if (CMD_RSP_NODE_REGISTER == oInMsgHead.cmd()) //Manager这层只有向beacon注册会收到回调，上报状态不收回调或者收到回调不必处理
         {
             CJsonObject oNode(oInMsgBody.data());
             int iErrno = 0;
@@ -1878,10 +1878,10 @@ bool Manager::HandleDataFromKeeper(Channel* pChannel, const MsgHead& oInMsgHead,
             }
             else
             {
-                LOG4_WARN("register to center error, errcode %d!", iErrno);
+                LOG4_WARN("register to beacon error, errcode %d!", iErrno);
             }
         }
-        else if (CMD_RSP_CONNECT_TO_WORKER == oInMsgHead.cmd()) // 连接center时的回调
+        else if (CMD_RSP_CONNECT_TO_WORKER == oInMsgHead.cmd()) // 连接beacon时的回调
         {
             MsgHead oOutMsgHead;
             MsgBody oOutMsgBody;
