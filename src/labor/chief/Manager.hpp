@@ -79,9 +79,9 @@ public:     // Manager相关设置（由专用Cmd类调用这些方法完成Mana
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
     virtual void ResetLogLevel(log4cplus::LogLevel iLogLevel);
     virtual bool SendTo(const tagChannelContext& stCtx);
-    virtual bool SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
-    virtual bool AutoSend(const std::string& strIdentify, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* pRedisStep){return(false);};
     virtual void SetNodeId(uint32 uiNodeId) {m_uiNodeId = uiNodeId;}
     virtual void AddInnerChannel(const tagChannelContext& stCtx){};
@@ -96,7 +96,7 @@ protected:
     void Destroy();
     void CreateWorker();
     bool CreateEvents();
-    bool RegisterToKeeper();
+    bool RegisterToBeacon();
     bool RestartWorker(int iDeathPid);
     bool AddPeriodicTaskEvent();
     bool AddIoReadEvent(Channel* pChannel);
@@ -115,8 +115,8 @@ protected:
     bool DataRecvAndHandle(Channel* pChannel);
     bool CheckWorker();
     void RefreshServer();
-    bool ReportToKeeper();  // 向管理中心上报负载信息
-    bool SendToWorker(const MsgHead& oMsgHead, const MsgBody& oMsgBody);    // 向Worker发送数据
+    bool ReportToBeacon();  // 向管理中心上报负载信息
+    bool SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);    // 向Worker发送数据
     bool OnWorkerData(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);

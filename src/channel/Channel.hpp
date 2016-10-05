@@ -41,7 +41,7 @@ public:
     E_CODEC_TYPE GetCodecType() const;
 
     E_CODEC_STATUS Send();
-    E_CODEC_STATUS Send(const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    E_CODEC_STATUS Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     E_CODEC_STATUS Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq);
     E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody);
     E_CODEC_STATUS Recv(HttpMsg& oHttpMsg);

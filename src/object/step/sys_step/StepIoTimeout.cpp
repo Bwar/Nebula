@@ -26,12 +26,8 @@ E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
         void* data)
 {
     tagChannelContext* pCtx = (tagChannelContext*)(data);
-    MsgHead oOutMsgHead;
     MsgBody oOutMsgBody;
-    oOutMsgHead.set_cmd(CMD_REQ_BEAT);
-    oOutMsgHead.set_seq(GetSequence());
-    oOutMsgHead.set_len(0);
-    if (SendTo(*pCtx, oOutMsgHead, oOutMsgBody))
+    if (SendTo(*pCtx, CMD_REQ_BEAT, GetSequence(), oOutMsgBody))
     {
         return(CMD_STATUS_RUNNING);
     }

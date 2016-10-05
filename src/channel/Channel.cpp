@@ -169,9 +169,13 @@ E_CODEC_STATUS Channel::Send()
     }
 }
 
-E_CODEC_STATUS Channel::Send(const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
+    MsgHead oMsgHead;
+    oMsgHead.set_cmd(uiCmd);
+    oMsgHead.set_seq(uiSeq);
+    oMsgHead.set_len(oMsgBody.ByteSize());
     switch (m_ucChannelStatus)
     {
         case CHANNEL_STATUS_ESTABLISHED:

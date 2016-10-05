@@ -26,7 +26,6 @@ E_CMD_STATUS StepTellWorker::Emit(
         const std::string& strErrMsg,
         void* data)
 {
-    MsgHead oOutMsgHead;
     MsgBody oOutMsgBody;
     TargetWorker oTargetWorker;
     oTargetWorker.set_worker_identify(GetWorkerIdentify());
@@ -34,10 +33,7 @@ E_CMD_STATUS StepTellWorker::Emit(
     oOutMsgBody.mutable_rsp_result()->set_code(0);
     oOutMsgBody.mutable_rsp_result()->set_msg("OK");
     oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
-    oOutMsgHead.set_cmd(CMD_REQ_TELL_WORKER);
-    oOutMsgHead.set_seq(GetSequence());
-    oOutMsgHead.set_len(oOutMsgBody.ByteSize());
-    Step::SendTo(m_stCtx, oOutMsgHead, oOutMsgBody);
+    Step::SendTo(m_stCtx, CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
     return(CMD_STATUS_RUNNING);
 }
 

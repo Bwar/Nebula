@@ -186,7 +186,7 @@ protected:
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 发送数据
@@ -199,15 +199,15 @@ protected:
     /**
      * @brief 发送数据
      * @note 指定连接标识符将数据发送。此函数先查找与strIdentify匹配的stMsgShell，如果找到就调用
-     * SendTo(const tagMsgShell& stMsgShell, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+     * SendTo(const tagMsgShell& stMsgShell, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
      * 发送，如果未找到则调用SendToWithAutoConnect(const std::string& strIdentify,
-     * const MsgHead& oMsgHead, const MsgBody& oMsgBody)连接后再发送。
+     * uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)连接后再发送。
      * @param strIdentify 连接标识符(IP:port.worker_index, e.g 192.168.11.12:3001.1)
      * @param oMsgHead 数据包头
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendTo(const std::string& strIdentify, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    bool SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 发送数据
@@ -227,7 +227,7 @@ protected:
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendToNext(const std::string& strNodeType, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    bool SendToNext(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 以取模方式选择发送到同一类型节点
@@ -238,7 +238,7 @@ protected:
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendToWithMod(const std::string& strNodeType, unsigned int uiModFactor, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    bool SendToWithMod(const std::string& strNodeType, unsigned int uiModFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
 protected:
     virtual void SetActiveTime(ev_tstamp dActiveTime)

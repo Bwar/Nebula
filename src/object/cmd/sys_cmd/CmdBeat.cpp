@@ -26,10 +26,8 @@ bool CmdBeat::AnyMessage(
         const MsgBody& oInMsgBody)
 {
     bool bResult = false;
-    MsgHead oOutMsgHead = oInMsgHead;
     MsgBody oOutMsgBody = oInMsgBody;
-    oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
-    SendTo(stCtx, oOutMsgHead, oOutMsgBody);
+    SendTo(stCtx, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
     return(bResult);
 }
 

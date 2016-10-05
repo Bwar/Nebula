@@ -27,12 +27,9 @@ bool CmdToldWorker::AnyMessage(
         const MsgBody& oInMsgBody)
 {
     bool bResult = false;
-    MsgHead oOutMsgHead;
     MsgBody oOutMsgBody;
     TargetWorker oInTargetWorker;
     TargetWorker oOutTargetWorker;
-    oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
-    oOutMsgHead.set_seq(oInMsgHead.seq());
     if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
     {
         bResult = true;
@@ -56,8 +53,7 @@ bool CmdToldWorker::AnyMessage(
         LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
     }
     oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
-    oOutMsgHead.set_len(oOutMsgBody.ByteSize());
-    SendTo(stCtx, oOutMsgHead, oOutMsgBody);
+    SendTo(stCtx, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
     return(bResult);
 }
 

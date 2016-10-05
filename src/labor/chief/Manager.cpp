@@ -36,7 +36,7 @@ void Manager::IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int re
     {
         Manager* pManager = (Manager*)watcher->data;
         pManager->CheckWorker();
-        pManager->ReportToKeeper();
+        pManager->ReportToBeacon();
     }
 }
 
@@ -77,7 +77,7 @@ void Manager::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int 
     {
         Manager* pManager = (Manager*)(watcher->data);
 #ifndef NODE_TYPE_BEACON
-        pManager->ReportToKeeper();
+        pManager->ReportToBeacon();
 #endif
         pManager->CheckWorker();
         pManager->RefreshServer();
@@ -121,7 +121,7 @@ Manager::Manager(const std::string& strConfFile)
     m_iWorkerBeat = (gc_iBeatInterval * 2) + 1;
     CreateEvents();
     CreateWorker();
-    RegisterToKeeper();
+    RegisterToBeacon();
 }
 
 Manager::~Manager()
@@ -391,17 +391,13 @@ bool Manager::IoWrite(Channel* pChannel)
             {
                 keeper_iter->second = stCtx;
             }
-            MsgHead oMsgHead;
             MsgBody oMsgBody;
             ConnectWorker oConnWorker;
             oConnWorker.set_worker_index(index_iter->second);
             oMsgBody.set_data(oConnWorker.SerializeAsString());
-            oMsgHead.set_cmd(CMD_REQ_CONNECT_TO_WORKER);
-            oMsgHead.set_seq(GetSequence());
-            oMsgHead.set_len(oMsgBody.ByteSize());
             m_mapSeq2WorkerIndex.erase(index_iter);
             LOG4_DEBUG("send after connect");
-            SendTo(stCtx, oMsgHead, oMsgBody);
+            SendTo(stCtx, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
             return(true);
         }
         return(false);
@@ -569,9 +565,9 @@ bool Manager::SendTo(const tagChannelContext& stCtx)
     return(false);
 }
 
-bool Manager::SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool Manager::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    LOG4_TRACE("%s(cmd[%u], seq[%u])", __FUNCTION__, oMsgHead.cmd(), oMsgHead.seq());
+    LOG4_TRACE("%s(cmd[%u], seq[%u])", __FUNCTION__, uiCmd, uiSeq);
     std::map<int, Channel*>::iterator iter = m_mapChannel.find(stCtx.iFd);
     if (iter == m_mapChannel.end())
     {
@@ -582,7 +578,7 @@ bool Manager::SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, co
     {
         if (iter->second->GetSequence() == stCtx.ulSeq)
         {
-            E_CODEC_STATUS eCodecStatus = iter->second->Send(oMsgHead, oMsgBody);
+            E_CODEC_STATUS eCodecStatus = iter->second->Send(uiCmd, uiSeq, oMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
                 RemoveIoWriteEvent(iter->second);
@@ -631,7 +627,7 @@ bool Manager::SetChannelIdentify(const tagChannelContext& stCtx, const std::stri
     }
 }
 
-bool Manager::AutoSend(const std::string& strIdentify, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(%s)", __FUNCTION__, strIdentify.c_str());
     int iPosIpPortSeparator = strIdentify.find(':');
@@ -665,7 +661,7 @@ bool Manager::AutoSend(const std::string& strIdentify, const MsgHead& oMsgHead, 
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
         pChannel->SetIdentify(strIdentify);
-        pChannel->Send(oMsgHead, oMsgBody);
+        pChannel->Send(uiCmd, uiSeq, oMsgBody);
         m_mapSeq2WorkerIndex.insert(std::pair<uint32, int>(pChannel->GetSequence(), iWorkerIndex));
         std::map<std::string, tagChannelContext>::iterator keeper_iter = m_mapKeeperCtx.find(strIdentify);
         if (keeper_iter != m_mapKeeperCtx.end())
@@ -1007,7 +1003,7 @@ bool Manager::CreateEvents()
     return(true);
 }
 
-bool Manager::RegisterToKeeper()
+bool Manager::RegisterToBeacon()
 {
     if (m_mapKeeperCtx.size() == 0)
     {
@@ -1021,7 +1017,6 @@ bool Manager::RegisterToKeeper()
     int iSendNum = 0;
     int iSendByte = 0;
     int iClientNum = 0;
-    MsgHead oMsgHead;
     MsgBody oMsgBody;
     CJsonObject oReportData;
     CJsonObject oMember;
@@ -1077,22 +1072,18 @@ bool Manager::RegisterToKeeper()
     oReportData["node"].Add("send_byte", iSendByte);
     oReportData["node"].Add("client", iClientNum);
     oMsgBody.set_data(oReportData.ToString());
-    oMsgHead.set_cmd(CMD_REQ_NODE_REGISTER);
-    oMsgHead.set_seq(GetSequence());
-    oMsgHead.set_len(oMsgBody.ByteSize());
     std::map<std::string, tagChannelContext>::iterator keeper_iter = m_mapKeeperCtx.begin();
     for (; keeper_iter != m_mapKeeperCtx.end(); ++keeper_iter)
     {
         if (keeper_iter->second.iFd == 0)
         {
-            oMsgHead.set_cmd(CMD_REQ_NODE_REGISTER);
-            LOG4_TRACE("%s() cmd %d", __FUNCTION__, oMsgHead.cmd());
-            AutoSend(keeper_iter->first, oMsgHead, oMsgBody);
+            LOG4_TRACE("%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_REGISTER);
+            AutoSend(keeper_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
         }
         else
         {
-            LOG4_TRACE("%s() cmd %d", __FUNCTION__, oMsgHead.cmd());
-            SendTo(keeper_iter->second, oMsgHead, oMsgBody);
+            LOG4_TRACE("%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_REGISTER);
+            SendTo(keeper_iter->second, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
         }
     }
     return(true);
@@ -1188,7 +1179,7 @@ bool Manager::RestartWorker(int iDeathPid)
             {
                 restart_num_iter->second++;
             }
-            RegisterToKeeper();     // 重启Worker进程后向Keeper重发注册请求，以获得center下发其他节点的信息
+            RegisterToBeacon();     // 重启Worker进程后向Keeper重发注册请求，以获得center下发其他节点的信息
             return(true);
         }
         else
@@ -1519,37 +1510,25 @@ void Manager::RefreshServer()
         if (m_oLastConf("log_level") != m_oCurrentConf("log_level"))
         {
             m_oLogger.setLogLevel(m_iLogLevel);
-            MsgHead oMsgHead;
             MsgBody oMsgBody;
             LogLevel oLogLevel;
             oLogLevel.set_log_level(m_iLogLevel);
             oMsgBody.set_data(oLogLevel.SerializeAsString());
-            oMsgHead.set_cmd(CMD_REQ_SET_LOG_LEVEL);
-            oMsgHead.set_seq(GetSequence());
-            oMsgHead.set_len(oMsgBody.ByteSize());
-            SendToWorker(oMsgHead, oMsgBody);
+            SendToWorker(CMD_REQ_SET_LOG_LEVEL, GetSequence(), oMsgBody);
         }
 
         // 更新动态库配置或重新加载动态库
         if (m_oLastConf["so"].ToString() != m_oCurrentConf["so"].ToString())
         {
-            MsgHead oMsgHead;
             MsgBody oMsgBody;
             oMsgBody.set_data(m_oCurrentConf["so"].ToString());
-            oMsgHead.set_cmd(CMD_REQ_RELOAD_SO);
-            oMsgHead.set_seq(GetSequence());
-            oMsgHead.set_len(oMsgBody.ByteSize());
-            SendToWorker(oMsgHead, oMsgBody);
+            SendToWorker(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
         }
         if (m_oLastConf["module"].ToString() != m_oCurrentConf["module"].ToString())
         {
-            MsgHead oMsgHead;
             MsgBody oMsgBody;
             oMsgBody.set_data(m_oCurrentConf["module"].ToString());
-            oMsgHead.set_cmd(CMD_REQ_RELOAD_MODULE);
-            oMsgHead.set_seq(GetSequence());
-            oMsgHead.set_len(oMsgBody.ByteSize());
-            SendToWorker(oMsgHead, oMsgBody);
+            SendToWorker(CMD_REQ_RELOAD_MODULE, GetSequence(), oMsgBody);
         }
     }
     else
@@ -1581,7 +1560,7 @@ void Manager::RefreshServer()
  *     ]
  * }
  */
-bool Manager::ReportToKeeper()
+bool Manager::ReportToBeacon()
 {
     int iLoad = 0;
     int iConnect = 0;
@@ -1590,7 +1569,6 @@ bool Manager::ReportToKeeper()
     int iSendNum = 0;
     int iSendByte = 0;
     int iClientNum = 0;
-    MsgHead oMsgHead;
     MsgBody oMsgBody;
     CJsonObject oReportData;
     CJsonObject oMember;
@@ -1646,9 +1624,6 @@ bool Manager::ReportToKeeper()
     oReportData["node"].Add("send_byte", iSendByte);
     oReportData["node"].Add("client", iClientNum);
     oMsgBody.set_data(oReportData.ToString());
-    oMsgHead.set_cmd(CMD_REQ_NODE_STATUS_REPORT);
-    oMsgHead.set_seq(GetSequence());
-    oMsgHead.set_len(oMsgBody.ByteSize());
     LOG4_TRACE("%s()：  %s", __FUNCTION__, oReportData.ToString().c_str());
 
     std::map<std::string, tagChannelContext>::iterator keeper_iter = m_mapKeeperCtx.begin();
@@ -1656,20 +1631,19 @@ bool Manager::ReportToKeeper()
     {
         if (keeper_iter->second.iFd == 0)
         {
-            oMsgHead.set_cmd(CMD_REQ_NODE_REGISTER);
-            LOG4_TRACE("%s() cmd %d", __FUNCTION__, oMsgHead.cmd());
-            AutoSend(keeper_iter->first, oMsgHead, oMsgBody);
+            LOG4_TRACE("%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_REGISTER);
+            AutoSend(keeper_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
         }
         else
         {
-            LOG4_TRACE("%s() cmd %d", __FUNCTION__, oMsgHead.cmd());
-            SendTo(keeper_iter->second, oMsgHead, oMsgBody);
+            LOG4_TRACE("%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_STATUS_REPORT);
+            SendTo(keeper_iter->second, CMD_REQ_NODE_STATUS_REPORT, GetSequence(), oMsgBody);
         }
     }
     return(true);
 }
 
-bool Manager::SendToWorker(const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool Manager::SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     std::map<int, Channel*>::iterator worker_conn_iter;
     std::map<int, tagWorkerAttr>::iterator worker_iter = m_mapWorker.begin();
@@ -1678,7 +1652,7 @@ bool Manager::SendToWorker(const MsgHead& oMsgHead, const MsgBody& oMsgBody)
         worker_conn_iter = m_mapChannel.find(worker_iter->second.iControlFd);
         if (worker_conn_iter != m_mapChannel.end())
         {
-            E_CODEC_STATUS eCodecStatus = worker_conn_iter->second->Send(oMsgHead, oMsgBody);
+            E_CODEC_STATUS eCodecStatus = worker_conn_iter->second->Send(uiCmd, uiSeq, oMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
                 RemoveIoWriteEvent(worker_conn_iter->second);
@@ -1721,7 +1695,6 @@ bool Manager::OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, 
     LOG4_DEBUG("%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
     int iErrno = 0;
     ConnectWorker oConnWorker;
-    MsgHead oOutMsgHead;
     MsgBody oOutMsgBody;
     LOG4_TRACE("oInMsgHead.cmd() = %u, seq() = %u", oInMsgHead.cmd(), oInMsgHead.seq());
     if (oInMsgHead.cmd() == CMD_REQ_CONNECT_TO_WORKER)
@@ -1737,10 +1710,7 @@ bool Manager::OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, 
                     // TODO 这里假设传送文件描述符都成功，是因为对传送文件描述符成功后Manager顺利回复消息，需要一个更好的解决办法
                     oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
                     oOutMsgBody.mutable_rsp_result()->set_msg("OK");
-                    oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
-                    oOutMsgHead.set_seq(oInMsgHead.seq());
-                    oOutMsgHead.set_len(oOutMsgBody.ByteSize());
-                    E_CODEC_STATUS eCodecStatus = pChannel->Send(oOutMsgHead, oOutMsgBody);
+                    E_CODEC_STATUS eCodecStatus = pChannel->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
                     if (CODEC_STATUS_OK == eCodecStatus)
                     {
                         RemoveIoWriteEvent(pChannel);
@@ -1786,12 +1756,9 @@ bool Manager::OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, 
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
         oOutMsgBody.mutable_rsp_result()->set_msg("unknow cmd!");
         LOG4_DEBUG("unknow cmd %d!", oInMsgHead.cmd());
-        oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
-        oOutMsgHead.set_seq(oInMsgHead.seq());
-        oOutMsgHead.set_len(oOutMsgBody.ByteSize());
     }
 
-    E_CODEC_STATUS eCodecStatus = pChannel->Send(oOutMsgHead, oOutMsgBody);
+    E_CODEC_STATUS eCodecStatus = pChannel->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
     if (CODEC_STATUS_OK == eCodecStatus)
     {
         RemoveIoWriteEvent(pChannel);
@@ -1816,10 +1783,8 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
     {
         if (CMD_REQ_BEAT == oInMsgHead.cmd())   // beacon发过来的心跳包
         {
-            MsgHead oOutMsgHead = oInMsgHead;
             MsgBody oOutMsgBody = oInMsgBody;
-            oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
-            E_CODEC_STATUS eCodecStatus = pChannel->Send(oOutMsgHead, oOutMsgBody);
+            E_CODEC_STATUS eCodecStatus = pChannel->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
                 RemoveIoWriteEvent(pChannel);
@@ -1835,15 +1800,11 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
             }
             return(true);
         }
-        SendToWorker(oInMsgHead, oInMsgBody);
-        MsgHead oOutMsgHead;
+        SendToWorker(oInMsgHead.cmd(), oInMsgHead.seq(), oInMsgBody);
         MsgBody oOutMsgBody;
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
         oOutMsgBody.mutable_rsp_result()->set_msg("OK");
-        oOutMsgHead.set_cmd(oInMsgHead.cmd() + 1);
-        oOutMsgHead.set_seq(oInMsgHead.seq());
-        oOutMsgHead.set_len(oOutMsgBody.ByteSize());
-        E_CODEC_STATUS eCodecStatus = pChannel->Send(oOutMsgHead, oOutMsgBody);
+        E_CODEC_STATUS eCodecStatus = pChannel->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
         if (CODEC_STATUS_OK == eCodecStatus)
         {
             RemoveIoWriteEvent(pChannel);
@@ -1869,11 +1830,7 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
             if (0 == iErrno)
             {
                 oNode.Get("node_id", m_uiNodeId);
-                MsgHead oMsgHead;
-                oMsgHead.set_cmd(CMD_REQ_REFRESH_NODE_ID);
-                oMsgHead.set_seq(oInMsgHead.seq());
-                oMsgHead.set_len(oInMsgHead.len());
-                SendToWorker(oMsgHead, oInMsgBody);
+                SendToWorker(CMD_REQ_REFRESH_NODE_ID, oInMsgHead.seq(), oInMsgBody);
                 RemoveIoWriteEvent(pChannel);
             }
             else
@@ -1883,7 +1840,6 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
         }
         else if (CMD_RSP_CONNECT_TO_WORKER == oInMsgHead.cmd()) // 连接beacon时的回调
         {
-            MsgHead oOutMsgHead;
             MsgBody oOutMsgBody;
             TargetWorker oTargetWorker;
             char szWorkerIdentify[64] = {0};
@@ -1893,10 +1849,7 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
             oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
             oOutMsgBody.mutable_rsp_result()->set_msg("OK");
             oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
-            oOutMsgHead.set_cmd(CMD_REQ_TELL_WORKER);
-            oOutMsgHead.set_seq(GetSequence());
-            oOutMsgHead.set_len(oOutMsgBody.ByteSize());
-            E_CODEC_STATUS eCodecStatus = pChannel->Send(oOutMsgHead, oOutMsgBody);
+            E_CODEC_STATUS eCodecStatus = pChannel->Send(CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
                 RemoveIoWriteEvent(pChannel);

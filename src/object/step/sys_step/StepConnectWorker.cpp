@@ -28,7 +28,7 @@ E_CMD_STATUS StepConnectWorker::Emit(
         void* data)
 {
     m_oReqMsgHead.set_seq(GetSequence());
-    SendTo(m_stCtx, m_oReqMsgHead, m_oReqMsgBody);
+    SendTo(m_stCtx, m_oReqMsgHead.cmd(), m_oReqMsgHead.seq(), m_oReqMsgBody);
     return(CMD_STATUS_RUNNING);
 }
 

@@ -69,7 +69,7 @@ public:     // Labor相关设置（由Cmd类或Step类调用这些方法完成La
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    virtual bool SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, const MsgBody& oMsgBody) = 0;
+    virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody) = 0;
 
     /**
      * @brief 设置连接的标识符信息
@@ -91,7 +91,7 @@ public:     // Labor相关设置（由Cmd类或Step类调用这些方法完成La
      * @param oMsgBody 数据包体
      * @return 是否可以自动发送
      */
-    virtual bool AutoSend(const std::string& strIdentify, const MsgHead& oMsgHead, const MsgBody& oMsgBody) = 0;
+    virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody) = 0;
 
     // TODO virtual bool AutoHttp(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg);
 
@@ -446,15 +446,15 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
     /**
      * @brief 发送数据
      * @note 指定连接标识符将数据发送。此函数先查找与strIdentify匹配的stMsgShell，如果找到就调用
-     * SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+     * SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
      * 发送，如果未找到则调用SendToWithAutoConnect(const std::string& strIdentify,
-     * const MsgHead& oMsgHead, const MsgBody& oMsgBody)连接后再发送。
+     * uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)连接后再发送。
      * @param strIdentify 连接标识符(IP:port.worker_index, e.g 192.168.11.12:3001.1)
      * @param oMsgHead 数据包头
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    virtual bool SendTo(const std::string& strIdentify, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+    virtual bool SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     {
         return(false);
     }
@@ -488,7 +488,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    virtual bool SendToNext(const std::string& strNodeType, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+    virtual bool SendToNext(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     {
         return(false);
     }
@@ -502,7 +502,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    virtual bool SendToWithMod(const std::string& strNodeType, unsigned int uiModFactor, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+    virtual bool SendToWithMod(const std::string& strNodeType, unsigned int uiModFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     {
         return(false);
     }
@@ -515,7 +515,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    virtual bool Broadcast(const std::string& strNodeType, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+    virtual bool Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     {
         return(false);
     }

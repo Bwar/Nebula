@@ -193,7 +193,6 @@ bool Worker::CheckParent()
         //Destroy();
         exit(0);
     }
-    MsgHead oMsgHead;
     MsgBody oMsgBody;
     CJsonObject oJsonLoad;
     oJsonLoad.Add("load", int32(m_mapChannel.size() + m_mapCallbackStep.size()));
@@ -205,13 +204,10 @@ bool Worker::CheckParent()
     oJsonLoad.Add("client", int32(m_mapChannel.size() - m_mapInnerFd.size()));
     LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
     oMsgBody.set_data(oJsonLoad.ToString());
-    oMsgHead.set_cmd(CMD_REQ_UPDATE_WORKER_LOAD);
-    oMsgHead.set_seq(GetSequence());
-    oMsgHead.set_len(oMsgBody.ByteSize());
     std::map<int, Channel*>::iterator iter = m_mapChannel.find(m_iManagerControlFd);
     if (iter != m_mapChannel.end())
     {
-        iter->second->Send(oMsgHead, oMsgBody);
+        iter->second->Send(CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
     }
     m_iRecvNum = 0;
     m_iRecvByte = 0;
@@ -1538,10 +1534,10 @@ bool Worker::SendTo(const tagChannelContext& stCtx)
     return(false);
 }
 
-bool Worker::SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool Worker::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(fd %d, fd_seq %lu, cmd %u, msg_seq %u)",
-                    __FUNCTION__, stCtx.iFd, stCtx.ulSeq, oMsgHead.cmd(), oMsgHead.seq());
+                    __FUNCTION__, stCtx.iFd, stCtx.ulSeq, uiCmd, uiSeq);
     std::map<int, Channel*>::iterator conn_iter = m_mapChannel.find(stCtx.iFd);
     if (conn_iter == m_mapChannel.end())
     {
@@ -1552,7 +1548,7 @@ bool Worker::SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, con
     {
         if (conn_iter->second->GetSequence() == stCtx.ulSeq)
         {
-            E_CODEC_STATUS eStatus = conn_iter->second->Send(oMsgHead, oMsgBody);
+            E_CODEC_STATUS eStatus = conn_iter->second->Send(uiCmd, uiSeq, oMsgBody);
             if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
             {
                 return(true);
@@ -1568,18 +1564,18 @@ bool Worker::SendTo(const tagChannelContext& stCtx, const MsgHead& oMsgHead, con
     }
 }
 
-bool Worker::SendTo(const std::string& strIdentify, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool Worker::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(identify: %s)", __FUNCTION__, strIdentify.c_str());
     std::map<std::string, std::list<Channel*> >::iterator named_iter = m_mapNamedChannel.find(strIdentify);
     if (named_iter == m_mapNamedChannel.end())
     {
         LOG4_TRACE("no channel match %s.", strIdentify.c_str());
-        return(AutoSend(strIdentify, oMsgHead, oMsgBody));
+        return(AutoSend(strIdentify, uiCmd, uiSeq, oMsgBody));
     }
     else
     {
-        E_CODEC_STATUS eStatus = (*named_iter->second.begin())->Send(oMsgHead, oMsgBody);
+        E_CODEC_STATUS eStatus = (*named_iter->second.begin())->Send(uiCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
         {
             return(true);
@@ -1588,7 +1584,7 @@ bool Worker::SendTo(const std::string& strIdentify, const MsgHead& oMsgHead, con
     }
 }
 
-bool Worker::SendToNext(const std::string& strNodeType, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool Worker::SendToNext(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(node_type: %s)", __FUNCTION__, strNodeType.c_str());
     std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > >::iterator node_type_iter;
@@ -1604,7 +1600,7 @@ bool Worker::SendToNext(const std::string& strNodeType, const MsgHead& oMsgHead,
         {
             std::set<std::string>::iterator id_iter = node_type_iter->second.first;
             node_type_iter->second.first++;
-            return(SendTo(*id_iter, oMsgHead, oMsgBody));
+            return(SendTo(*id_iter, uiCmd, uiSeq, oMsgBody));
         }
         else
         {
@@ -1613,7 +1609,7 @@ bool Worker::SendToNext(const std::string& strNodeType, const MsgHead& oMsgHead,
             {
                 node_type_iter->second.first = id_iter;
                 node_type_iter->second.first++;
-                return(SendTo(*id_iter, oMsgHead, oMsgBody));
+                return(SendTo(*id_iter, uiCmd, uiSeq, oMsgBody));
             }
             else
             {
@@ -1624,7 +1620,7 @@ bool Worker::SendToNext(const std::string& strNodeType, const MsgHead& oMsgHead,
     }
 }
 
-bool Worker::SendToWithMod(const std::string& strNodeType, unsigned int uiModFactor, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool Worker::SendToWithMod(const std::string& strNodeType, unsigned int uiModFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(nody_type: %s, mod_factor: %d)", __FUNCTION__, strNodeType.c_str(), uiModFactor);
     std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > >::iterator node_type_iter;
@@ -1652,7 +1648,7 @@ bool Worker::SendToWithMod(const std::string& strNodeType, unsigned int uiModFac
             {
                 if (i == target_identify && id_iter != node_type_iter->second.second.end())
                 {
-                    return(SendTo(*id_iter, oMsgHead, oMsgBody));
+                    return(SendTo(*id_iter, uiCmd, uiSeq, oMsgBody));
                 }
             }
             return(false);
@@ -1660,7 +1656,7 @@ bool Worker::SendToWithMod(const std::string& strNodeType, unsigned int uiModFac
     }
 }
 
-bool Worker::Broadcast(const std::string& strNodeType, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool Worker::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(node_type: %s)", __FUNCTION__, strNodeType.c_str());
     std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > >::iterator node_type_iter;
@@ -1678,7 +1674,7 @@ bool Worker::Broadcast(const std::string& strNodeType, const MsgHead& oMsgHead, 
         {
             if (*id_iter != GetWorkerIdentify())
             {
-                SendTo(*id_iter, oMsgHead, oMsgBody);
+                SendTo(*id_iter, uiCmd, uiSeq, oMsgBody);
             }
             ++iSendNum;
         }
@@ -1780,7 +1776,7 @@ bool Worker::SetChannelIdentify(const tagChannelContext& stCtx, const std::strin
     }
 }
 
-bool Worker::AutoSend(const std::string& strIdentify, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool Worker::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(%s)", __FUNCTION__, strIdentify.c_str());
     int iPosIpPortSeparator = strIdentify.find(':');
@@ -2652,7 +2648,7 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
         }
         if (oOutMsgHead.IsInitialized())
         {
-            SendTo(stCtx, oOutMsgHead, oOutMsgBody);
+            SendTo(stCtx, oOutMsgHead.cmd(), oOutMsgHead.seq(), oOutMsgBody);
             return(false);
         }
     }
