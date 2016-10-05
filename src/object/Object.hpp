@@ -182,7 +182,8 @@ protected:
      * @note 使用指定连接将数据发送。如果能直接得知stCtx（比如刚从该连接接收到数据，欲回确认包），就
      * 应调用此函数发送。此函数是SendTo()函数中最高效的一个。
      * @param stCtx 消息通道上下文
-     * @param oMsgHead 数据包头
+     * @param uiCmd 发送的命令字
+     * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
@@ -203,7 +204,8 @@ protected:
      * 发送，如果未找到则调用SendToWithAutoConnect(const std::string& strIdentify,
      * uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)连接后再发送。
      * @param strIdentify 连接标识符(IP:port.worker_index, e.g 192.168.11.12:3001.1)
-     * @param oMsgHead 数据包头
+     * @param uiCmd 发送的命令字
+     * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
@@ -223,7 +225,8 @@ protected:
      * @brief 发送到下一个同一类型的节点
      * @note 发送到下一个同一类型的节点，适用于对同一类型节点做轮询方式发送以达到简单的负载均衡。
      * @param strNodeType 节点类型
-     * @param oMsgHead 数据包头
+     * @param uiCmd 发送的命令字
+     * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
@@ -234,7 +237,8 @@ protected:
      * @note 以取模方式选择发送到同一类型节点，实现简单有要求的负载均衡。
      * @param strNodeType 节点类型
      * @param uiModFactor 取模因子
-     * @param oMsgHead 数据包头
+     * @param uiCmd 发送的命令字
+     * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */

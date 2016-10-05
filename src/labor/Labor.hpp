@@ -450,7 +450,8 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * 发送，如果未找到则调用SendToWithAutoConnect(const std::string& strIdentify,
      * uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)连接后再发送。
      * @param strIdentify 连接标识符(IP:port.worker_index, e.g 192.168.11.12:3001.1)
-     * @param oMsgHead 数据包头
+     * @param uiCmd 发送的命令字
+     * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
@@ -484,7 +485,8 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @brief 发送到下一个同一类型的节点
      * @note 发送到下一个同一类型的节点，适用于对同一类型节点做轮询方式发送以达到简单的负载均衡。
      * @param strNodeType 节点类型
-     * @param oMsgHead 数据包头
+     * @param uiCmd 发送的命令字
+     * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
@@ -498,7 +500,8 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @note 以取模方式选择发送到同一类型节点，实现简单有要求的负载均衡。
      * @param strNodeType 节点类型
      * @param uiModFactor 取模因子
-     * @param oMsgHead 数据包头
+     * @param uiCmd 发送的命令字
+     * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
@@ -511,7 +514,8 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @brief 发送到一种类型的节点
      * @note 发送到同一种类型除当前节点之外的所有节点。
      * @param strNodeType 节点类型
-     * @param oMsgHead 数据包头
+     * @param uiCmd 发送的命令字
+     * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
