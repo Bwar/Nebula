@@ -3,7 +3,7 @@
  * @file     CJsonObject.cpp
  * @brief 
  * @author   bwarliao
- * @date:    2014-7-16-
+ * @date:    2014-7-16
  * @note
  * Modify history:
  ******************************************************************************/
@@ -16,7 +16,7 @@ namespace neb
 CJsonObject::CJsonObject()
     : m_pJsonData(NULL), m_pExternJsonDataRef(NULL)
 {
-    // m_pJsonData = cJSON_CreateObject();  //鍦ㄥ悇Add()鏂规硶涓坊鍔犳垚鍛樻椂鑷姩鍐冲畾鏄璞¤繕鏄暟缁�
+    // m_pJsonData = cJSON_CreateObject();
 }
 
 CJsonObject::CJsonObject(const std::string& strJson)
