@@ -9,6 +9,6 @@
    * [crypto++](http://www.cryptopp.com)
    * [log4cplus](https://github.com/log4cplus/log4cplus)
    * [mysqlclient](http://dev.mysql.com/downloads/connector/c/)
-   . [http_parse](https://github.com/nodejs/http-parser) integrate into Nebula/src/util/http 
-   . [cjson](https://github.com/DaveGamble/cJSON) integrate into into Nebula/src/util/json
+   * [http_parse](https://github.com/nodejs/http-parser) integrate into Nebula/src/util/http 
+   * [cjson](https://github.com/DaveGamble/cJSON) integrate into into Nebula/src/util/json
 
