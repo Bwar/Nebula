@@ -27,7 +27,7 @@ namespace neb
 
 enum OBJECT_TYPE
 {
-    OBJ_NOT_DEFINE          = 0,        ///< 未定义
+    OBJ_UNDEFINE            = 0,        ///< 未定义
     OBJ_CMD                 = 1,        ///< Cmd对象，处理带命令字的pb请求
     OBJ_MODULE              = 2,        ///< Module对象，处理带url path的http请求
     OBJ_SESSION             = 3,        ///< Session会话对象

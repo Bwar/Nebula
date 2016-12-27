@@ -1824,18 +1824,16 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
     {
         if (CMD_RSP_NODE_REGISTER == oInMsgHead.cmd()) //Manager这层只有向beacon注册会收到回调，上报状态不收回调或者收到回调不必处理
         {
-            CJsonObject oNode(oInMsgBody.data());
-            int iErrno = 0;
-            oNode.Get("errcode", iErrno);
-            if (0 == iErrno)
+            if (ERR_OK == oInMsgBody.rsp_result().code())
             {
+                CJsonObject oNode(oInMsgBody.data());
                 oNode.Get("node_id", m_uiNodeId);
                 SendToWorker(CMD_REQ_REFRESH_NODE_ID, oInMsgHead.seq(), oInMsgBody);
                 RemoveIoWriteEvent(pChannel);
             }
             else
             {
-                LOG4_WARN("register to beacon error, errcode %d!", iErrno);
+                LOG4_ERROR("register to beacon error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
             }
         }
         else if (CMD_RSP_CONNECT_TO_WORKER == oInMsgHead.cmd()) // 连接beacon时的回调

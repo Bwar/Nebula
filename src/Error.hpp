@@ -32,6 +32,7 @@ enum E_ERROR_NO
     ERR_SESSION                         = 10010,    ///< 获取会话错误
     ERR_BODY_JSON                       = 10011,    ///< 消息体json解析错误
     ERR_SERVERINFO_RECORD               = 10012,    ///< 存档服务器信息错误
+    ERR_NODE_NUM                        = 10013,    ///< 系统节点数超过最大限制65535
 
     /* 存储代理错误码段  11000~11999 */
     ERR_INCOMPLET_DATAPROXY_DATA        = 11001,    ///< DataProxy请求数据包不完整
