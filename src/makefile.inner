@@ -46,7 +46,7 @@ LDFLAGS := $(LDFLAGS) -D_LINUX_OS_ \
            -L$(SYSTEM_LIB_PATH) -lpthread \
            -L$(SYSTEM_LIB_PATH) -lc -ldl -lrt
 
-SUB_INCLUDE = labor codec pb
+SUB_INCLUDE = channel labor codec pb
 DEEP_SUB_INCLUDE = object storage util
 COMM_PATH = $(NEBULA_PATH)/src/object \
             $(NEBULA_PATH)/src/object/cmd \
@@ -65,7 +65,7 @@ COMM_C_SRCS = $(foreach dir, $(COMM_PATH), $(wildcard $(dir)/*.c))
 OBJS = $(patsubst %.cpp,%.o,$(CPP_SRCS)) $(patsubst %.c,%.o,$(C_SRCS)) $(patsubst %.cc,%.o,$(CC_SRCS))
 COMM_OBJS = $(patsubst %.cpp,%.o,$(COMM_CPP_SRCS)) $(patsubst %.c,%.o,$(COMM_C_SRCS)) $(patsubst %.cc,%.o,$(COMM_CC_SRCS))
 
-TARGET = Logic Storage DbAgentWrite DbAgentRead libstarship.so
+TARGET = Logic Storage DbAgentWrite DbAgentRead libnebula.so
 
 all: $(TARGET)
 
@@ -82,7 +82,7 @@ DbAgentWrite: $(OBJS)
 DbAgentRead: $(OBJS)
 	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
 	
-libstarship.so: $(COMM_OBJS)
+libnebula.so: $(COMM_OBJS)
 	$(CXX) $(UNITTEST) -fPIE -rdynamic -shared -g -o $@ $^ $(LDFLAGS)
 	@for dir in $(SUB_INCLUDE); do mkdir -p $(NEBULA_PATH)/include/$$dir; cp $(NEBULA_PATH)/src/$$dir/*.hpp $(NEBULA_PATH)/include/$$dir/ >> /dev/null 2>&1; cp $(NEBULA_PATH)/src/$$dir/*.h $(NEBULA_PATH)/include/$$dir/ >> /dev/null 2>&1; done
 	@for d in `find $(DEEP_SUB_INCLUDE) -type d`; do mkdir -p $(NEBULA_PATH)/include/$$d; cp $(NEBULA_PATH)/src/$$d/*.hpp $(NEBULA_PATH)/include/$$d/ >> /dev/null 2>&1; cp $(NEBULA_PATH)/src/$$d/*.h $(NEBULA_PATH)/include/$$d/ >> /dev/null 2>&1; done
@@ -99,6 +99,6 @@ clean:
 	rm -f $(OBJS)
 	rm -f $(TARGET)
 	rm -rf $(NEBULA_PATH)/include
-	rm -f $(NEBULA_PATH)/lib/libstarship.*
+	rm -f $(NEBULA_PATH)/lib/libnebula.*
         
         
