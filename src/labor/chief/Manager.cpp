@@ -344,7 +344,7 @@ bool Manager::DataRecvAndHandle(Channel* pChannel)
                 {
                     OnDataAndTransferFd(pChannel, oMsgHead, oMsgBody);
                 }
-                else    // 与keeper连接
+                else    // 与beacon连接
                 {
                     OnBeaconData(pChannel, oMsgHead, oMsgBody);
                 }

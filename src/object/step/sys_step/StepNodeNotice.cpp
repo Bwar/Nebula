@@ -34,12 +34,12 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
     int iNodePort = 0;
     int iWorkerNum = 0;
     char szIdentify[64] = {0};
-    for (int i = 0; i < oJson["node_arry_reg"].GetArraySize(); ++i)
+    for (int i = 0; i < oJson["add_nodes"].GetArraySize(); ++i)
     {
-        if (oJson["node_arry_reg"][i].Get("node_type",strNodeType)
-                && oJson["node_arry_reg"][i].Get("node_ip",strNodeHost)
-                && oJson["node_arry_reg"][i].Get("node_port",iNodePort)
-                && oJson["node_arry_reg"][i].Get("worker_num",iWorkerNum))
+        if (oJson["add_nodes"][i].Get("node_type",strNodeType)
+                && oJson["add_nodes"][i].Get("node_ip",strNodeHost)
+                && oJson["add_nodes"][i].Get("node_port",iNodePort)
+                && oJson["add_nodes"][i].Get("worker_num",iWorkerNum))
         {
             for(int j = 0; j < iWorkerNum; ++j)
             {
@@ -50,12 +50,12 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
         }
     }
 
-    for (int i = 0; i < oJson["node_arry_exit"].GetArraySize(); ++i)
+    for (int i = 0; i < oJson["del_nodes"].GetArraySize(); ++i)
     {
-        if (oJson["node_arry_exit"][i].Get("node_type",strNodeType)
-                && oJson["node_arry_exit"][i].Get("node_ip",strNodeHost)
-                && oJson["node_arry_exit"][i].Get("node_port",iNodePort)
-                && oJson["node_arry_exit"][i].Get("worker_num",iWorkerNum))
+        if (oJson["del_nodes"][i].Get("node_type",strNodeType)
+                && oJson["del_nodes"][i].Get("node_ip",strNodeHost)
+                && oJson["del_nodes"][i].Get("node_port",iNodePort)
+                && oJson["del_nodes"][i].Get("worker_num",iWorkerNum))
         {
             for(int j = 0; j < iWorkerNum; ++j)
             {
