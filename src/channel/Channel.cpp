@@ -50,12 +50,15 @@ bool Channel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
         {
             case CODEC_PROTOBUF:
                 m_pCodec = new CodecProto(eCodecType, strKey);
+                m_pCodec->SetLogger(m_pLogger);
                 break;
             case CODEC_PRIVATE:
                 m_pCodec = new CodecPrivate(eCodecType, strKey);
+                m_pCodec->SetLogger(m_pLogger);
                 break;
             case CODEC_HTTP:
                 m_pCodec = new CodecHttp(eCodecType, strKey);
+                m_pCodec->SetLogger(m_pLogger);
                 break;
             default:
                 LOG4_ERROR("no codec defined for code type %d", eCodecType);
@@ -547,12 +550,15 @@ bool Channel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
         {
             case CODEC_PROTOBUF:
                 pNewCodec = new CodecProto(eCodecType, m_strKey);
+                pNewCodec->SetLogger(m_pLogger);
                 break;
             case CODEC_PRIVATE:
                 pNewCodec = new CodecPrivate(eCodecType, m_strKey);
+                pNewCodec->SetLogger(m_pLogger);
                 break;
             case CODEC_HTTP:
                 pNewCodec = new CodecHttp(eCodecType, m_strKey);
+                pNewCodec->SetLogger(m_pLogger);
                 break;
             default:
                 LOG4_ERROR("no codec defined for code type %d", eCodecType);

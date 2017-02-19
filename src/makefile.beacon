@@ -57,6 +57,7 @@ all: $(TARGET)
 
 Beacon: $(OBJS)
 	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
+	cp -f $@ ../bin/
 	
 
 %.o:%.cpp
@@ -68,5 +69,7 @@ Beacon: $(OBJS)
 clean:
 	rm -f $(OBJS)
 	rm -f $(TARGET)
+	rm -rf $(NEBULA_PATH)/bin
         
+
         

@@ -27,8 +27,8 @@ E_CODEC_STATUS CodecProto::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBo
     int iErrno = 0;
     int iHadWriteLen = 0;
     int iWriteLen = 0;
-    int iNeedWriteLen = oMsgHead.ByteSize();
-    iWriteLen = pBuff->Write(oMsgHead.SerializeAsString().c_str(), oMsgHead.ByteSize());
+    int iNeedWriteLen = gc_uiMsgHeadSize;
+    iWriteLen = pBuff->Write(oMsgHead.SerializeAsString().c_str(), gc_uiMsgHeadSize);
     if (iWriteLen != iNeedWriteLen)
     {
         LOG4_ERROR("buff write head iWriteLen != iNeedWriteLen!");
@@ -42,7 +42,6 @@ E_CODEC_STATUS CodecProto::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBo
     }
     iNeedWriteLen = oMsgBody.ByteSize();
     iWriteLen = pBuff->Write(oMsgBody.SerializeAsString().c_str(), oMsgBody.ByteSize());
-    LOG4_TRACE("pBuff->ReadableBytes()=%u", pBuff->ReadableBytes());
     if (iWriteLen == iNeedWriteLen)
     {
         return(CODEC_STATUS_OK);
@@ -59,24 +58,20 @@ E_CODEC_STATUS CodecProto::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oM
 {
     LOG4_TRACE("%s() pBuff->ReadableBytes()=%d, pBuff->GetReadIndex()=%d",
                     __FUNCTION__, pBuff->ReadableBytes(), pBuff->GetReadIndex());
-    oMsgHead.set_cmd(0);
-    oMsgHead.set_len(0);
-    oMsgHead.set_seq(0);
-    int iHeadSize = oMsgHead.ByteSize();
-    if ((int)(pBuff->ReadableBytes()) >= iHeadSize)
+    if (pBuff->ReadableBytes() >= gc_uiMsgHeadSize)
     {
-        bool bResult = oMsgHead.ParseFromArray(pBuff->GetRawReadBuffer(), iHeadSize);
+        bool bResult = oMsgHead.ParseFromArray(pBuff->GetRawReadBuffer(), gc_uiMsgHeadSize);
         if (bResult)
         {
             if (0 == oMsgHead.len())      // 无包体（心跳包等）
             {
-                pBuff->SkipBytes(iHeadSize);
+                pBuff->SkipBytes(gc_uiMsgHeadSize);
                 return(CODEC_STATUS_OK);
             }
-            if (pBuff->ReadableBytes() >= iHeadSize + oMsgHead.len())
+            if (pBuff->ReadableBytes() >= gc_uiMsgHeadSize + oMsgHead.len())
             {
                 bResult = oMsgBody.ParseFromArray(
-                                pBuff->GetRawReadBuffer() + iHeadSize, oMsgHead.len());
+                                pBuff->GetRawReadBuffer() + gc_uiMsgHeadSize, oMsgHead.len());
                 if (bResult)
                 {
                     pBuff->SkipBytes(oMsgHead.ByteSize() + oMsgBody.ByteSize());

@@ -936,11 +936,14 @@ void Manager::CreateWorker()
             stWorkerAttr.iWorkerIndex = i;
             stWorkerAttr.iControlFd = iControlFds[0];
             stWorkerAttr.iDataFd = iDataFds[0];
+            stWorkerAttr.dBeatTime = ev_now(m_loop);
             m_mapWorker.insert(std::pair<int, tagWorkerAttr>(iPid, stWorkerAttr));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFds[0], iPid));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFds[0], iPid));
             Channel* pChannelData = CreateChannel(iControlFds[0], CODEC_PROTOBUF);
             Channel* pChannelControl = CreateChannel(iDataFds[0], CODEC_PROTOBUF);
+            pChannelData->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            pChannelControl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             AddIoReadEvent(pChannelData);
             AddIoReadEvent(pChannelControl);
         }
@@ -959,12 +962,14 @@ bool Manager::CreateEvents()
     {
         return(false);
     }
-    Channel* pChannelListen = CreateChannel(m_iS2SListenFd, CODEC_PROTOBUF);
-    AddIoReadEvent(pChannelListen);
+    Channel* pChannelListen = NULL;
 #ifdef NODE_TYPE_ACCESS
     pChannelListen = CreateChannel(m_iC2SListenFd, m_eCodec);
-    AddIoReadEvent(pChannelListen);
+#else
+    pChannelListen = CreateChannel(m_iS2SListenFd, CODEC_PROTOBUF);
 #endif
+    pChannelListen->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+    AddIoReadEvent(pChannelListen);
 
     ev_signal* child_signal_watcher = new ev_signal();
     ev_signal_init (child_signal_watcher, SignalCallback, SIGCHLD);
@@ -1162,12 +1167,15 @@ bool Manager::RestartWorker(int iDeathPid)
             stWorkerAttr.iWorkerIndex = iWorkerIndex;
             stWorkerAttr.iControlFd = iControlFds[0];
             stWorkerAttr.iDataFd = iDataFds[0];
+            stWorkerAttr.dBeatTime = ev_now(m_loop);
             LOG4_TRACE("m_mapWorker insert (iNewPid %d, worker_index %d)", iNewPid, iWorkerIndex);
             m_mapWorker.insert(std::pair<int, tagWorkerAttr>(iNewPid, stWorkerAttr));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFds[0], iNewPid));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFds[0], iNewPid));
             Channel* pChannelData = CreateChannel(iControlFds[0], CODEC_PROTOBUF);
             Channel* pChannelControl = CreateChannel(iDataFds[0], CODEC_PROTOBUF);
+            pChannelData->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            pChannelControl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             AddIoReadEvent(pChannelData);
             AddIoReadEvent(pChannelControl);
             restart_num_iter = m_mapWorkerRestartNum.find(iWorkerIndex);

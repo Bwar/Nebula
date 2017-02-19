@@ -71,16 +71,19 @@ all: $(TARGET)
 
 Logic: $(OBJS)
 	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
-#	cp -f $@ ../../../deploy/bin/
+	cp -f $@ ../bin/
 	
 Storage: $(OBJS)
 	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
+	cp -f $@ ../bin/
 
 DbAgentWrite: $(OBJS)
 	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
+	cp -f $@ ../bin/
 
 DbAgentRead: $(OBJS)
 	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
+	cp -f $@ ../bin/
 	
 libnebula.so: $(COMM_OBJS)
 	$(CXX) $(UNITTEST) -fPIE -rdynamic -shared -g -o $@ $^ $(LDFLAGS)
@@ -98,6 +101,7 @@ libnebula.so: $(COMM_OBJS)
 clean:
 	rm -f $(OBJS)
 	rm -f $(TARGET)
+	rm -rf $(NEBULA_PATH)/bin
 	rm -rf $(NEBULA_PATH)/include
 	rm -f $(NEBULA_PATH)/lib/libnebula.*
         

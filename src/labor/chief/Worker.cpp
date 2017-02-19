@@ -8,7 +8,6 @@
  * Modify history:
  ******************************************************************************/
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -86,9 +85,9 @@ void Worker::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int r
     if (watcher->data != NULL)
     {
         Worker* pWorker = (Worker*)(watcher->data);
-#ifndef NODE_TYPE_BEACON
+//#ifndef NODE_TYPE_BEACON
         pWorker->CheckParent();
-#endif
+//#endif
     }
     ev_timer_stop (loop, watcher);
     ev_timer_set (watcher, NODE_BEAT + ev_time() - ev_now(loop), 0);
@@ -185,7 +184,7 @@ void Worker::Terminated(struct ev_signal* watcher)
 
 bool Worker::CheckParent()
 {
-    //LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE("%s()", __FUNCTION__);
     pid_t iParentPid = getppid();
     if (iParentPid == 1)    // manager进程已不存在
     {
@@ -202,8 +201,8 @@ bool Worker::CheckParent()
     oJsonLoad.Add("send_num", m_iSendNum);
     oJsonLoad.Add("send_byte", m_iSendByte);
     oJsonLoad.Add("client", int32(m_mapChannel.size() - m_mapInnerFd.size()));
-    LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
     oMsgBody.set_data(oJsonLoad.ToString());
+    LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
     std::map<int, Channel*>::iterator iter = m_mapChannel.find(m_iManagerControlFd);
     if (iter != m_mapChannel.end())
     {
@@ -1211,6 +1210,8 @@ bool Worker::CreateEvents()
     {
         return(false);
     }
+    pChannelData->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+    pChannelControl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     AddIoReadEvent(pChannelData);
     AddIoReadEvent(pChannelControl);
     m_mapInnerFd.insert(std::make_pair(m_iManagerDataFd, pChannelData->GetSequence()));
