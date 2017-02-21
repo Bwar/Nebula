@@ -23,6 +23,7 @@ class Cmd;
 class Module;
 
 typedef Cmd* CreateCmd();
+typedef Module* CreateModule();
 
 struct tagSo
 {

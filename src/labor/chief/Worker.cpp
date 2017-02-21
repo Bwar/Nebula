@@ -2253,7 +2253,7 @@ tagModule* Worker::LoadSoAndGetModule(const std::string& strModulePath, const st
         LOG4_FATAL("cannot load dynamic lib %s!" , dlsym_error);
         return(pSo);
     }
-    CreateCmd* pCreateModule = (CreateCmd*)dlsym(pHandle, strSymbol.c_str());
+    CreateModule* pCreateModule = (CreateModule*)dlsym(pHandle, strSymbol.c_str());
     dlsym_error = dlerror();
     if (dlsym_error)
     {

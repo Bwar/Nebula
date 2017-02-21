@@ -58,14 +58,17 @@ all: $(TARGET)
 
 Access: $(OBJS)
 	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
+	mkdir -p ../bin
 	cp -f $@ ../bin/
 	
 Interface: $(OBJS)
 	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
+	mkdir -p ../bin
 	cp -f $@ ../bin/
 
 Entrance: $(OBJS)
 	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
+	mkdir -p ../bin
 	cp -f $@ ../bin/
 
 %.o:%.cpp
@@ -77,7 +80,7 @@ Entrance: $(OBJS)
 clean:
 	rm -f $(OBJS)
 	rm -f $(TARGET)
-	rm -rf $(NEBULA_PATH)/bin
+	#rm -rf $(NEBULA_PATH)/bin
 
         
         
