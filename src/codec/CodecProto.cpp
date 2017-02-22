@@ -23,7 +23,7 @@ CodecProto::~CodecProto()
 
 E_CODEC_STATUS CodecProto::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
 {
-    LOG4_TRACE("%s() pBuff->ReadableBytes()=%u", __FUNCTION__, pBuff->ReadableBytes());
+    LOG4_TRACE("%s() pBuff->ReadableBytes()=%u, oMsgHead.ByteSize() = %d", __FUNCTION__, pBuff->ReadableBytes(), oMsgHead.ByteSize());
     int iErrno = 0;
     int iHadWriteLen = 0;
     int iWriteLen = 0;
@@ -63,6 +63,8 @@ E_CODEC_STATUS CodecProto::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oM
         bool bResult = oMsgHead.ParseFromArray(pBuff->GetRawReadBuffer(), gc_uiMsgHeadSize);
         if (bResult)
         {
+            LOG4_TRACE("pBuff->ReadableBytes()=%d, oMsgHead.len()=%d",
+                            pBuff->ReadableBytes(), oMsgHead.len());
             if (0 == oMsgHead.len())      // 无包体（心跳包等）
             {
                 pBuff->SkipBytes(gc_uiMsgHeadSize);
@@ -72,9 +74,10 @@ E_CODEC_STATUS CodecProto::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oM
             {
                 bResult = oMsgBody.ParseFromArray(
                                 pBuff->GetRawReadBuffer() + gc_uiMsgHeadSize, oMsgHead.len());
+                LOG4_TRACE("pBuff->ReadableBytes()=%d, oMsgBody.ByteSize()=%d", pBuff->ReadableBytes(), oMsgBody.ByteSize());
                 if (bResult)
                 {
-                    pBuff->SkipBytes(oMsgHead.ByteSize() + oMsgBody.ByteSize());
+                    pBuff->SkipBytes(gc_uiMsgHeadSize + oMsgHead.len());
                     return(CODEC_STATUS_OK);
                 }
                 else

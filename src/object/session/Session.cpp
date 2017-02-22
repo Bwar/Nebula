@@ -14,7 +14,7 @@ namespace neb
 
 Session::Session(uint32 ulSessionId, ev_tstamp dSessionTimeout, const std::string& strSessionClass)
     : Object(OBJ_SESSION),
-      m_strSessionId(0), m_strSessionClassName(strSessionClass)
+      m_strSessionId("0"), m_strSessionClassName(strSessionClass)
 {
     char szSessionId[16] = {0};
     snprintf(szSessionId, sizeof(szSessionId), "%u", ulSessionId);

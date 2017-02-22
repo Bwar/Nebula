@@ -10,7 +10,6 @@
 #ifndef SRC_OBJECT_STEP_STEP_HPP_
 #define SRC_OBJECT_STEP_STEP_HPP_
 
-#include "hiredis/adapters/libev.h"
 #include "object/Object.hpp"
 
 namespace neb

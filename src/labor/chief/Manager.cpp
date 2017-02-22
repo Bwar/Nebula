@@ -50,11 +50,11 @@ void Manager::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revent
         {
             pManager->IoRead(pChannel);
         }
-        if (revents & EV_WRITE)
+        else if (revents & EV_WRITE)
         {
             pManager->IoWrite(pChannel);
         }
-        if (revents & EV_ERROR)
+        else if (revents & EV_ERROR)
         {
             pManager->IoError(pChannel);
         }
@@ -339,8 +339,8 @@ bool Manager::DataRecvAndHandle(Channel* pChannel)
             std::map<int, int>::iterator worker_fd_iter = m_mapWorkerFdPid.find(pChannel->GetFd());
             if (worker_fd_iter == m_mapWorkerFdPid.end())   // 其他Server发过来要将连接传送到某个指定Worker进程信息
             {
-                std::map<std::string, tagChannelContext>::iterator center_iter = m_mapKeeperCtx.find(pChannel->GetIdentify());
-                if (center_iter == m_mapKeeperCtx.end())       // 不是与keeper连接
+                std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.find(pChannel->GetIdentify());
+                if (beacon_iter == m_mapBeaconCtx.end())       // 不是与beacon连接
                 {
                     OnDataAndTransferFd(pChannel, oMsgHead, oMsgBody);
                 }
@@ -382,21 +382,22 @@ bool Manager::IoWrite(Channel* pChannel)
             stCtx.iFd = pChannel->GetFd();
             stCtx.ulSeq = pChannel->GetSequence();
             //AddInnerFd(stCtx); 只有Worker需要
-            std::map<std::string, tagChannelContext>::iterator keeper_iter = m_mapKeeperCtx.find(pChannel->GetIdentify());
-            if (keeper_iter == m_mapKeeperCtx.end())
+            std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.find(pChannel->GetIdentify());
+            if (beacon_iter == m_mapBeaconCtx.end())
             {
-                m_mapKeeperCtx.insert(std::pair<std::string, tagChannelContext>(pChannel->GetIdentify(), stCtx));
+                m_mapBeaconCtx.insert(std::pair<std::string, tagChannelContext>(pChannel->GetIdentify(), stCtx));
             }
             else
             {
-                keeper_iter->second = stCtx;
+                beacon_iter->second = stCtx;
             }
             MsgBody oMsgBody;
             ConnectWorker oConnWorker;
             oConnWorker.set_worker_index(index_iter->second);
             oMsgBody.set_data(oConnWorker.SerializeAsString());
             m_mapSeq2WorkerIndex.erase(index_iter);
-            LOG4_DEBUG("send after connect");
+            LOG4_DEBUG("send after connect, oMsgBody.ByteSize() = %d, oConnWorker.ByteSize() = %d",
+                            oMsgBody.ByteSize(), oConnWorker.ByteSize());
             SendTo(stCtx, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
             return(true);
         }
@@ -663,11 +664,11 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
         pChannel->SetIdentify(strIdentify);
         pChannel->Send(uiCmd, uiSeq, oMsgBody);
         m_mapSeq2WorkerIndex.insert(std::pair<uint32, int>(pChannel->GetSequence(), iWorkerIndex));
-        std::map<std::string, tagChannelContext>::iterator keeper_iter = m_mapKeeperCtx.find(strIdentify);
-        if (keeper_iter != m_mapKeeperCtx.end())
+        std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.find(strIdentify);
+        if (beacon_iter != m_mapBeaconCtx.end())
         {
-            keeper_iter->second.iFd = iFd;
-            keeper_iter->second.ulSeq = pChannel->GetSequence();
+            beacon_iter->second.iFd = iFd;
+            beacon_iter->second.ulSeq = pChannel->GetSequence();
         }
         connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         return(true);
@@ -721,8 +722,8 @@ bool Manager::GetConf()
         {
             m_uiWorkerNum = strtoul(m_oCurrentConf("process_num").c_str(), NULL, 10);
             m_oCurrentConf.Get("node_type", m_strNodeType);
-            m_oCurrentConf.Get("inner_host", m_strHostForServer);
-            m_oCurrentConf.Get("inner_port", m_iPortForServer);
+            m_oCurrentConf.Get("host", m_strHostForServer);
+            m_oCurrentConf.Get("port", m_iPortForServer);
             m_oCurrentConf.Get("access_host", m_strHostForClient);
             m_oCurrentConf.Get("access_port", m_iPortForClient);
             m_oCurrentConf.Get("gateway", m_strGateway);
@@ -849,11 +850,11 @@ bool Manager::Init()
     for (int i = 0; i < m_oCurrentConf["beacon"].GetArraySize(); ++i)
     {
         std::string strIdentify = m_oCurrentConf["beacon"][i]("host") + std::string(":")
-            + m_oCurrentConf["beacon"][i]("port") + std::string(".0");     // KeeperServer只有一个Worker
+            + m_oCurrentConf["beacon"][i]("port") + std::string(".1");     // BeaconServer只有一个Worker
         tagChannelContext stCtx;
-        LOG4_TRACE("m_mapKeeperMsgShell.insert(%s, fd %d, seq %llu) = %u",
+        LOG4_TRACE("m_mapBeaconCtx.insert(%s, fd %d, seq %llu) = %u",
                         strIdentify.c_str(), stCtx.iFd, stCtx.ulSeq);
-        m_mapKeeperCtx.insert(std::pair<std::string, tagChannelContext>(strIdentify, stCtx));
+        m_mapBeaconCtx.insert(std::pair<std::string, tagChannelContext>(strIdentify, stCtx));
     }
 
     return(true);
@@ -897,7 +898,7 @@ void Manager::CreateWorker()
     LOG4_TRACE("%s", __FUNCTION__);
     int iPid = 0;
 
-    for (unsigned int i = 0; i < m_uiWorkerNum; ++i)
+    for (unsigned int i = 1; i <= m_uiWorkerNum; ++i)
     {
         int iControlFds[2];
         int iDataFds[2];
@@ -1010,7 +1011,7 @@ bool Manager::CreateEvents()
 
 bool Manager::RegisterToBeacon()
 {
-    if (m_mapKeeperCtx.size() == 0)
+    if (m_mapBeaconCtx.size() == 0)
     {
         return(true);
     }
@@ -1077,18 +1078,18 @@ bool Manager::RegisterToBeacon()
     oReportData["node"].Add("send_byte", iSendByte);
     oReportData["node"].Add("client", iClientNum);
     oMsgBody.set_data(oReportData.ToString());
-    std::map<std::string, tagChannelContext>::iterator keeper_iter = m_mapKeeperCtx.begin();
-    for (; keeper_iter != m_mapKeeperCtx.end(); ++keeper_iter)
+    std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.begin();
+    for (; beacon_iter != m_mapBeaconCtx.end(); ++beacon_iter)
     {
-        if (keeper_iter->second.iFd == 0)
+        if (beacon_iter->second.iFd == 0)
         {
             LOG4_TRACE("%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_REGISTER);
-            AutoSend(keeper_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
+            AutoSend(beacon_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
         }
         else
         {
             LOG4_TRACE("%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_REGISTER);
-            SendTo(keeper_iter->second, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
+            SendTo(beacon_iter->second, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
         }
     }
     return(true);
@@ -1187,7 +1188,7 @@ bool Manager::RestartWorker(int iDeathPid)
             {
                 restart_num_iter->second++;
             }
-            RegisterToBeacon();     // 重启Worker进程后向Keeper重发注册请求，以获得center下发其他节点的信息
+            RegisterToBeacon();     // 重启Worker进程后向Beacon重发注册请求，以获得beacon下发其他节点的信息
             return(true);
         }
         else
@@ -1391,11 +1392,11 @@ bool Manager::DestroyConnect(std::map<int, Channel*>::iterator iter)
     {
         return(false);
     }
-    std::map<std::string, tagChannelContext>::iterator keeper_iter = m_mapKeeperCtx.find(iter->second->GetIdentify());
-    if (keeper_iter != m_mapKeeperCtx.end())
+    std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.find(iter->second->GetIdentify());
+    if (beacon_iter != m_mapBeaconCtx.end())
     {
-        keeper_iter->second.iFd = 0;
-        keeper_iter->second.ulSeq = 0;
+        beacon_iter->second.iFd = 0;
+        beacon_iter->second.ulSeq = 0;
     }
     DelEvents(iter->second->MutableIoWatcher());
     DelEvents(iter->second->MutableTimerWatcher());
@@ -1406,20 +1407,21 @@ bool Manager::DestroyConnect(std::map<int, Channel*>::iterator iter)
 
 bool Manager::DestroyConnect(Channel* pChannel)
 {
-    std::map<std::string, tagChannelContext>::iterator keeper_iter = m_mapKeeperCtx.find(pChannel->GetIdentify());
-    if (keeper_iter != m_mapKeeperCtx.end())
+    LOG4_TRACE("%s()", __FUNCTION__);
+    std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.find(pChannel->GetIdentify());
+    if (beacon_iter != m_mapBeaconCtx.end())
     {
-        keeper_iter->second.iFd = 0;
-        keeper_iter->second.ulSeq = 0;
+        beacon_iter->second.iFd = 0;
+        beacon_iter->second.ulSeq = 0;
     }
     DelEvents(pChannel->MutableIoWatcher());
     DelEvents(pChannel->MutableTimerWatcher());
-    DELETE(pChannel);
     std::map<int, Channel*>::iterator iter = m_mapChannel.find(pChannel->GetFd());
     if (iter != m_mapChannel.end())
     {
         m_mapChannel.erase(iter);
     }
+    DELETE(pChannel);
     return(true);
 }
 
@@ -1634,18 +1636,18 @@ bool Manager::ReportToBeacon()
     oMsgBody.set_data(oReportData.ToString());
     LOG4_TRACE("%s()：  %s", __FUNCTION__, oReportData.ToString().c_str());
 
-    std::map<std::string, tagChannelContext>::iterator keeper_iter = m_mapKeeperCtx.begin();
-    for (; keeper_iter != m_mapKeeperCtx.end(); ++keeper_iter)
+    std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.begin();
+    for (; beacon_iter != m_mapBeaconCtx.end(); ++beacon_iter)
     {
-        if (keeper_iter->second.iFd == 0)
+        if (beacon_iter->second.iFd == 0)
         {
             LOG4_TRACE("%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_REGISTER);
-            AutoSend(keeper_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
+            AutoSend(beacon_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
         }
         else
         {
             LOG4_TRACE("%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_STATUS_REPORT);
-            SendTo(keeper_iter->second, CMD_REQ_NODE_STATUS_REPORT, GetSequence(), oMsgBody);
+            SendTo(beacon_iter->second, CMD_REQ_NODE_STATUS_REPORT, GetSequence(), oMsgBody);
         }
     }
     return(true);

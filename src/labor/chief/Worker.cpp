@@ -157,7 +157,7 @@ Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int 
         exit(-2);
     }
     PreloadCmd();
-    LoadSo(oJsonConf["so"]);
+    LoadCmd(oJsonConf["cmd"]);
     LoadModule(oJsonConf["module"]);
 }
 
@@ -1225,44 +1225,44 @@ void Worker::PreloadCmd()
     pCmdToldWorker->SetCmd(CMD_REQ_TELL_WORKER);
     pCmdToldWorker->SetLogger(&m_oLogger);
     pCmdToldWorker->SetLabor(this);
-    m_mapCmd.insert(std::pair<int32, Cmd*>(pCmdToldWorker->GetCmd(), pCmdToldWorker));
+    m_mapPreloadCmd.insert(std::pair<int32, Cmd*>(pCmdToldWorker->GetCmd(), pCmdToldWorker));
 
     Cmd* pCmdUpdateNodeId = new CmdUpdateNodeId();
     pCmdUpdateNodeId->SetCmd(CMD_REQ_REFRESH_NODE_ID);
     pCmdUpdateNodeId->SetLogger(&m_oLogger);
     pCmdUpdateNodeId->SetLabor(this);
-    m_mapCmd.insert(std::pair<int32, Cmd*>(pCmdUpdateNodeId->GetCmd(), pCmdUpdateNodeId));
+    m_mapPreloadCmd.insert(std::pair<int32, Cmd*>(pCmdUpdateNodeId->GetCmd(), pCmdUpdateNodeId));
 
     Cmd* pCmdNodeNotice = new CmdNodeNotice();
     pCmdNodeNotice->SetCmd(CMD_REQ_NODE_REG_NOTICE);
     pCmdNodeNotice->SetLogger(&m_oLogger);
     pCmdNodeNotice->SetLabor(this);
-    m_mapCmd.insert(std::pair<int32, Cmd*>(pCmdNodeNotice->GetCmd(), pCmdNodeNotice));
+    m_mapPreloadCmd.insert(std::pair<int32, Cmd*>(pCmdNodeNotice->GetCmd(), pCmdNodeNotice));
 
     Cmd* pCmdBeat = new CmdBeat();
     pCmdBeat->SetCmd(CMD_REQ_BEAT);
     pCmdBeat->SetLogger(&m_oLogger);
     pCmdBeat->SetLabor(this);
-    m_mapCmd.insert(std::pair<int32, Cmd*>(pCmdBeat->GetCmd(), pCmdBeat));
+    m_mapPreloadCmd.insert(std::pair<int32, Cmd*>(pCmdBeat->GetCmd(), pCmdBeat));
 }
 
 void Worker::Destroy()
 {
     LOG4_TRACE("%s()", __FUNCTION__);
 
-    for (std::map<int32, Cmd*>::iterator cmd_iter = m_mapCmd.begin();
-                    cmd_iter != m_mapCmd.end(); ++cmd_iter)
+    for (std::map<int32, Cmd*>::iterator cmd_iter = m_mapPreloadCmd.begin();
+                    cmd_iter != m_mapPreloadCmd.end(); ++cmd_iter)
     {
         DELETE(cmd_iter->second);
     }
-    m_mapCmd.clear();
+    m_mapPreloadCmd.clear();
 
-    for (std::map<int, tagSo*>::iterator so_iter = m_mapSo.begin();
-                    so_iter != m_mapSo.end(); ++so_iter)
+    for (std::map<int, tagSo*>::iterator so_iter = m_mapCmd.begin();
+                    so_iter != m_mapCmd.end(); ++so_iter)
     {
         DELETE(so_iter->second);
     }
-    m_mapSo.clear();
+    m_mapCmd.clear();
 
     for (std::map<std::string, tagModule*>::iterator module_iter = m_mapModule.begin();
                     module_iter != m_mapModule.end(); ++module_iter)
@@ -2044,7 +2044,7 @@ void Worker::ExecStep(uint32 uiCallerStepSeq, uint32 uiCalledStepSeq,
     }
 }
 
-void Worker::LoadSo(CJsonObject& oSoConf)
+void Worker::LoadCmd(CJsonObject& oCmdConf)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     int iCmd = 0;
@@ -2053,35 +2053,35 @@ void Worker::LoadSo(CJsonObject& oSoConf)
     std::string strSoPath;
     std::map<int, tagSo*>::iterator cmd_iter;
     tagSo* pSo = NULL;
-    for (int i = 0; i < oSoConf.GetArraySize(); ++i)
+    for (int i = 0; i < oCmdConf.GetArraySize(); ++i)
     {
-        oSoConf[i].Get("load", bIsload);
+        oCmdConf[i].Get("load", bIsload);
         if (bIsload)
         {
-            if (oSoConf[i].Get("cmd", iCmd) && oSoConf[i].Get("version", iVersion))
+            if (oCmdConf[i].Get("cmd", iCmd) && oCmdConf[i].Get("version", iVersion))
             {
-                cmd_iter = m_mapSo.find(iCmd);
-                if (cmd_iter == m_mapSo.end())
+                cmd_iter = m_mapCmd.find(iCmd);
+                if (cmd_iter == m_mapCmd.end())
                 {
-                    strSoPath = m_strWorkPath + std::string("/") + oSoConf[i]("so_path");
-                    pSo = LoadSoAndGetCmd(iCmd, strSoPath, oSoConf[i]("entrance_symbol"), iVersion);
+                    strSoPath = m_strWorkPath + std::string("/") + oCmdConf[i]("so_path");
+                    pSo = LoadSoAndGetCmd(iCmd, strSoPath, oCmdConf[i]("entrance_symbol"), iVersion);
                     if (pSo != NULL)
                     {
                         LOG4_INFO("succeed in loading %s", strSoPath.c_str());
-                        m_mapSo.insert(std::pair<int, tagSo*>(iCmd, pSo));
+                        m_mapCmd.insert(std::pair<int, tagSo*>(iCmd, pSo));
                     }
                 }
                 else
                 {
                     if (iVersion != cmd_iter->second->iVersion)
                     {
-                        strSoPath = m_strWorkPath + std::string("/") + oSoConf[i]("so_path");
+                        strSoPath = m_strWorkPath + std::string("/") + oCmdConf[i]("so_path");
                         if (0 != access(strSoPath.c_str(), F_OK))
                         {
                             LOG4_WARN("%s not exist!", strSoPath.c_str());
                             continue;
                         }
-                        pSo = LoadSoAndGetCmd(iCmd, strSoPath, oSoConf[i]("entrance_symbol"), iVersion);
+                        pSo = LoadSoAndGetCmd(iCmd, strSoPath, oCmdConf[i]("entrance_symbol"), iVersion);
                         LOG4_TRACE("%s:%d after LoadSoAndGetCmd", __FILE__, __LINE__);
                         if (pSo != NULL)
                         {
@@ -2095,9 +2095,9 @@ void Worker::LoadSo(CJsonObject& oSoConf)
         }
         else        // 卸载动态库
         {
-            if (oSoConf[i].Get("cmd", iCmd))
+            if (oCmdConf[i].Get("cmd", iCmd))
             {
-                strSoPath = m_strWorkPath + std::string("/") + oSoConf[i]("so_path");
+                strSoPath = m_strWorkPath + std::string("/") + oCmdConf[i]("so_path");
                 UnloadSoAndDeleteCmd(iCmd);
                 LOG4_INFO("unload %s", strSoPath.c_str());
             }
@@ -2163,12 +2163,12 @@ void Worker::UnloadSoAndDeleteCmd(int iCmd)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     std::map<int, tagSo*>::iterator cmd_iter;
-    cmd_iter = m_mapSo.find(iCmd);
-    if (cmd_iter != m_mapSo.end())
+    cmd_iter = m_mapCmd.find(iCmd);
+    if (cmd_iter != m_mapCmd.end())
     {
         delete cmd_iter->second;
         cmd_iter->second = NULL;
-        m_mapSo.erase(cmd_iter);
+        m_mapCmd.erase(cmd_iter);
     }
 }
 
@@ -2537,8 +2537,8 @@ void Worker::ChannelNotice(const tagChannelContext& stCtx, const std::string& st
 {
     LOG4_TRACE("%s()", __FUNCTION__);
     std::map<int32, tagSo*>::iterator cmd_iter;
-    cmd_iter = m_mapSo.find(CMD_REQ_DISCONNECT);
-    if (cmd_iter != m_mapSo.end() && cmd_iter->second != NULL)
+    cmd_iter = m_mapCmd.find(CMD_REQ_DISCONNECT);
+    if (cmd_iter != m_mapCmd.end() && cmd_iter->second != NULL)
     {
         MsgHead oMsgHead;
         MsgBody oMsgBody;
@@ -2563,16 +2563,16 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
         MsgHead oOutMsgHead;
         MsgBody oOutMsgBody;
         std::map<int32, Cmd*>::iterator cmd_iter;
-        cmd_iter = m_mapCmd.find(gc_uiCmdBit & oMsgHead.cmd());
-        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != NULL)
+        cmd_iter = m_mapPreloadCmd.find(gc_uiCmdBit & oMsgHead.cmd());
+        if (cmd_iter != m_mapPreloadCmd.end() && cmd_iter->second != NULL)
         {
             cmd_iter->second->AnyMessage(stCtx, oMsgHead, oMsgBody);
         }
         else
         {
             std::map<int, tagSo*>::iterator cmd_so_iter;
-            cmd_so_iter = m_mapSo.find(gc_uiCmdBit & oMsgHead.cmd());
-            if (cmd_so_iter != m_mapSo.end() && cmd_so_iter->second != NULL)
+            cmd_so_iter = m_mapCmd.find(gc_uiCmdBit & oMsgHead.cmd());
+            if (cmd_so_iter != m_mapCmd.end() && cmd_so_iter->second != NULL)
             {
                 ((Cmd*)cmd_so_iter->second->pCmd)->AnyMessage(stCtx, oMsgHead, oMsgBody);
             }
@@ -2588,7 +2588,7 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
                 else if (CMD_REQ_RELOAD_SO == oMsgHead.cmd())
                 {
                     CJsonObject oSoConfJson;
-                    LoadSo(oSoConfJson);
+                    LoadCmd(oSoConfJson);
                 }
                 else if (CMD_REQ_RELOAD_MODULE == oMsgHead.cmd())
                 {
@@ -2601,8 +2601,8 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
                     std::map<int, uint32>::iterator inner_iter = m_mapInnerFd.find(stCtx.iFd);
                     if (inner_iter != m_mapInnerFd.end())   // 内部服务往客户端发送  if (std::string("0.0.0.0") == strFromIp)
                     {
-                        cmd_so_iter = m_mapSo.find(CMD_REQ_TO_CLIENT);
-                        if (cmd_so_iter != m_mapSo.end())
+                        cmd_so_iter = m_mapCmd.find(CMD_REQ_TO_CLIENT);
+                        if (cmd_so_iter != m_mapCmd.end())
                         {
                             cmd_so_iter->second->pCmd->AnyMessage(stCtx, oMsgHead, oMsgBody);
                         }
@@ -2619,8 +2619,8 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
                     }
                     else
                     {
-                        cmd_so_iter = m_mapSo.find(CMD_REQ_FROM_CLIENT);
-                        if (cmd_so_iter != m_mapSo.end() && cmd_so_iter->second != NULL)
+                        cmd_so_iter = m_mapCmd.find(CMD_REQ_FROM_CLIENT);
+                        if (cmd_so_iter != m_mapCmd.end() && cmd_so_iter->second != NULL)
                         {
                             cmd_so_iter->second->pCmd->AnyMessage(stCtx, oMsgHead, oMsgBody);
                         }

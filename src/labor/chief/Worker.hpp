@@ -259,7 +259,7 @@ protected:
      */
     bool Handle(Channel* pChannel, const HttpMsg& oHttpMsg);
 
-    void LoadSo(CJsonObject& oSoConf);
+    void LoadCmd(CJsonObject& oCmdConf);
     tagSo* LoadSoAndGetCmd(int iCmd, const std::string& strSoPath, const std::string& strSymbol, int iVersion);
     void UnloadSoAndDeleteCmd(int iCmd);
     void LoadModule(CJsonObject& oModuleConf);
@@ -299,8 +299,8 @@ private:
     std::map<int, uint32> m_mapInnerFd;              ///< 服务端之间连接的文件描述符（用于区分连接是服务内部还是外部客户端接入）
     std::map<uint32, int> m_mapSeq2WorkerIndex;      ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
 
-    std::map<int32, Cmd*> m_mapCmd;                  ///< 预加载逻辑处理命令（一般为系统级命令）
-    std::map<int, tagSo*> m_mapSo;                   ///< 动态加载业务逻辑处理命令
+    std::map<int32, Cmd*> m_mapPreloadCmd;                  ///< 预加载逻辑处理命令（一般为系统级命令）
+    std::map<int, tagSo*> m_mapCmd;                   ///< 动态加载业务逻辑处理命令
     std::map<std::string, tagModule*> m_mapModule;   ///< 动态加载的http逻辑处理模块
 
     std::map<uint32, Step*> m_mapCallbackStep;

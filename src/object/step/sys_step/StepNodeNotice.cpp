@@ -41,7 +41,7 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
                 && oJson["add_nodes"][i].Get("node_port",iNodePort)
                 && oJson["add_nodes"][i].Get("worker_num",iWorkerNum))
         {
-            for(int j = 0; j < iWorkerNum; ++j)
+            for(int j = 1; j <= iWorkerNum; ++j)
             {
                 snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
                 AddNodeIdentify(strNodeType, std::string(szIdentify));
@@ -57,7 +57,7 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
                 && oJson["del_nodes"][i].Get("node_port",iNodePort)
                 && oJson["del_nodes"][i].Get("worker_num",iWorkerNum))
         {
-            for(int j = 0; j < iWorkerNum; ++j)
+            for(int j = 1; j <= iWorkerNum; ++j)
             {
                 snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
                 DelNodeIdentify(strNodeType, std::string(szIdentify));

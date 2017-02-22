@@ -172,7 +172,7 @@ private:
     std::map<int, tagWorkerAttr> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
     std::map<int, int> m_mapWorkerRestartNum;       ///< 进程被重启次数，key为WorkerIdx
     std::map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
-    std::map<std::string, tagChannelContext> m_mapKeeperCtx; ///< 到Keeper服务器的连接
+    std::map<std::string, tagChannelContext> m_mapBeaconCtx; ///< 到beacon服务器的连接
 
     std::map<int, Channel*> m_mapChannel;                   ///< 通信通道
     std::map<uint32, int> m_mapSeq2WorkerIndex;             ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）

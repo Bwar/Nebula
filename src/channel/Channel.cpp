@@ -100,8 +100,10 @@ bool Channel::NeedAliveCheck() const
 
 E_CODEC_STATUS Channel::Send()
 {
+    LOG4_TRACE("%s", __FUNCTION__);
     int iNeedWriteLen = 0;
     int iWriteLen = 0;
+    LOG4_TRACE("m_pSendBuff = 0x%d, m_pSendBuff->ReadableBytes() = %d", m_pSendBuff, m_pSendBuff->ReadableBytes());
     iNeedWriteLen = m_pSendBuff->ReadableBytes();
     if (iNeedWriteLen > 0)
     {
@@ -191,7 +193,7 @@ E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody
         case CHANNEL_STATUS_TRY_CONNECT:
         case CHANNEL_STATUS_INIT:
         {
-            switch (oMsgHead.cmd())
+            switch (uiCmd)
             {
                 case CMD_RSP_TELL_WORKER:
                     m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
@@ -236,6 +238,7 @@ E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody
     }
 
     int iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
+    LOG4_TRACE("iWriteLen = %d", iWriteLen);
     if (iWriteLen >= 0)
     {
         m_dActiveTime = m_pLabor->GetNowTime();
