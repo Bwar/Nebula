@@ -36,7 +36,7 @@ E_CODEC_STATUS CodecProto::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBo
         return(CODEC_STATUS_ERR);
     }
     iHadWriteLen += iWriteLen;
-    if (oMsgHead.len() == 0)    // 无包体（心跳包等）
+    if (oMsgHead.len() <= 0)    // 无包体（心跳包等），nebula在proto3的使用上以-1表示包体长度为0
     {
         return(CODEC_STATUS_OK);
     }
@@ -65,7 +65,7 @@ E_CODEC_STATUS CodecProto::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oM
         {
             LOG4_TRACE("pBuff->ReadableBytes()=%d, oMsgHead.len()=%d",
                             pBuff->ReadableBytes(), oMsgHead.len());
-            if (0 == oMsgHead.len())      // 无包体（心跳包等）
+            if (oMsgHead.len() <= 0)      // 无包体（心跳包等），nebula在proto3的使用上以-1表示包体长度为0
             {
                 pBuff->SkipBytes(gc_uiMsgHeadSize);
                 return(CODEC_STATUS_OK);

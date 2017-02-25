@@ -162,7 +162,7 @@ void protobuf_AddDesc_msg_2eproto() {
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\tmsg.proto\"0\n\007MsgHead\022\013\n\003cmd\030\001 \001(\007\022\013\n\003s"
-    "eq\030\002 \001(\007\022\013\n\003len\030\003 \001(\007\"\327\001\n\007MsgBody\022&\n\nreq"
+    "eq\030\002 \001(\007\022\013\n\003len\030\003 \001(\017\"\327\001\n\007MsgBody\022&\n\nreq"
     "_target\030\001 \001(\0132\020.MsgBody.RequestH\000\022\'\n\nrsp"
     "_result\030\002 \001(\0132\021.MsgBody.ResponseH\000\022\014\n\004da"
     "ta\030\003 \001(\014\022\016\n\006add_on\030\004 \001(\014\032*\n\007Request\022\020\n\010r"
@@ -221,7 +221,7 @@ void MsgHead::SharedCtor() {
   _cached_size_ = 0;
   cmd_ = 0u;
   seq_ = 0u;
-  len_ = 0u;
+  len_ = 0;
 }
 
 MsgHead::~MsgHead() {
@@ -323,12 +323,12 @@ bool MsgHead::MergePartialFromCodedStream(
         break;
       }
 
-      // optional fixed32 len = 3;
+      // optional sfixed32 len = 3;
       case 3: {
         if (tag == 29) {
          parse_len:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_FIXED32>(
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_SFIXED32>(
                  input, &len_)));
 
         } else {
@@ -372,9 +372,9 @@ void MsgHead::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteFixed32(2, this->seq(), output);
   }
 
-  // optional fixed32 len = 3;
+  // optional sfixed32 len = 3;
   if (this->len() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteFixed32(3, this->len(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteSFixed32(3, this->len(), output);
   }
 
   // @@protoc_insertion_point(serialize_end:MsgHead)
@@ -393,9 +393,9 @@ void MsgHead::SerializeWithCachedSizes(
     target = ::google::protobuf::internal::WireFormatLite::WriteFixed32ToArray(2, this->seq(), target);
   }
 
-  // optional fixed32 len = 3;
+  // optional sfixed32 len = 3;
   if (this->len() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteFixed32ToArray(3, this->len(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteSFixed32ToArray(3, this->len(), target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:MsgHead)
@@ -416,7 +416,7 @@ int MsgHead::ByteSize() const {
     total_size += 1 + 4;
   }
 
-  // optional fixed32 len = 3;
+  // optional sfixed32 len = 3;
   if (this->len() != 0) {
     total_size += 1 + 4;
   }
@@ -530,15 +530,15 @@ void MsgHead::clear_seq() {
   // @@protoc_insertion_point(field_set:MsgHead.seq)
 }
 
-// optional fixed32 len = 3;
+// optional sfixed32 len = 3;
 void MsgHead::clear_len() {
-  len_ = 0u;
+  len_ = 0;
 }
- ::google::protobuf::uint32 MsgHead::len() const {
+ ::google::protobuf::int32 MsgHead::len() const {
   // @@protoc_insertion_point(field_get:MsgHead.len)
   return len_;
 }
- void MsgHead::set_len(::google::protobuf::uint32 value) {
+ void MsgHead::set_len(::google::protobuf::int32 value) {
   
   len_ = value;
   // @@protoc_insertion_point(field_set:MsgHead.len)

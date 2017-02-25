@@ -28,6 +28,7 @@
 #include <sstream>
 #include <map>
 #include <set>
+#include <list>
 #include "ev.h"
 #include "log4cplus/logger.h"
 #include "log4cplus/fileappender.h"
@@ -107,8 +108,8 @@ protected:
     bool AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout = 1.0);
     bool AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout = 60.0);
     Channel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
-    bool DestroyConnect(std::map<int, Channel*>::iterator iter);
-    bool DestroyConnect(Channel* pChannel);
+    bool DiscardChannel(std::map<int, Channel*>::iterator iter);
+    bool DiscardChannel(Channel* pChannel);
     std::pair<int, int> GetMinLoadWorkerDataFd();
     bool FdTransfer(int iFd);
     bool AcceptServerConn(int iFd);

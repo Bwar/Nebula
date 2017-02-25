@@ -48,7 +48,7 @@ E_CMD_STATUS StepTellWorker::Callback(
         TargetWorker oInTargetWorker;
         if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
         {
-            LOG4CPLUS_DEBUG_FMT(GetLogger(), "AddMsgShell(%s, fd %d, seq %llu)!",
+            LOG4CPLUS_DEBUG_FMT(GetLogger(), "AddNodeIdentify(%s, fd %d, seq %llu)!",
                             oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.ulSeq);
             AddNamedChannel(oInTargetWorker.worker_identify(), stCtx);
             AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());

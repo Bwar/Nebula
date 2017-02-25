@@ -33,7 +33,7 @@ bool CmdToldWorker::AnyMessage(
     if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
     {
         bResult = true;
-        LOG4_DEBUG("AddMsgShell(%s, fd %d, seq %llu)!",
+        LOG4_DEBUG("AddNodeIdentify(%s, %s, fd %d, seq %llu)!", oInTargetWorker.node_type().c_str(),
                         oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.ulSeq);
         AddNamedChannel(oInTargetWorker.worker_identify(), stCtx);
         AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());

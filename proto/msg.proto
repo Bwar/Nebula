@@ -9,7 +9,7 @@ message MsgHead
 {
     fixed32 cmd                = 1;           ///< 命令字（压缩加密算法占高位1字节）
     fixed32 seq                = 2;           ///< 序列号
-    fixed32 len                = 3;           ///< 消息体长度
+    sfixed32 len               = 3;           ///< 消息体长度
 }
 
 /**

@@ -555,7 +555,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @param strIdentify 已存在连接的连接标识符
      * @return 放弃结果
      */
-    virtual bool AbandonNamedChannel(const std::string& strIdentify)
+    virtual bool DiscardNamedChannel(const std::string& strIdentify)
     {
         return(false);
     }

@@ -113,11 +113,11 @@ class MsgHead : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 seq() const;
   void set_seq(::google::protobuf::uint32 value);
 
-  // optional fixed32 len = 3;
+  // optional sfixed32 len = 3;
   void clear_len();
   static const int kLenFieldNumber = 3;
-  ::google::protobuf::uint32 len() const;
-  void set_len(::google::protobuf::uint32 value);
+  ::google::protobuf::int32 len() const;
+  void set_len(::google::protobuf::int32 value);
 
   // @@protoc_insertion_point(class_scope:MsgHead)
  private:
@@ -126,7 +126,7 @@ class MsgHead : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   bool _is_default_instance_;
   ::google::protobuf::uint32 cmd_;
   ::google::protobuf::uint32 seq_;
-  ::google::protobuf::uint32 len_;
+  ::google::protobuf::int32 len_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_msg_2eproto();
   friend void protobuf_AssignDesc_msg_2eproto();
@@ -499,15 +499,15 @@ inline void MsgHead::set_seq(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:MsgHead.seq)
 }
 
-// optional fixed32 len = 3;
+// optional sfixed32 len = 3;
 inline void MsgHead::clear_len() {
-  len_ = 0u;
+  len_ = 0;
 }
-inline ::google::protobuf::uint32 MsgHead::len() const {
+inline ::google::protobuf::int32 MsgHead::len() const {
   // @@protoc_insertion_point(field_get:MsgHead.len)
   return len_;
 }
-inline void MsgHead::set_len(::google::protobuf::uint32 value) {
+inline void MsgHead::set_len(::google::protobuf::int32 value) {
   
   len_ = value;
   // @@protoc_insertion_point(field_set:MsgHead.len)

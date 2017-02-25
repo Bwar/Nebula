@@ -67,6 +67,10 @@ void Worker::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents
         {
             pWorker->IoWrite(pChannel);
         }
+        if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
+        {
+            DELETE(pChannel);
+        }
     }
 }
 
@@ -76,6 +80,13 @@ void Worker::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int reve
     {
         Channel* pChannel = (Channel*)watcher->data;
         Worker* pWorker = (Worker*)(pChannel->m_pLabor);
+        //std::cerr << "loop = " << loop << std::endl;
+        //std::cerr << "IoTimeoutCallback() watcher = " << watcher << " pChannel = " << pChannel << "  pWorker = " << pWorker << std::endl;
+        //std::cerr << "pChannel->GetFd() = " << pChannel->GetFd() << " pChannel->GetSequence() = " << pChannel->GetSequence() << "  pChannel->MutableTimerWatcher() = " << pChannel->MutableTimerWatcher() << std::endl;
+        if (pChannel->GetFd() < 3)      // TODO 这个判断是不得已的做法，需查找fd为0回调到这里的原因
+        {
+            return;
+        }
         pWorker->IoTimeout(pChannel);
     }
 }
@@ -253,7 +264,7 @@ bool Worker::RecvDataAndHandle(Channel* pChannel)
             else if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.IsInitialized())
             {
                 Handle(pChannel, oHttpMsg);
-                DestroyChannel(pChannel, false);
+                DiscardChannel(pChannel, false);
             }
             else
             {
@@ -275,7 +286,7 @@ bool Worker::RecvDataAndHandle(Channel* pChannel)
                 if (inner_iter == m_mapInnerFd.end() && pChannel->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
                 {
                     LOG4_DEBUG("invalid request, please login first!");
-                    DestroyChannel(pChannel);
+                    DiscardChannel(pChannel);
                     return(false);
                 }
             }
@@ -293,7 +304,7 @@ bool Worker::RecvDataAndHandle(Channel* pChannel)
     }
     else    // 编解码出错或连接关闭或连接中断
     {
-        DestroyChannel(pChannel);
+        DiscardChannel(pChannel);
         return(false);
     }
 }
@@ -382,7 +393,7 @@ bool Worker::IoWrite(Channel* pChannel)
     }
     else
     {
-        DestroyChannel(pChannel);
+        DiscardChannel(pChannel);
     }
     return(true);
 }
@@ -421,7 +432,7 @@ bool Worker::IoTimeout(Channel* pChannel)
         else
         {
             DELETE(pStepIoTimeout);
-            DestroyChannel(pChannel);
+            DiscardChannel(pChannel);
         }
     }
     else        // 关闭文件描述符并清理相关资源
@@ -430,7 +441,7 @@ bool Worker::IoTimeout(Channel* pChannel)
         if (inner_iter == m_mapInnerFd.end())   // 非内部服务器间的连接才会在超时中关闭
         {
             LOG4_TRACE("io timeout!");
-            DestroyChannel(pChannel);
+            DiscardChannel(pChannel);
         }
     }
     return(true);
@@ -1047,7 +1058,7 @@ bool Worker::Disconnect(const tagChannelContext& stCtx, bool bChannelNotice)
         if (iter->second->GetSequence() == stCtx.ulSeq)
         {
             LOG4_TRACE("if (iter->second->ulSeq == stCtx.ulSeq)");
-            return(DestroyChannel(iter->second, bChannelNotice));
+            return(DiscardChannel(iter->second, bChannelNotice));
         }
     }
     return(false);
@@ -1062,10 +1073,10 @@ bool Worker::Disconnect(const std::string& strIdentify, bool bChannelNotice)
         while (named_iter->second.size() > 1)
         {
             channel_iter = named_iter->second.begin();
-            DestroyChannel(*channel_iter, bChannelNotice);
+            DiscardChannel(*channel_iter, bChannelNotice);
         }
         channel_iter = named_iter->second.begin();
-        return(DestroyChannel(*channel_iter, bChannelNotice));
+        return(DiscardChannel(*channel_iter, bChannelNotice));
     }
     return(false);
 }
@@ -1213,7 +1224,9 @@ bool Worker::CreateEvents()
     pChannelData->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     pChannelControl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     AddIoReadEvent(pChannelData);
+    AddIoTimeout(pChannelData, 60.0);   // TODO 需要优化
     AddIoReadEvent(pChannelControl);
+    AddIoTimeout(pChannelControl, 60.0); //TODO 需要优化
     m_mapInnerFd.insert(std::make_pair(m_iManagerDataFd, pChannelData->GetSequence()));
     m_mapInnerFd.insert(std::make_pair(m_iManagerControlFd, pChannelControl->GetSequence()));
     return(true);
@@ -1275,7 +1288,7 @@ void Worker::Destroy()
                     attr_iter != m_mapChannel.end(); ++attr_iter)
     {
         LOG4_TRACE("for (std::map<int, tagConnectionAttr*>::iterator attr_iter = m_mapChannel.begin();");
-        DestroyChannel(attr_iter->second);
+        DiscardChannel(attr_iter->second);
     }
     m_mapChannel.clear();
 
@@ -1825,7 +1838,7 @@ bool Worker::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq
         E_CODEC_STATUS eCodecStatus = pChannel->Send();
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
-            DestroyChannel(pChannel);
+            DiscardChannel(pChannel);
         }
 
         connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
@@ -1885,7 +1898,7 @@ bool Worker::AutoSend(const std::string& strHost, int iPort, const std::string& 
         E_CODEC_STATUS eCodecStatus = pChannel->Send();
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
-            DestroyChannel(pChannel);
+            DiscardChannel(pChannel);
         }
 
         connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
@@ -1982,7 +1995,7 @@ std::string Worker::GetClientAddr(const tagChannelContext& stCtx)
     }
 }
 
-bool Worker::AbandonNamedChannel(const std::string& strIdentify)
+bool Worker::DiscardNamedChannel(const std::string& strIdentify)
 {
     LOG4_TRACE("%s(identify: %s)", __FUNCTION__, strIdentify.c_str());
     std::map<std::string, std::list<Channel*> >::iterator named_iter = m_mapNamedChannel.find(strIdentify);
@@ -2390,17 +2403,19 @@ bool Worker::AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout)
     if (NULL == timer_watcher)
     {
         timer_watcher = pChannel->AddTimerWatcher();
+        LOG4_TRACE("pChannel = 0x%d,  timer_watcher = 0x%d", pChannel, timer_watcher);
         if (NULL == timer_watcher)
         {
             return(false);
         }
-        pChannel->SetKeepAlive(dTimeout);
+        pChannel->SetKeepAlive(m_dIoTimeout);
         ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
         return(true);
     }
     else
     {
+        LOG4_TRACE("pChannel = 0x%d,  timer_watcher = 0x%d", pChannel, timer_watcher);
         ev_timer_stop(m_loop, timer_watcher);
         ev_timer_set(timer_watcher, dTimeout + ev_time() - ev_now(m_loop), 0);
         ev_timer_start (m_loop, timer_watcher);
@@ -2410,6 +2425,7 @@ bool Worker::AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout)
 
 bool Worker::AddIoTimeout(const tagChannelContext& stCtx)
 {
+    LOG4_TRACE("%s(%d, %u)", __FUNCTION__, stCtx.iFd, stCtx.ulSeq);
     std::map<int, Channel*>::iterator iter = m_mapChannel.find(stCtx.iFd);
     if (iter != m_mapChannel.end())
     {
@@ -2419,6 +2435,7 @@ bool Worker::AddIoTimeout(const tagChannelContext& stCtx)
             if (NULL == timer_watcher)
             {
                 timer_watcher = iter->second->AddTimerWatcher();
+                LOG4_TRACE("timer_watcher = 0x%d", timer_watcher);
                 if (NULL == timer_watcher)
                 {
                     return(false);
@@ -2429,6 +2446,7 @@ bool Worker::AddIoTimeout(const tagChannelContext& stCtx)
             }
             else
             {
+                LOG4_TRACE("timer_watcher = 0x%d", timer_watcher);
                 ev_timer_stop(m_loop, timer_watcher);
                 ev_timer_set(timer_watcher, iter->second->GetKeepAlive() + ev_time() - ev_now(m_loop), 0);
                 ev_timer_start (m_loop, timer_watcher);
@@ -2476,21 +2494,12 @@ Channel* Worker::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
     }
 }
 
-bool Worker::DestroyChannel(Channel* pChannel, bool bChannelNotice)
+bool Worker::DiscardChannel(Channel* pChannel, bool bChannelNotice)
 {
     LOG4_DEBUG("%s disconnect, identify %s", pChannel->GetRemoteAddr().c_str(), pChannel->GetIdentify().c_str());
-    int iResult = close(pChannel->GetFd());
-    if (0 != iResult)
+    if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
     {
-        if (EINTR != errno)
-        {
-            LOG4_ERROR("close(%d) failed, result %d and errno %d", pChannel->GetFd(), iResult, errno);
-            return(false);
-        }
-        else
-        {
-            LOG4_DEBUG("close(%d) failed, result %d and errno %d", pChannel->GetFd(), iResult, errno);
-        }
+        return(false);
     }
     std::map<int, uint32>::iterator inner_iter = m_mapInnerFd.find(pChannel->GetFd());
     if (inner_iter != m_mapInnerFd.end())
@@ -2529,7 +2538,7 @@ bool Worker::DestroyChannel(Channel* pChannel, bool bChannelNotice)
     {
         m_mapChannel.erase(channel_iter);
     }
-    DELETE(pChannel);
+    pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
     return(true);
 }
 
@@ -2647,8 +2656,9 @@ bool Worker::Handle(Channel* pChannel, const MsgHead& oMsgHead, const MsgBody& o
                 }
             }
         }
-        if (oOutMsgHead.IsInitialized())
+        if (CMD_RSP_SYS_ERROR == oOutMsgHead.cmd())
         {
+            LOG4_TRACE("no cmd handler.");
             SendTo(stCtx, oOutMsgHead.cmd(), oOutMsgHead.seq(), oOutMsgBody);
             return(false);
         }

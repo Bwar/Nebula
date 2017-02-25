@@ -58,6 +58,10 @@ void Manager::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revent
         {
             pManager->IoError(pChannel);
         }
+        if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
+        {
+            DELETE(pChannel);
+        }
     }
 }
 
@@ -326,7 +330,7 @@ bool Manager::DataRecvAndHandle(Channel* pChannel)
     {
 //        HttpMsg oHttpMsg;
 //        eCodecStatus = pChannel->Recv(oHttpMsg);
-        DestroyConnect(pChannel);
+        DiscardChannel(pChannel);
         return(false);
     }
     else
@@ -364,7 +368,6 @@ bool Manager::DataRecvAndHandle(Channel* pChannel)
         }
         else    // 编解码出错或连接关闭或连接中断
         {
-            DestroyConnect(pChannel);
             return(false);
         }
     }
@@ -416,7 +419,7 @@ bool Manager::IoWrite(Channel* pChannel)
         }
         else
         {
-            DestroyConnect(pChannel);
+            DiscardChannel(pChannel);
         }
     }
     return(true);
@@ -442,7 +445,7 @@ bool Manager::IoTimeout(Channel* pChannel)
     else    // IO已超时，关闭文件描述符并清理相关资源
     {
         LOG4_DEBUG("%s()", __FUNCTION__);
-        DestroyConnect(pChannel);
+        DiscardChannel(pChannel);
         return(false);
     }
 }
@@ -559,7 +562,7 @@ bool Manager::SendTo(const tagChannelContext& stCtx)
             }
             else
             {
-                DestroyConnect(iter->second);
+                DiscardChannel(iter->second);
             }
         }
     }
@@ -590,7 +593,7 @@ bool Manager::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq,
             }
             else
             {
-                DestroyConnect(iter->second);
+                DiscardChannel(iter->second);
             }
             return(true);
         }
@@ -877,7 +880,7 @@ void Manager::Destroy()
     for (std::map<int, Channel*>::iterator iter = m_mapChannel.begin();
                     iter != m_mapChannel.end(); ++iter)
     {
-        DestroyConnect(iter);
+        DiscardChannel(iter);
     }
     m_mapChannel.clear();
     m_mapClientConnFrequency.clear();
@@ -1119,8 +1122,8 @@ bool Manager::RestartWorker(int iDeathPid)
         {
             m_mapWorkerFdPid.erase(fd_iter);
         }
-        DestroyConnect(m_mapChannel.find(worker_iter->second.iControlFd));
-        DestroyConnect(m_mapChannel.find(worker_iter->second.iDataFd));
+        DiscardChannel(m_mapChannel.find(worker_iter->second.iControlFd));
+        DiscardChannel(m_mapChannel.find(worker_iter->second.iDataFd));
         m_mapWorker.erase(worker_iter);
 
         restart_num_iter = m_mapWorkerRestartNum.find(iWorkerIndex);
@@ -1386,7 +1389,7 @@ Channel* Manager::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
     }
 }
 
-bool Manager::DestroyConnect(std::map<int, Channel*>::iterator iter)
+bool Manager::DiscardChannel(std::map<int, Channel*>::iterator iter)
 {
     if (iter == m_mapChannel.end())
     {
@@ -1400,14 +1403,18 @@ bool Manager::DestroyConnect(std::map<int, Channel*>::iterator iter)
     }
     DelEvents(iter->second->MutableIoWatcher());
     DelEvents(iter->second->MutableTimerWatcher());
-    DELETE(iter->second);
+    iter->second->SetChannelStatus(CHANNEL_STATUS_DISCARD);
     m_mapChannel.erase(iter);
     return(true);
 }
 
-bool Manager::DestroyConnect(Channel* pChannel)
+bool Manager::DiscardChannel(Channel* pChannel)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
+    if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
+    {
+        return(false);
+    }
     std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.find(pChannel->GetIdentify());
     if (beacon_iter != m_mapBeaconCtx.end())
     {
@@ -1421,7 +1428,7 @@ bool Manager::DestroyConnect(Channel* pChannel)
     {
         m_mapChannel.erase(iter);
     }
-    DELETE(pChannel);
+    pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
     return(true);
 }
 
@@ -1673,7 +1680,7 @@ bool Manager::SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
             }
             else
             {
-                DestroyConnect(worker_conn_iter->second);
+                DiscardChannel(worker_conn_iter->second);
             }
         }
     }
@@ -1731,7 +1738,7 @@ bool Manager::OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, 
                     }
                     else
                     {
-                        DestroyConnect(pChannel);
+                        DiscardChannel(pChannel);
                         return(false);
                     }
 
@@ -1744,7 +1751,7 @@ bool Manager::OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, 
                         LOG4_ERROR("send_fd_with_attr error %d: %s!",
                                         iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
                     }
-                    DestroyConnect(pChannel);
+                    DiscardChannel(pChannel);
                     return(false);
                 }
             }
@@ -1779,7 +1786,7 @@ bool Manager::OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, 
     }
     else
     {
-        DestroyConnect(pChannel);
+        DiscardChannel(pChannel);
         return(false);
     }
     return(true);
@@ -1805,7 +1812,7 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
             }
             else
             {
-                DestroyConnect(pChannel);
+                DiscardChannel(pChannel);
                 return(false);
             }
             return(true);
@@ -1825,7 +1832,7 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
         }
         else
         {
-            DestroyConnect(pChannel);
+            DiscardChannel(pChannel);
             return(false);
         }
         return(true);
@@ -1868,7 +1875,25 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
             }
             else
             {
-                DestroyConnect(pChannel);
+                DiscardChannel(pChannel);
+                return(false);
+            }
+            return(true);
+        }
+        else if (CMD_RSP_TELL_WORKER == oInMsgHead.cmd()) // 连接beacon时的回调
+        {
+            E_CODEC_STATUS eCodecStatus = pChannel->Send();
+            if (CODEC_STATUS_OK == eCodecStatus)
+            {
+                RemoveIoWriteEvent(pChannel);
+            }
+            else if (CODEC_STATUS_PAUSE == eCodecStatus)
+            {
+                AddIoWriteEvent(pChannel);
+            }
+            else
+            {
+                DiscardChannel(pChannel);
                 return(false);
             }
             return(true);

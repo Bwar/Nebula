@@ -101,6 +101,10 @@ bool Channel::NeedAliveCheck() const
 E_CODEC_STATUS Channel::Send()
 {
     LOG4_TRACE("%s", __FUNCTION__);
+    if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_EOF);
+    }
     int iNeedWriteLen = 0;
     int iWriteLen = 0;
     LOG4_TRACE("m_pSendBuff = 0x%d, m_pSendBuff->ReadableBytes() = %d", m_pSendBuff, m_pSendBuff->ReadableBytes());
@@ -176,11 +180,18 @@ E_CODEC_STATUS Channel::Send()
 
 E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
+    if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_EOF);
+    }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
+    int32 iMsgBodyLen = oMsgBody.ByteSize();
     MsgHead oMsgHead;
     oMsgHead.set_cmd(uiCmd);
     oMsgHead.set_seq(uiSeq);
-    oMsgHead.set_len(oMsgBody.ByteSize());
+    iMsgBodyLen = (iMsgBodyLen > 0) ? iMsgBodyLen : -1;     // proto3里int赋值为0会在指定固定大小的message时有问题
+    oMsgHead.set_len(iMsgBodyLen);
+    LOG4_TRACE("%s() uiCmd = %d, uiSeq = %d, oMsgBody.ByteSize() = %d", __FUNCTION__, uiCmd, uiSeq, oMsgBody.ByteSize());
     switch (m_ucChannelStatus)
     {
         case CHANNEL_STATUS_ESTABLISHED:
@@ -238,7 +249,7 @@ E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody
     }
 
     int iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
-    LOG4_TRACE("iWriteLen = %d", iWriteLen);
+    LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
     if (iWriteLen >= 0)
     {
         m_dActiveTime = m_pLabor->GetNowTime();
@@ -267,6 +278,10 @@ E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody
 
 E_CODEC_STATUS Channel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 {
+    if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_EOF);
+    }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     switch (m_ucChannelStatus)
     {
@@ -332,6 +347,10 @@ E_CODEC_STATUS Channel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 
 E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
+    if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_EOF);
+    }
     int iReadLen = 0;
     iReadLen = m_pRecvBuff->ReadFD(m_iFd, m_iErrno);
     LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
@@ -409,6 +428,10 @@ E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 
 E_CODEC_STATUS Channel::Recv(HttpMsg& oHttpMsg)
 {
+    if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_EOF);
+    }
     int iReadLen = 0;
     iReadLen = m_pRecvBuff->ReadFD(m_iFd, m_iErrno);
     LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
@@ -451,6 +474,10 @@ E_CODEC_STATUS Channel::Recv(HttpMsg& oHttpMsg)
 
 E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
+    if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_EOF);
+    }
     int iReadLen = 0;
     iReadLen = m_pRecvBuff->ReadFD(m_iFd, m_iErrno);
     LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
@@ -500,6 +527,12 @@ E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHtt
 
 E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
+    if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_EOF);
+    }
+    LOG4_TRACE("fetch from fd %d and m_pRecvBuff->ReadableBytes() = %d",
+            m_iFd, m_pRecvBuff->ReadableBytes());
     E_CODEC_STATUS eCodecStatus = m_pCodec->Decode(m_pRecvBuff, oMsgHead, oMsgBody);
     if (CODEC_STATUS_OK == eCodecStatus)
     {
@@ -512,6 +545,10 @@ E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 
 E_CODEC_STATUS Channel::Fetch(HttpMsg& oHttpMsg)
 {
+    if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_EOF);
+    }
     E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
     m_dKeepAlive = ((CodecHttp*)m_pCodec)->GetKeepAlive();
     return(eCodecStatus);
@@ -519,6 +556,10 @@ E_CODEC_STATUS Channel::Fetch(HttpMsg& oHttpMsg)
 
 E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
+    if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_EOF);
+    }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     if (CODEC_HTTP == m_pCodec->GetCodecType())
     {

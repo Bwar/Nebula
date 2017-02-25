@@ -206,7 +206,7 @@ public:     // 发送数据或从Worker获取数据
     virtual void AddInnerChannel(const tagChannelContext& stCtx);
     virtual bool SetClientData(const tagChannelContext& stCtx, const std::string& strClientData);
     virtual std::string GetClientAddr(const tagChannelContext& stCtx);
-    virtual bool AbandonNamedChannel(const std::string& strIdentify);
+    virtual bool DiscardNamedChannel(const std::string& strIdentify);
     virtual bool SwitchCodec(const tagChannelContext& stCtx, E_CODEC_TYPE eCodecType);
     virtual void ExecStep(uint32 uiCallerStepSeq, uint32 uiCalledStepSeq,
                     int iErrno, const std::string& strErrMsg, const std::string& strErrShow);
@@ -228,7 +228,7 @@ protected:
     bool RemoveIoWriteEvent(Channel* pChannel);
     bool AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout = 1.0);
     Channel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
-    bool DestroyChannel(Channel* pChannel, bool bChannelNotice = true);
+    bool DiscardChannel(Channel* pChannel, bool bChannelNotice = true);
     void ChannelNotice(const tagChannelContext& stCtx, const std::string& strIdentify, const std::string& strClientData);
 
     /**
