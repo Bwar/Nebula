@@ -49,12 +49,11 @@
     "//refresh_interval":"刷新Server配置，检查、加载插件动态库时间周期（周期时间长短视服务器忙闲而定）",
     "refresh_interval":60,
     "cmd":[
-        {"cmd":10001, "so_path":"plugins/CmdSingleMsg.so", "entrance_symbol":"create", "load":false, "version":1},
-        {"cmd":10002, "so_path":"plugins/CmdMultiMsg.so", "entrance_symbol":"create", "load":false, "version":1}
+        {"cmd":1001, "so_path":"plugins/CmdLogin.so", "entrance_symbol":"create", "load":true, "version":1},
+        {"cmd":1002, "so_path":"plugins/CmdLogout.so", "entrance_symbol":"create", "load":true, "version":1}
     ],
     "module":[
-        {"url_path":"im/user/attention/mobile-lists", "so_path":"plugins/ModuleMobileList.so", "entrance_symbol":"create", "load":false, "version":1},
-        {"url_path":"im/user/attention/unlogin/mobile-friends", "so_path":"plugins/ModuleFriends.so", "entrance_symbol":"create", "load":false, "version":1}
+        {"url_path":"user/add_friend", "so_path":"plugins/ModuleAddFriend.so", "entrance_symbol":"create", "load":true, "version":1}
     ],
     "//custom":"自定义配置，用于通过框架层带给业务",
     "custom":{}
