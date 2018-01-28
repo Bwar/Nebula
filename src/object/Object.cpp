@@ -47,6 +47,8 @@ bool Object::Register(Object* pObject, ev_tstamp dTimeout)
     switch (pObject->GetObjectType())
     {
         case OBJ_PB_STEP:
+        case OBJ_HTTP_STEP:
+        case OBJ_REDIS_STEP:
             if (OBJ_PB_STEP == GetObjectType() || OBJ_HTTP_STEP == GetObjectType() || OBJ_REDIS_STEP ==GetObjectType())
             {
                 pObject->SetTraceId(GetTraceId());
@@ -57,10 +59,6 @@ bool Object::Register(Object* pObject, ev_tstamp dTimeout)
                 pObject->SetTraceId(m_pLabor->GetSequence());
                 return(m_pLabor->Register((Step*)pObject, dTimeout));
             }
-            break;
-        case OBJ_HTTP_STEP:
-            break;
-        case OBJ_REDIS_STEP:
             break;
         case OBJ_SESSION:
             return(m_pLabor->Register((Session*)pObject));
@@ -140,14 +138,7 @@ const std::string& Object::GetWorkPath() const
 
 const std::string& Object::GetWorkerIdentify()
 {
-    if (m_strWorkerIdentify.size() < 5) // IP + port + worker_index长度一定会大于这个数即可，不在乎数值是什么
-    {
-        char szWorkerIdentify[64] = {0};
-        snprintf(szWorkerIdentify, 64, "%s:%d.%d", m_pLabor->GetHostForServer().c_str(),
-                        m_pLabor->GetPortForServer(), m_pLabor->GetWorkerIndex());
-        m_strWorkerIdentify = szWorkerIdentify;
-    }
-    return(m_strWorkerIdentify);
+    return(m_pLabor->GetWorkerIdentify());
 }
 
 const CJsonObject& Object::GetCustomConf() const

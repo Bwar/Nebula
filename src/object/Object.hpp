@@ -340,7 +340,6 @@ private:
     uint32 m_ulTraceId;
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
-    std::string m_strWorkerIdentify;
     Labor* m_pLabor;
     log4cplus::Logger* m_pLogger;
     ev_timer* m_pTimerWatcher;

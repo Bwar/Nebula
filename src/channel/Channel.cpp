@@ -11,6 +11,8 @@
 #include "codec/CodecPrivate.hpp"
 #include "codec/CodecHttp.hpp"
 #include "labor/Labor.hpp"
+#include "labor/chief/Manager.hpp"
+#include "labor/chief/Worker.hpp"
 #include "Channel.hpp"
 
 namespace neb
@@ -40,6 +42,7 @@ Channel::~Channel()
 
 bool Channel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
 {
+    LOG4_TRACE("%s(codec_type[%d])", __FUNCTION__, eCodecType);
     // NEW_PTR(m_pRecvBuff, CBuffer);
     try
     {
@@ -100,7 +103,7 @@ bool Channel::NeedAliveCheck() const
 
 E_CODEC_STATUS Channel::Send()
 {
-    LOG4_TRACE("%s", __FUNCTION__);
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%u])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -180,6 +183,7 @@ E_CODEC_STATUS Channel::Send()
 
 E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, uiCmd, uiSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -278,6 +282,7 @@ E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody
 
 E_CODEC_STATUS Channel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 {
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%u])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -347,6 +352,7 @@ E_CODEC_STATUS Channel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 
 E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -403,6 +409,7 @@ E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                     return(CODEC_STATUS_OK);
             }
         }
+        LOG4_TRACE("%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
         return(eCodecStatus);
     }
     else if (iReadLen == 0)
@@ -428,6 +435,7 @@ E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 
 E_CODEC_STATUS Channel::Recv(HttpMsg& oHttpMsg)
 {
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -474,6 +482,7 @@ E_CODEC_STATUS Channel::Recv(HttpMsg& oHttpMsg)
 
 E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -500,6 +509,7 @@ E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHtt
                 ++m_ulUnitTimeMsgNum;
                 ++m_ulMsgNum;
                 oMsgBody.set_add_on(m_strClientData);
+                LOG4_TRACE("%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
             }
             return(eCodecStatus);
         }
@@ -527,6 +537,7 @@ E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHtt
 
 E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -539,12 +550,14 @@ E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
         m_ulForeignSeq = oMsgHead.seq();
         ++m_ulUnitTimeMsgNum;
         ++m_ulMsgNum;
+        LOG4_TRACE("%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
     }
     return(eCodecStatus);
 }
 
 E_CODEC_STATUS Channel::Fetch(HttpMsg& oHttpMsg)
 {
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -556,6 +569,7 @@ E_CODEC_STATUS Channel::Fetch(HttpMsg& oHttpMsg)
 
 E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -575,6 +589,7 @@ E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHt
             m_ulForeignSeq = oMsgHead.seq();
             ++m_ulUnitTimeMsgNum;
             ++m_ulMsgNum;
+            LOG4_TRACE("%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
         }
         return(eCodecStatus);
     }
@@ -582,6 +597,8 @@ E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHt
 
 bool Channel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
 {
+    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d], codec_type[%d], new_codec_type[%d])",
+                    __FUNCTION__, m_iFd, m_ulSeq, m_pCodec->GetCodecType(), eCodecType);
     if (eCodecType == m_pCodec->GetCodecType())
     {
         return(true);

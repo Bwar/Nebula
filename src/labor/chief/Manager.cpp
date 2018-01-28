@@ -1499,7 +1499,7 @@ bool Manager::CheckWorker()
     for (worker_iter = m_mapWorker.begin();
                     worker_iter != m_mapWorker.end(); ++worker_iter)
     {
-        LOG4_TRACE("now %lf, worker_beat %lf, worker_beat %d",
+        LOG4_TRACE("now %lf, worker_beat_time %lf, worker_beat %d",
                         ev_now(m_loop), worker_iter->second.dBeatTime, m_iWorkerBeat);
         if ((ev_now(m_loop) - worker_iter->second.dBeatTime) > m_iWorkerBeat)
         {
@@ -1860,7 +1860,7 @@ bool Manager::OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const M
             char szWorkerIdentify[64] = {0};
             snprintf(szWorkerIdentify, 64, "%s:%d", m_strHostForServer.c_str(), m_iPortForServer);
             oTargetWorker.set_worker_identify(szWorkerIdentify);
-            oTargetWorker.set_node_type(GetNodeType());
+            oTargetWorker.set_node_type(m_strNodeType);
             oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
             oOutMsgBody.mutable_rsp_result()->set_msg("OK");
             oOutMsgBody.set_data(oTargetWorker.SerializeAsString());

@@ -624,7 +624,7 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
     LOG4_TRACE("%s()", __FUNCTION__);
     if (pBuff->ReadableBytes() == 0)
     {
-        LOG4_DEBUG("no data...");
+        // LOG4_DEBUG("no data...");
         return(CODEC_STATUS_PAUSE);
     }
     m_parser_setting.on_message_begin = OnMessageBegin;

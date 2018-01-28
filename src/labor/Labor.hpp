@@ -443,6 +443,11 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
         return("");
     }
 
+    virtual const std::string& GetWorkerIdentify()
+    {
+        return(m_strWorkerIdentityTmp);
+    }
+
     /**
      * @brief 发送数据
      * @note 指定连接标识符将数据发送。此函数先查找与strIdentify匹配的stMsgShell，如果找到就调用
@@ -588,6 +593,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
 private:
     std::string m_strNodeTypeTmp;
     std::string m_strHostForServerTmp;
+    std::string m_strWorkerIdentityTmp;
     CJsonObject m_oCustomConfTmp;
 };
 

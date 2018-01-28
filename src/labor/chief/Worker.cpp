@@ -32,6 +32,8 @@ extern "C" {
 #include "object/cmd/sys_cmd/CmdBeat.hpp"
 #include "object/step/sys_step/StepIoTimeout.hpp"
 
+//#include <iostream>
+
 namespace neb
 {
 
@@ -80,9 +82,9 @@ void Worker::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int reve
     {
         Channel* pChannel = (Channel*)watcher->data;
         Worker* pWorker = (Worker*)(pChannel->m_pLabor);
-        //std::cerr << "loop = " << loop << std::endl;
-        //std::cerr << "IoTimeoutCallback() watcher = " << watcher << " pChannel = " << pChannel << "  pWorker = " << pWorker << std::endl;
-        //std::cerr << "pChannel->GetFd() = " << pChannel->GetFd() << " pChannel->GetSequence() = " << pChannel->GetSequence() << "  pChannel->MutableTimerWatcher() = " << pChannel->MutableTimerWatcher() << std::endl;
+//        std::cerr << "loop = " << loop << std::endl;
+//        std::cerr << "IoTimeoutCallback() watcher = " << watcher << " pChannel = " << pChannel << "  pWorker = " << pWorker << std::endl;
+//        std::cerr << "pChannel->GetFd() = " << pChannel->GetFd() << " pChannel->GetSequence() = " << pChannel->GetSequence() << "  pChannel->MutableTimerWatcher() = " << pChannel->MutableTimerWatcher() << std::endl;
         if (pChannel->GetFd() < 3)      // TODO 这个判断是不得已的做法，需查找fd为0回调到这里的原因
         {
             return;
@@ -158,7 +160,7 @@ Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int 
       m_loop(NULL), m_pCmdConnect(NULL)
 {
     m_iWorkerPid = getpid();
-    m_pErrBuff = new char[gc_iErrBuffLen];
+    m_pErrBuff = (char*)malloc(gc_iErrBuffLen);
     if (!Init(oJsonConf))
     {
         exit(-1);
@@ -409,13 +411,24 @@ bool Worker::IoTimeout(Channel* pChannel)
         return(true);
     }
 
+    LOG4_TRACE("%s(fd %d, seq %u):", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
     if (pChannel->NeedAliveCheck())     // 需要发送心跳检查
     {
         tagChannelContext stCtx;
         stCtx.iFd = pChannel->GetFd();
         stCtx.ulSeq = pChannel->GetSequence();
-        StepIoTimeout* pStepIoTimeout = new StepIoTimeout(stCtx);
-        if (Register(pStepIoTimeout))
+        StepIoTimeout* pStepIoTimeout = NULL;
+        try
+        {
+            pStepIoTimeout = new StepIoTimeout(stCtx);
+        }
+        catch(std::bad_alloc& e)
+        {
+            LOG4_ERROR("new StepIoTimeout error: %s", e.what());
+            DiscardChannel(pChannel);
+            return(false);
+        }
+        if (Register((Step*)pStepIoTimeout))
         {
             E_CMD_STATUS eStatus = pStepIoTimeout->Emit(ERR_OK);
             if (CMD_STATUS_RUNNING != eStatus)
@@ -719,7 +732,7 @@ bool Worker::Register(Step* pStep, ev_tstamp dTimeout)
         = m_mapCallbackStep.insert(std::pair<uint32, Step*>(pStep->GetSequence(), pStep));
     if (ret.second)
     {
-        ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
+        ev_timer_init (timer_watcher, StepTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
         LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pStep->GetSequence(), pStep->GetActiveTime(), pStep->GetTimeout());
@@ -776,7 +789,7 @@ bool Worker::Register(uint32 uiSelfStepSeq, Step* pStep, ev_tstamp dTimeout)
         = m_mapCallbackStep.insert(std::pair<uint32, Step*>(pStep->GetSequence(), pStep));
     if (ret.second)
     {
-        ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
+        ev_timer_init (timer_watcher, StepTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
         LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pStep->GetSequence(), pStep->GetActiveTime(), pStep->GetTimeout());
@@ -872,7 +885,7 @@ bool Worker::Register(Session* pSession)
     {
         return(false);
     }
-    if (pSession->IsRegistered())  // 已注册过，不必重复注册，不过认为本次注册成功
+    if (pSession->IsRegistered())  // 已注册过，不必重复注册
     {
         return(true);
     }
@@ -1224,9 +1237,9 @@ bool Worker::CreateEvents()
     pChannelData->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     pChannelControl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     AddIoReadEvent(pChannelData);
-    AddIoTimeout(pChannelData, 60.0);   // TODO 需要优化
+    // AddIoTimeout(pChannelData, 60.0);   // TODO 需要优化
     AddIoReadEvent(pChannelControl);
-    AddIoTimeout(pChannelControl, 60.0); //TODO 需要优化
+    // AddIoTimeout(pChannelControl, 60.0); //TODO 需要优化
     m_mapInnerFd.insert(std::make_pair(m_iManagerDataFd, pChannelData->GetSequence()));
     m_mapInnerFd.insert(std::make_pair(m_iManagerControlFd, pChannelControl->GetSequence()));
     return(true);
@@ -1924,7 +1937,16 @@ bool Worker::AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* pRed
         return(false);
     }
     c->data = this;
-    tagRedisAttr* pRedisAttr = new tagRedisAttr();
+    tagRedisAttr* pRedisAttr = NULL;
+    try
+    {
+        pRedisAttr = new tagRedisAttr();
+    }
+    catch(std::bad_alloc& e)
+    {
+        LOG4_ERROR("new tagRedisAttr error: %s", e.what());
+        return(false);
+    }
     pRedisAttr->ulSeq = GetSequence();
     pRedisAttr->listWaitData.push_back(pRedisStep);
     pRedisStep->SetLogger(&m_oLogger);
@@ -2319,10 +2341,10 @@ void Worker::UnloadSoAndDeleteModule(const std::string& strModulePath)
 bool Worker::AddPeriodicTaskEvent()
 {
     LOG4_TRACE("%s()", __FUNCTION__);
-    ev_timer* timeout_watcher = new ev_timer();
+    ev_timer* timeout_watcher = (ev_timer*)malloc(sizeof(ev_timer));
     if (timeout_watcher == NULL)
     {
-        LOG4_ERROR("new timeout_watcher error!");
+        LOG4_ERROR("malloc timeout_watcher error!");
         return(false);
     }
     ev_timer_init (timeout_watcher, PeriodicTaskCallback, NODE_BEAT + ev_time() - ev_now(m_loop), 0.);
@@ -2408,7 +2430,7 @@ bool Worker::AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout)
         {
             return(false);
         }
-        pChannel->SetKeepAlive(m_dIoTimeout);
+        // @deprecated pChannel->SetKeepAlive(m_dIoTimeout);
         ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
         return(true);
@@ -2459,7 +2481,7 @@ bool Worker::AddIoTimeout(const tagChannelContext& stCtx)
 
 Channel* Worker::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
 {
-    LOG4_DEBUG("%s(iFd %d)", __FUNCTION__, iFd);
+    LOG4_DEBUG("%s(iFd %d, codec_type %d)", __FUNCTION__, iFd, eCodecType);
     std::map<int, Channel*>::iterator iter;
     iter = m_mapChannel.find(iFd);
     if (iter == m_mapChannel.end())
