@@ -208,7 +208,7 @@ bool Object::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, 
 
 bool Object::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg)
 {
-    return(m_pLabor->SendTo(strHost, iPort, strUrlPath, oHttpMsg, this));
+    return(m_pLabor->SendTo(strHost, iPort, strUrlPath, oHttpMsg, this->GetSequence()));
 }
 
 bool Object::SendToNext(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)

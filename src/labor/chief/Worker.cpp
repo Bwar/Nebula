@@ -263,11 +263,6 @@ bool Worker::RecvDataAndHandle(Channel* pChannel)
             {
                 Handle(pChannel, oHttpMsg);
             }
-            else if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.IsInitialized())
-            {
-                Handle(pChannel, oHttpMsg);
-                DiscardChannel(pChannel, false);
-            }
             else
             {
                 break;
@@ -402,7 +397,7 @@ bool Worker::IoWrite(Channel* pChannel)
 
 bool Worker::IoTimeout(Channel* pChannel)
 {
-    ev_tstamp after = pChannel->GetActiveTime() - ev_now(m_loop) + pChannel->GetKeepAlive();
+    ev_tstamp after = pChannel->GetActiveTime() - ev_now(m_loop) + m_dIoTimeout;
     if (after > 0)    // IO在定时时间内被重新刷新过，重新设置定时器
     {
         ev_timer_stop (m_loop, pChannel->MutableTimerWatcher());
@@ -709,7 +704,8 @@ bool Worker::Pretreat(Session* pSession)
 
 bool Worker::Register(Step* pStep, ev_tstamp dTimeout)
 {
-    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStep, dTimeout);
+    ev_tstamp dLifeTime = (dTimeout == 0) ? m_dStepTimeout : dTimeout;
+    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStep, dLifeTime);
     if (pStep == NULL)
     {
         return(false);
@@ -732,7 +728,7 @@ bool Worker::Register(Step* pStep, ev_tstamp dTimeout)
         = m_mapCallbackStep.insert(std::pair<uint32, Step*>(pStep->GetSequence(), pStep));
     if (ret.second)
     {
-        ev_timer_init (timer_watcher, StepTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
+        ev_timer_init (timer_watcher, StepTimeoutCallback, dLifeTime + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
         LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pStep->GetSequence(), pStep->GetActiveTime(), pStep->GetTimeout());
@@ -742,7 +738,8 @@ bool Worker::Register(Step* pStep, ev_tstamp dTimeout)
 
 bool Worker::Register(uint32 uiSelfStepSeq, Step* pStep, ev_tstamp dTimeout)
 {
-    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStep, dTimeout);
+    ev_tstamp dLifeTime = (dTimeout == 0) ? m_dStepTimeout : dTimeout;
+    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStep, dLifeTime);
     if (pStep == NULL)
     {
         return(false);
@@ -789,7 +786,7 @@ bool Worker::Register(uint32 uiSelfStepSeq, Step* pStep, ev_tstamp dTimeout)
         = m_mapCallbackStep.insert(std::pair<uint32, Step*>(pStep->GetSequence(), pStep));
     if (ret.second)
     {
-        ev_timer_init (timer_watcher, StepTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
+        ev_timer_init (timer_watcher, StepTimeoutCallback, dLifeTime + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
         LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pStep->GetSequence(), pStep->GetActiveTime(), pStep->GetTimeout());
@@ -1113,8 +1110,8 @@ bool Worker::Init(CJsonObject& oJsonConf)
         m_dStepTimeout = 0.5;
     }
     oJsonConf.Get("node_type", m_strNodeType);
-    oJsonConf.Get("inner_host", m_strHostForServer);
-    oJsonConf.Get("inner_port", m_iPortForServer);
+    oJsonConf.Get("host", m_strHostForServer);
+    oJsonConf.Get("port", m_iPortForServer);
     m_oCustomConf = oJsonConf["custom"];
 #ifdef NODE_TYPE_ACCESS
     oJsonConf["permission"]["uin_permit"].Get("stat_interval", m_dMsgStatInterval);
@@ -1548,7 +1545,7 @@ bool Worker::SendTo(const tagChannelContext& stCtx)
     }
     else
     {
-        if (iter->second->GetFd() == stCtx.ulSeq)
+        if (iter->second->GetSequence() == stCtx.ulSeq)
         {
             E_CODEC_STATUS eStatus = iter->second->Send();
             if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
@@ -1714,14 +1711,9 @@ bool Worker::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSe
     return(true);
 }
 
-bool Worker::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, HttpStep* pHttpStep)
+bool Worker::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
     LOG4_TRACE("%s(fd %d, seq %lu)", __FUNCTION__, stCtx.iFd, stCtx.ulSeq);
-    if (0 == pHttpStep->GetSequence())
-    {
-        LOG4_ERROR("http step 0x%x has not been registered.", pHttpStep);
-        return(false);
-    }
     std::map<int, Channel*>::iterator conn_iter = m_mapChannel.find(stCtx.iFd);
     if (conn_iter == m_mapChannel.end())
     {
@@ -1732,7 +1724,7 @@ bool Worker::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, Htt
     {
         if (conn_iter->second->GetSequence() == stCtx.ulSeq)
         {
-            E_CODEC_STATUS eStatus = conn_iter->second->Send(oHttpMsg, pHttpStep->GetSequence());
+            E_CODEC_STATUS eStatus = conn_iter->second->Send(oHttpMsg, uiHttpStepSeq);
             if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
             {
                 return(true);
@@ -1748,7 +1740,7 @@ bool Worker::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, Htt
     }
 }
 
-bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, Object* pHttpStep)
+bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
     char szIdentify[256] = {0};
     snprintf(szIdentify, sizeof(szIdentify), "%s:%d%s", strHost.c_str(), iPort, strUrlPath.c_str());
@@ -1757,7 +1749,7 @@ bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& st
     if (named_iter == m_mapNamedChannel.end())
     {
         LOG4_TRACE("no channel match %s.", szIdentify);
-        return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, (HttpStep*)pHttpStep));
+        return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, uiHttpStepSeq));
     }
     else
     {
@@ -1766,7 +1758,7 @@ bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& st
         {
             if (0 == (*channel_iter)->GetStepSeq())
             {
-                E_CODEC_STATUS eStatus = (*channel_iter)->Send(oHttpMsg, pHttpStep->GetSequence());
+                E_CODEC_STATUS eStatus = (*channel_iter)->Send(oHttpMsg, uiHttpStepSeq);
                 if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
                 {
                     return(true);
@@ -1774,7 +1766,7 @@ bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& st
                 return(false);
             }
         }
-        return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, (HttpStep*)pHttpStep));
+        return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, uiHttpStepSeq));
     }
 }
 
@@ -1848,7 +1840,7 @@ bool Worker::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq
         pChannel->SetIdentify(strIdentify);
         pChannel->SetRemoteAddr(strHost);
         pChannel->SetChannelStatus(CHANNEL_STATUS_INIT);
-        E_CODEC_STATUS eCodecStatus = pChannel->Send();
+        E_CODEC_STATUS eCodecStatus = pChannel->Send(uiCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
             DiscardChannel(pChannel);
@@ -1866,7 +1858,7 @@ bool Worker::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq
     }
 }
 
-bool Worker::AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, HttpStep* pHttpStep)
+bool Worker::AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
     LOG4_TRACE("%s(%s, %d, %s)", __FUNCTION__, strHost.c_str(), iPort, strUrlPath.c_str());
     struct sockaddr_in stAddr;
@@ -1908,14 +1900,14 @@ bool Worker::AutoSend(const std::string& strHost, int iPort, const std::string& 
         pChannel->SetIdentify(szIdentify);
         pChannel->SetRemoteAddr(strHost);
         pChannel->SetChannelStatus(CHANNEL_STATUS_INIT);
-        E_CODEC_STATUS eCodecStatus = pChannel->Send();
+        E_CODEC_STATUS eCodecStatus = pChannel->Send(oHttpMsg, uiHttpStepSeq);
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
             DiscardChannel(pChannel);
         }
 
         connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
-        pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT, pHttpStep->GetSequence());
+        pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT, uiHttpStepSeq);
         AddNamedChannel(szIdentify, pChannel);
         return(true);
     }
@@ -2554,7 +2546,10 @@ bool Worker::DiscardChannel(Channel* pChannel, bool bChannelNotice)
         ChannelNotice(stCtx, pChannel->GetIdentify(), pChannel->GetClientData());
     }
     ev_io_stop (m_loop, pChannel->MutableIoWatcher());
-    ev_timer_stop (m_loop, pChannel->MutableTimerWatcher());
+    if (NULL != pChannel->MutableTimerWatcher())
+    {
+        ev_timer_stop (m_loop, pChannel->MutableTimerWatcher());
+    }
     std::map<int, Channel*>::iterator channel_iter = m_mapChannel.find(pChannel->GetFd());
     if (channel_iter != m_mapChannel.end() && channel_iter->second->GetSequence() == pChannel->GetSequence())
     {

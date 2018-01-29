@@ -465,7 +465,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
         return(false);
     }
 
-    virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, Object* pHttpStep = NULL)
+    virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0)
     {
         return(false);
     }
@@ -476,7 +476,7 @@ public:     // Worker相关设置（由Cmd类或Step类调用这些方法完成�
      * @param oHttpMsg Http数据包
      * @return 是否发送成功
      */
-    virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, HttpStep* pHttpStep = NULL)
+    virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0)
     {
         return(false);
     }

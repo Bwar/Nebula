@@ -108,6 +108,10 @@ E_CODEC_STATUS Channel::Send()
     {
         return(CODEC_STATUS_EOF);
     }
+    else if (CHANNEL_STATUS_ESTABLISHED != m_ucChannelStatus)
+    {
+        return(CODEC_STATUS_PAUSE);
+    }
     int iNeedWriteLen = 0;
     int iWriteLen = 0;
     LOG4_TRACE("m_pSendBuff = 0x%d, m_pSendBuff->ReadableBytes() = %d", m_pSendBuff, m_pSendBuff->ReadableBytes());
@@ -146,7 +150,7 @@ E_CODEC_STATUS Channel::Send()
             return(CODEC_STATUS_INT);
         }
     }
-    else
+    else if (m_pWaitForSendBuff->ReadableBytes() > 0)
     {
         CBuffer* pExchangeBuff = m_pSendBuff;
         m_pSendBuff = m_pWaitForSendBuff;
@@ -195,7 +199,6 @@ E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody
     oMsgHead.set_seq(uiSeq);
     iMsgBodyLen = (iMsgBodyLen > 0) ? iMsgBodyLen : -1;     // proto3里int赋值为0会在指定固定大小的message时有问题
     oMsgHead.set_len(iMsgBodyLen);
-    LOG4_TRACE("%s() uiCmd = %d, uiSeq = %d, oMsgBody.ByteSize() = %d", __FUNCTION__, uiCmd, uiSeq, oMsgBody.ByteSize());
     switch (m_ucChannelStatus)
     {
         case CHANNEL_STATUS_ESTABLISHED:

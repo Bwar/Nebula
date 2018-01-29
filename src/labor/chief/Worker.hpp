@@ -196,11 +196,11 @@ public:     // 发送数据或从Worker获取数据
     virtual bool SendToNext(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool SendToWithMod(const std::string& strNodeType, unsigned int uiModFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, HttpStep* pHttpStep = NULL);
-    virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, Object* pHttpStep = NULL);
+    virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
+    virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
     virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, HttpStep* pHttpStep = NULL);
+    virtual bool AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* pRedisStep);
     virtual void SetNodeId(uint32 uiNodeId) {m_uiNodeId = uiNodeId;}
     virtual void AddInnerChannel(const tagChannelContext& stCtx);
