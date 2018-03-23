@@ -26,7 +26,7 @@ namespace neb
 
 
 class Labor;
-class Worker;
+class WorkerImpl;
 class Manager;
 
 class Channel
@@ -220,7 +220,7 @@ private:
     log4cplus::Logger* m_pLogger;
     Labor* m_pLabor;
 
-    friend class Worker;
+    friend class WorkerImpl;
     friend class Manager;
 };
 

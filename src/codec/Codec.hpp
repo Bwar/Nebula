@@ -13,12 +13,12 @@
 //#include <zlib.h>
 //#include <zconf.h>
 
+#include <actor/cmd/CW.hpp>
 #include "log4cplus/loggingmacros.h"
 #include "util/CBuffer.hpp"
 #include "pb/msg.pb.h"
 #include "Error.hpp"
 #include "Definition.hpp"
-#include "object/cmd/CW.hpp"
 #include "CodecDefine.hpp"
 
 namespace neb

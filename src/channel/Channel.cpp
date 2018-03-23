@@ -7,12 +7,12 @@
  * @note
  * Modify history:
  ******************************************************************************/
+#include <labor/chief/WorkerImpl.hpp>
 #include "codec/CodecProto.hpp"
 #include "codec/CodecPrivate.hpp"
 #include "codec/CodecHttp.hpp"
 #include "labor/Labor.hpp"
 #include "labor/chief/Manager.hpp"
-#include "labor/chief/Worker.hpp"
 #include "Channel.hpp"
 
 namespace neb
