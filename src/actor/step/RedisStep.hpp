@@ -25,7 +25,6 @@ class RedisStep: public Step
 {
 public:
     RedisStep(Step* pNextStep = NULL);
-    RedisStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody, Step* pNextStep = NULL);
     RedisStep(const RedisStep&) = delete;
     RedisStep& operator=(const RedisStep&) = delete;
     virtual ~RedisStep();
@@ -43,72 +42,49 @@ public:
 
 public:
     /**
-     * @brief 超时回调
-     * @note redis step 暂时不启用超时机制
-     * @return 回调状态
+     * @brief 设置redis命令
      */
-    virtual E_CMD_STATUS Timeout(){return(CMD_STATUS_FAULT);}
+    void SetCmd(const std::string& strCmd);
 
-public:
-    RedisCmd* MutableRedisCmd()
+    /**
+     * @brief 设置redis命令参数
+     * @note redis命令后面的key也认为是参数之一
+     */
+    void Append(const std::string& strArgument, bool bIsBinaryArg = false);
+
+    /**
+     * @brief 设置用户hash定位redis节点的字符串
+     * @note 所设置的字符串不是redis的key，key和参数一起通过Append()添加
+     */
+    void SetHashKey(const std::string& strHashKey);
+
+    std::string CmdToString() const;
+
+    const std::string& GetErrMsg() const
     {
-        return(m_pRedisCmd);
+        return(m_strErr);
     }
 
-public:
-    const RedisCmd* GetRedisCmd()
+    const std::string& GetCmd() const
     {
-        return(m_pRedisCmd);
+        return(m_strCmd);
     }
 
-protected:  // 请求端的上下文信息，通过Step构造函数初始化，若调用的是不带参数的构造函数Step()，则这几个成员不会被初始化
-    tagChannelContext m_stCtx;
-    MsgHead m_oReqMsgHead;
-    MsgBody m_oReqMsgBody;
+    const std::string& GetHashKey() const
+    {
+        return(m_strHashKey);
+    }
+
+    const std::vector<std::pair<std::string, bool> >& GetCmdArguments() const
+    {
+        return(m_vecCmdArguments);
+    }
 
 private:
-    RedisCmd* m_pRedisCmd;
-};
-
-/**
- * @brief Redis连接属性
- * @note  Redis连接属性，因内部带有许多指针，并且没有必要提供深拷贝构造，所以不可以拷贝，也无需拷贝
- */
-struct tagRedisAttr
-{
-    uint32 ulSeq;                           ///< redis连接序列号
-    bool bIsReady;                          ///< redis连接是否准备就绪
-    std::list<RedisStep*> listData;         ///< redis连接回调数据
-    std::list<RedisStep*> listWaitData;     ///< redis等待连接成功需执行命令的数据
-
-    tagRedisAttr() : ulSeq(0), bIsReady(false)
-    {
-    }
-
-    ~tagRedisAttr()
-    {
-        //freeReplyObject(pReply);  redisProcessCallbacks()函数中有自动回收
-
-        for (std::list<RedisStep*>::iterator step_iter = listData.begin();
-                        step_iter != listData.end(); ++step_iter)
-        {
-            if (*step_iter != NULL)
-            {
-                DELETE(*step_iter);
-            }
-        }
-        listData.clear();
-
-        for (std::list<RedisStep*>::iterator step_iter = listWaitData.begin();
-                        step_iter != listWaitData.end(); ++step_iter)
-        {
-            if (*step_iter != NULL)
-            {
-                DELETE(*step_iter);
-            }
-        }
-        listWaitData.clear();
-    }
+    std::string m_strErr;
+    std::string m_strHashKey;
+    std::string m_strCmd;
+    std::vector<std::pair<std::string, bool> > m_vecCmdArguments;
 };
 
 } /* namespace neb */

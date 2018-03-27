@@ -7,32 +7,52 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#include <actor/step/RedisStep.hpp>
+#include "actor/step/RedisStep.hpp"
 
 namespace neb
 {
 
 RedisStep::RedisStep(Step* pNextStep)
-    : Step(ACT_REDIS_STEP, 0.0, pNextStep), m_pRedisCmd(NULL)
+    : Step(ACT_REDIS_STEP, pNextStep, gc_dNoTimeout)
 {
-    m_pRedisCmd = new RedisCmd();
-}
-
-RedisStep::RedisStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody, Step* pNextStep)
-    : Step(ACT_REDIS_STEP, 0.0, pNextStep),
-      m_stCtx(stCtx), m_oReqMsgHead(oReqMsgHead), m_oReqMsgBody(oReqMsgBody),
-      m_pRedisCmd(NULL)
-{
-    m_pRedisCmd = new RedisCmd();
 }
 
 RedisStep::~RedisStep()
 {
-    if (m_pRedisCmd != NULL)
+}
+
+void RedisStep::SetHashKey(const std::string& strHashKey)
+{
+    m_strHashKey = strHashKey;
+}
+
+void RedisStep::SetCmd(const std::string& strCmd)
+{
+    m_vecCmdArguments.clear();
+    m_strCmd = strCmd;
+}
+
+void RedisStep::Append(const std::string& strArgument, bool bIsBinaryArg)
+{
+    m_vecCmdArguments.push_back(std::make_pair(strArgument, bIsBinaryArg));
+}
+
+std::string RedisStep::CmdToString() const
+{
+    std::string strCmd = m_strCmd;
+    std::vector<std::pair<std::string, bool> >::const_iterator c_iter = m_vecCmdArguments.begin();
+    for (; c_iter != m_vecCmdArguments.end(); c_iter++)
     {
-        delete m_pRedisCmd;
-        m_pRedisCmd = NULL;
+        if (c_iter->second)
+        {
+            strCmd = strCmd + " a_binary_arg";
+        }
+        else
+        {
+            strCmd = strCmd + " " + c_iter->first;
+        }
     }
+    return strCmd;
 }
 
 } /* namespace neb */

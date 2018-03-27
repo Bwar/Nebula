@@ -51,7 +51,17 @@ public:
 
     static T* CreateObject(Targs&&... args)
     {
-        return new T(std::forward<Targs>(args)...);
+        T* pT = nullptr;
+        try
+        {
+            pT = new T(std::forward<Targs>(args)...);
+        }
+        catch(std::bad_alloc& e)
+        {
+            std::cerr << e.what() << std::endl;     // TODO write log
+            return(nullptr);
+        }
+        return(pT);
     }
 
 private:

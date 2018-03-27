@@ -20,8 +20,9 @@ class WorkerImpl;
 class PbStep: public Step
 {
 public:
-    PbStep(ev_tstamp dTimeout, Step* pNextStep = NULL);
-    PbStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody, ev_tstamp dTimeout, Step* pNextStep = NULL);
+    PbStep(Step* pNextStep = NULL, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    PbStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody,
+                    Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     PbStep(const PbStep&) = delete;
     PbStep& operator=(const PbStep&) = delete;
     virtual ~PbStep();

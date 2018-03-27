@@ -12,13 +12,13 @@
 namespace neb
 {
 
-PbStep::PbStep(ev_tstamp dTimeout, Step* pNextStep)
-    : Step(ACT_PB_STEP, dTimeout, pNextStep)
+PbStep::PbStep(Step* pNextStep, ev_tstamp dTimeout)
+    : Step(ACT_PB_STEP, pNextStep, dTimeout)
 {
 }
 
-PbStep::PbStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody, ev_tstamp dTimeout, Step* pNextStep)
-    : Step(ACT_PB_STEP, dTimeout, pNextStep),
+PbStep::PbStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody, Step* pNextStep, ev_tstamp dTimeout)
+    : Step(ACT_PB_STEP, pNextStep, dTimeout),
       m_stCtx(stCtx), m_oReqMsgHead(oReqMsgHead), m_oReqMsgBody(oReqMsgBody)
 {
 }

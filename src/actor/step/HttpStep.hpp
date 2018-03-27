@@ -19,8 +19,8 @@ namespace neb
 class HttpStep: public Step
 {
 public:
-    HttpStep(ev_tstamp dTimeout, Step* pNextStep = NULL);
-    HttpStep(const tagChannelContext& stCtx, ev_tstamp dTimeout, Step* pNextStep = NULL);
+    HttpStep(Step* pNextStep = NULL, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    HttpStep(const tagChannelContext& stCtx, Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     HttpStep(const HttpStep&) = delete;
     HttpStep& operator=(const HttpStep&) = delete;
     virtual ~HttpStep();

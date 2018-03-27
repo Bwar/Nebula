@@ -21,7 +21,7 @@ Step* WorkerImpl::NewStep(const std::string& strStepName, Targs... args)
     {
         return(nullptr);
     }
-    pStep->m_dTimeout = (0 == pStep->m_dTimeout) ? m_dStepTimeout : pStep->m_dTimeout;
+    pStep->m_dTimeout = (0 == pStep->m_dTimeout) ? m_stWorkerInfo.dStepTimeout : pStep->m_dTimeout;
     LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStep, pStep->m_dTimeout);
 
     pStep->SetWorker(m_pWorker);
@@ -34,11 +34,23 @@ Step* WorkerImpl::NewStep(const std::string& strStepName, Targs... args)
         return(nullptr);
     }
 
+    for (auto iter = pStep->m_setNextStepSeq.begin(); iter != pStep->m_setNextStepSeq.end(); ++iter)
+    {
+        auto callback_iter = m_mapCallbackStep.find(*iter);
+        if (callback_iter != m_mapCallbackStep.end())
+        {
+            callback_iter->second->m_setPreStepSeq.insert(pStep->GetSequence());
+        }
+    }
+
     auto ret = m_mapCallbackStep.insert(std::make_pair(pStep->GetSequence(), pStep));
     if (ret.second)
     {
-        ev_timer_init (timer_watcher, StepTimeoutCallback, pStep->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
-        ev_timer_start (m_loop, timer_watcher);
+        if (gc_dNoTimeout != pStep->m_dTimeout)
+        {
+            ev_timer_init (timer_watcher, StepTimeoutCallback, pStep->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
+            ev_timer_start (m_loop, timer_watcher);
+        }
         LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pStep->GetSequence(), pStep->GetActiveTime(), pStep->GetTimeout());
         return(pStep);

@@ -12,13 +12,13 @@
 namespace neb
 {
 
-HttpStep::HttpStep(ev_tstamp dTimeout, Step* pNextStep)
-    : Step(ACT_HTTP_STEP, dTimeout, pNextStep)
+HttpStep::HttpStep(Step* pNextStep, ev_tstamp dTimeout)
+    : Step(ACT_HTTP_STEP, pNextStep, dTimeout)
 {
 }
 
-HttpStep::HttpStep(const tagChannelContext& stCtx, ev_tstamp dTimeout, Step* pNextStep)
-    : Step(ACT_HTTP_STEP, dTimeout, pNextStep),
+HttpStep::HttpStep(const tagChannelContext& stCtx, Step* pNextStep, ev_tstamp dTimeout)
+    : Step(ACT_HTTP_STEP, pNextStep, dTimeout),
       m_stCtx(stCtx)
 {
 }

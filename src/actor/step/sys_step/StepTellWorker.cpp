@@ -49,7 +49,7 @@ E_CMD_STATUS StepTellWorker::Callback(
         if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
         {
             LOG4_DEBUG("AddNodeIdentify(%s, fd %d, seq %llu)!",
-                            oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.ulSeq);
+                            oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.uiSeq);
             AddNamedChannel(oInTargetWorker.worker_identify(), stCtx);
             AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
             SendTo(stCtx);

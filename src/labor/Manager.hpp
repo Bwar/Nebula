@@ -77,10 +77,10 @@ public:
     static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     bool ManagerTerminated(struct ev_signal* watcher);
     bool ChildTerminated(struct ev_signal* watcher);
-    bool IoRead(Channel* pChannel);
-    bool IoWrite(Channel* pChannel);
-    bool IoError(Channel* pChannel);
-    bool IoTimeout(Channel* pChannel);
+    bool IoRead(SocketChannel* pChannel);
+    bool IoWrite(SocketChannel* pChannel);
+    bool IoError(SocketChannel* pChannel);
+    bool IoTimeout(SocketChannel* pChannel);
     bool ClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher);
 
     void Run();
@@ -110,27 +110,27 @@ protected:
     bool RegisterToBeacon();
     bool RestartWorker(int iDeathPid);
     bool AddPeriodicTaskEvent();
-    bool AddIoReadEvent(Channel* pChannel);
-    bool AddIoWriteEvent(Channel* pChannel);
-    bool RemoveIoWriteEvent(Channel* pChannel);
+    bool AddIoReadEvent(SocketChannel* pChannel);
+    bool AddIoWriteEvent(SocketChannel* pChannel);
+    bool RemoveIoWriteEvent(SocketChannel* pChannel);
     bool DelEvents(ev_io* io_watcher);
     bool DelEvents(ev_timer* timer_watcher);
-    bool AddIoTimeout(Channel* pChannel, ev_tstamp dTimeout = 1.0);
+    bool AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout = 1.0);
     bool AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout = 60.0);
-    Channel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
-    bool DiscardChannel(std::map<int, Channel*>::iterator iter);
-    bool DiscardChannel(Channel* pChannel);
+    SocketChannel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
+    bool DiscardChannel(std::map<int, SocketChannel*>::iterator iter);
+    bool DiscardChannel(SocketChannel* pChannel);
     std::pair<int, int> GetMinLoadWorkerDataFd();
     bool FdTransfer(int iFd);
     bool AcceptServerConn(int iFd);
-    bool DataRecvAndHandle(Channel* pChannel);
+    bool DataRecvAndHandle(SocketChannel* pChannel);
     bool CheckWorker();
     void RefreshServer();
     bool ReportToBeacon();  // 向管理中心上报负载信息
     bool SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);    // 向Worker发送数据
-    bool OnWorkerData(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
-    bool OnDataAndTransferFd(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
-    bool OnBeaconData(Channel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool OnWorkerData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool OnBeaconData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
 
     uint32 GetSequence()
     {
@@ -185,7 +185,7 @@ private:
     std::map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
     std::map<std::string, tagChannelContext> m_mapBeaconCtx; ///< 到beacon服务器的连接
 
-    std::map<int, Channel*> m_mapChannel;                   ///< 通信通道
+    std::map<int, SocketChannel*> m_mapChannel;                   ///< 通信通道
     std::map<uint32, int> m_mapSeq2WorkerIndex;             ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
     std::map<in_addr_t, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
     std::map<int32, Cmd*> m_mapCmd;

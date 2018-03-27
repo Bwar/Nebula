@@ -21,7 +21,7 @@ Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int 
     : m_pImpl(nullptr)
 {
     // C++14: m_Impl = std::make_unique<WorkerImpl>(strWorkPath, iControlFd, iDataFd, iWorkerIndex, oJsonConf);
-    m_pImpl = std::unique_ptr<WorkerImpl>(new WorkerImpl(strWorkPath, iControlFd, iDataFd, iWorkerIndex, oJsonConf));
+    m_pImpl = std::unique_ptr<WorkerImpl>(new WorkerImpl(this, strWorkPath, iControlFd, iDataFd, iWorkerIndex, oJsonConf));
 }
 
 Worker::~Worker()
@@ -32,11 +32,6 @@ Worker::~Worker()
 uint32 Worker::GetSequence() const
 {
     return(m_pImpl->GetSequence());
-}
-
-bool Worker::ResetTimeout(Actor* pObject)
-{
-    return(m_pImpl->ResetTimeout(pObject));
 }
 
 Session* Worker::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
@@ -64,6 +59,11 @@ int Worker::GetWorkerIndex() const
     return(m_pImpl->GetWorkerInfo().iWorkerIndex);
 }
 
+ev_tstamp Worker::GetDefaultTimeout() const
+{
+    return((m_pImpl->GetWorkerInfo().dStepTimeout));
+}
+
 int Worker::GetClientBeatTime() const
 {
     return((int)(m_pImpl->GetWorkerInfo().dIoTimeout));
@@ -89,7 +89,7 @@ const std::string& Worker::GetWorkPath() const
     return(m_pImpl->GetWorkerInfo().strWorkPath);
 }
 
-const std::string& Worker::GetWorkerIdentify()
+const std::string& Worker::GetWorkerIdentify() const
 {
     return(m_pImpl->GetWorkerInfo().strWorkerIdentify);
 }
@@ -144,9 +144,9 @@ bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& st
     return(m_pImpl->SendTo(strHost, iPort, strUrlPath, oHttpMsg, uiHttpStepSeq));
 }
 
-bool Worker::AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* pRedisStep)
+bool Worker::SendTo(const std::string& strHost, int iPort, RedisStep* pRedisStep)
 {
-    return(m_pImpl->AutoRedisCmd(strHost, iPort, pRedisStep));
+    return(m_pImpl->SendTo(strHost, iPort, pRedisStep));
 }
 
 std::string Worker::GetClientAddr(const tagChannelContext& stCtx)

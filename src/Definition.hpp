@@ -133,6 +133,9 @@ const int gc_iErrBuffLen = 256;
 const uint32 gc_uiMsgHeadSize = 15;
 const uint32 gc_uiClientMsgHeadSize = 14;
 
+const ev_tstamp gc_dNoTimeout = -1;
+const ev_tstamp gc_dDefaultTimeout = 0;
+
 /**
  * @brief 命令执行状态
  */
@@ -171,20 +174,20 @@ enum E_CHANNEL_STATUS
 struct tagChannelContext
 {
     int32 iFd;          ///< 请求消息来源文件描述符
-    uint32 ulSeq;       ///< 文件描述符创建时对应的序列号
+    uint32 uiSeq;       ///< 文件描述符创建时对应的序列号
 
-    tagChannelContext() : iFd(0), ulSeq(0)
+    tagChannelContext() : iFd(0), uiSeq(0)
     {
     }
 
-    tagChannelContext(const tagChannelContext& stCtx) : iFd(stCtx.iFd), ulSeq(stCtx.ulSeq)
+    tagChannelContext(const tagChannelContext& stCtx) : iFd(stCtx.iFd), uiSeq(stCtx.uiSeq)
     {
     }
 
     tagChannelContext& operator=(const tagChannelContext& stCtx)
     {
         iFd = stCtx.iFd;
-        ulSeq = stCtx.ulSeq;
+        uiSeq = stCtx.uiSeq;
         return(*this);
     }
 };

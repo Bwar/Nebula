@@ -35,7 +35,7 @@ bool CmdToldWorker::AnyMessage(
     {
         bResult = true;
         LOG4_DEBUG("AddNodeIdentify(%s, %s, fd %d, seq %llu)!", oInTargetWorker.node_type().c_str(),
-                        oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.ulSeq);
+                        oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.uiSeq);
         AddNamedChannel(oInTargetWorker.worker_identify(), stCtx);
         AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
         AddInnerChannel(stCtx);

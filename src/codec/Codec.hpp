@@ -133,7 +133,7 @@ private:
     E_CODEC_TYPE m_eCodecType;
     std::string m_strKey;       // 密钥
 
-    friend class Channel;
+    friend class SocketChannel;
 };
 
 } /* namespace neb */

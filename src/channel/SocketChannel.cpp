@@ -1,24 +1,24 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     Channel.cpp
+ * @file     SocketChannel.cpp
  * @brief 
  * @author   Bwar
  * @date:    2016年8月10日
  * @note
  * Modify history:
  ******************************************************************************/
-#include <labor/chief/WorkerImpl.hpp>
+#include <labor/WorkerImpl.hpp>
 #include "codec/CodecProto.hpp"
 #include "codec/CodecPrivate.hpp"
 #include "codec/CodecHttp.hpp"
 #include "labor/Labor.hpp"
-#include "labor/chief/Manager.hpp"
-#include "Channel.hpp"
+#include "labor/Manager.hpp"
+#include "SocketChannel.hpp"
 
 namespace neb
 {
 
-Channel::Channel(int iFd, uint32 ulSeq)
+SocketChannel::SocketChannel(int iFd, uint32 ulSeq)
     : m_ucChannelStatus(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulStepSeq(0),
       m_ulForeignSeq(0), m_ulUnitTimeMsgNum(0), m_ulMsgNum(0), m_dActiveTime(0.0), m_dKeepAlive(0.0),
       m_pIoWatcher(NULL), m_pTimerWatcher(NULL),
@@ -29,7 +29,7 @@ Channel::Channel(int iFd, uint32 ulSeq)
     memset(m_szErrBuff, 0, sizeof(m_szErrBuff));
 }
 
-Channel::~Channel()
+SocketChannel::~SocketChannel()
 {
     close(m_iFd);
     FREE(m_pIoWatcher);
@@ -40,7 +40,7 @@ Channel::~Channel()
     DELETE(m_pCodec);
 }
 
-bool Channel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
+bool SocketChannel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
 {
     LOG4_TRACE("%s(codec_type[%d])", __FUNCTION__, eCodecType);
     // NEW_PTR(m_pRecvBuff, CBuffer);
@@ -78,12 +78,12 @@ bool Channel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
     return(true);
 }
 
-E_CODEC_TYPE Channel::GetCodecType() const
+E_CODEC_TYPE SocketChannel::GetCodecType() const
 {
     return(m_pCodec->GetCodecType());
 }
 
-ev_tstamp Channel::GetKeepAlive()
+ev_tstamp SocketChannel::GetKeepAlive()
 {
     if (CODEC_HTTP == m_pCodec->GetCodecType())
     {
@@ -92,7 +92,7 @@ ev_tstamp Channel::GetKeepAlive()
     return(m_dKeepAlive);
 }
 
-bool Channel::NeedAliveCheck() const
+bool SocketChannel::NeedAliveCheck() const
 {
     if (CODEC_HTTP == m_pCodec->GetCodecType())
     {
@@ -101,7 +101,7 @@ bool Channel::NeedAliveCheck() const
     return(true);
 }
 
-E_CODEC_STATUS Channel::Send()
+E_CODEC_STATUS SocketChannel::Send()
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%u])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
@@ -185,7 +185,7 @@ E_CODEC_STATUS Channel::Send()
     }
 }
 
-E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%d], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, uiCmd, uiSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
@@ -283,7 +283,7 @@ E_CODEC_STATUS Channel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody
     }
 }
 
-E_CODEC_STATUS Channel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
+E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%u])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
@@ -353,7 +353,7 @@ E_CODEC_STATUS Channel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
     }
 }
 
-E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
+E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
@@ -436,7 +436,7 @@ E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
     }
 }
 
-E_CODEC_STATUS Channel::Recv(HttpMsg& oHttpMsg)
+E_CODEC_STATUS SocketChannel::Recv(HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
@@ -483,7 +483,7 @@ E_CODEC_STATUS Channel::Recv(HttpMsg& oHttpMsg)
     }
 }
 
-E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
+E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
@@ -538,7 +538,7 @@ E_CODEC_STATUS Channel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHtt
     }
 }
 
-E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
+E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
@@ -558,7 +558,7 @@ E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
     return(eCodecStatus);
 }
 
-E_CODEC_STATUS Channel::Fetch(HttpMsg& oHttpMsg)
+E_CODEC_STATUS SocketChannel::Fetch(HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
@@ -570,7 +570,7 @@ E_CODEC_STATUS Channel::Fetch(HttpMsg& oHttpMsg)
     return(eCodecStatus);
 }
 
-E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
+E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
@@ -598,7 +598,7 @@ E_CODEC_STATUS Channel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHt
     }
 }
 
-bool Channel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
+bool SocketChannel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
 {
     LOG4_TRACE("%s(channel_fd[%d], channel_id[%d], codec_type[%d], new_codec_type[%d])",
                     __FUNCTION__, m_iFd, m_ulSeq, m_pCodec->GetCodecType(), eCodecType);
@@ -641,7 +641,7 @@ bool Channel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
     return(true);
 }
 
-ev_io* Channel::AddIoWatcher()
+ev_io* SocketChannel::AddIoWatcher()
 {
     m_pIoWatcher = (ev_io*)malloc(sizeof(ev_io));
     if (NULL != m_pIoWatcher)
@@ -651,7 +651,7 @@ ev_io* Channel::AddIoWatcher()
     return(m_pIoWatcher);
 }
 
-ev_timer* Channel::AddTimerWatcher()
+ev_timer* SocketChannel::AddTimerWatcher()
 {
     m_pTimerWatcher = (ev_timer*)malloc(sizeof(ev_timer));
     if (NULL != m_pTimerWatcher)

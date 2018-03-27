@@ -50,7 +50,7 @@ public:
     };
 
 public:
-    Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout);
+    Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout = 0.0);
     Actor(const Actor&) = delete;
     Actor& operator=(const Actor&) = delete;
     virtual ~Actor();
@@ -62,11 +62,6 @@ protected:
     template <typename ...Targs> Module* NewModule(const std::string& strModuleName, Targs... args);
 
 protected:
-    /**
-     * @brief 获取当前Step的序列号
-     * @note 获取当前Step的序列号，对于同一个Step实例，每次调用GetSequence()获取的序列号是相同的。
-     * @return 序列号
-     */
     uint32 GetSequence();
     uint32 GetTraceId() const
     {
@@ -74,15 +69,11 @@ protected:
     }
     uint32 GetNodeId() const;
     uint32 GetWorkerIndex() const;
+    ev_tstamp GetDefaultTimeout() const;
     const std::string& GetNodeType() const;
     const std::string& GetWorkPath() const;
-
-    /**
-     * @brief 获取当前Worker进程标识符
-     * @note 当前Worker进程标识符由 IP:port:worker_index组成，例如： 192.168.18.22:30001.2
-     * @return 当前Worker进程标识符
-     */
-    const std::string& GetWorkerIdentify();
+    const std::string& GetWorkerIdentify() const;
+    time_t GetNowTime() const;
 
     /**
      * @brief 获取Server自定义配置
@@ -90,63 +81,8 @@ protected:
      */
     const CJsonObject& GetCustomConf() const;
 
-    /**
-     * @brief 获取当前时间
-     * @note 获取当前时间，比time(NULL)速度快消耗小，不过没有time(NULL)精准，如果对时间精度
-     * 要求不是特别高，建议调用GetNowTime()替代time(NULL)
-     * @return 当前时间
-     */
-    time_t GetNowTime() const;
-
-    /**
-     * @brief 获取会话实例
-     * @param uiSessionId 会话ID
-     * @return 会话实例（返回NULL表示不存在uiSessionId对应的会话实例）
-     */
     Session* GetSession(uint32 uiSessionId, const std::string& strSessionClass = "oss::Session");
     Session* GetSession(const std::string& strSessionId, const std::string& strSessionClass = "oss::Session");
-
-    /**
-     * @brief 添加指定标识的消息通道上下文
-     * @note 添加指定标识的消息外壳由Cmd类实例和Step类实例调用，该调用会在Step类中添加一个标识
-     * 和消息外壳的对应关系，同时Worker中的连接属性也会添加一个标识。
-     * @param strIdentify 连接标识符(IP:port.worker_index, e.g 192.168.11.12:3001.1)
-     * @param stCtx  消息通道上下文
-     * @return 是否添加成功
-     */
-    bool AddNamedChannel(const std::string& strIdentify, const tagChannelContext& stCtx);
-
-    /**
-     * @brief 删除指定标识的消息通道上下文
-     * @note 删除指定标识的消息通道上下文由Worker类实例调用，在IoError或IoTimeout时调
-     * 用。
-     */
-    void DelNamedChannel(const std::string& strIdentify);
-
-    /**
-     * @brief 添加内部服务器通信通道
-     * @param stCtx 通信通道上下文
-     */
-    void AddInnerChannel(const tagChannelContext& stCtx);
-
-    /**
-     * @brief 添加标识的节点类型属性
-     * @note 添加标识的节点类型属性，用于以轮询方式向同一节点类型的节点发送数据，以
-     * 实现简单的负载均衡。只有Server间的各连接才具有NodeType属性，客户端到Access节
-     * 点的连接不具有NodeType属性。
-     * @param strNodeType 节点类型
-     * @param strIdentify 连接标识符
-     */
-    void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
-
-    /**
-     * @brief 删除标识的节点类型属性
-     * @note 删除标识的节点类型属性，当一个节点下线，框架层会自动调用此函数删除标识
-     * 的节点类型属性。
-     * @param strNodeType 节点类型
-     * @param strIdentify 连接标识符
-     */
-    void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
 
 protected:
     /**
@@ -213,7 +149,7 @@ protected:
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendToNext(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 以取模方式选择发送到同一类型节点
@@ -225,7 +161,7 @@ protected:
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendToWithMod(const std::string& strNodeType, unsigned int uiModFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendOrient(const std::string& strNodeType, uint32 uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
 protected:
     virtual void SetActiveTime(ev_tstamp dActiveTime)
@@ -268,8 +204,6 @@ protected:
         return (m_pLogger);
     }
 
-    bool SwitchCodec(const tagChannelContext& stCtx, E_CODEC_TYPE eCodecType);
-
 private:
     void SetWorker(Worker* pWorker)
     {
@@ -285,10 +219,6 @@ private:
     {
         m_pLogger = pLogger;
     }
-
-    void SetNodeId(uint32 uiNodeId);
-
-    void DelayTimeout();
 
     void SetTraceId(uint32 ulTraceId)
     {

@@ -17,7 +17,7 @@ namespace neb
 
 class WorkerImpl;
 
-class Worker final
+class Worker final : public Labor
 {
 public:
     Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf);
@@ -27,7 +27,6 @@ public:
 
     // actor操作相关方法
     virtual uint32 GetSequence() const;
-    virtual bool ResetTimeout(Actor* pObject);
     virtual Session* GetSession(uint32 uiSessionId, const std::string& strSessionClass = "neb::Session");
     virtual Session* GetSession(const std::string& strSessionId, const std::string& strSessionClass = "neb::Session");
     template <typename ...Targs> Step* NewStep(const std::string& strStepName, Targs... args);
@@ -39,12 +38,13 @@ public:
     virtual log4cplus::Logger GetLogger();
     virtual uint32 GetNodeId() const;
     virtual int GetWorkerIndex() const;
+    virtual ev_tstamp GetDefaultTimeout() const;
     virtual int GetClientBeatTime() const;
     virtual const std::string& GetNodeType() const;
     virtual int GetPortForServer() const;
     virtual const std::string& GetHostForServer() const;
     virtual const std::string& GetWorkPath() const;
-    virtual const std::string& GetWorkerIdentify();
+    virtual const std::string& GetWorkerIdentify() const;
     virtual const CJsonObject& GetCustomConf() const;
 
     virtual time_t GetNowTime() const;
@@ -58,12 +58,9 @@ public:
     virtual bool Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
-    virtual bool AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* pRedisStep);
+    virtual bool SendTo(const std::string& strHost, int iPort, RedisStep* pRedisStep);
     virtual std::string GetClientAddr(const tagChannelContext& stCtx);
 
-    // TODO 待定
-    virtual void ExecStep(uint32 uiCallerStepSeq, uint32 uiCalledStepSeq,
-                    int iErrno, const std::string& strErrMsg, const std::string& strErrShow);
     bool AddIoTimeout(const tagChannelContext& stCtx);
 
 private:
