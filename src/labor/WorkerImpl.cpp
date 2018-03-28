@@ -167,6 +167,7 @@ WorkerImpl::WorkerImpl(Worker* pWorker, const std::string& strWorkPath, int iCon
     }
     LoadSysCmd();
     LoadCmd(oJsonConf["dynamic_loading"]);
+    Run();
 }
 
 WorkerImpl::~WorkerImpl()
@@ -2111,7 +2112,7 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
         MsgHead oOutMsgHead;
         MsgBody oOutMsgBody;
         auto cmd_iter = m_mapCmd.find(gc_uiCmdBit & oMsgHead.cmd());
-        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != NULL)
+        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
         {
             cmd_iter->second->AnyMessage(stCtx, oMsgHead, oMsgBody);
         }

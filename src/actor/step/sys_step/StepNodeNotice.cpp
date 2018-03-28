@@ -44,7 +44,7 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
             for(int j = 1; j <= iWorkerNum; ++j)
             {
                 snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
-                AddNodeIdentify(strNodeType, std::string(szIdentify));
+                GetWorkerImpl(this)->AddNodeIdentify(strNodeType, std::string(szIdentify));
                 LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
             }
         }
@@ -60,7 +60,7 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
             for(int j = 1; j <= iWorkerNum; ++j)
             {
                 snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
-                DelNodeIdentify(strNodeType, std::string(szIdentify));
+                GetWorkerImpl(this)->DelNodeIdentify(strNodeType, std::string(szIdentify));
                 LOG4_DEBUG("DelNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
             }
         }

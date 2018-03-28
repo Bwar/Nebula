@@ -10,7 +10,6 @@
 #ifndef SRC_LABOR_CHIEF_MANAGER_HPP_
 #define SRC_LABOR_CHIEF_MANAGER_HPP_
 
-#include <actor/cmd/Cmd.hpp>
 #include <stdlib.h>
 #include <netdb.h>
 #include <errno.h>
@@ -27,8 +26,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <map>
-#include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <list>
 #include "ev.h"
 #include "log4cplus/logger.h"
@@ -43,14 +42,16 @@
 #include "Error.hpp"
 #include "Definition.hpp"
 #include "Attribute.hpp"
-#include "labor/Labor.hpp"
+#include "Labor.hpp"
+#include "Worker.hpp"
 #include "channel/Channel.hpp"
+#include "actor/cmd/Cmd.hpp"
 
 
 namespace neb
 {
 
-class WorkerImpl;
+class Worker;
 
 class Manager: public Labor
 {
@@ -61,6 +62,36 @@ public:
         Labor* pLabor;     // 不在结构体析构时回收
 
         tagClientConnWatcherData() : iAddr(0), pLabor(NULL)
+        {
+        }
+    };
+
+    struct tagManagerInfo
+    {
+        E_CODEC_TYPE eCodec;                  ///< 接入端编解码器
+        uint32 uiNodeId;                      ///< 节点ID（由center分配）
+        int32 iPortForServer;                 ///< Server间通信监听端口，对应 iS2SListenFd
+        int32 iPortForClient;                 ///< 对Client通信监听端口，对应 iC2SListenFd
+        int32 iGatewayPort;                   ///< 对Client服务的真实端口
+        uint32 uiWorkerNum;                   ///< Worker子进程数量
+        int32 iAddrPermitNum;                 ///< IP地址统计时间内允许连接次数
+        int iLogLevel;
+        int iWorkerBeat;                      ///< worker进程心跳，若大于此心跳未收到worker进程上报，则重启worker进程
+        int iS2SListenFd;                     ///< Server to Server监听文件描述符（Server与Server之间的连接较少，但每个Server的每个Worker均与其他Server的每个Worker相连）
+        int iC2SListenFd;                     ///< Client to Server监听文件描述符（Client与Server之间的连接较多，但每个Client只需连接某个Server的某个Worker）
+        ev_tstamp dIoTimeout;                 ///< IO超时配置
+        ev_tstamp dAddrStatInterval;          ///< IP地址数据统计时间间隔
+        std::string strWorkPath;              ///< 工作路径
+        std::string strConfFile;              ///< 配置文件
+        std::string strNodeType;              ///< 节点类型
+        std::string strHostForServer;         ///< 对其他Server服务的IP地址，对应 m_iS2SListenFd
+        std::string strHostForClient;         ///< 对Client服务的IP地址，对应 m_iC2SListenFd
+        std::string strGateway;               ///< 对Client服务的真实IP地址（此ip转发给m_strHostForClient）
+
+        tagManagerInfo()
+            : eCodec(CODEC_HTTP), uiNodeId(0), iPortForServer(16002), iPortForClient(16001), iGatewayPort(8080),
+              uiWorkerNum(10), iAddrPermitNum(10), iLogLevel(10000), iWorkerBeat(7), iS2SListenFd(-1), iC2SListenFd(-1),
+              dIoTimeout(300.0), dAddrStatInterval(60.0)
         {
         }
     };
@@ -85,7 +116,7 @@ public:
 
     void Run();
 
-public:     // Manager相关设置（由专用Cmd类调用这些方法完成Manager自身的初始化和更新）
+public:
     bool InitLogger(const CJsonObject& oJsonConf);
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
     virtual void ResetLogLevel(log4cplus::LogLevel iLogLevel);
@@ -93,8 +124,7 @@ public:     // Manager相关设置（由专用Cmd类调用这些方法完成Mana
     virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
     virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* pRedisStep){return(false);};
-    virtual void SetNodeId(uint32 uiNodeId) {m_uiNodeId = uiNodeId;}
+    virtual void SetNodeId(uint32 uiNodeId) {m_stManagerInfo.uiNodeId = uiNodeId;}
     virtual void AddInnerChannel(const tagChannelContext& stCtx){};
 
     void SetWorkerLoad(int iPid, CJsonObject& oJsonLoad);
@@ -105,36 +135,40 @@ protected:
     bool GetConf();
     bool Init();
     void Destroy();
-    void CreateWorker();
+
     bool CreateEvents();
-    bool RegisterToBeacon();
-    bool RestartWorker(int iDeathPid);
     bool AddPeriodicTaskEvent();
     bool AddIoReadEvent(SocketChannel* pChannel);
     bool AddIoWriteEvent(SocketChannel* pChannel);
     bool RemoveIoWriteEvent(SocketChannel* pChannel);
     bool DelEvents(ev_io* io_watcher);
     bool DelEvents(ev_timer* timer_watcher);
+
+    void CreateWorker();
+    bool CheckWorker();
+    bool RestartWorker(int iDeathPid);
+    std::pair<int, int> GetMinLoadWorkerDataFd();
+    bool SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);    // 向Worker发送数据
+    void RefreshServer();
+
+    bool RegisterToBeacon();
+    bool ReportToBeacon();  // 向管理中心上报负载信息
+
     bool AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout = 1.0);
     bool AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout = 60.0);
     SocketChannel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
-    bool DiscardChannel(std::map<int, SocketChannel*>::iterator iter);
+    bool DiscardChannel(std::unordered_map<int, SocketChannel*>::iterator iter);
     bool DiscardChannel(SocketChannel* pChannel);
-    std::pair<int, int> GetMinLoadWorkerDataFd();
     bool FdTransfer(int iFd);
     bool AcceptServerConn(int iFd);
     bool DataRecvAndHandle(SocketChannel* pChannel);
-    bool CheckWorker();
-    void RefreshServer();
-    bool ReportToBeacon();  // 向管理中心上报负载信息
-    bool SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);    // 向Worker发送数据
     bool OnWorkerData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnBeaconData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
 
-    uint32 GetSequence()
+    uint32 GetSequence() const
     {
-        return(m_ulSequence++);
+        return(m_uiSequence++);
     }
 
     log4cplus::Logger GetLogger()
@@ -144,51 +178,31 @@ protected:
 
     virtual uint32 GetNodeId() const
     {
-        return(m_uiNodeId);
+        return(m_stManagerInfo.uiNodeId);
     }
 
 private:
+    mutable uint32 m_uiSequence;
     CJsonObject m_oLastConf;          ///< 上次加载的配置
     CJsonObject m_oCurrentConf;       ///< 当前加载的配置
 
-    uint32 m_ulSequence;
     char m_szErrBuff[256];
     log4cplus::Logger m_oLogger;
     bool m_bInitLogger;
-    ev_tstamp m_dIoTimeout;             ///< IO超时配置
-
-    std::string m_strConfFile;              ///< 配置文件
-    std::string m_strWorkPath;              ///< 工作路径
-    std::string m_strNodeType;              ///< 节点类型
-    uint32 m_uiNodeId;                      ///< 节点ID（由center分配）
-    std::string m_strHostForServer;         ///< 对其他Server服务的IP地址，对应 m_iS2SListenFd
-    std::string m_strHostForClient;         ///< 对Client服务的IP地址，对应 m_iC2SListenFd
-    std::string m_strGateway;               ///< 对Client服务的真实IP地址（此ip转发给m_strHostForClient）
-    int32 m_iPortForServer;                 ///< Server间通信监听端口，对应 m_iS2SListenFd
-    int32 m_iPortForClient;                 ///< 对Client通信监听端口，对应 m_iC2SListenFd
-    int32 m_iGatewayPort;                   ///< 对Client服务的真实端口
-    uint32 m_uiWorkerNum;                   ///< Worker子进程数量
-    E_CODEC_TYPE m_eCodec;            ///< 接入端编解码器
-    ev_tstamp m_dAddrStatInterval;          ///< IP地址数据统计时间间隔
-    int32  m_iAddrPermitNum;                ///< IP地址统计时间内允许连接次数
-    int m_iLogLevel;
-    int m_iWorkerBeat;                      ///< worker进程心跳，若大于此心跳未收到worker进程上报，则重启worker进程
-    int m_iRefreshCalc;                     ///< Server刷新计数
-
-    int m_iS2SListenFd;                     ///< Server to Server监听文件描述符（Server与Server之间的连接较少，但每个Server的每个Worker均与其他Server的每个Worker相连）
-    int m_iC2SListenFd;                     ///< Client to Server监听文件描述符（Client与Server之间的连接较多，但每个Client只需连接某个Server的某个Worker）
     struct ev_loop* m_loop;
     ev_timer* m_pPeriodicTaskWatcher;              ///< 周期任务定时器
 
-    std::map<int, tagWorkerAttr> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
-    std::map<int, int> m_mapWorkerRestartNum;       ///< 进程被重启次数，key为WorkerIdx
-    std::map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
-    std::map<std::string, tagChannelContext> m_mapBeaconCtx; ///< 到beacon服务器的连接
+    tagManagerInfo m_stManagerInfo;
 
-    std::map<int, SocketChannel*> m_mapChannel;                   ///< 通信通道
-    std::map<uint32, int> m_mapSeq2WorkerIndex;             ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
-    std::map<in_addr_t, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
-    std::map<int32, Cmd*> m_mapCmd;
+    std::unordered_map<int, tagWorkerAttr> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
+    std::unordered_map<int, int> m_mapWorkerRestartNum;       ///< 进程被重启次数，key为WorkerIdx
+    std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
+    std::unordered_map<std::string, tagChannelContext> m_mapBeaconCtx; ///< 到beacon服务器的连接
+
+    std::unordered_map<int, SocketChannel*> m_mapChannel;                   ///< 通信通道
+    std::unordered_map<uint32, int> m_mapSeq2WorkerIndex;             ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
+    std::unordered_map<in_addr_t, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
+    std::unordered_map<int32, Cmd*> m_mapCmd;
 
     std::vector<int> m_vecFreeWorkerIdx;            ///< 空闲进程编号
 };

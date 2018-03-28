@@ -10,10 +10,9 @@
 #ifndef SRC_ACTOR_STEP_REDISSTEP_HPP_
 #define SRC_ACTOR_STEP_REDISSTEP_HPP_
 
-#include <actor/step/Step.hpp>
 #include <set>
 #include <list>
-#include "storage/dbi/redis/RedisCmd.hpp"
+#include "actor/step/Step.hpp"
 
 namespace neb
 {

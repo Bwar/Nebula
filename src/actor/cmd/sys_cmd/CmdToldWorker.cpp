@@ -36,9 +36,9 @@ bool CmdToldWorker::AnyMessage(
         bResult = true;
         LOG4_DEBUG("AddNodeIdentify(%s, %s, fd %d, seq %llu)!", oInTargetWorker.node_type().c_str(),
                         oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.uiSeq);
-        AddNamedChannel(oInTargetWorker.worker_identify(), stCtx);
-        AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
-        AddInnerChannel(stCtx);
+        GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), stCtx);
+        GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
+        GetWorkerImpl(this)->AddInnerChannel(stCtx);
         oOutTargetWorker.set_worker_identify(GetWorkerIdentify());
         oOutTargetWorker.set_node_type(GetNodeType());
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);

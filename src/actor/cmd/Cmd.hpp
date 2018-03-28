@@ -22,7 +22,7 @@ class Cmd: public Actor
 {
 public:
     Cmd(int32 iCmd)
-        : Actor(ACT_CMD, 0),
+        : Actor(ACT_CMD, gc_dNoTimeout),
           m_iCmd(iCmd)
     {
     }

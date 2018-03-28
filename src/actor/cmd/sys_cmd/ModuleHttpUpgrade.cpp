@@ -128,7 +128,7 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
         pHeader->set_header_name("Sec-WebSocket-Accept");
         pHeader->set_header_value(strBase64EncodeAcceptKey);
         SendTo(stCtx, oOutHttpMsg);
-        SwitchCodec(stCtx, CODEC_WS_EXTEND_JSON);
+        GetWorkerImpl(this)->SwitchCodec(stCtx, CODEC_WS_EXTEND_JSON);
     }
     else
     {

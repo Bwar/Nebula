@@ -31,7 +31,7 @@ bool CmdUpdateNodeId::AnyMessage(
     {
         uint32 uiNodeId = 0;
         oNode.Get("node_id", uiNodeId);
-        SetNodeId(uiNodeId);
+        GetWorkerImpl(this)->SetNodeId(uiNodeId);
         return(true);
     }
     return(false);

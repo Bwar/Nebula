@@ -127,8 +127,6 @@ public:
     WorkerImpl& operator=(const WorkerImpl&) = delete;
     virtual ~WorkerImpl();
 
-    void Run();
-
     void Terminated(struct ev_signal* watcher);
     bool CheckParent();
     bool IoRead(SocketChannel* pChannel);
@@ -203,7 +201,6 @@ public:     // about session
 
 public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worker自身的初始化和更新）
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
-    /** @brief 加载配置，刷新Server */
     virtual void ResetLogLevel(log4cplus::LogLevel iLogLevel);
     virtual bool AddNamedSocketChannel(const std::string& strIdentify, const tagChannelContext& stCtx);
     virtual bool AddNamedSocketChannel(const std::string& strIdentify, SocketChannel* pChannel);
@@ -219,6 +216,7 @@ public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worke
     virtual bool SetClientData(const tagChannelContext& stCtx, const std::string& strClientData);
 
 protected:
+    void Run();
     bool Init(CJsonObject& oJsonConf);
     bool InitLogger(const CJsonObject& oJsonConf);
     bool CreateEvents();

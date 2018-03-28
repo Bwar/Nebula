@@ -49,7 +49,7 @@ bool CmdNodeNotice::AnyMessage(
         {
             if (CMD_STATUS_RUNNING != pStep->Emit(ERR_OK))
             {
-                Remove(pStep);
+                GetWorkerImpl(this)->Remove(pStep);
             }
             return(true);
         }

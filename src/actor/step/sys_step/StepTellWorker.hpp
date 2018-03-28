@@ -10,13 +10,14 @@
 #ifndef SRC_ACTOR_STEP_SYS_STEP_STEPTELLWORKER_HPP_
 #define SRC_ACTOR_STEP_SYS_STEP_STEPTELLWORKER_HPP_
 
-#include <actor/step/PbStep.hpp>
+#include "labor/WorkerFriend.hpp"
+#include "actor/step/PbStep.hpp"
 #include "pb/neb_sys.pb.h"
 
 namespace neb
 {
 
-class StepTellWorker: public PbStep, public DynamicCreator<StepTellWorker, tagChannelContext>
+class StepTellWorker: public PbStep, public DynamicCreator<StepTellWorker, tagChannelContext>, public WorkerFriend
 {
 public:
     StepTellWorker(const tagChannelContext& stCtx);

@@ -10,13 +10,14 @@
 #ifndef SRC_ACTOR_STEP_SYS_STEP_STEPNODENOTICE_HPP_
 #define SRC_ACTOR_STEP_SYS_STEP_STEPNODENOTICE_HPP_
 
-#include <actor/step/PbStep.hpp>
+#include "labor/WorkerFriend.hpp"
+#include "actor/step/PbStep.hpp"
 #include "util/json/CJsonObject.hpp"
 
 namespace neb
 {
 
-class StepNodeNotice: public PbStep, public DynamicCreator<StepNodeNotice, MsgBody>
+class StepNodeNotice: public PbStep, public DynamicCreator<StepNodeNotice, MsgBody>, public WorkerFriend
 {
 public:
     StepNodeNotice(const MsgBody& oMsgBody);

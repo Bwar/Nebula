@@ -23,7 +23,7 @@ class Module: public Actor
 {
 public:
     Module(const std::string& strModulePath)
-        : Actor(ACT_MODULE, 0), m_strModulePath(strModulePath)
+        : Actor(ACT_MODULE, gc_dNoTimeout), m_strModulePath(strModulePath)
     {
     }
     Module(const Module&) = delete;

@@ -26,13 +26,13 @@ public:
     virtual ~Worker();
 
     // actor操作相关方法
-    virtual uint32 GetSequence() const;
-    virtual Session* GetSession(uint32 uiSessionId, const std::string& strSessionClass = "neb::Session");
-    virtual Session* GetSession(const std::string& strSessionId, const std::string& strSessionClass = "neb::Session");
     template <typename ...Targs> Step* NewStep(const std::string& strStepName, Targs... args);
     template <typename ...Targs> Session* NewSession(const std::string& strSessionName, Targs... args);
     template <typename ...Targs> Cmd* NewCmd(const std::string& strCmdName, Targs... args);
     template <typename ...Targs> Module* NewModule(const std::string& strModuleName, Targs... args);
+    virtual uint32 GetSequence() const;
+    virtual Session* GetSession(uint32 uiSessionId, const std::string& strSessionClass = "neb::Session");
+    virtual Session* GetSession(const std::string& strSessionId, const std::string& strSessionClass = "neb::Session");
 
     // 获取worker信息相关方法
     virtual log4cplus::Logger GetLogger();

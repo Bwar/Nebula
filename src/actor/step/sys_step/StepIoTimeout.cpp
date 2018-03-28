@@ -7,8 +7,8 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#include <actor/step/sys_step/StepIoTimeout.hpp>
-#include <labor/chief/WorkerImpl.hpp>
+#include "actor/step/sys_step/StepIoTimeout.hpp"
+#include "labor/WorkerImpl.hpp"
 
 namespace neb
 {
@@ -45,7 +45,7 @@ E_CMD_STATUS StepIoTimeout::Callback(const tagChannelContext& stCtx,
 
 E_CMD_STATUS StepIoTimeout::Timeout()
 {
-    m_pWorker->Disconnect(m_stCtx);
+    GetWorkerImpl(this)->Disconnect(m_stCtx);
     return(CMD_STATUS_FAULT);
 }
 
