@@ -434,6 +434,17 @@ class MsgBody : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_add_on();
   void set_allocated_add_on(::std::string* add_on);
 
+  // optional string trace_id = 5;
+  void clear_trace_id();
+  static const int kTraceIdFieldNumber = 5;
+  const ::std::string& trace_id() const;
+  void set_trace_id(const ::std::string& value);
+  void set_trace_id(const char* value);
+  void set_trace_id(const char* value, size_t size);
+  ::std::string* mutable_trace_id();
+  ::std::string* release_trace_id();
+  void set_allocated_trace_id(::std::string* trace_id);
+
   MsgTypeCase msg_type_case() const;
   // @@protoc_insertion_point(class_scope:MsgBody)
  private:
@@ -448,6 +459,7 @@ class MsgBody : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   bool _is_default_instance_;
   ::google::protobuf::internal::ArenaStringPtr data_;
   ::google::protobuf::internal::ArenaStringPtr add_on_;
+  ::google::protobuf::internal::ArenaStringPtr trace_id_;
   union MsgTypeUnion {
     MsgTypeUnion() {}
     ::MsgBody_Request* req_target_;
@@ -823,6 +835,50 @@ inline void MsgBody::set_allocated_add_on(::std::string* add_on) {
   }
   add_on_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), add_on);
   // @@protoc_insertion_point(field_set_allocated:MsgBody.add_on)
+}
+
+// optional string trace_id = 5;
+inline void MsgBody::clear_trace_id() {
+  trace_id_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& MsgBody::trace_id() const {
+  // @@protoc_insertion_point(field_get:MsgBody.trace_id)
+  return trace_id_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void MsgBody::set_trace_id(const ::std::string& value) {
+  
+  trace_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:MsgBody.trace_id)
+}
+inline void MsgBody::set_trace_id(const char* value) {
+  
+  trace_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:MsgBody.trace_id)
+}
+inline void MsgBody::set_trace_id(const char* value, size_t size) {
+  
+  trace_id_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:MsgBody.trace_id)
+}
+inline ::std::string* MsgBody::mutable_trace_id() {
+  
+  // @@protoc_insertion_point(field_mutable:MsgBody.trace_id)
+  return trace_id_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* MsgBody::release_trace_id() {
+  // @@protoc_insertion_point(field_release:MsgBody.trace_id)
+  
+  return trace_id_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void MsgBody::set_allocated_trace_id(::std::string* trace_id) {
+  if (trace_id != NULL) {
+    
+  } else {
+    
+  }
+  trace_id_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), trace_id);
+  // @@protoc_insertion_point(field_set_allocated:MsgBody.trace_id)
 }
 
 inline bool MsgBody::has_msg_type() const {

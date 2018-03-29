@@ -408,7 +408,7 @@ bool WorkerImpl::IoTimeout(SocketChannel* pChannel)
         tagChannelContext stCtx;
         stCtx.iFd = pChannel->GetFd();
         stCtx.uiSeq = pChannel->GetSequence();
-        StepIoTimeout* pStepIoTimeout = NewStep("neb::StepIoTimeout", stCtx);
+        StepIoTimeout* pStepIoTimeout = NewStep(nullptr, "neb::StepIoTimeout", stCtx);
         if (nullptr == pStepIoTimeout)
         {
             LOG4_ERROR("new StepIoTimeout error!");
@@ -807,10 +807,10 @@ bool WorkerImpl::CreateEvents()
 
 void WorkerImpl::LoadSysCmd()
 {
-    NewCmd("neb::CmdToldWorker", CMD_REQ_TELL_WORKER);
-    NewCmd("neb::CmdUpdateNodeId", CMD_REQ_REFRESH_NODE_ID);
-    NewCmd("neb::CmdNodeNotice", CMD_REQ_NODE_REG_NOTICE);
-    NewCmd("neb::CmdBeat", CMD_REQ_BEAT);
+    NewCmd(nullptr, "neb::CmdToldWorker", CMD_REQ_TELL_WORKER);
+    NewCmd(nullptr, "neb::CmdUpdateNodeId", CMD_REQ_REFRESH_NODE_ID);
+    NewCmd(nullptr, "neb::CmdNodeNotice", CMD_REQ_NODE_REG_NOTICE);
+    NewCmd(nullptr, "neb::CmdBeat", CMD_REQ_BEAT);
 }
 
 void WorkerImpl::Destroy()
@@ -1125,7 +1125,7 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx)
     return(false);
 }
 
-bool WorkerImpl::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool WorkerImpl::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("%s(fd %d, fd_seq %lu, cmd %u, msg_seq %u)",
                     __FUNCTION__, stCtx.iFd, stCtx.uiSeq, uiCmd, uiSeq);
@@ -1139,6 +1139,10 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiS
     {
         if (conn_iter->second->GetSequence() == stCtx.uiSeq)
         {
+            if (nullptr != pSender)
+            {
+                (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+            }
             E_CODEC_STATUS eStatus = conn_iter->second->Send(uiCmd, uiSeq, oMsgBody);
             if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
             {
@@ -1155,17 +1159,25 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiS
     }
 }
 
-bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("%s(identify: %s)", __FUNCTION__, strIdentify.c_str());
     std::map<std::string, std::list<SocketChannel*> >::iterator named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
     {
         LOG4_TRACE("no channel match %s.", strIdentify.c_str());
+        if (nullptr != pSender)
+        {
+            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+        }
         return(AutoSend(strIdentify, uiCmd, uiSeq, oMsgBody));
     }
     else
     {
+        if (nullptr != pSender)
+        {
+            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+        }
         E_CODEC_STATUS eStatus = (*named_iter->second.begin())->Send(uiCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
         {
@@ -1175,7 +1187,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiS
     }
 }
 
-bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("%s(node_type: %s)", __FUNCTION__, strNodeType.c_str());
     std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > >::iterator node_type_iter;
@@ -1189,6 +1201,10 @@ bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint3
     {
         if (node_type_iter->second.first != node_type_iter->second.second.end())
         {
+            if (nullptr != pSender)
+            {
+                (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+            }
             std::set<std::string>::iterator id_iter = node_type_iter->second.first;
             node_type_iter->second.first++;
             return(SendTo(*id_iter, uiCmd, uiSeq, oMsgBody));
@@ -1198,6 +1214,10 @@ bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint3
             std::set<std::string>::iterator id_iter = node_type_iter->second.second.begin();
             if (id_iter != node_type_iter->second.second.end())
             {
+                if (nullptr != pSender)
+                {
+                    (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+                }
                 node_type_iter->second.first = id_iter;
                 node_type_iter->second.first++;
                 return(SendTo(*id_iter, uiCmd, uiSeq, oMsgBody));
@@ -1211,7 +1231,7 @@ bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint3
     }
 }
 
-bool WorkerImpl::SendOrient(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool WorkerImpl::SendOrient(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("%s(nody_type: %s, factor: %d)", __FUNCTION__, strNodeType.c_str(), uiFactor);
     std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > >::iterator node_type_iter;
@@ -1239,6 +1259,10 @@ bool WorkerImpl::SendOrient(const std::string& strNodeType, unsigned int uiFacto
             {
                 if (i == target_identify && id_iter != node_type_iter->second.second.end())
                 {
+                    if (nullptr != pSender)
+                    {
+                        (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+                    }
                     return(SendTo(*id_iter, uiCmd, uiSeq, oMsgBody));
                 }
             }
@@ -1247,7 +1271,7 @@ bool WorkerImpl::SendOrient(const std::string& strNodeType, unsigned int uiFacto
     }
 }
 
-bool WorkerImpl::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool WorkerImpl::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("%s(node_type: %s)", __FUNCTION__, strNodeType.c_str());
     std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > >::iterator node_type_iter;
@@ -1265,6 +1289,10 @@ bool WorkerImpl::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 
         {
             if (*id_iter != m_stWorkerInfo.strWorkerIdentify)
             {
+                if (nullptr != pSender)
+                {
+                    (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+                }
                 SendTo(*id_iter, uiCmd, uiSeq, oMsgBody);
             }
             ++iSendNum;
@@ -1675,12 +1703,12 @@ void WorkerImpl::LoadCmd(CJsonObject& oDynamicLoadingConf)
                         for (int j = 0; j < oDynamicLoadingConf[i]["cmd"].GetArraySize(); ++j)
                         {
                             oDynamicLoadingConf[i]["cmd"][j].Get("cmd", iCmd);
-                            NewCmd(oDynamicLoadingConf[i]["cmd"][j]("class"), iCmd);
+                            NewCmd(nullptr, oDynamicLoadingConf[i]["cmd"][j]("class"), iCmd);
                         }
                         for (int k = 0; k < oDynamicLoadingConf[i]["module"].GetArraySize(); ++k)
                         {
                             oDynamicLoadingConf[i]["module"][k].Get("path", strUrlPath);
-                            NewModule(oDynamicLoadingConf[i]["module"][k]("class"), strUrlPath);
+                            NewModule(nullptr, oDynamicLoadingConf[i]["module"][k]("class"), strUrlPath);
                         }
                     }
                 }
@@ -2097,6 +2125,9 @@ void WorkerImpl::ChannelNotice(const tagChannelContext& stCtx, const std::string
         oMsgHead.set_cmd(CMD_REQ_DISCONNECT);
         oMsgHead.set_seq(GetSequence());
         oMsgHead.set_len(oMsgBody.ByteSize());
+        std::ostringstream oss;
+        oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
+        cmd_iter->second->m_strTraceId = std::move(oss.str());
         cmd_iter->second->AnyMessage(stCtx, oMsgHead, oMsgBody);
     }
 }
@@ -2114,6 +2145,16 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
         auto cmd_iter = m_mapCmd.find(gc_uiCmdBit & oMsgHead.cmd());
         if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
         {
+            if (oMsgBody.trace_id().length() > 10)
+            {
+                cmd_iter->second->m_strTraceId = oMsgBody.trace_id();
+            }
+            else
+            {
+                std::ostringstream oss;
+                oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
+                cmd_iter->second->m_strTraceId = std::move(oss.str());
+            }
             cmd_iter->second->AnyMessage(stCtx, oMsgHead, oMsgBody);
         }
         else    // 没有对应的cmd，是需由接入层转发的请求
@@ -2132,14 +2173,24 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
             }
             else
             {
-#ifdef NODE_TYPE_ACCESS
-                std::map<int, uint32>::iterator inner_iter = m_mapInnerFd.find(stCtx.iFd);
+//#ifdef NODE_TYPE_ACCESS
+                auto inner_iter = m_mapInnerFd.find(stCtx.iFd);
                 if (inner_iter != m_mapInnerFd.end())   // 内部服务往客户端发送  if (std::string("0.0.0.0") == strFromIp)
                 {
-                    cmd_so_iter = m_mapCmdSo.find(CMD_REQ_TO_CLIENT);
-                    if (cmd_so_iter != m_mapCmdSo.end())
+                    cmd_iter = m_mapCmd.find(CMD_REQ_TO_CLIENT);
+                    if (cmd_iter != m_mapCmd.end())
                     {
-                        cmd_so_iter->second->pCmd->AnyMessage(stCtx, oMsgHead, oMsgBody);
+                        if (oMsgBody.trace_id().length() > 10)
+                        {
+                            cmd_iter->second->m_strTraceId = oMsgBody.trace_id();
+                        }
+                        else
+                        {
+                            std::ostringstream oss;
+                            oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
+                            cmd_iter->second->m_strTraceId = std::move(oss.str());
+                        }
+                        cmd_iter->second->AnyMessage(stCtx, oMsgHead, oMsgBody);
                     }
                     else
                     {
@@ -2154,10 +2205,20 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
                 }
                 else
                 {
-                    cmd_so_iter = m_mapCmdSo.find(CMD_REQ_FROM_CLIENT);
-                    if (cmd_so_iter != m_mapCmdSo.end() && cmd_so_iter->second != NULL)
+                    cmd_iter = m_mapCmd.find(CMD_REQ_FROM_CLIENT);
+                    if (cmd_iter != m_mapCmd.end())
                     {
-                        cmd_so_iter->second->pCmd->AnyMessage(stCtx, oMsgHead, oMsgBody);
+                        if (oMsgBody.trace_id().length() > 10)
+                        {
+                            cmd_iter->second->m_strTraceId = oMsgBody.trace_id();
+                        }
+                        else
+                        {
+                            std::ostringstream oss;
+                            oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
+                            cmd_iter->second->m_strTraceId = std::move(oss.str());
+                        }
+                        cmd_iter->second->AnyMessage(stCtx, oMsgHead, oMsgBody);
                     }
                     else
                     {
@@ -2170,7 +2231,7 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
                         oOutMsgHead.set_len(oOutMsgBody.ByteSize());
                     }
                 }
-#else
+//#else
                 snprintf(m_pErrBuff, gc_iErrBuffLen, "no handler to dispose cmd %u!", oMsgHead.cmd());
                 LOG4_ERROR(m_pErrBuff);
                 oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
@@ -2178,7 +2239,7 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
                 oOutMsgHead.set_cmd(CMD_RSP_SYS_ERROR);
                 oOutMsgHead.set_seq(oMsgHead.seq());
                 oOutMsgHead.set_len(oOutMsgBody.ByteSize());
-#endif
+//#endif
             }
         }
         if (CMD_RSP_SYS_ERROR == oOutMsgHead.cmd())
@@ -2246,11 +2307,17 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const HttpMsg& oHttpMsg)
             }
             else
             {
+                std::ostringstream oss;
+                oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
+                module_iter->second->m_strTraceId = std::move(oss.str());
                 module_iter->second->AnyMessage(stCtx, oHttpMsg);
             }
         }
         else
         {
+            std::ostringstream oss;
+            oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
+            module_iter->second->m_strTraceId = std::move(oss.str());
             module_iter->second->AnyMessage(stCtx, oHttpMsg);
         }
     }

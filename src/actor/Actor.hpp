@@ -60,13 +60,10 @@ protected:
     template <typename ...Targs> Session* NewSession(const std::string& strSessionName, Targs... args);
     template <typename ...Targs> Cmd* NewCmd(const std::string& strCmdName, Targs... args);
     template <typename ...Targs> Module* NewModule(const std::string& strModuleName, Targs... args);
+    template <typename ...Targs> void Logger(int iLogLevel, Targs... args);
 
 protected:
     uint32 GetSequence();
-    uint32 GetTraceId() const
-    {
-        return(m_ulTraceId);
-    }
     uint32 GetNodeId() const;
     uint32 GetWorkerIndex() const;
     ev_tstamp GetDefaultTimeout() const;
@@ -220,11 +217,6 @@ private:
         m_pLogger = pLogger;
     }
 
-    void SetTraceId(uint32 ulTraceId)
-    {
-        m_ulTraceId = ulTraceId;
-    }
-
     ev_timer* AddTimerWatcher();
     ev_timer* MutableTimerWatcher()
     {
@@ -235,12 +227,12 @@ private:
     ACTOR_TYPE m_eActorType;
     uint32 m_ulSequence;
     uint32 m_ulSessionId;
-    uint32 m_ulTraceId;
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
     Worker* m_pWorker;
     log4cplus::Logger* m_pLogger;
     ev_timer* m_pTimerWatcher;
+    std::string m_strTraceId;       // for log trace
 
     friend class WorkerImpl;
     friend class WorkerFriend;
@@ -249,25 +241,31 @@ private:
 template <typename ...Targs>
 Step* Actor::NewStep(const std::string& strStepName, Targs... args)
 {
-    return(m_pWorker->NewStep(strStepName, std::forward<Targs>(args)...));
+    return(m_pWorker->NewStep(this, strStepName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 Session* Actor::NewSession(const std::string& strSessionName, Targs... args)
 {
-    return(m_pWorker->NewSession(strSessionName, std::forward<Targs>(args)...));
+    return(m_pWorker->NewSession(this, strSessionName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 Cmd* Actor::NewCmd(const std::string& strCmdName, Targs... args)
 {
-    return(m_pWorker->NewStep(strCmdName, std::forward<Targs>(args)...));
+    return(m_pWorker->NewStep(this, strCmdName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 Module* Actor::NewModule(const std::string& strModuleName, Targs... args)
 {
-    return(m_pWorker->NewSession(strModuleName, std::forward<Targs>(args)...));
+    return(m_pWorker->NewSession(this, strModuleName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+void Actor::Logger(int iLogLevel, Targs... args)
+{
+    return(m_pWorker->Logger(m_strTraceId, iLogLevel, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

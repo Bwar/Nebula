@@ -45,7 +45,6 @@
 #include "pb/neb_sys.pb.h"
 #include "util/CBuffer.hpp"
 #include "labor/Labor.hpp"
-#include "Attribute.hpp"
 #include "channel/SocketChannel.hpp"
 #include "channel/RedisChannel.hpp"
 #include "codec/Codec.hpp"
@@ -169,18 +168,19 @@ public:     // about worker
     virtual time_t GetNowTime() const;
     virtual bool ResetTimeout(Actor* pObject);
 
-    template <typename ...Targs> Step* NewStep(const std::string& strStepName, Targs... args);
-    template <typename ...Targs> Session* NewSession(const std::string& strSessionName, Targs... args);
-    template <typename ...Targs> Cmd* NewCmd(const std::string& strCmdName, Targs... args);
-    template <typename ...Targs> Module* NewModule(const std::string& strModuleName, Targs... args);
+    template <typename ...Targs> Step* NewStep(Actor* pCreator, const std::string& strStepName, Targs... args);
+    template <typename ...Targs> Session* NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
+    template <typename ...Targs> Cmd* NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
+    template <typename ...Targs> Module* NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
+    template <typename ...Targs> void Logger(const std::string& strTraceId, int iLogLevel, Targs... args);
 
 public:     // about channel
     virtual bool SendTo(const tagChannelContext& stCtx);
-    virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool SendOrient(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendOrient(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(RedisChannel* pRedisChannel, RedisStep* pRedisStep);
@@ -301,6 +301,13 @@ private:
     std::unordered_map<std::string, std::string> m_mapIdentifyNodeType;    // key为Identify，value为node_type
     T_MAP_NODE_TYPE_IDENTIFY m_mapNodeIdentify;
 };
+
+template <typename ...Targs>
+void WorkerImpl::Logger(const std::string& strTraceId, int iLogLevel, Targs... args)
+{
+}
+
+
 
 #include <labor/WorkerImpl.inl>
 

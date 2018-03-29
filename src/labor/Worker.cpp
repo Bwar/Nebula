@@ -109,29 +109,29 @@ bool Worker::SendTo(const tagChannelContext& stCtx)
     return(m_pImpl->SendTo(stCtx));
 }
 
-bool Worker::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Worker::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    return(m_pImpl->SendTo(stCtx, uiCmd, uiSeq, oMsgBody));
+    return(m_pImpl->SendTo(stCtx, uiCmd, uiSeq, oMsgBody, pSender));
 }
 
-bool Worker::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Worker::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    return(m_pImpl->SendTo(strIdentify, uiCmd, uiSeq, oMsgBody));
+    return(m_pImpl->SendTo(strIdentify, uiCmd, uiSeq, oMsgBody, pSender));
 }
 
-bool Worker::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Worker::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    return(m_pImpl->SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody));
+    return(m_pImpl->SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
 }
 
-bool Worker::SendOrient(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Worker::SendOrient(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    return(m_pImpl->SendOrient(strNodeType, uiFactor, uiCmd, uiSeq, oMsgBody));
+    return(m_pImpl->SendOrient(strNodeType, uiFactor, uiCmd, uiSeq, oMsgBody, pSender));
 }
 
-bool Worker::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Worker::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    return(m_pImpl->Broadcast(strNodeType, uiCmd, uiSeq, oMsgBody));
+    return(m_pImpl->Broadcast(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
 }
 
 bool Worker::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)

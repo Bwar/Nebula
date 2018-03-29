@@ -100,6 +100,7 @@
 #define LOG4_INFO(args...) LOG4CPLUS_INFO_FMT(GetLogger(), ##args)
 #define LOG4_DEBUG(args...) LOG4CPLUS_DEBUG_FMT(GetLogger(), ##args)
 #define LOG4_TRACE(args...) LOG4CPLUS_TRACE_FMT(GetLogger(), ##args)
+// #define LOG_INFO(args...) Logger(m_strTraceId, neb::Logger::LOG_INFO, ##args)
 
 typedef char int8;
 typedef unsigned char uint8;

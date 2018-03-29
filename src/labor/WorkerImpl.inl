@@ -11,10 +11,8 @@
 #define LABOR_CHIEF_WORKERIMPL_INL_
 
 
-
-
 template <typename ...Targs>
-Step* WorkerImpl::NewStep(const std::string& strStepName, Targs... args)
+Step* WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs... args)
 {
     Step* pStep = ActorFactory<Targs...>::Instance()->Create(strStepName, std::forward<Targs>(args)...);
     if (nullptr == pStep)
@@ -27,6 +25,29 @@ Step* WorkerImpl::NewStep(const std::string& strStepName, Targs... args)
     pStep->SetWorker(m_pWorker);
     pStep->SetLogger(&m_oLogger);
     pStep->SetActiveTime(ev_now(m_loop));
+    if (nullptr != pCreator)
+    {
+        switch(pCreator->m_eActorType)
+        {
+            case Actor::ACT_PB_STEP:
+            case Actor::ACT_HTTP_STEP:
+            case Actor::ACT_REDIS_STEP:
+            case Actor::ACT_CMD:
+            case Actor::ACT_MODULE:
+                pStep->m_strTraceId = pCreator->m_strTraceId;
+                break;
+            case Actor::ACT_SESSION:
+            case Actor::ACT_TIMER:
+            {
+                std::ostringstream oss;
+                oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
+                pStep->m_strTraceId = std::move(oss.str());
+            }
+                break;
+            default:
+                ;
+        }
+    }
     ev_timer* timer_watcher = pStep->AddTimerWatcher();
     if (NULL == timer_watcher)
     {
@@ -63,7 +84,7 @@ Step* WorkerImpl::NewStep(const std::string& strStepName, Targs... args)
 }
 
 template <typename ...Targs>
-Session* WorkerImpl::NewSession(const std::string& strSessionName, Targs... args)
+Session* WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args)
 {
     Session* pSession = ActorFactory<Targs...>::Instance()->Create(strSessionName, std::forward<Targs>(args)...);
     if (nullptr == pSession)
@@ -110,7 +131,7 @@ Session* WorkerImpl::NewSession(const std::string& strSessionName, Targs... args
 }
 
 template <typename ...Targs>
-Cmd* WorkerImpl::NewCmd(const std::string& strCmdName, Targs... args)
+Cmd* WorkerImpl::NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
 {
     Cmd* pCmd = ActorFactory<Targs...>::Instance()->Create(strCmdName, std::forward<Targs>(args)...);
     if (nullptr == pCmd)
@@ -136,7 +157,7 @@ Cmd* WorkerImpl::NewCmd(const std::string& strCmdName, Targs... args)
 }
 
 template <typename ...Targs>
-Module* WorkerImpl::NewModule(const std::string& strModuleName, Targs... args)
+Module* WorkerImpl::NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
 {
     Module* pModule = ActorFactory<Targs...>::Instance()->Create(strModuleName, std::forward<Targs>(args)...);
     if (nullptr == pModule)

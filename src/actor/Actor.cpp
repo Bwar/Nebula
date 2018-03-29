@@ -18,7 +18,7 @@ namespace neb
 
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : m_eActorType(eActorType),
-      m_ulSequence(0), m_ulSessionId(0), m_ulTraceId(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
+      m_ulSequence(0), m_ulSessionId(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
       m_pWorker(NULL), m_pLogger(NULL), m_pTimerWatcher(NULL)
 {
 }
@@ -74,7 +74,6 @@ time_t Actor::GetNowTime() const
     return(m_pWorker->GetNowTime());
 }
 
-
 const CJsonObject& Actor::GetCustomConf() const
 {
     return(m_pWorker->GetCustomConf());
@@ -96,7 +95,7 @@ bool Actor::SendTo(const tagChannelContext& stCtx)
 
 bool Actor::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendTo(stCtx, uiCmd, uiSeq, oMsgBody));
+    return(m_pWorker->SendTo(stCtx, uiCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg)
@@ -106,7 +105,7 @@ bool Actor::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg)
 
 bool Actor::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendTo(strIdentify, uiCmd, uiSeq, oMsgBody));
+    return(m_pWorker->SendTo(strIdentify, uiCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg)
@@ -116,12 +115,12 @@ bool Actor::SendTo(const std::string& strHost, int iPort, const std::string& str
 
 bool Actor::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody));
+    return(m_pWorker->SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendOrient(const std::string& strNodeType, uint32 uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendOrient(strNodeType, uiFactor, uiCmd, uiSeq, oMsgBody));
+    return(m_pWorker->SendOrient(strNodeType, uiFactor, uiCmd, uiSeq, oMsgBody, this));
 }
 
 ev_timer* Actor::AddTimerWatcher()

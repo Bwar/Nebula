@@ -1651,17 +1651,11 @@ void Manager::SetWorkerLoad(int iPid, CJsonObject& oJsonLoad)
 void Manager::AddWorkerLoad(int iPid, int iLoad)
 {
     LOG4_TRACE("%s()", __FUNCTION__);
-    std::map<int, tagWorkerAttr>::iterator iter;
-    iter = m_mapWorker.find(iPid);
+    auto iter = m_mapWorker.find(iPid);
     if (iter != m_mapWorker.end())
     {
         iter->second.iLoad += iLoad;
     }
-}
-
-const std::map<int, tagWorkerAttr>& Manager::GetWorkerAttr() const
-{
-    return(m_mapWorker);
 }
 
 bool Manager::OnWorkerData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
