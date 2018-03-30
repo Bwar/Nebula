@@ -13,6 +13,7 @@
 #include "codec/CodecHttp.hpp"
 #include "labor/Labor.hpp"
 #include "labor/Manager.hpp"
+#include "util/logger/NetLogger.hpp"
 #include "SocketChannel.hpp"
 
 namespace neb
@@ -21,10 +22,9 @@ namespace neb
 SocketChannel::SocketChannel(int iFd, uint32 ulSeq)
     : m_ucChannelStatus(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulStepSeq(0),
       m_ulForeignSeq(0), m_ulUnitTimeMsgNum(0), m_ulMsgNum(0), m_dActiveTime(0.0), m_dKeepAlive(0.0),
-      m_pIoWatcher(NULL), m_pTimerWatcher(NULL),
-      m_pRecvBuff(NULL), m_pSendBuff(NULL), m_pWaitForSendBuff(NULL),
-      m_pCodec(NULL), m_iErrno(0),
-      m_pLogger(NULL), m_pLabor(NULL)
+      m_pIoWatcher(nullptr), m_pTimerWatcher(nullptr),
+      m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
+      m_pCodec(nullptr), m_iErrno(0), m_pLabor(nullptr), m_pLogger(nullptr)
 {
     memset(m_szErrBuff, 0, sizeof(m_szErrBuff));
 }
@@ -42,7 +42,7 @@ SocketChannel::~SocketChannel()
 
 bool SocketChannel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
 {
-    LOG4_TRACE("%s(codec_type[%d])", __FUNCTION__, eCodecType);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(codec_type[%d])", __FUNCTION__, eCodecType);
     // NEW_PTR(m_pRecvBuff, CBuffer);
     try
     {
@@ -64,13 +64,13 @@ bool SocketChannel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
                 m_pCodec->SetLogger(m_pLogger);
                 break;
             default:
-                LOG4_ERROR("no codec defined for code type %d", eCodecType);
+                m_pLogger->WriteLog(Logger::ERROR, "no codec defined for code type %d", eCodecType);
                 break;
         }
     }
     catch(std::bad_alloc& e)
     {
-        LOG4_ERROR("%s", e.what());
+        m_pLogger->WriteLog(Logger::ERROR, "%s", e.what());
         return(false);
     }
     m_strKey = strKey;
@@ -103,7 +103,7 @@ bool SocketChannel::NeedAliveCheck() const
 
 E_CODEC_STATUS SocketChannel::Send()
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%u])", __FUNCTION__, m_iFd, m_ulSeq);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%u])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -114,7 +114,7 @@ E_CODEC_STATUS SocketChannel::Send()
     }
     int iNeedWriteLen = 0;
     int iWriteLen = 0;
-    LOG4_TRACE("m_pSendBuff = 0x%d, m_pSendBuff->ReadableBytes() = %d", m_pSendBuff, m_pSendBuff->ReadableBytes());
+    m_pLogger->WriteLog(Logger::TRACE, "m_pSendBuff = 0x%d, m_pSendBuff->ReadableBytes() = %d", m_pSendBuff, m_pSendBuff->ReadableBytes());
     iNeedWriteLen = m_pSendBuff->ReadableBytes();
     if (iNeedWriteLen > 0)
     {
@@ -144,7 +144,7 @@ E_CODEC_STATUS SocketChannel::Send()
                 m_dActiveTime = m_pLabor->GetNowTime();
                 return(CODEC_STATUS_PAUSE);
             }
-            LOG4_ERROR("send to fd %d error %d: %s",
+            m_pLogger->WriteLog(Logger::ERROR, "send to fd %d error %d: %s",
                     m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
             m_strErrMsg = m_szErrBuff;
             return(CODEC_STATUS_INT);
@@ -178,7 +178,7 @@ E_CODEC_STATUS SocketChannel::Send()
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("send to fd %d error %d: %s",
+        m_pLogger->WriteLog(Logger::ERROR, "send to fd %d error %d: %s",
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -187,7 +187,8 @@ E_CODEC_STATUS SocketChannel::Send()
 
 E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, uiCmd, uiSeq);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%d], cmd[%u], seq[%u])",
+                    __FUNCTION__, m_iFd, m_ulSeq, uiCmd, uiSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -240,7 +241,7 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
         }
             break;
         default:
-            LOG4_ERROR("invalid connect status %d!", m_ucChannelStatus);
+            m_pLogger->WriteLog(Logger::ERROR, "invalid connect status %d!", m_ucChannelStatus);
             return(CODEC_STATUS_OK);
     }
 
@@ -256,7 +257,7 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
     }
 
     int iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
-    LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
+    m_pLogger->WriteLog(Logger::TRACE, "iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
     if (iWriteLen >= 0)
     {
         m_dActiveTime = m_pLabor->GetNowTime();
@@ -276,7 +277,7 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("send to fd %d error %d: %s",
+        m_pLogger->WriteLog(Logger::ERROR, "send to fd %d error %d: %s",
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -285,7 +286,7 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
 
 E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%u])", __FUNCTION__, m_iFd, m_ulSeq);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%u])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -310,7 +311,7 @@ E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
             }
             break;
         default:
-            LOG4_ERROR("invalid connect status %d!", m_ucChannelStatus);
+            m_pLogger->WriteLog(Logger::ERROR, "invalid connect status %d!", m_ucChannelStatus);
             return(CODEC_STATUS_OK);
     }
 
@@ -346,7 +347,7 @@ E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("send to fd %d error %d: %s",
+        m_pLogger->WriteLog(Logger::ERROR, "send to fd %d error %d: %s",
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -355,14 +356,14 @@ E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 
 E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
     iReadLen = m_pRecvBuff->ReadFD(m_iFd, m_iErrno);
-    LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
+    m_pLogger->WriteLog(Logger::TRACE, "recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
             m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     if (iReadLen > 0)
     {
@@ -408,16 +409,16 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                 }
                     break;
                 default:
-                    LOG4_ERROR("invalid connect status %d!", m_ucChannelStatus);
+                    m_pLogger->WriteLog(Logger::ERROR, "invalid connect status %d!", m_ucChannelStatus);
                     return(CODEC_STATUS_OK);
             }
         }
-        LOG4_TRACE("%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
+        m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
         return(eCodecStatus);
     }
     else if (iReadLen == 0)
     {
-        LOG4_DEBUG("fd %d closed by peer, error %d %s!",
+        m_pLogger->WriteLog(Logger::DEBUG, "fd %d closed by peer, error %d %s!",
                         m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_EOF);
@@ -429,7 +430,7 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("recv from fd %d error %d: %s",
+        m_pLogger->WriteLog(Logger::ERROR, "recv from fd %d error %d: %s",
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -438,14 +439,14 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 
 E_CODEC_STATUS SocketChannel::Recv(HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
     iReadLen = m_pRecvBuff->ReadFD(m_iFd, m_iErrno);
-    LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
+    m_pLogger->WriteLog(Logger::TRACE, "recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
             m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     if (iReadLen > 0)
     {
@@ -456,7 +457,7 @@ E_CODEC_STATUS SocketChannel::Recv(HttpMsg& oHttpMsg)
     }
     else if (iReadLen == 0)
     {
-        LOG4_DEBUG("fd %d closed by peer, error %d %s!",
+        m_pLogger->WriteLog(Logger::DEBUG, "fd %d closed by peer, error %d %s!",
                         m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         if (m_pRecvBuff->ReadableBytes() > 0)
         {
@@ -476,7 +477,7 @@ E_CODEC_STATUS SocketChannel::Recv(HttpMsg& oHttpMsg)
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("recv from fd %d error %d: %s",
+        m_pLogger->WriteLog(Logger::ERROR, "recv from fd %d error %d: %s",
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -485,14 +486,14 @@ E_CODEC_STATUS SocketChannel::Recv(HttpMsg& oHttpMsg)
 
 E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
     iReadLen = m_pRecvBuff->ReadFD(m_iFd, m_iErrno);
-    LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
+    m_pLogger->WriteLog(Logger::TRACE, "recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
             m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     if (iReadLen > 0)
     {
@@ -512,14 +513,14 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg
                 ++m_ulUnitTimeMsgNum;
                 ++m_ulMsgNum;
                 oMsgBody.set_add_on(m_strClientData);
-                LOG4_TRACE("%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
+                m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
             }
             return(eCodecStatus);
         }
     }
     else if (iReadLen == 0)
     {
-        LOG4_DEBUG("fd %d closed by peer, error %d %s!",
+        m_pLogger->WriteLog(Logger::DEBUG, "fd %d closed by peer, error %d %s!",
                         m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_EOF);
@@ -531,7 +532,7 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("recv from fd %d error %d: %s",
+        m_pLogger->WriteLog(Logger::ERROR, "recv from fd %d error %d: %s",
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -540,12 +541,12 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg
 
 E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
     }
-    LOG4_TRACE("fetch from fd %d and m_pRecvBuff->ReadableBytes() = %d",
+    m_pLogger->WriteLog(Logger::TRACE, "fetch from fd %d and m_pRecvBuff->ReadableBytes() = %d",
             m_iFd, m_pRecvBuff->ReadableBytes());
     E_CODEC_STATUS eCodecStatus = m_pCodec->Decode(m_pRecvBuff, oMsgHead, oMsgBody);
     if (CODEC_STATUS_OK == eCodecStatus)
@@ -553,14 +554,14 @@ E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
         m_ulForeignSeq = oMsgHead.seq();
         ++m_ulUnitTimeMsgNum;
         ++m_ulMsgNum;
-        LOG4_TRACE("%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
+        m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
     }
     return(eCodecStatus);
 }
 
 E_CODEC_STATUS SocketChannel::Fetch(HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -572,7 +573,7 @@ E_CODEC_STATUS SocketChannel::Fetch(HttpMsg& oHttpMsg)
 
 E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%d])", __FUNCTION__, m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -592,7 +593,7 @@ E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMs
             m_ulForeignSeq = oMsgHead.seq();
             ++m_ulUnitTimeMsgNum;
             ++m_ulMsgNum;
-            LOG4_TRACE("%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
+            m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%u], cmd[%u], seq[%u])", __FUNCTION__, m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
         }
         return(eCodecStatus);
     }
@@ -600,7 +601,7 @@ E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMs
 
 bool SocketChannel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
 {
-    LOG4_TRACE("%s(channel_fd[%d], channel_id[%d], codec_type[%d], new_codec_type[%d])",
+    m_pLogger->WriteLog(Logger::TRACE, "%s(channel_fd[%d], channel_id[%d], codec_type[%d], new_codec_type[%d])",
                     __FUNCTION__, m_iFd, m_ulSeq, m_pCodec->GetCodecType(), eCodecType);
     if (eCodecType == m_pCodec->GetCodecType())
     {
@@ -625,13 +626,13 @@ bool SocketChannel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
                 pNewCodec->SetLogger(m_pLogger);
                 break;
             default:
-                LOG4_ERROR("no codec defined for code type %d", eCodecType);
+                m_pLogger->WriteLog(Logger::ERROR, "no codec defined for code type %d", eCodecType);
                 break;
         }
     }
     catch(std::bad_alloc& e)
     {
-        LOG4_ERROR("%s", e.what());
+        m_pLogger->WriteLog(Logger::ERROR, "%s", e.what());
         return(false);
     }
     DELETE(m_pCodec);

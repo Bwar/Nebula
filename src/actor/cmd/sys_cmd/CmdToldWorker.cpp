@@ -39,7 +39,7 @@ bool CmdToldWorker::AnyMessage(
         GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), stCtx);
         GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
         GetWorkerImpl(this)->AddInnerChannel(stCtx);
-        oOutTargetWorker.set_worker_identify(GetWorkerIdentify());
+        oOutTargetWorker.set_worker_identify(GetNodeIdentify());
         oOutTargetWorker.set_node_type(GetNodeType());
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
         oOutMsgBody.mutable_rsp_result()->set_msg("OK");

@@ -24,6 +24,7 @@ namespace neb
 class Labor;
 class WorkerImpl;
 class Manager;
+class NetLogger;
 
 class SocketChannel: public Channel
 {
@@ -116,23 +117,7 @@ public:
         return(m_strErrMsg);
     }
 
-protected:
-    log4cplus::Logger& GetLogger()
-    {
-        return (*m_pLogger);
-    }
-
-    log4cplus::Logger* GetLoggerPtr()
-    {
-        return (m_pLogger);
-    }
-
 private:
-    void SetLogger(log4cplus::Logger* pLogger)
-    {
-        m_pLogger = pLogger;
-    }
-
     void SetLabor(Labor* pLabor)
     {
         m_pLabor = pLabor;
@@ -213,8 +198,9 @@ private:
     std::string m_strErrMsg;
     std::string m_strIdentify;            ///< 连接标识（可以为空，不为空时用于标识业务层与连接的关系）
     std::string m_strRemoteAddr;          ///< 对端IP地址（不是客户端地址，但可能跟客户端地址相同）
-    log4cplus::Logger* m_pLogger;
     Labor* m_pLabor;
+    NetLogger* m_pLogger;
+
 
     friend class WorkerImpl;
     friend class Manager;

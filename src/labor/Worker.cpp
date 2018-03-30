@@ -89,7 +89,7 @@ const std::string& Worker::GetWorkPath() const
     return(m_pImpl->GetWorkerInfo().strWorkPath);
 }
 
-const std::string& Worker::GetWorkerIdentify() const
+const std::string& Worker::GetNodeIdentify() const
 {
     return(m_pImpl->GetWorkerInfo().strWorkerIdentify);
 }
@@ -124,9 +124,14 @@ bool Worker::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 ui
     return(m_pImpl->SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
 }
 
-bool Worker::SendOrient(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Worker::SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    return(m_pImpl->SendOrient(strNodeType, uiFactor, uiCmd, uiSeq, oMsgBody, pSender));
+    return(m_pImpl->SendOriented(strNodeType, uiFactor, uiCmd, uiSeq, oMsgBody, pSender));
+}
+
+bool Worker::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    return(m_pImpl->SendOriented(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
 }
 
 bool Worker::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)

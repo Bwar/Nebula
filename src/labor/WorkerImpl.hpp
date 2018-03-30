@@ -32,10 +32,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include "ev.h"
-#include "log4cplus/logger.h"
-#include "log4cplus/fileappender.h"
-#include "log4cplus/socketappender.h"
-#include "log4cplus/loggingmacros.h"
 #include "hiredis/hiredis.h"
 #include "hiredis/async.h"
 #include "hiredis/adapters/libev.h"
@@ -49,6 +45,7 @@
 #include "channel/RedisChannel.hpp"
 #include "codec/Codec.hpp"
 #include "actor/Actor.hpp"
+#include "util/logger/NetLogger.hpp"
 
 namespace neb
 {
@@ -152,7 +149,7 @@ public:     // about worker
 
     virtual log4cplus::Logger GetLogger()
     {
-        return(m_oLogger);
+        return(m_pLogger);
     }
 
     const tagWorkerInfo& GetWorkerInfo() const
@@ -168,18 +165,19 @@ public:     // about worker
     virtual time_t GetNowTime() const;
     virtual bool ResetTimeout(Actor* pObject);
 
+    template <typename ...Targs> void Logger(const std::string& strTraceId, int iLogLevel, Targs... args);
     template <typename ...Targs> Step* NewStep(Actor* pCreator, const std::string& strStepName, Targs... args);
     template <typename ...Targs> Session* NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
     template <typename ...Targs> Cmd* NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
     template <typename ...Targs> Module* NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
-    template <typename ...Targs> void Logger(const std::string& strTraceId, int iLogLevel, Targs... args);
 
 public:     // about channel
     virtual bool SendTo(const tagChannelContext& stCtx);
     virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendOrient(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
@@ -271,8 +269,7 @@ private:
     mutable uint32 m_ulSequence = 0;
     char* m_pErrBuff;
     Worker* m_pWorker;
-    log4cplus::Logger m_oLogger;
-    bool m_bInitLogger;
+    std::shared_ptr<NetLogger> m_pLogger = nullptr;
 
     tagWorkerInfo m_stWorkerInfo;
     CJsonObject m_oCustomConf;    ///< 自定义配置
@@ -301,11 +298,6 @@ private:
     std::unordered_map<std::string, std::string> m_mapIdentifyNodeType;    // key为Identify，value为node_type
     T_MAP_NODE_TYPE_IDENTIFY m_mapNodeIdentify;
 };
-
-template <typename ...Targs>
-void WorkerImpl::Logger(const std::string& strTraceId, int iLogLevel, Targs... args)
-{
-}
 
 
 

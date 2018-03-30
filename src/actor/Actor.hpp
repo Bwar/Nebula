@@ -12,9 +12,6 @@
 
 #include <string>
 
-#include "log4cplus/logger.h"
-#include "log4cplus/fileappender.h"
-#include "log4cplus/loggingmacros.h"
 #include "Error.hpp"
 #include "Definition.hpp"
 #include "pb/msg.pb.h"
@@ -50,17 +47,17 @@ public:
     };
 
 public:
-    Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout = 0.0);
+    Actor(ACTOR_TYPE eActorType = ACT_UNDEFINE, ev_tstamp dTimeout = 0.0);
     Actor(const Actor&) = delete;
     Actor& operator=(const Actor&) = delete;
     virtual ~Actor();
 
 protected:
+    template <typename ...Targs> void Logger(int iLogLevel, Targs... args);
     template <typename ...Targs> Step* NewStep(const std::string& strStepName, Targs... args);
     template <typename ...Targs> Session* NewSession(const std::string& strSessionName, Targs... args);
     template <typename ...Targs> Cmd* NewCmd(const std::string& strCmdName, Targs... args);
     template <typename ...Targs> Module* NewModule(const std::string& strModuleName, Targs... args);
-    template <typename ...Targs> void Logger(int iLogLevel, Targs... args);
 
 protected:
     uint32 GetSequence();
@@ -69,7 +66,7 @@ protected:
     ev_tstamp GetDefaultTimeout() const;
     const std::string& GetNodeType() const;
     const std::string& GetWorkPath() const;
-    const std::string& GetWorkerIdentify() const;
+    const std::string& GetNodeIdentify() const;
     time_t GetNowTime() const;
 
     /**
@@ -152,13 +149,15 @@ protected:
      * @brief 以取模方式选择发送到同一类型节点
      * @note 以取模方式选择发送到同一类型节点，实现简单有要求的负载均衡。
      * @param strNodeType 节点类型
-     * @param uiModFactor 取模因子
+     * @param uiFactor 定向发送因子
      * @param uiCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendOrient(const std::string& strNodeType, uint32 uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendOriented(const std::string& strNodeType, uint32 uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+
+    bool SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
 protected:
     virtual void SetActiveTime(ev_tstamp dActiveTime)
@@ -186,35 +185,10 @@ protected:
         return(m_eActorType);
     }
 
-    /**
-     * @brief 获取日志类实例
-     * @note 派生类写日志时调用
-     * @return 日志类实例
-     */
-    log4cplus::Logger GetLogger()
-    {
-        return (*m_pLogger);
-    }
-
-    log4cplus::Logger* GetLoggerPtr()
-    {
-        return (m_pLogger);
-    }
-
 private:
     void SetWorker(Worker* pWorker)
     {
         m_pWorker = pWorker;
-    }
-
-    /**
-     * @brief 设置日志类实例
-     * @note 设置框架层操作者，由框架层调用，业务层派生类可直接忽略此函数
-     * @param logger 日志类实例
-     */
-    void SetLogger(log4cplus::Logger* pLogger)
-    {
-        m_pLogger = pLogger;
     }
 
     ev_timer* AddTimerWatcher();
@@ -230,13 +204,19 @@ private:
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
     Worker* m_pWorker;
-    log4cplus::Logger* m_pLogger;
     ev_timer* m_pTimerWatcher;
     std::string m_strTraceId;       // for log trace
 
     friend class WorkerImpl;
     friend class WorkerFriend;
 };
+
+
+template <typename ...Targs>
+void Actor::Logger(int iLogLevel, Targs... args)
+{
+    return(m_pWorker->Logger(m_strTraceId, iLogLevel, std::forward<Targs>(args)...));
+}
 
 template <typename ...Targs>
 Step* Actor::NewStep(const std::string& strStepName, Targs... args)
@@ -260,12 +240,6 @@ template <typename ...Targs>
 Module* Actor::NewModule(const std::string& strModuleName, Targs... args)
 {
     return(m_pWorker->NewSession(this, strModuleName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-void Actor::Logger(int iLogLevel, Targs... args)
-{
-    return(m_pWorker->Logger(m_strTraceId, iLogLevel, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

@@ -14,7 +14,6 @@
 //#include <zconf.h>
 
 #include <actor/cmd/CW.hpp>
-#include "log4cplus/loggingmacros.h"
 #include "util/CBuffer.hpp"
 #include "pb/msg.pb.h"
 #include "Error.hpp"
@@ -57,6 +56,8 @@ enum E_CODEC_STATUS
     CODEC_STATUS_INT        = 5,    ///< 连接非正常关闭
 };
 
+class NetLogger;
+
 class Codec
 {
 public:
@@ -88,21 +89,6 @@ public:
 
 
 protected:
-    /**
-     * @brief 获取日志类实例
-     * @note 派生类写日志时调用
-     * @return 日志类实例
-     */
-    log4cplus::Logger GetLogger()
-    {
-        return (*m_pLogger);
-    }
-
-    log4cplus::Logger* GetLoggerPtr()
-    {
-        return (m_pLogger);
-    }
-
     const std::string& GetKey() const
     {
         return(m_strKey);
@@ -123,13 +109,13 @@ private:
      * @note 设置框架层操作者，由框架层调用，业务层派生类可直接忽略此函数
      * @param logger 日志类实例
      */
-    void SetLogger(log4cplus::Logger* pLogger)
+    void SetLogger(NetLogger* pLogger)
     {
         m_pLogger = pLogger;
     }
 
 private:
-    log4cplus::Logger* m_pLogger;
+    NetLogger* m_pLogger;
     E_CODEC_TYPE m_eCodecType;
     std::string m_strKey;       // 密钥
 

@@ -28,7 +28,7 @@ E_CMD_STATUS StepTellWorker::Emit(
 {
     MsgBody oOutMsgBody;
     TargetWorker oTargetWorker;
-    oTargetWorker.set_worker_identify(GetWorkerIdentify());
+    oTargetWorker.set_worker_identify(GetNodeIdentify());
     oTargetWorker.set_node_type(GetNodeType());
     oOutMsgBody.mutable_rsp_result()->set_code(0);
     oOutMsgBody.mutable_rsp_result()->set_msg("OK");

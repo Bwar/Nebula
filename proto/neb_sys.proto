@@ -50,3 +50,10 @@ message LogLevel
 	int32 log_level        = 1;	///< 日志级别
 }
 
+message TraceLog
+{
+    uint32 node_id = 1;
+    string node_identify = 2;
+    bytes log_content = 3;
+}
+

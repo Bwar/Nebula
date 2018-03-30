@@ -148,8 +148,7 @@ void WorkerImpl::RedisCmdCallback(redisAsyncContext *c, void *reply, void *privd
 }
 
 WorkerImpl::WorkerImpl(Worker* pWorker, const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf)
-    : m_pErrBuff(nullptr), m_pWorker(pWorker), m_bInitLogger(false),
-      m_loop(nullptr), m_pCmdConnect(nullptr)
+    : m_pErrBuff(nullptr), m_pWorker(pWorker), m_loop(nullptr), m_pCmdConnect(nullptr)
 {
     m_stWorkerInfo.iManagerControlFd = iControlFd;
     m_stWorkerInfo.iManagerDataFd = iDataFd;
@@ -694,18 +693,17 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
     {
         return(false);
     }
-    m_pCmdConnect->SetLogger(&m_oLogger);
     m_pCmdConnect->SetWorker(m_pWorker);
     return(true);
 }
 
 bool WorkerImpl::InitLogger(const CJsonObject& oJsonConf)
 {
-    if (m_bInitLogger)  // 已经被初始化过，只修改日志级别
+    if (nullptr != m_pLogger)  // 已经被初始化过，只修改日志级别
     {
         int32 iLogLevel = 0;
         oJsonConf.Get("log_level", iLogLevel);
-        m_oLogger.setLogLevel(iLogLevel);
+        m_pLogger->SetLogLevel(iLogLevel);
         return(true);
     }
     else
@@ -713,8 +711,7 @@ bool WorkerImpl::InitLogger(const CJsonObject& oJsonConf)
         int32 iMaxLogFileSize = 0;
         int32 iMaxLogFileNum = 0;
         int32 iLogLevel = 0;
-        int32 iLoggingPort = 9000;
-        std::string strLoggingHost;
+        int32 iNetLogLevel = 0;
         std::string strLogname = m_stWorkerInfo.strWorkPath + std::string("/") + oJsonConf("log_path")
                         + std::string("/") + getproctitle() + std::string(".log");
         std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
@@ -722,50 +719,38 @@ bool WorkerImpl::InitLogger(const CJsonObject& oJsonConf)
         ssServerName << getproctitle() << " " << m_stWorkerInfo.strWorkerIdentify;
         oJsonConf.Get("max_log_file_size", iMaxLogFileSize);
         oJsonConf.Get("max_log_file_num", iMaxLogFileNum);
+        oJsonConf.Get("net_log_level", iNetLogLevel);
         if (oJsonConf.Get("log_level", iLogLevel))
         {
             switch (iLogLevel)
             {
-                case log4cplus::DEBUG_LOG_LEVEL:
+                case Logger::DEBUG:
                     break;
-                case log4cplus::INFO_LOG_LEVEL:
+                case Logger::INFO:
                     break;
-                case log4cplus::TRACE_LOG_LEVEL:
+                case Logger::TRACE:
                     break;
-                case log4cplus::WARN_LOG_LEVEL:
+                case Logger::WARNING:
                     break;
-                case log4cplus::ERROR_LOG_LEVEL:
+                case Logger::NOTICE:
                     break;
-                case log4cplus::FATAL_LOG_LEVEL:
+                case Logger::ERROR:
+                    break;
+                case Logger::CRITICAL:
+                    break;
+                case Logger::FATAL:
                     break;
                 default:
-                    iLogLevel = log4cplus::INFO_LOG_LEVEL;
+                    iLogLevel = Logger::INFO;
             }
         }
         else
         {
-            iLogLevel = log4cplus::INFO_LOG_LEVEL;
+            iLogLevel = Logger::INFO;
         }
-        log4cplus::initialize();
-        std::auto_ptr<log4cplus::Layout> layout(new log4cplus::PatternLayout(strParttern));
-        log4cplus::SharedAppenderPtr append(new log4cplus::RollingFileAppender(
-                        strLogname, iMaxLogFileSize, iMaxLogFileNum));
-        append->setName(strLogname);
-        append->setLayout(layout);
-        m_oLogger = log4cplus::Logger::getInstance(LOG4CPLUS_TEXT(strLogname));
-        m_oLogger.setLogLevel(iLogLevel);
-        m_oLogger.addAppender(append);
-        if (oJsonConf.Get("socket_logging_host", strLoggingHost) && oJsonConf.Get("socket_logging_port", iLoggingPort))
-        {
-            log4cplus::SharedAppenderPtr socket_append(new log4cplus::SocketAppender(
-                            strLoggingHost, iLoggingPort, ssServerName.str()));
-            socket_append->setName(ssServerName.str());
-            socket_append->setLayout(layout);
-            socket_append->setThreshold(log4cplus::INFO_LOG_LEVEL);
-            m_oLogger.addAppender(socket_append);
-        }
+        m_pLogger = std::make_shared<neb::NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, m_pWorker);
+        m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_INFO("%s program begin...", getproctitle());
-        m_bInitLogger = true;
         return(true);
     }
 }
@@ -863,7 +848,7 @@ void WorkerImpl::Destroy()
 
 void WorkerImpl::ResetLogLevel(log4cplus::LogLevel iLogLevel)
 {
-    m_oLogger.setLogLevel(iLogLevel);
+    m_pLogger->SetLogLevel(iLogLevel);
 }
 
 bool WorkerImpl::AddNamedSocketChannel(const std::string& strIdentify, const tagChannelContext& stCtx)
@@ -1125,7 +1110,7 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx)
     return(false);
 }
 
-bool WorkerImpl::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("%s(fd %d, fd_seq %lu, cmd %u, msg_seq %u)",
                     __FUNCTION__, stCtx.iFd, stCtx.uiSeq, uiCmd, uiSeq);
@@ -1231,7 +1216,7 @@ bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint3
     }
 }
 
-bool WorkerImpl::SendOrient(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("%s(nody_type: %s, factor: %d)", __FUNCTION__, strNodeType.c_str(), uiFactor);
     std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > >::iterator node_type_iter;
@@ -1270,6 +1255,38 @@ bool WorkerImpl::SendOrient(const std::string& strNodeType, unsigned int uiFacto
         }
     }
 }
+
+bool WorkerImpl::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    if (oMsgBody.has_req_target())
+    {
+        if (0 != oMsgBody.req_target().route_id())
+        {
+            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), uiCmd, uiSeq, oMsgBody, pSender));
+        }
+        else if (oMsgBody.req_target().route().length() > 0)
+        {
+            auto hashf = [](const std::string& strRoute)
+            {
+                uint32_t hash = (uint32_t) FNV_64_INIT;
+                size_t x;
+                for (x = 0; x < strRoute.length(); x++)
+                {
+                  uint32_t val = (uint32_t)strRoute[x];
+                  hash ^= val;
+                  hash *= (uint32_t) FNV_64_PRIME;
+                }
+                return(hash);
+            };
+            return(SendOriented(strNodeType, hashf(oMsgBody.req_target().route()), uiCmd, uiSeq, oMsgBody, pSender));
+        }
+        else
+        {
+            return(SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
+        }
+    }
+    return(false);
+};
 
 bool WorkerImpl::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
@@ -1565,7 +1582,6 @@ bool WorkerImpl::AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* 
         return(false);
     }
     pRedisChannel->listPipelineStep.push_back(pRedisStep);
-    pRedisStep->SetLogger(&m_oLogger);
     pRedisStep->SetWorker(m_pWorker);
     m_mapRedisChannel.insert(std::make_pair(c, pRedisChannel));
     redisLibevAttach(m_loop, c);
@@ -1961,8 +1977,7 @@ Session* WorkerImpl::GetSession(const std::string& strSessionId, const std::stri
 SocketChannel* WorkerImpl::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
 {
     LOG4_DEBUG("%s(iFd %d, codec_type %d)", __FUNCTION__, iFd, eCodecType);
-    std::map<int, SocketChannel*>::iterator iter;
-    iter = m_mapSocketChannel.find(iFd);
+    auto iter = m_mapSocketChannel.find(iFd);
     if (iter == m_mapSocketChannel.end())
     {
         SocketChannel* pChannel = NULL;
@@ -1976,7 +1991,6 @@ SocketChannel* WorkerImpl::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
             return(NULL);
         }
         pChannel->SetLabor(m_pWorker);
-        pChannel->SetLogger(&m_oLogger);
         if (pChannel->Init(eCodecType))
         {
             m_mapSocketChannel.insert(std::pair<int, SocketChannel*>(iFd, pChannel));
@@ -2164,7 +2178,7 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
                 LogLevel oLogLevel;
                 oLogLevel.ParseFromString(oMsgBody.data());
                 LOG4_INFO("log level set to %d", oLogLevel.log_level());
-                m_oLogger.setLogLevel(oLogLevel.log_level());
+                m_pLogger->SetLogLevel(oLogLevel.log_level());
             }
             else if (CMD_REQ_RELOAD_SO == oMsgHead.cmd())
             {

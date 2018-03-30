@@ -30,10 +30,6 @@
 #include <unordered_set>
 #include <list>
 #include "ev.h"
-#include "log4cplus/logger.h"
-#include "log4cplus/fileappender.h"
-#include "log4cplus/socketappender.h"
-#include "log4cplus/loggingmacros.h"
 
 #include "util/json/CJsonObject.hpp"
 #include "util/CBuffer.hpp"
@@ -41,7 +37,6 @@
 #include "pb/neb_sys.pb.h"
 #include "Error.hpp"
 #include "Definition.hpp"
-#include "Attribute.hpp"
 #include "Labor.hpp"
 #include "Worker.hpp"
 #include "channel/Channel.hpp"

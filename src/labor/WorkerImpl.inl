@@ -11,6 +11,13 @@
 #define LABOR_CHIEF_WORKERIMPL_INL_
 
 
+
+template <typename ...Targs>
+void WorkerImpl::Logger(const std::string& strTraceId, int iLogLevel, Targs... args)
+{
+    m_pLogger->WriteLog(strTraceId, iLogLevel, std::forward<Targs>(args)...);
+}
+
 template <typename ...Targs>
 Step* WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs... args)
 {

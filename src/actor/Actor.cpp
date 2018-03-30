@@ -19,7 +19,7 @@ namespace neb
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : m_eActorType(eActorType),
       m_ulSequence(0), m_ulSessionId(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
-      m_pWorker(NULL), m_pLogger(NULL), m_pTimerWatcher(NULL)
+      m_pWorker(NULL), m_pTimerWatcher(NULL)
 {
 }
 
@@ -64,9 +64,9 @@ const std::string& Actor::GetWorkPath() const
     return(m_pWorker->GetWorkPath());
 }
 
-const std::string& Actor::GetWorkerIdentify() const
+const std::string& Actor::GetNodeIdentify() const
 {
-    return(m_pWorker->GetWorkerIdentify());
+    return(m_pWorker->GetNodeIdentify());
 }
 
 time_t Actor::GetNowTime() const
@@ -118,9 +118,14 @@ bool Actor::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiS
     return(m_pWorker->SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, this));
 }
 
-bool Actor::SendOrient(const std::string& strNodeType, uint32 uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendOrient(strNodeType, uiFactor, uiCmd, uiSeq, oMsgBody, this));
+    return(m_pWorker->SendOriented(strNodeType, uiFactor, uiCmd, uiSeq, oMsgBody, this));
+}
+
+bool Actor::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+{
+    return(m_pWorker->SendOriented(strNodeType, uiCmd, uiSeq, oMsgBody, this));
 }
 
 ev_timer* Actor::AddTimerWatcher()

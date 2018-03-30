@@ -137,6 +137,9 @@ const uint32 gc_uiClientMsgHeadSize = 14;
 const ev_tstamp gc_dNoTimeout = -1;
 const ev_tstamp gc_dDefaultTimeout = 0;
 
+const unsigned long FNV_64_INIT = 0x100000001b3;
+const unsigned long FNV_64_PRIME = 0xcbf29ce484222325;
+
 /**
  * @brief 命令执行状态
  */
