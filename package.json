@@ -17,6 +17,6 @@
 	     "hiredis":"https://github.com/redis/hiredis/archive/v0.13.3.zip",
 	     "crypto++":"https://github.com/weidai11/cryptopp/archive/CRYPTOPP_6_0_0.zip",
 	     "http_parse":"https://github.com/nodejs/http-parser/archive/v2.8.0.zip",
-	     "cjson":"https://github.com/DaveGamble/cJSON/archive/v1.7.5.zip"
+	     "DaveGamble/cJSON":"v1.7.5"
 	}
 } 
