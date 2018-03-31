@@ -1,0 +1,22 @@
+{
+	"name":"Nebula",
+	"version":"0.3.0",
+	"description":"Nebula is a BSD licensed, proto3-protocol event driven asynchronous c++ framework, it support multiple  protocol like protobuf, http, websocket. A high performance of distributed service clusters can be  easily constructed using Nebula.",
+	"keywords":["Nebula", "proto3", "libev", "asynchronous", "actor", "websocket", "distributed", "starship"],
+	"homepage":"",
+	"bugs":{"url":"", "email":"cqc@vip.qq.com"},
+	"license":"BSD",
+	"author":{"name":"Bwar", "email":"cqc@vip.qq.com", "url":""},
+	"files":"src/actor",
+	"main":"",
+	"man":[],
+	"repository":{ "type":"git", "url":"https://github.com/Bwar/Nebula.git"},
+	"dependencies":{
+	     "protobuf":"https://github.com/google/protobuf/archive/v3.5.2.zip",
+	     "libev":"https://github.com/kindy/libev/archive/master.zip",
+	     "hiredis":"https://github.com/redis/hiredis/archive/v0.13.3.zip",
+	     "crypto++":"https://github.com/weidai11/cryptopp/archive/CRYPTOPP_6_0_0.zip",
+	     "http_parse":"https://github.com/nodejs/http-parser/archive/v2.8.0.zip",
+	     "cjson":"https://github.com/DaveGamble/cJSON/archive/v1.7.5.zip"
+	}
+} 
