@@ -94,13 +94,14 @@
         }               \
     } while(0)
 
-#define LOG4_FATAL(args...) LOG4CPLUS_FATAL_FMT(GetLogger(), ##args)
-#define LOG4_ERROR(args...) LOG4CPLUS_ERROR_FMT(GetLogger(), ##args)
-#define LOG4_WARN(args...) LOG4CPLUS_WARN_FMT(GetLogger(), ##args)
-#define LOG4_INFO(args...) LOG4CPLUS_INFO_FMT(GetLogger(), ##args)
-#define LOG4_DEBUG(args...) LOG4CPLUS_DEBUG_FMT(GetLogger(), ##args)
-#define LOG4_TRACE(args...) LOG4CPLUS_TRACE_FMT(GetLogger(), ##args)
-// #define LOG_INFO(args...) Logger(m_strTraceId, neb::Logger::LOG_INFO, ##args)
+#define LOG_FATAL(args...) Logger(neb::Logger::FATAL, ##args)
+#define LOG_ERROR(args...) Logger(neb::Logger::ERROR, ##args)
+#define LOG_WARNING(args...) Logger(neb::Logger::WARNING, ##args)
+#define LOG_NOTICE(args...) Logger(neb::Logger::NOTICE, ##args)
+#define LOG_INFO(args...) Logger(neb::Logger::INFO, ##args)
+#define LOG_CRITICAL(args...) Logger(neb::Logger::CRITICAL, ##args)
+#define LOG_DEBUG(args...) Logger(neb::Logger::DEBUG, ##args)
+#define LOG_TRACE(args...) Logger(neb::Logger::TRACE, ##args)
 
 typedef char int8;
 typedef unsigned char uint8;
@@ -118,9 +119,6 @@ namespace neb
 
 /** @brief 心跳间隔时间（单位:秒） */
 const int gc_iBeatInterval = NODE_BEAT;
-
-/** @brief Server刷新计数， gc_iRefreshInterval * gc_iBeatInterval 为Server刷新时间 */
-const int gc_iRefreshInterval = 10;
 
 /** @brief 每次epoll_wait能处理的最大事件数  */
 const int gc_iMaxEpollEvents = 100;

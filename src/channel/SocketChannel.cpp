@@ -19,12 +19,12 @@
 namespace neb
 {
 
-SocketChannel::SocketChannel(int iFd, uint32 ulSeq)
+SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq)
     : m_ucChannelStatus(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulStepSeq(0),
       m_ulForeignSeq(0), m_ulUnitTimeMsgNum(0), m_ulMsgNum(0), m_dActiveTime(0.0), m_dKeepAlive(0.0),
       m_pIoWatcher(nullptr), m_pTimerWatcher(nullptr),
       m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
-      m_pCodec(nullptr), m_iErrno(0), m_pLabor(nullptr), m_pLogger(nullptr)
+      m_pCodec(nullptr), m_iErrno(0), m_pLabor(nullptr), m_pLogger(pLogger)
 {
     memset(m_szErrBuff, 0, sizeof(m_szErrBuff));
 }
@@ -52,16 +52,13 @@ bool SocketChannel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
         switch (eCodecType)
         {
             case CODEC_PROTOBUF:
-                m_pCodec = new CodecProto(eCodecType, strKey);
-                m_pCodec->SetLogger(m_pLogger);
+                m_pCodec = new CodecProto(m_pLogger, eCodecType, strKey);
                 break;
             case CODEC_PRIVATE:
-                m_pCodec = new CodecPrivate(eCodecType, strKey);
-                m_pCodec->SetLogger(m_pLogger);
+                m_pCodec = new CodecPrivate(m_pLogger, eCodecType, strKey);
                 break;
             case CODEC_HTTP:
-                m_pCodec = new CodecHttp(eCodecType, strKey);
-                m_pCodec->SetLogger(m_pLogger);
+                m_pCodec = new CodecHttp(m_pLogger, eCodecType, strKey);
                 break;
             default:
                 m_pLogger->WriteLog(Logger::ERROR, "no codec defined for code type %d", eCodecType);
@@ -614,16 +611,13 @@ bool SocketChannel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
         switch (eCodecType)
         {
             case CODEC_PROTOBUF:
-                pNewCodec = new CodecProto(eCodecType, m_strKey);
-                pNewCodec->SetLogger(m_pLogger);
+                pNewCodec = new CodecProto(m_pLogger, eCodecType, m_strKey);
                 break;
             case CODEC_PRIVATE:
-                pNewCodec = new CodecPrivate(eCodecType, m_strKey);
-                pNewCodec->SetLogger(m_pLogger);
+                pNewCodec = new CodecPrivate(m_pLogger, eCodecType, m_strKey);
                 break;
             case CODEC_HTTP:
-                pNewCodec = new CodecHttp(eCodecType, m_strKey);
-                pNewCodec->SetLogger(m_pLogger);
+                pNewCodec = new CodecHttp(m_pLogger, eCodecType, m_strKey);
                 break;
             default:
                 m_pLogger->WriteLog(Logger::ERROR, "no codec defined for code type %d", eCodecType);

@@ -480,12 +480,19 @@ class LogLevel : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::google::protobuf::int32 log_level() const;
   void set_log_level(::google::protobuf::int32 value);
 
+  // optional int32 net_log_level = 2;
+  void clear_net_log_level();
+  static const int kNetLogLevelFieldNumber = 2;
+  ::google::protobuf::int32 net_log_level() const;
+  void set_net_log_level(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:neb.LogLevel)
  private:
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
   ::google::protobuf::int32 log_level_;
+  ::google::protobuf::int32 net_log_level_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_neb_5fsys_2eproto();
   friend void protobuf_AssignDesc_neb_5fsys_2eproto();
@@ -854,6 +861,20 @@ inline void LogLevel::set_log_level(::google::protobuf::int32 value) {
   
   log_level_ = value;
   // @@protoc_insertion_point(field_set:neb.LogLevel.log_level)
+}
+
+// optional int32 net_log_level = 2;
+inline void LogLevel::clear_net_log_level() {
+  net_log_level_ = 0;
+}
+inline ::google::protobuf::int32 LogLevel::net_log_level() const {
+  // @@protoc_insertion_point(field_get:neb.LogLevel.net_log_level)
+  return net_log_level_;
+}
+inline void LogLevel::set_net_log_level(::google::protobuf::int32 value) {
+  
+  net_log_level_ = value;
+  // @@protoc_insertion_point(field_set:neb.LogLevel.net_log_level)
 }
 
 // -------------------------------------------------------------------

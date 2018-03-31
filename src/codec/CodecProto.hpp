@@ -18,7 +18,7 @@ namespace neb
 class CodecProto: public Codec
 {
 public:
-    CodecProto(E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
+    CodecProto(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
     virtual ~CodecProto();
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);

@@ -61,7 +61,7 @@ class NetLogger;
 class Codec
 {
 public:
-    Codec(E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
+    Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
     virtual ~Codec();
 
     E_CODEC_TYPE GetCodecType() const
@@ -103,19 +103,10 @@ protected:
     bool AesEncrypt(const std::string& strSrc, std::string& strDest);
     bool AesDecrypt(const std::string& strSrc, std::string& strDest);
 
-private:
-    /**
-     * @brief 设置日志类实例
-     * @note 设置框架层操作者，由框架层调用，业务层派生类可直接忽略此函数
-     * @param logger 日志类实例
-     */
-    void SetLogger(NetLogger* pLogger)
-    {
-        m_pLogger = pLogger;
-    }
+protected:
+    std::shared_ptr<NetLogger> m_pLogger;
 
 private:
-    NetLogger* m_pLogger;
     E_CODEC_TYPE m_eCodecType;
     std::string m_strKey;       // 密钥
 

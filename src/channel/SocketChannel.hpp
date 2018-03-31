@@ -29,7 +29,7 @@ class NetLogger;
 class SocketChannel: public Channel
 {
 public:
-    SocketChannel(int iFd, uint32 ulSeq);
+    SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq);
     virtual ~SocketChannel();
 
     // bool Init(E_CODEC_TYPE eCodecType, IoCallbackFun io_cb, TimerCallbackFun timer_cb, const std::string& strKey = "That's a lizard.");
@@ -199,7 +199,7 @@ private:
     std::string m_strIdentify;            ///< 连接标识（可以为空，不为空时用于标识业务层与连接的关系）
     std::string m_strRemoteAddr;          ///< 对端IP地址（不是客户端地址，但可能跟客户端地址相同）
     Labor* m_pLabor;
-    NetLogger* m_pLogger;
+    std::shared_ptr<NetLogger> m_pLogger;
 
 
     friend class WorkerImpl;

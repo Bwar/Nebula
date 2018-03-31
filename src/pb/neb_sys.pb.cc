@@ -114,8 +114,9 @@ void protobuf_AssignDesc_neb_5fsys_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TargetWorker, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TargetWorker, _is_default_instance_));
   LogLevel_descriptor_ = file->message_type(4);
-  static const int LogLevel_offsets_[1] = {
+  static const int LogLevel_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogLevel, log_level_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogLevel, net_log_level_),
   };
   LogLevel_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -202,10 +203,10 @@ void protobuf_AddDesc_neb_5fsys_2eproto() {
     "orkerLoad\022\013\n\003pid\030\001 \001(\005\022\014\n\004load\030\002 \001(\005\"%\n\r"
     "ConnectWorker\022\024\n\014worker_index\030\001 \001(\005\":\n\014T"
     "argetWorker\022\027\n\017worker_identify\030\001 \001(\t\022\021\n\t"
-    "node_type\030\002 \001(\t\"\035\n\010LogLevel\022\021\n\tlog_level"
-    "\030\001 \001(\005\"G\n\010TraceLog\022\017\n\007node_id\030\001 \001(\r\022\025\n\rn"
-    "ode_identify\030\002 \001(\t\022\023\n\013log_content\030\003 \001(\014b"
-    "\006proto3", 327);
+    "node_type\030\002 \001(\t\"4\n\010LogLevel\022\021\n\tlog_level"
+    "\030\001 \001(\005\022\025\n\rnet_log_level\030\002 \001(\005\"G\n\010TraceLo"
+    "g\022\017\n\007node_id\030\001 \001(\r\022\025\n\rnode_identify\030\002 \001("
+    "\t\022\023\n\013log_content\030\003 \001(\014b\006proto3", 350);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "neb_sys.proto", &protobuf_RegisterTypes);
   ConfigInfo::default_instance_ = new ConfigInfo();
@@ -1546,6 +1547,7 @@ void TargetWorker::clear_node_type() {
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int LogLevel::kLogLevelFieldNumber;
+const int LogLevel::kNetLogLevelFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 LogLevel::LogLevel()
@@ -1570,6 +1572,7 @@ void LogLevel::SharedCtor() {
     _is_default_instance_ = false;
   _cached_size_ = 0;
   log_level_ = 0;
+  net_log_level_ = 0;
 }
 
 LogLevel::~LogLevel() {
@@ -1609,7 +1612,27 @@ LogLevel* LogLevel::New(::google::protobuf::Arena* arena) const {
 
 void LogLevel::Clear() {
 // @@protoc_insertion_point(message_clear_start:neb.LogLevel)
-  log_level_ = 0;
+#if defined(__clang__)
+#define ZR_HELPER_(f) \
+  _Pragma("clang diagnostic push") \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
+  __builtin_offsetof(LogLevel, f) \
+  _Pragma("clang diagnostic pop")
+#else
+#define ZR_HELPER_(f) reinterpret_cast<char*>(\
+  &reinterpret_cast<LogLevel*>(16)->f)
+#endif
+
+#define ZR_(first, last) do {\
+  ::memset(&first, 0,\
+           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
+} while (0)
+
+  ZR_(log_level_, net_log_level_);
+
+#undef ZR_HELPER_
+#undef ZR_
+
 }
 
 bool LogLevel::MergePartialFromCodedStream(
@@ -1628,6 +1651,21 @@ bool LogLevel::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
                  input, &log_level_)));
+
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(16)) goto parse_net_log_level;
+        break;
+      }
+
+      // optional int32 net_log_level = 2;
+      case 2: {
+        if (tag == 16) {
+         parse_net_log_level:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
+                 input, &net_log_level_)));
 
         } else {
           goto handle_unusual;
@@ -1665,6 +1703,11 @@ void LogLevel::SerializeWithCachedSizes(
     ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->log_level(), output);
   }
 
+  // optional int32 net_log_level = 2;
+  if (this->net_log_level() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteInt32(2, this->net_log_level(), output);
+  }
+
   // @@protoc_insertion_point(serialize_end:neb.LogLevel)
 }
 
@@ -1674,6 +1717,11 @@ void LogLevel::SerializeWithCachedSizes(
   // optional int32 log_level = 1;
   if (this->log_level() != 0) {
     target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->log_level(), target);
+  }
+
+  // optional int32 net_log_level = 2;
+  if (this->net_log_level() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(2, this->net_log_level(), target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:neb.LogLevel)
@@ -1689,6 +1737,13 @@ int LogLevel::ByteSize() const {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::Int32Size(
         this->log_level());
+  }
+
+  // optional int32 net_log_level = 2;
+  if (this->net_log_level() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::Int32Size(
+        this->net_log_level());
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -1722,6 +1777,9 @@ void LogLevel::MergeFrom(const LogLevel& from) {
   if (from.log_level() != 0) {
     set_log_level(from.log_level());
   }
+  if (from.net_log_level() != 0) {
+    set_net_log_level(from.net_log_level());
+  }
 }
 
 void LogLevel::CopyFrom(const ::google::protobuf::Message& from) {
@@ -1749,6 +1807,7 @@ void LogLevel::Swap(LogLevel* other) {
 }
 void LogLevel::InternalSwap(LogLevel* other) {
   std::swap(log_level_, other->log_level_);
+  std::swap(net_log_level_, other->net_log_level_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -1776,6 +1835,20 @@ void LogLevel::clear_log_level() {
   
   log_level_ = value;
   // @@protoc_insertion_point(field_set:neb.LogLevel.log_level)
+}
+
+// optional int32 net_log_level = 2;
+void LogLevel::clear_net_log_level() {
+  net_log_level_ = 0;
+}
+ ::google::protobuf::int32 LogLevel::net_log_level() const {
+  // @@protoc_insertion_point(field_get:neb.LogLevel.net_log_level)
+  return net_log_level_;
+}
+ void LogLevel::set_net_log_level(::google::protobuf::int32 value) {
+  
+  net_log_level_ = value;
+  // @@protoc_insertion_point(field_set:neb.LogLevel.net_log_level)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

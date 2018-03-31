@@ -47,7 +47,7 @@ E_CMD_STATUS StepConnectWorker::Callback(
                 pStepTellWorker = new StepTellWorker(stCtx);
                 if (pStepTellWorker == NULL)
                 {
-                    LOG4_ERROR("error %d: new StepTellWorker() error!", ERR_NEW);
+                    LOG_ERROR("error %d: new StepTellWorker() error!", ERR_NEW);
                     return(CMD_STATUS_FAULT);
                 }
 
@@ -65,20 +65,20 @@ E_CMD_STATUS StepConnectWorker::Callback(
         }
         else
         {
-            LOG4_ERROR("error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
+            LOG_ERROR("error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
             return(CMD_STATUS_FAULT);
         }
     }
     else
     {
-        LOG4_ERROR("error %d: oInMsgBody has no rsp_result!", ERR_PARASE_PROTOBUF);
+        LOG_ERROR("error %d: oInMsgBody has no rsp_result!", ERR_PARASE_PROTOBUF);
         return(CMD_STATUS_FAULT);
     }
 }
 
 E_CMD_STATUS StepConnectWorker::Timeout()
 {
-    LOG4_ERROR("timeout!");
+    LOG_ERROR("timeout!");
     return(CMD_STATUS_FAULT);
 }
 

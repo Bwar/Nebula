@@ -19,8 +19,8 @@
 namespace neb
 {
 
-Codec::Codec(E_CODEC_TYPE eCodecType, const std::string& strKey)
-    : m_pLogger(NULL), m_eCodecType(eCodecType), m_strKey(strKey)
+Codec::Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey)
+    : m_pLogger(pLogger), m_eCodecType(eCodecType), m_strKey(strKey)
 {
 }
 
@@ -162,7 +162,7 @@ bool Codec::Gzip(const std::string& strSrc, std::string& strDest)
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
-        LOG4_ERROR("%s", e.GetWhat().c_str());
+        m_pLogger->WriteLog(Logger::ERROR, "%s", e.GetWhat().c_str());
         return(false);
     }
     return (true);
@@ -184,7 +184,7 @@ bool Codec::Gunzip(const std::string& strSrc, std::string& strDest)
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
-        LOG4_ERROR("%s", e.GetWhat().c_str());
+        m_pLogger->WriteLog(Logger::ERROR, "%s", e.GetWhat().c_str());
         return(false);
     }
     return (true);
@@ -280,7 +280,7 @@ bool Codec::AesEncrypt(const std::string& strSrc, std::string& strDest)
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
-        LOG4_ERROR("%s", e.GetWhat().c_str());
+        m_pLogger->WriteLog(Logger::ERROR, "%s", e.GetWhat().c_str());
         return(false);
     }
     return(true);
@@ -305,7 +305,7 @@ bool Codec::AesDecrypt(const std::string& strSrc, std::string& strDest)
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
-        LOG4_ERROR("%s", e.GetWhat().c_str());
+        m_pLogger->WriteLog(Logger::ERROR, "%s", e.GetWhat().c_str());
         return(false);
     }
     return(true);

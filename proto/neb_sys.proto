@@ -47,7 +47,8 @@ message TargetWorker
 
 message LogLevel
 {
-	int32 log_level        = 1;	///< 日志级别
+	int32 log_level        = 1;	   ///< 日志级别
+	int32 net_log_level    = 2;    ///< 远程日志级别
 }
 
 message TraceLog

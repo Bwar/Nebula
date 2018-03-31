@@ -37,8 +37,8 @@
 #include "pb/neb_sys.pb.h"
 #include "Error.hpp"
 #include "Definition.hpp"
+#include "util/logger/NetLogger.hpp"
 #include "Labor.hpp"
-#include "Worker.hpp"
 #include "channel/Channel.hpp"
 #include "actor/cmd/Cmd.hpp"
 
@@ -70,7 +70,6 @@ public:
         int32 iGatewayPort;                   ///< 对Client服务的真实端口
         uint32 uiWorkerNum;                   ///< Worker子进程数量
         int32 iAddrPermitNum;                 ///< IP地址统计时间内允许连接次数
-        int iLogLevel;
         int iWorkerBeat;                      ///< worker进程心跳，若大于此心跳未收到worker进程上报，则重启worker进程
         int iS2SListenFd;                     ///< Server to Server监听文件描述符（Server与Server之间的连接较少，但每个Server的每个Worker均与其他Server的每个Worker相连）
         int iC2SListenFd;                     ///< Client to Server监听文件描述符（Client与Server之间的连接较多，但每个Client只需连接某个Server的某个Worker）
@@ -85,8 +84,8 @@ public:
 
         tagManagerInfo()
             : eCodec(CODEC_HTTP), uiNodeId(0), iPortForServer(16002), iPortForClient(16001), iGatewayPort(8080),
-              uiWorkerNum(10), iAddrPermitNum(10), iLogLevel(10000), iWorkerBeat(7), iS2SListenFd(-1), iC2SListenFd(-1),
-              dIoTimeout(300.0), dAddrStatInterval(60.0)
+              uiWorkerNum(10), iAddrPermitNum(10),
+              iWorkerBeat(7), iS2SListenFd(-1), iC2SListenFd(-1), dIoTimeout(300.0), dAddrStatInterval(60.0)
         {
         }
     };
@@ -163,15 +162,15 @@ public:
     static void IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int revents);
     static void IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents);
     static void IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
-    static void PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents);  // 周期任务回调，用于替换IdleCallback
+    static void PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
-    bool ManagerTerminated(struct ev_signal* watcher);
-    bool ChildTerminated(struct ev_signal* watcher);
-    bool IoRead(SocketChannel* pChannel);
-    bool IoWrite(SocketChannel* pChannel);
-    bool IoError(SocketChannel* pChannel);
-    bool IoTimeout(SocketChannel* pChannel);
-    bool ClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher);
+    bool OnManagerTerminated(struct ev_signal* watcher);
+    bool OnChildTerminated(struct ev_signal* watcher);
+    bool OnIoRead(SocketChannel* pChannel);
+    bool OnIoWrite(SocketChannel* pChannel);
+    bool OnIoError(SocketChannel* pChannel);
+    bool OnIoTimeout(SocketChannel* pChannel);
+    bool OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher);
 
     void Run();
 
@@ -210,13 +209,13 @@ protected:
     void RefreshServer();
 
     bool RegisterToBeacon();
-    bool ReportToBeacon();  // 向管理中心上报负载信息
+    bool ReportToBeacon();
 
     bool AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout = 1.0);
     bool AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout = 60.0);
     SocketChannel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
-    bool DiscardChannel(std::unordered_map<int, SocketChannel*>::iterator iter);
-    bool DiscardChannel(SocketChannel* pChannel);
+    bool DiscardSocketChannel(std::unordered_map<int, SocketChannel*>::iterator iter);
+    bool DiscardSocketChannel(SocketChannel* pChannel);
     bool FdTransfer(int iFd);
     bool AcceptServerConn(int iFd);
     bool DataRecvAndHandle(SocketChannel* pChannel);
@@ -227,11 +226,6 @@ protected:
     uint32 GetSequence() const
     {
         return(m_uiSequence++);
-    }
-
-    log4cplus::Logger GetLogger()
-    {
-        return(m_oLogger);
     }
 
     virtual uint32 GetNodeId() const
@@ -245,8 +239,7 @@ private:
     CJsonObject m_oCurrentConf;       ///< 当前加载的配置
 
     char m_szErrBuff[256];
-    log4cplus::Logger m_oLogger;
-    bool m_bInitLogger;
+    std::shared_ptr<neb::NetLogger> m_pLogger = nullptr;
     struct ev_loop* m_loop;
     ev_timer* m_pPeriodicTaskWatcher;              ///< 周期任务定时器
 
@@ -255,12 +248,12 @@ private:
     std::unordered_map<int, tagWorkerAttr> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
     std::unordered_map<int, int> m_mapWorkerRestartNum;       ///< 进程被重启次数，key为WorkerIdx
     std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
-    std::unordered_map<std::string, tagChannelContext> m_mapBeaconCtx; ///< 到beacon服务器的连接
 
+    std::unordered_map<std::string, tagChannelContext> m_mapBeaconCtx;  ///< 到beacon服务器的连接
+    std::unordered_map<std::string, tagChannelContext> m_mapLoggerCtx;  ///< 程序日志服务器连接
     std::unordered_map<int, SocketChannel*> m_mapChannel;                   ///< 通信通道
     std::unordered_map<uint32, int> m_mapSeq2WorkerIndex;             ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
     std::unordered_map<in_addr_t, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
-    std::unordered_map<int32, Cmd*> m_mapCmd;
 
     std::vector<int> m_vecFreeWorkerIdx;            ///< 空闲进程编号
 };

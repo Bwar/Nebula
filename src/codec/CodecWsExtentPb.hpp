@@ -19,7 +19,7 @@ namespace neb
 class CodecWsExtentPb: public Codec
 {
 public:
-    CodecWsExtentPb(E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
+    CodecWsExtentPb(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
     virtual ~CodecWsExtentPb();
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);

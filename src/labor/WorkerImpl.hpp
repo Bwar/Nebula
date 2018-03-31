@@ -10,16 +10,9 @@
 #ifndef SRC_LABOR_WORKERIMPL_HPP_
 #define SRC_LABOR_WORKERIMPL_HPP_
 
-#include <actor/Actor.hpp>
-#include <actor/cmd/Cmd.hpp>
-#include <actor/cmd/Module.hpp>
-#include <actor/session/Session.hpp>
-#include <actor/step/HttpStep.hpp>
-#include <actor/step/PbStep.hpp>
-#include <actor/step/RedisStep.hpp>
-#include <actor/step/Step.hpp>
 #include <memory>
-#include <map>
+#include <unordered_map>
+#include <unordered_set>
 #include <list>
 #include <dlfcn.h>
 #include <stdlib.h>
@@ -44,7 +37,6 @@
 #include "channel/SocketChannel.hpp"
 #include "channel/RedisChannel.hpp"
 #include "codec/Codec.hpp"
-#include "actor/Actor.hpp"
 #include "util/logger/NetLogger.hpp"
 
 namespace neb
@@ -116,7 +108,7 @@ public:
     static void RedisCmdCallback(redisAsyncContext *c, void *reply, void *privdata);
 
 public:
-    typedef std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > > T_MAP_NODE_TYPE_IDENTIFY;
+    typedef std::unordered_map<std::string, std::pair<std::unordered_set<std::string>::iterator, std::unordered_set<std::string> > > T_MAP_NODE_TYPE_IDENTIFY;
 public:
     WorkerImpl(Worker* pWorker, const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf);
     WorkerImpl(const WorkerImpl&) = delete;
@@ -125,16 +117,16 @@ public:
 
     void Terminated(struct ev_signal* watcher);
     bool CheckParent();
-    bool IoRead(SocketChannel* pChannel);
+    bool OnIoRead(SocketChannel* pChannel);
     bool RecvDataAndHandle(SocketChannel* pChannel);
     bool FdTransfer();
-    bool IoWrite(SocketChannel* pChannel);
-    bool IoTimeout(SocketChannel* pChannel);
-    bool StepTimeout(Step* pStep);
-    bool SessionTimeout(Session* pSession);
-    bool RedisConnected(const redisAsyncContext *c, int status);
-    bool RedisDisconnected(const redisAsyncContext *c, int status);
-    bool RedisCmdResult(redisAsyncContext *c, void *reply, void *privdata);
+    bool OnIoWrite(SocketChannel* pChannel);
+    bool OnIoTimeout(SocketChannel* pChannel);
+    bool OnStepTimeout(Step* pStep);
+    bool OnSessionTimeout(Session* pSession);
+    bool OnRedisConnected(const redisAsyncContext *c, int status);
+    bool OnRedisDisconnected(const redisAsyncContext *c, int status);
+    bool OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privdata);
 
 public:     // about worker
     virtual uint32 GetSequence() const
@@ -228,8 +220,8 @@ protected:
     bool AddIoWriteEvent(SocketChannel* pChannel);
     bool RemoveIoWriteEvent(SocketChannel* pChannel);
     bool AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout = 1.0);
-    SocketChannel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
-    bool DiscardChannel(SocketChannel* pChannel, bool bChannelNotice = true);
+    SocketChannel* CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType);
+    bool DiscardSocketChannel(SocketChannel* pChannel, bool bChannelNotice = true);
     void Remove(Step* pStep);
     void Remove(Session* pSession);
     void ChannelNotice(const tagChannelContext& stCtx, const std::string& strIdentify, const std::string& strClientData);

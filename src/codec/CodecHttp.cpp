@@ -76,8 +76,8 @@ static const char * status_string(int code)
 namespace neb
 {
 
-CodecHttp::CodecHttp(E_CODEC_TYPE eCodecType, const std::string& strKey)
-    : Codec(eCodecType, strKey),
+CodecHttp::CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey)
+    : Codec(pLogger, eCodecType, strKey),
       m_iHttpMajor(1), m_iHttpMinor(1), m_dKeepAlive(10.0)
 {
 }
@@ -88,7 +88,7 @@ CodecHttp::~CodecHttp()
 
 E_CODEC_STATUS CodecHttp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
     HttpMsg oHttpMsg;
     if (oHttpMsg.ParseFromString(oMsgBody.data()))
     {
@@ -105,17 +105,17 @@ E_CODEC_STATUS CodecHttp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBod
     }
     else
     {
-        LOG4_ERROR("oHttpMsg.ParseFromString() error!");
+        m_pLogger->WriteLog(Logger::ERROR, "oHttpMsg.ParseFromString() error!");
         return(CODEC_STATUS_ERR);
     }
 }
 
 E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
     if (pBuff->ReadableBytes() == 0)
     {
-        LOG4_DEBUG("no data...");
+        m_pLogger->WriteLog(Logger::DEBUG, "no data...");
         return(CODEC_STATUS_PAUSE);
     }
     HttpMsg oHttpMsg;
@@ -145,11 +145,11 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMs
 
 E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
 {
-    LOG4_TRACE("%s() pBuff->ReadableBytes() = %u, ReadIndex = %u, WriteIndex = %u",
+    m_pLogger->WriteLog(Logger::TRACE, "%s() pBuff->ReadableBytes() = %u, ReadIndex = %u, WriteIndex = %u",
                     __FUNCTION__, pBuff->ReadableBytes(), pBuff->GetReadIndex(), pBuff->GetWriteIndex());
     if (0 == oHttpMsg.http_major())
     {
-        LOG4_ERROR("miss http version!");
+        m_pLogger->WriteLog(Logger::ERROR, "miss http version!");
         m_mapAddingHttpHeader.clear();
         return(CODEC_STATUS_ERR);
     }
@@ -160,7 +160,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     {
         if (oHttpMsg.url().size() == 0)
         {
-            LOG4_ERROR("miss url!");
+            m_pLogger->WriteLog(Logger::ERROR, "miss url!");
             m_mapAddingHttpHeader.clear();
             return(CODEC_STATUS_ERR);
         }
@@ -191,7 +191,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         }
         else
         {
-            LOG4_ERROR("http_parser_parse_url error!");
+            m_pLogger->WriteLog(Logger::ERROR, "http_parser_parse_url error!");
             m_mapAddingHttpHeader.clear();
             return(CODEC_STATUS_ERR);
         }
@@ -224,7 +224,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     {
         if (0 == oHttpMsg.status_code())
         {
-            LOG4_ERROR("miss status code!");
+            m_pLogger->WriteLog(Logger::ERROR, "miss status code!");
             pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadWriteSize);
             m_mapAddingHttpHeader.clear();
             return(CODEC_STATUS_ERR);
@@ -308,7 +308,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         {
             if (!Gzip(oHttpMsg.body(), strGzipData))
             {
-                LOG4_ERROR("gzip error!");
+                m_pLogger->WriteLog(Logger::ERROR, "gzip error!");
                 pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadWriteSize);
                 m_mapAddingHttpHeader.clear();
                 return(CODEC_STATUS_ERR);
@@ -611,9 +611,9 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     }
     iWriteSize = pBuff->WriteByte('\0');
     size_t iWriteIndex = pBuff->GetWriteIndex();
-    LOG4_TRACE("%s", pBuff->GetRawReadBuffer());
+    m_pLogger->WriteLog(Logger::TRACE, "%s", pBuff->GetRawReadBuffer());
     pBuff->SetWriteIndex(iWriteIndex - iWriteSize);
-    LOG4_TRACE("%s() pBuff->ReadableBytes() = %u, ReadIndex = %u, WriteIndex = %u, iHadWriteSize = %d",
+    m_pLogger->WriteLog(Logger::TRACE, "%s() pBuff->ReadableBytes() = %u, ReadIndex = %u, WriteIndex = %u, iHadWriteSize = %d",
                     __FUNCTION__, pBuff->ReadableBytes(), pBuff->GetReadIndex(), pBuff->GetWriteIndex(), iHadWriteSize);
     m_mapAddingHttpHeader.clear();
     return(CODEC_STATUS_OK);
@@ -621,10 +621,10 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
 
 E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
     if (pBuff->ReadableBytes() == 0)
     {
-        // LOG4_DEBUG("no data...");
+        // m_pLogger->WriteLog(Logger::DEBUG, "no data...");
         return(CODEC_STATUS_PAUSE);
     }
     m_parser_setting.on_message_begin = OnMessageBegin;
@@ -647,7 +647,7 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
     {
         if(m_parser.http_errno != HPE_OK)
         {
-            LOG4_ERROR("Failed to parse http message for cause:%s",
+            m_pLogger->WriteLog(Logger::ERROR, "Failed to parse http message for cause:%s",
                             http_errno_name((http_errno)m_parser.http_errno));
             return(CODEC_STATUS_ERR);
         }
@@ -655,7 +655,7 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
     }
     else
     {
-        LOG4_TRACE("decoding...");
+        m_pLogger->WriteLog(Logger::TRACE, "decoding...");
         return(CODEC_STATUS_PAUSE);
     }
     if (HTTP_REQUEST == oHttpMsg.type())
@@ -676,20 +676,20 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
             }
             else
             {
-                LOG4_ERROR("guzip error!");
+                m_pLogger->WriteLog(Logger::ERROR, "guzip error!");
                 return(CODEC_STATUS_ERR);
             }
         }
         else if ("X-Real-IP" == oHttpMsg.headers(i).header_name())
         {
-            LOG4_DEBUG("X-Real-IP: %s", oHttpMsg.headers(i).header_value().c_str());
+            m_pLogger->WriteLog(Logger::DEBUG, "X-Real-IP: %s", oHttpMsg.headers(i).header_value().c_str());
         }
         else if ("X-Forwarded-For" == oHttpMsg.headers(i).header_name())
         {
-            LOG4_DEBUG("X-Forwarded-For: %s", oHttpMsg.headers(i).header_value().c_str());
+            m_pLogger->WriteLog(Logger::DEBUG, "X-Forwarded-For: %s", oHttpMsg.headers(i).header_value().c_str());
         }
     }
-    LOG4_DEBUG("%s", ToString(oHttpMsg).c_str());
+    m_pLogger->WriteLog(Logger::DEBUG, "%s", ToString(oHttpMsg).c_str());
     return(CODEC_STATUS_OK);
 }
 
@@ -700,7 +700,7 @@ void CodecHttp::AddHttpHeader(const std::string& strHeaderName, const std::strin
 
 const std::string& CodecHttp::ToString(const HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
     m_strHttpString.clear();
     char prover[16];
     sprintf(prover, "HTTP/%u.%u", oHttpMsg.http_major(), oHttpMsg.http_minor());
