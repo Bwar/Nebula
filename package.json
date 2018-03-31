@@ -12,11 +12,11 @@
 	"man":[],
 	"repository":{ "type":"git", "url":"https://github.com/Bwar/Nebula.git"},
 	"dependencies":{
-	     "google/protobuf":"https://github.com/google/protobuf/archive/v3.5.2.zip",
-	     "kindy/libev":"https://github.com/kindy/libev/archive/master.zip",
-	     "redis/hiredis":"https://github.com/redis/hiredis/archive/v0.13.3.zip",
-	     "weidai11/cryptopp":"https://github.com/weidai11/cryptopp/archive/CRYPTOPP_6_0_0.zip",
-	     "nodejs/http-parser":"https://github.com/nodejs/http-parser/archive/v2.8.0.zip",
-	     "DaveGamble/cJSON":"https://github.com/DaveGamble/cJSON/archive/v1.7.5.zip"
+	     "google/protobuf":"^3.5.2",
+	     "kindy/libev":"^4.5",
+	     "redis/hiredis":"^0.13.3",
+	     "weidai11/cryptopp":"^6.0.0",
+	     "nodejs/http-parser":"^2.8.0",
+	     "DaveGamble/cJSON":"^1.7.5"
 	}
 } 
