@@ -44,11 +44,6 @@ Session* Worker::GetSession(const std::string& strSessionId, const std::string& 
     return(m_pImpl->GetSession(strSessionId, strSessionClass));
 }
 
-log4cplus::Logger Worker::GetLogger()
-{
-    return(m_pImpl->GetLogger());
-}
-
 uint32 Worker::GetNodeId() const
 {
     return(m_pImpl->GetWorkerInfo().uiNodeId);

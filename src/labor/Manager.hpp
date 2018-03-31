@@ -177,7 +177,6 @@ public:
 public:
     bool InitLogger(const CJsonObject& oJsonConf);
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
-    virtual void ResetLogLevel(log4cplus::LogLevel iLogLevel);
     virtual bool SendTo(const tagChannelContext& stCtx);
     virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool SendTo(SocketChannel* pSocketChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
