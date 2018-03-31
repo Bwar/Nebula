@@ -28,8 +28,6 @@ extern "C" {
 #include "actor/step/RedisStep.hpp"
 #include "actor/step/Step.hpp"
 
-//#include <iostream>
-
 namespace neb
 {
 
@@ -207,7 +205,7 @@ bool WorkerImpl::CheckParent()
     oJsonLoad.Add("client", int32(m_mapSocketChannel.size() - m_mapInnerFd.size()));
     oMsgBody.set_data(oJsonLoad.ToString());
     m_pLogger->WriteLog(Logger::TRACE, "%s", oJsonLoad.ToString().c_str());
-    std::map<int, SocketChannel*>::iterator iter = m_mapSocketChannel.find(m_stWorkerInfo.iManagerControlFd);
+    auto iter = m_mapSocketChannel.find(m_stWorkerInfo.iManagerControlFd);
     if (iter != m_mapSocketChannel.end())
     {
         iter->second->Send(CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
@@ -2004,7 +2002,7 @@ bool WorkerImpl::DiscardSocketChannel(SocketChannel* pChannel, bool bChannelNoti
     auto named_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
     if (named_iter != m_mapNamedSocketChannel.end())
     {
-        for (std::list<SocketChannel*>::iterator it = named_iter->second.begin();
+        for (auto it = named_iter->second.begin();
                 it != named_iter->second.end(); ++it)
         {
             if ((*it)->GetSequence() == pChannel->GetFd())
@@ -2036,6 +2034,7 @@ bool WorkerImpl::DiscardSocketChannel(SocketChannel* pChannel, bool bChannelNoti
         m_mapSocketChannel.erase(channel_iter);
     }
     pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
+    DELETE(pChannel);
     return(true);
 }
 

@@ -180,6 +180,7 @@ public:
     virtual void ResetLogLevel(log4cplus::LogLevel iLogLevel);
     virtual bool SendTo(const tagChannelContext& stCtx);
     virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    virtual bool SendTo(SocketChannel* pSocketChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
     virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual void SetNodeId(uint32 uiNodeId) {m_stManagerInfo.uiNodeId = uiNodeId;}
@@ -214,7 +215,7 @@ protected:
     bool AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout = 1.0);
     bool AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout = 60.0);
     SocketChannel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
-    bool DiscardSocketChannel(std::unordered_map<int, SocketChannel*>::iterator iter);
+    bool DiscardSocketChannel(const tagChannelContext& stCtx);
     bool DiscardSocketChannel(SocketChannel* pChannel);
     bool FdTransfer(int iFd);
     bool AcceptServerConn(int iFd);
@@ -222,6 +223,7 @@ protected:
     bool OnWorkerData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnBeaconData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool OnNodeNotify(const MsgBody& oMsgBody);
 
     uint32 GetSequence() const
     {
@@ -251,7 +253,7 @@ private:
 
     std::unordered_map<std::string, tagChannelContext> m_mapBeaconCtx;  ///< 到beacon服务器的连接
     std::unordered_map<std::string, tagChannelContext> m_mapLoggerCtx;  ///< 程序日志服务器连接
-    std::unordered_map<int, SocketChannel*> m_mapChannel;                   ///< 通信通道
+    std::unordered_map<int, SocketChannel*> m_mapSocketChannel;                   ///< 通信通道
     std::unordered_map<uint32, int> m_mapSeq2WorkerIndex;             ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
     std::unordered_map<in_addr_t, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
 

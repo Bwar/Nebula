@@ -337,10 +337,10 @@ bool Manager::DataRecvAndHandle(SocketChannel* pChannel)
         eCodecStatus = pChannel->Recv(oMsgHead, oMsgBody);
         while (CODEC_STATUS_OK == eCodecStatus)
         {
-            std::map<int, int>::iterator worker_fd_iter = m_mapWorkerFdPid.find(pChannel->GetFd());
+            auto worker_fd_iter = m_mapWorkerFdPid.find(pChannel->GetFd());
             if (worker_fd_iter == m_mapWorkerFdPid.end())   // 其他Server发过来要将连接传送到某个指定Worker进程信息
             {
-                std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.find(pChannel->GetIdentify());
+                auto beacon_iter = m_mapBeaconCtx.find(pChannel->GetIdentify());
                 if (beacon_iter == m_mapBeaconCtx.end())       // 不是与beacon连接
                 {
                     OnDataAndTransferFd(pChannel, oMsgHead, oMsgBody);
@@ -378,18 +378,6 @@ bool Manager::OnIoWrite(SocketChannel* pChannel)
         auto index_iter = m_mapSeq2WorkerIndex.find(pChannel->GetSequence());
         if (index_iter != m_mapSeq2WorkerIndex.end())
         {
-            tagChannelContext stCtx;
-            stCtx.iFd = pChannel->GetFd();
-            stCtx.uiSeq = pChannel->GetSequence();
-            auto beacon_iter = m_mapBeaconCtx.find(pChannel->GetIdentify());
-            if (beacon_iter == m_mapBeaconCtx.end())
-            {
-                m_mapBeaconCtx.insert(std::pair<std::string, tagChannelContext>(pChannel->GetIdentify(), stCtx));
-            }
-            else
-            {
-                beacon_iter->second = stCtx;
-            }
             MsgBody oMsgBody;
             ConnectWorker oConnWorker;
             oConnWorker.set_worker_index(index_iter->second);
@@ -397,7 +385,7 @@ bool Manager::OnIoWrite(SocketChannel* pChannel)
             m_mapSeq2WorkerIndex.erase(index_iter);
             m_pLogger->WriteLog(Logger::DEBUG, "send after connect, oMsgBody.ByteSize() = %d, oConnWorker.ByteSize() = %d",
                             oMsgBody.ByteSize(), oConnWorker.ByteSize());
-            SendTo(stCtx, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
+            SendTo(pChannel, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
             return(true);
         }
         return(false);
@@ -516,8 +504,8 @@ bool Manager::SetProcessName(const CJsonObject& oJsonConf)
 
 bool Manager::SendTo(const tagChannelContext& stCtx)
 {
-    std::map<int, SocketChannel*>::iterator iter = m_mapChannel.find(stCtx.iFd);
-    if (iter == m_mapChannel.end())
+    std::map<int, SocketChannel*>::iterator iter = m_mapSocketChannel.find(stCtx.iFd);
+    if (iter == m_mapSocketChannel.end())
     {
         m_pLogger->WriteLog(Logger::ERROR, "no fd %d found in m_mapChannel", stCtx.iFd);
         return(false);
@@ -537,7 +525,7 @@ bool Manager::SendTo(const tagChannelContext& stCtx)
             }
             else
             {
-                DiscardSocketChannel(iter->second);
+                DiscardSocketChannel(stCtx);
             }
         }
     }
@@ -547,8 +535,8 @@ bool Manager::SendTo(const tagChannelContext& stCtx)
 bool Manager::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     m_pLogger->WriteLog(Logger::TRACE, "%s(cmd[%u], seq[%u])", __FUNCTION__, uiCmd, uiSeq);
-    std::map<int, SocketChannel*>::iterator iter = m_mapChannel.find(stCtx.iFd);
-    if (iter == m_mapChannel.end())
+    std::map<int, SocketChannel*>::iterator iter = m_mapSocketChannel.find(stCtx.iFd);
+    if (iter == m_mapSocketChannel.end())
     {
         m_pLogger->WriteLog(Logger::ERROR, "no fd %d found in m_mapChannel", stCtx.iFd);
         return(false);
@@ -568,7 +556,7 @@ bool Manager::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq,
             }
             else
             {
-                DiscardSocketChannel(iter->second);
+                DiscardSocketChannel(stCtx);
             }
             return(true);
         }
@@ -581,11 +569,29 @@ bool Manager::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq,
     }
 }
 
+bool Manager::SendTo(SocketChannel* pSocketChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+{
+    E_CODEC_STATUS eCodecStatus = pSocketChannel->Send(uiCmd, uiSeq, oMsgBody);
+    if (CODEC_STATUS_OK == eCodecStatus)
+    {
+        RemoveIoWriteEvent(pSocketChannel);
+    }
+    else if (CODEC_STATUS_PAUSE == eCodecStatus)
+    {
+        AddIoWriteEvent(pSocketChannel);
+    }
+    else
+    {
+        DiscardSocketChannel(pSocketChannel);
+    }
+    return(true);
+}
+
 bool Manager::SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify)
 {
     m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
-    std::map<int, SocketChannel*>::iterator iter = m_mapChannel.find(stCtx.iFd);
-    if (iter == m_mapChannel.end())
+    std::map<int, SocketChannel*>::iterator iter = m_mapSocketChannel.find(stCtx.iFd);
+    if (iter == m_mapSocketChannel.end())
     {
         m_pLogger->WriteLog(Logger::ERROR, "no fd %d found in m_mapChannel", stCtx.iFd);
         return(false);
@@ -634,7 +640,7 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
     int reuse = 1;
     ::setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
     SocketChannel* pChannel = CreateChannel(iFd, CODEC_PROTOBUF);
-    if (NULL != pChannel)
+    if (nullptr != pChannel)
     {
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
@@ -820,11 +826,11 @@ void Manager::Destroy()
     m_mapWorker.clear();
     m_mapWorkerFdPid.clear();
     m_mapWorkerRestartNum.clear();
-    for (auto iter = m_mapChannel.begin(); iter != m_mapChannel.end(); ++iter)
+    for (auto iter = m_mapSocketChannel.begin(); iter != m_mapSocketChannel.end(); ++iter)
     {
-        DiscardSocketChannel(iter);
+        DiscardSocketChannel(iter->second);
     }
-    m_mapChannel.clear();
+    m_mapSocketChannel.clear();
     m_mapClientConnFrequency.clear();
     m_vecFreeWorkerIdx.clear();
     if (m_pPeriodicTaskWatcher != NULL)
@@ -1096,8 +1102,8 @@ bool Manager::RestartWorker(int iDeathPid)
         {
             m_mapWorkerFdPid.erase(fd_iter);
         }
-        DiscardSocketChannel(m_mapChannel.find(worker_iter->second.iControlFd));
-        DiscardSocketChannel(m_mapChannel.find(worker_iter->second.iDataFd));
+        DiscardSocketChannel(m_mapSocketChannel.find(worker_iter->second.iControlFd)->second);
+        DiscardSocketChannel(m_mapSocketChannel.find(worker_iter->second.iDataFd)->second);
         m_mapWorker.erase(worker_iter);
 
         auto restart_num_iter = m_mapWorkerRestartNum.find(iWorkerIndex);
@@ -1206,8 +1212,8 @@ bool Manager::SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     std::map<int, tagWorkerAttr>::iterator worker_iter = m_mapWorker.begin();
     for (; worker_iter != m_mapWorker.end(); ++worker_iter)
     {
-        worker_conn_iter = m_mapChannel.find(worker_iter->second.iControlFd);
-        if (worker_conn_iter != m_mapChannel.end())
+        worker_conn_iter = m_mapSocketChannel.find(worker_iter->second.iControlFd);
+        if (worker_conn_iter != m_mapSocketChannel.end())
         {
             E_CODEC_STATUS eCodecStatus = worker_conn_iter->second->Send(uiCmd, uiSeq, oMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
@@ -1506,8 +1512,8 @@ SocketChannel* Manager::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
 {
     m_pLogger->WriteLog(Logger::DEBUG, "%s(iFd %d)", __FUNCTION__, iFd);
     std::map<int, SocketChannel*>::iterator iter;
-    iter = m_mapChannel.find(iFd);
-    if (iter == m_mapChannel.end())
+    iter = m_mapSocketChannel.find(iFd);
+    if (iter == m_mapSocketChannel.end())
     {
         SocketChannel* pChannel = NULL;
         try
@@ -1522,7 +1528,7 @@ SocketChannel* Manager::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
         pChannel->SetLabor(this);
         if (pChannel->Init(eCodecType))
         {
-            m_mapChannel.insert(std::pair<int, SocketChannel*>(iFd, pChannel));
+            m_mapSocketChannel.insert(std::pair<int, SocketChannel*>(iFd, pChannel));
             return(pChannel);
         }
         else
@@ -1538,23 +1544,21 @@ SocketChannel* Manager::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
     }
 }
 
-bool Manager::DiscardSocketChannel(std::unordered_map<int, SocketChannel*>::iterator iter)
+bool Manager::DiscardSocketChannel(const tagChannelContext& stCtx)
 {
-    if (iter == m_mapChannel.end())
+    auto iter = m_mapSocketChannel.find(stCtx.iFd);
+    if (iter == m_mapSocketChannel.end())
     {
         return(false);
     }
-    auto beacon_iter = m_mapBeaconCtx.find(iter->second->GetIdentify());
-    if (beacon_iter != m_mapBeaconCtx.end())
+    else
     {
-        beacon_iter->second.iFd = 0;
-        beacon_iter->second.uiSeq = 0;
+        if (stCtx.uiSeq == iter->second->GetSequence())
+        {
+            return(DiscardSocketChannel(iter->second));
+        }
+        return(false);
     }
-    DelEvents(iter->second->MutableIoWatcher());
-    DelEvents(iter->second->MutableTimerWatcher());
-    iter->second->SetChannelStatus(CHANNEL_STATUS_DISCARD);
-    m_mapChannel.erase(iter);
-    return(true);
 }
 
 bool Manager::DiscardSocketChannel(SocketChannel* pChannel)
@@ -1572,12 +1576,13 @@ bool Manager::DiscardSocketChannel(SocketChannel* pChannel)
     }
     DelEvents(pChannel->MutableIoWatcher());
     DelEvents(pChannel->MutableTimerWatcher());
-    auto iter = m_mapChannel.find(pChannel->GetFd());
-    if (iter != m_mapChannel.end())
+    auto iter = m_mapSocketChannel.find(pChannel->GetFd());
+    if (iter != m_mapSocketChannel.end())
     {
-        m_mapChannel.erase(iter);
+        m_mapSocketChannel.erase(iter);
     }
     pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
+    DELETE(pChannel);
     return(true);
 }
 
@@ -1819,6 +1824,76 @@ bool Manager::OnBeaconData(SocketChannel* pChannel, const MsgHead& oInMsgHead, c
                 return(false);
             }
             return(true);
+        }
+    }
+    return(true);
+}
+
+bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
+{
+    CJsonObject oJson;
+    if (!oJson.Parse(oMsgBody.data()))
+    {
+        m_pLogger->WriteLog(Logger::ERROR, "failed to parse msgbody content!");
+        return(false);
+    }
+    std::string strNodeType;
+    std::string strNodeHost;
+    int iNodePort = 0;
+    int iWorkerNum = 0;
+    for (int i = 0; i < oJson["add_nodes"].GetArraySize(); ++i)
+    {
+        if (oJson["add_nodes"][i].Get("node_type",strNodeType)
+                && oJson["add_nodes"][i].Get("node_ip",strNodeHost)
+                && oJson["add_nodes"][i].Get("node_port",iNodePort)
+                && oJson["add_nodes"][i].Get("worker_num",iWorkerNum))
+        {
+            if (std::string("LOGGER") == strNodeType)
+            {
+                for(int j = 1; j <= iWorkerNum; ++j)
+                {
+                    tagChannelContext stCtx;
+                    std::ostringstream oss;
+                    oss << strNodeHost << ":" << iNodePort << "." << j;
+                    std::string strIdentify = std::move(oss.str());
+                    m_mapLoggerCtx.insert(make_pair(strIdentify, stCtx));
+                    m_pLogger->EnableNetLogger(true);
+                    m_pLogger->WriteLog(Logger::DEBUG, "AddNodeIdentify(%s,%s)", strNodeType.c_str(), strIdentify.c_str());
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < oJson["del_nodes"].GetArraySize(); ++i)
+    {
+        if (oJson["del_nodes"][i].Get("node_type",strNodeType)
+                && oJson["del_nodes"][i].Get("node_ip",strNodeHost)
+                && oJson["del_nodes"][i].Get("node_port",iNodePort)
+                && oJson["del_nodes"][i].Get("worker_num",iWorkerNum))
+        {
+            if (std::string("LOGGER") == strNodeType)
+            {
+                for(int j = 1; j <= iWorkerNum; ++j)
+                {
+                    std::ostringstream oss;
+                    oss << strNodeHost << ":" << iNodePort << "." << j;
+                    std::string strIdentify = std::move(oss.str());
+                    if (std::string("LOGGER") == strNodeType)
+                    {
+                        auto iter = m_mapLoggerCtx.find(strIdentify);
+                        if (iter != m_mapLoggerCtx.end())
+                        {
+                            DiscardSocketChannel(iter->second);
+                            m_mapLoggerCtx.erase(iter);
+                        }
+                        m_pLogger->WriteLog(Logger::DEBUG, "DelNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
+                    }
+                }
+                if (m_mapLoggerCtx.size() == 0)
+                {
+                    m_pLogger->EnableNetLogger(false);
+                }
+            }
         }
     }
     return(true);
