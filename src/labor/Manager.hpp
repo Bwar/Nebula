@@ -47,6 +47,7 @@ namespace neb
 {
 
 class Worker;
+class Actor;
 
 class Manager: public Labor
 {
@@ -182,6 +183,8 @@ public:
     virtual bool SendTo(SocketChannel* pSocketChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
     virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual void SetNodeId(uint32 uiNodeId) {m_stManagerInfo.uiNodeId = uiNodeId;}
     virtual void AddInnerChannel(const tagChannelContext& stCtx){};
 
@@ -240,7 +243,7 @@ private:
     CJsonObject m_oCurrentConf;       ///< 当前加载的配置
 
     char m_szErrBuff[256];
-    std::shared_ptr<neb::NetLogger> m_pLogger = nullptr;
+    std::shared_ptr<NetLogger> m_pLogger = nullptr;
     struct ev_loop* m_loop;
     ev_timer* m_pPeriodicTaskWatcher;              ///< 周期任务定时器
 

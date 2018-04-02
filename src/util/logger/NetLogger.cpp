@@ -7,9 +7,13 @@
  * @note
  * Modify history:
  ******************************************************************************/
+
 #include <cstdio>
 #include <cstdarg>
-#include "FileLogger.hpp"
+#include "pb/msg.pb.h"
+#include "pb/neb_sys.pb.h"
+#include "labor/Labor.hpp"
+#include "actor/cmd/CW.hpp"
 #include "NetLogger.hpp"
 #include "pb/neb_sys.pb.h"
 
@@ -29,13 +33,18 @@ NetLogger::~NetLogger()
 
 int NetLogger::WriteLog(int iLev, const char* szLogStr, ...)
 {
-    char szLogContent[uiMaxLogLineLen] = {0};
+    char szLogContent[gc_uiMaxLogLineLen] = {0};
     va_list ap;
     va_start(ap, szLogStr);
-    vsnprintf(szLogContent, uiMaxLogLineLen, szLogStr, ap);
+    vsnprintf(szLogContent, gc_uiMaxLogLineLen, szLogStr, ap);
     va_end(ap);
 
     m_pLog->WriteLog(iLev, szLogContent);
+
+    if (iLev > m_iNetLogLevel)
+    {
+        return 0;
+    }
     if (m_bEnableNetLogger && m_pLabor)
     {
         MsgBody oMsgBody;
@@ -53,10 +62,10 @@ int NetLogger::WriteLog(int iLev, const char* szLogStr, ...)
 
 int NetLogger::WriteLog(const std::string& strTraceId, int iLev, const char* szLogStr, ...)
 {
-    char szLogContent[uiMaxLogLineLen] = {0};
+    char szLogContent[gc_uiMaxLogLineLen] = {0};
     va_list ap;
     va_start(ap, szLogStr);
-    vsnprintf(szLogContent, uiMaxLogLineLen, szLogStr, ap);
+    vsnprintf(szLogContent, gc_uiMaxLogLineLen, szLogStr, ap);
     va_end(ap);
 
     if (strTraceId == m_pLabor->GetNodeIdentify())

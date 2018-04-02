@@ -1,15 +1,13 @@
 CC = gcc
 CXX = g++
 CFLAGS = -g -O2 -fPIC #-Wall
-CPPFLAGS =  -D_GNU_SOURCE=1 -D_REENTRANT -fPIC -DNODE_BEAT=10.0 
-#CXXFLAG = -g -O2 -Wall -fdiagnostics-show-caret -Wextra -pedantic -Wstrict-aliasing -Wstrict-overflow -Woverloaded-virtual -Wold-style-cast -Wc++0x-compat -Wc++11-compat -Wundef -Wshadow -Wformat -Wsuggest-attribute=format -Wsuggest-attribute=noreturn -Wno-variadic-macros -fvisibility=hidden
-CXXFLAG = -O0 -Wall -ggdb -m64 -Wl,--export-dynamic # -lrt -std=c++11 -pthread  #-static-libgcc -static-libstdc++
+CXXFLAG =  -std=c++14 -O0 -Wall -ggdb -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DNODE_BEAT=10.0 
 
 DEFINE_SERVER =
 
 
 ifeq ($(unit_test),y)
-CPPFLAGS += -DUNIT_TEST
+CXXFLAG += -DUNIT_TEST
 endif
 
 ARCH:=$(shell uname -m)
@@ -47,11 +45,11 @@ LDFLAGS := $(LDFLAGS) -D_LINUX_OS_ \
            -L$(SYSTEM_LIB_PATH) -lc -ldl -lrt
 
 SUB_INCLUDE = channel labor codec pb
-DEEP_SUB_INCLUDE = object storage util
-COMM_PATH = $(NEBULA_PATH)/src/object \
-            $(NEBULA_PATH)/src/object/cmd \
-            $(NEBULA_PATH)/src/object/step \
-            $(NEBULA_PATH)/src/object/session \
+DEEP_SUB_INCLUDE = actor storage util
+COMM_PATH = $(NEBULA_PATH)/src/actor \
+            $(NEBULA_PATH)/src/actor/cmd \
+            $(NEBULA_PATH)/src/actor/step \
+            $(NEBULA_PATH)/src/actor/session \
             $(NEBULA_PATH)/src/labor \
             $(NEBULA_PATH)/src/pb \
             $(NEBULA_PATH)/src/storage \
@@ -65,29 +63,9 @@ COMM_C_SRCS = $(foreach dir, $(COMM_PATH), $(wildcard $(dir)/*.c))
 OBJS = $(patsubst %.cpp,%.o,$(CPP_SRCS)) $(patsubst %.c,%.o,$(C_SRCS)) $(patsubst %.cc,%.o,$(CC_SRCS))
 COMM_OBJS = $(patsubst %.cpp,%.o,$(COMM_CPP_SRCS)) $(patsubst %.c,%.o,$(COMM_C_SRCS)) $(patsubst %.cc,%.o,$(COMM_CC_SRCS))
 
-TARGET = Logic Storage DbAgentWrite DbAgentRead libnebula.so
+TARGET = libnebula.so
 
 all: $(TARGET)
-
-Logic: $(OBJS)
-	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
-	mkdir -p ../bin
-	cp -f $@ ../bin/
-	
-Storage: $(OBJS)
-	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
-	mkdir -p ../bin
-	cp -f $@ ../bin/
-
-DbAgentWrite: $(OBJS)
-	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
-	mkdir -p ../bin
-	cp -f $@ ../bin/
-
-DbAgentRead: $(OBJS)
-	$(CXX) $(CXXFLAG) $(DEFINE_SERVER) $(UNITTEST) -o $@ $(OBJS) $(LDFLAGS) $(INC)
-	mkdir -p ../bin
-	cp -f $@ ../bin/
 	
 libnebula.so: $(COMM_OBJS)
 	$(CXX) $(UNITTEST) -fPIE -rdynamic -shared -g -o $@ $^ $(LDFLAGS)
@@ -97,9 +75,9 @@ libnebula.so: $(COMM_OBJS)
 	cp -f $@ $(NEBULA_PATH)/lib/
 
 %.o:%.cpp
-	$(CXX) $(INC) $(CPPFLAGS) $(CFLAGS) $(DEFINE_SERVER) $(UNITTEST) -c -o $@ $< $(LDFLAGS)
+	$(CXX) $(INC) $(CXXFLAG) $(CFLAGS) $(DEFINE_SERVER) $(UNITTEST) -c -o $@ $< $(LDFLAGS)
 %.o:%.cc
-	$(CXX) $(INC) $(CPPFLAGS) $(UNITTEST) -c -o $@ $< $(LDFLAGS)
+	$(CXX) $(INC) $(CXXFLAG) $(UNITTEST) -c -o $@ $< $(LDFLAGS)
 %.o:%.c
 	$(CC) $(INC) $(CFLAGS) $(UNITTEST) -c -o $@ $< $(LDFLAGS)
 clean:
@@ -107,6 +85,5 @@ clean:
 	rm -f $(TARGET)
 	rm -rf $(NEBULA_PATH)/include
 	rm -f $(NEBULA_PATH)/lib/libnebula.*
-	#rm -rf $(NEBULA_PATH)/bin
         
         

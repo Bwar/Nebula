@@ -53,7 +53,7 @@ class Step;
 class RedisStep;
 class HttpStep;
 
-class WorkerImpl final
+class WorkerImpl
 {
 public:
     struct tagWorkerInfo
@@ -139,11 +139,6 @@ public:     // about worker
         return(m_ulSequence);
     }
 
-    virtual log4cplus::Logger GetLogger()
-    {
-        return(m_pLogger);
-    }
-
     const tagWorkerInfo& GetWorkerInfo() const
     {
         return(m_stWorkerInfo);
@@ -191,7 +186,6 @@ public:     // about session
 
 public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worker自身的初始化和更新）
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
-    virtual void ResetLogLevel(log4cplus::LogLevel iLogLevel);
     virtual bool AddNamedSocketChannel(const std::string& strIdentify, const tagChannelContext& stCtx);
     virtual bool AddNamedSocketChannel(const std::string& strIdentify, SocketChannel* pChannel);
     virtual void DelNamedSocketChannel(const std::string& strIdentify);

@@ -138,7 +138,7 @@ int FileLogger::Vappend(int iLev, const char* szLogStr, va_list ap)
     auto t = std::chrono::system_clock::to_time_t(time_now);
     std::ostringstream oss;
     oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S") << ","
-                    << duration_in_ms.count() % 1000 << "][" << Logger::LogLevMsg[iLev] << "] ";
+                    << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "] ";
     fprintf(m_fp, oss.str().c_str());
     //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
     vfprintf(m_fp, szLogStr, ap);

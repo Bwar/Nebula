@@ -11,6 +11,8 @@
 #define LABOR_CHIEF_WORKERIMPL_INL_
 
 
+#include "actor/ActorFactory.hpp"
+
 
 template <typename ...Targs>
 void WorkerImpl::Logger(const std::string& strTraceId, int iLogLevel, Targs... args)
@@ -27,10 +29,9 @@ Step* WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs
         return(nullptr);
     }
     pStep->m_dTimeout = (0 == pStep->m_dTimeout) ? m_stWorkerInfo.dStepTimeout : pStep->m_dTimeout;
-    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStep, pStep->m_dTimeout);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStep, pStep->m_dTimeout);
 
     pStep->SetWorker(m_pWorker);
-    pStep->SetLogger(&m_oLogger);
     pStep->SetActiveTime(ev_now(m_loop));
     if (nullptr != pCreator)
     {
@@ -79,7 +80,7 @@ Step* WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs
             ev_timer_init (timer_watcher, StepTimeoutCallback, pStep->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
             ev_timer_start (m_loop, timer_watcher);
         }
-        LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
+        m_pLogger->WriteLog(Logger::TRACE, "Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pStep->GetSequence(), pStep->GetActiveTime(), pStep->GetTimeout());
         return(pStep);
     }
@@ -98,10 +99,9 @@ Session* WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionNa
     {
         return(nullptr);
     }
-    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pSession, pSession->m_dTimeout);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pSession, pSession->m_dTimeout);
 
     pSession->SetWorker(m_pWorker);
-    pSession->SetLogger(&m_oLogger);
     pSession->SetActiveTime(ev_now(m_loop));
     ev_timer* timer_watcher = pSession->AddTimerWatcher();
     if (NULL == timer_watcher)
@@ -126,7 +126,7 @@ Session* WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionNa
     {
         ev_timer_init (timer_watcher, StepTimeoutCallback, pSession->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
-        LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
+        m_pLogger->WriteLog(Logger::TRACE, "Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pSession->GetSequence(), pSession->GetActiveTime(), pSession->GetTimeout());
         return(pSession);
     }
@@ -145,10 +145,9 @@ Cmd* WorkerImpl::NewCmd(Actor* pCreator, const std::string& strCmdName, Targs...
     {
         return(nullptr);
     }
-    LOG4_TRACE("%s(Cmd* 0x%X)", __FUNCTION__, pCmd);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(Cmd* 0x%X)", __FUNCTION__, pCmd);
 
     pCmd->SetWorker(m_pWorker);
-    pCmd->SetLogger(&m_oLogger);
     pCmd->SetActiveTime(ev_now(m_loop));
 
     auto ret = m_mapCmd.insert(std::make_pair(pCmd->GetCmd(), pCmd));
@@ -171,10 +170,9 @@ Module* WorkerImpl::NewModule(Actor* pCreator, const std::string& strModuleName,
     {
         return(nullptr);
     }
-    LOG4_TRACE("%s(Module* 0x%X)", __FUNCTION__, pModule);
+    m_pLogger->WriteLog(Logger::TRACE, "%s(Module* 0x%X)", __FUNCTION__, pModule);
 
     pModule->SetWorker(m_pWorker);
-    pModule->SetLogger(&m_oLogger);
     pModule->SetActiveTime(ev_now(m_loop));
 
     auto ret = m_mapModule.insert(std::make_pair(pModule->GetModulePath(), pModule));

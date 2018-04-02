@@ -58,7 +58,7 @@ public:
         }
         catch(std::bad_alloc& e)
         {
-            std::cerr << e.what() << std::endl;     // TODO write log
+            //std::cerr << e.what() << std::endl;     // TODO write log
             return(nullptr);
         }
         return(pT);

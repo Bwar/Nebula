@@ -1196,8 +1196,7 @@ bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint3
 bool WorkerImpl::SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     m_pLogger->WriteLog(Logger::TRACE, "%s(nody_type: %s, factor: %d)", __FUNCTION__, strNodeType.c_str(), uiFactor);
-    std::map<std::string, std::pair<std::set<std::string>::iterator, std::set<std::string> > >::iterator node_type_iter;
-    node_type_iter = m_mapNodeIdentify.find(strNodeType);
+    auto node_type_iter = m_mapNodeIdentify.find(strNodeType);
     if (node_type_iter == m_mapNodeIdentify.end())
     {
         m_pLogger->WriteLog(Logger::ERROR, "no channel match %s!", strNodeType.c_str());

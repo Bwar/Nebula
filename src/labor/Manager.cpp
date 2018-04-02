@@ -227,7 +227,7 @@ bool Manager::FdTransfer(int iFd)
         m_pLogger->WriteLog(Logger::WARNING, "fail to set TCP_NODELAY");
     }
 
-    std::map<in_addr_t, uint32>::iterator iter = m_mapClientConnFrequency.find(stClientAddr.sin_addr.s_addr);
+    auto iter = m_mapClientConnFrequency.find(stClientAddr.sin_addr.s_addr);
     if (iter == m_mapClientConnFrequency.end())
     {
         m_mapClientConnFrequency.insert(std::pair<in_addr_t, uint32>(stClientAddr.sin_addr.s_addr, 1));
@@ -489,7 +489,7 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         oJsonConf.Get("max_log_file_size", iMaxLogFileSize);
         oJsonConf.Get("max_log_file_num", iMaxLogFileNum);
         oJsonConf.Get("log_level", iLogLevel);
-        m_pLogger = std::make_shared<neb::NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, this);
+        m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, this);
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         m_pLogger->WriteLog(Logger::NOTICE, "%s program begin, and work path %s...", oJsonConf("server_name").c_str(), m_stManagerInfo.strWorkPath.c_str());
         return(true);
@@ -504,7 +504,7 @@ bool Manager::SetProcessName(const CJsonObject& oJsonConf)
 
 bool Manager::SendTo(const tagChannelContext& stCtx)
 {
-    std::map<int, SocketChannel*>::iterator iter = m_mapSocketChannel.find(stCtx.iFd);
+    auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
         m_pLogger->WriteLog(Logger::ERROR, "no fd %d found in m_mapChannel", stCtx.iFd);
@@ -535,7 +535,7 @@ bool Manager::SendTo(const tagChannelContext& stCtx)
 bool Manager::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     m_pLogger->WriteLog(Logger::TRACE, "%s(cmd[%u], seq[%u])", __FUNCTION__, uiCmd, uiSeq);
-    std::map<int, SocketChannel*>::iterator iter = m_mapSocketChannel.find(stCtx.iFd);
+    auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
         m_pLogger->WriteLog(Logger::ERROR, "no fd %d found in m_mapChannel", stCtx.iFd);
@@ -590,7 +590,7 @@ bool Manager::SendTo(SocketChannel* pSocketChannel, uint32 uiCmd, uint32 uiSeq, 
 bool Manager::SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify)
 {
     m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
-    std::map<int, SocketChannel*>::iterator iter = m_mapSocketChannel.find(stCtx.iFd);
+    auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
         m_pLogger->WriteLog(Logger::ERROR, "no fd %d found in m_mapChannel", stCtx.iFd);
@@ -630,12 +630,6 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
     bzero(&(stAddr.sin_zero), 8);
     iFd = socket(AF_INET, SOCK_STREAM, 0);
 
-    auto worker_fd_iter = m_mapWorkerFdPid.find(iFd);
-    if (worker_fd_iter != m_mapWorkerFdPid.end())
-    {
-        m_pLogger->WriteLog(Logger::TRACE, "iFd = %d found in m_mapWorkerFdPid", iFd);
-    }
-
     x_sock_set_block(iFd, 0);
     int reuse = 1;
     ::setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
@@ -658,6 +652,79 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
         return(true);
     }
     close(iFd);
+    return(false);
+}
+
+bool Manager::SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    if (std::string("LOGGER") != strNodeType)
+    {
+        m_pLogger->WriteLog(Logger::ERROR, "no channel match %s in manager process!", strNodeType.c_str());
+        return(false);
+    }
+
+    if (m_mapLoggerCtx.size() == 0)
+    {
+        m_pLogger->EnableNetLog(false);
+        m_pLogger->WriteLog(Logger::WARNING, "no channel match %s!", strNodeType.c_str());
+        return(false);
+    }
+    else
+    {
+        std::unordered_map<std::string, tagChannelContext> id_iter;
+        int target_identify = uiFactor % m_mapLoggerCtx.size();
+        int i = 0;
+        for (i = 0, id_iter = m_mapLoggerCtx.begin(); i < m_mapLoggerCtx.size(); ++i, ++id_iter)
+        {
+            if (i == target_identify && id_iter != m_mapLoggerCtx.end())
+            {
+                if (nullptr != pSender)
+                {
+                    (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+                }
+                if (id_iter->second.iFd > 2 && id_iter->second.uiSeq > 0)
+                {
+                    return(SendTo(id_iter->second, uiCmd, uiSeq, oMsgBody));
+                }
+                else
+                {
+                    return(AutoSend(id_iter->first, uiCmd, uiSeq, oMsgBody));
+                }
+            }
+        }
+        return(false);
+    }
+}
+
+bool Manager::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSendor)
+{
+    if (oMsgBody.has_req_target())
+    {
+        if (0 != oMsgBody.req_target().route_id())
+        {
+            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), uiCmd, uiSeq, oMsgBody, pSender));
+        }
+        else if (oMsgBody.req_target().route().length() > 0)
+        {
+            auto hashf = [](const std::string& strRoute)
+            {
+                uint32_t hash = (uint32_t) FNV_64_INIT;
+                size_t x;
+                for (x = 0; x < strRoute.length(); x++)
+                {
+                  uint32_t val = (uint32_t)strRoute[x];
+                  hash ^= val;
+                  hash *= (uint32_t) FNV_64_PRIME;
+                }
+                return(hash);
+            };
+            return(SendOriented(strNodeType, hashf(oMsgBody.req_target().route()), uiCmd, uiSeq, oMsgBody, pSender));
+        }
+        else
+        {
+            return(SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
+        }
+    }
     return(false);
 }
 
@@ -792,16 +859,16 @@ bool Manager::Init()
     if (bind(m_stManagerInfo.iS2SListenFd, pAddrInner, addressLen) < 0)
     {
         m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-        close(m_iS2SListenFd);
-        m_iS2SListenFd = -1;
+        close(m_stManagerInfo.iS2SListenFd);
+        m_stManagerInfo.iS2SListenFd = -1;
         int iErrno = errno;
         exit(iErrno);
     }
     if (listen(m_stManagerInfo.iS2SListenFd, queueLen) < 0)
     {
         m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-        close(m_iS2SListenFd);
-        m_iS2SListenFd = -1;
+        close(m_stManagerInfo.iS2SListenFd);
+        m_stManagerInfo.iS2SListenFd = -1;
         int iErrno = errno;
         exit(iErrno);
     }
@@ -1021,7 +1088,7 @@ void Manager::CreateWorker()
         if (iPid == 0)   // 子进程
         {
             ev_loop_destroy(m_loop);
-            close(m_iS2SListenFd);
+            close(m_stManagerInfo.iS2SListenFd);
 #ifdef NODE_TYPE_ACCESS
             close(m_iC2SListenFd);
 #endif
@@ -1064,8 +1131,7 @@ bool Manager::CheckWorker()
 {
     m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
 
-    std::map<int, tagWorkerAttr>::iterator worker_iter;
-    for (worker_iter = m_mapWorker.begin();
+    for (auto worker_iter = m_mapWorker.begin();
                     worker_iter != m_mapWorker.end(); ++worker_iter)
     {
         m_pLogger->WriteLog(Logger::TRACE, "now %lf, worker_beat_time %lf, worker_beat %d",
@@ -1127,7 +1193,7 @@ bool Manager::RestartWorker(int iDeathPid)
         if (iNewPid == 0)   // 子进程
         {
             ev_loop_destroy(m_loop);
-            close(m_iS2SListenFd);
+            close(m_stManagerInfo.iS2SListenFd);
 #ifdef NODE_TYPE_ACCESS
             close(m_iC2SListenFd);
 #endif
@@ -1187,8 +1253,7 @@ std::pair<int, int> Manager::GetMinLoadWorkerDataFd()
     int iMinLoadWorkerFd = 0;
     int iMinLoad = -1;
     std::pair<int, int> worker_pid_fd;
-    std::map<int, tagWorkerAttr>::iterator iter;
-    for (iter = m_mapWorker.begin(); iter != m_mapWorker.end(); ++iter)
+    for (auto iter = m_mapWorker.begin(); iter != m_mapWorker.end(); ++iter)
     {
        if (iter == m_mapWorker.begin())
        {
@@ -1208,9 +1273,8 @@ std::pair<int, int> Manager::GetMinLoadWorkerDataFd()
 
 bool Manager::SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    std::map<int, SocketChannel*>::iterator worker_conn_iter;
-    std::map<int, tagWorkerAttr>::iterator worker_iter = m_mapWorker.begin();
-    for (; worker_iter != m_mapWorker.end(); ++worker_iter)
+    std::unordered_map<int, SocketChannel*>::iterator worker_conn_iter;
+    for (auto worker_iter = m_mapWorker.begin(); worker_iter != m_mapWorker.end(); ++worker_iter)
     {
         worker_conn_iter = m_mapSocketChannel.find(worker_iter->second.iControlFd);
         if (worker_conn_iter != m_mapSocketChannel.end())
@@ -1308,7 +1372,7 @@ bool Manager::RegisterToBeacon()
     oReportData.Add("active_time", ev_now(m_loop));
     oReportData.Add("node", CJsonObject("{}"));
     oReportData.Add("worker", CJsonObject("[]"));
-    std::map<int, tagWorkerAttr>::iterator worker_iter = m_mapWorker.begin();
+    auto worker_iter = m_mapWorker.begin();
     for (; worker_iter != m_mapWorker.end(); ++worker_iter)
     {
         iLoad += worker_iter->second.iLoad;
@@ -1336,7 +1400,7 @@ bool Manager::RegisterToBeacon()
     oReportData["node"].Add("send_byte", iSendByte);
     oReportData["node"].Add("client", iClientNum);
     oMsgBody.set_data(oReportData.ToString());
-    std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.begin();
+    auto beacon_iter = m_mapBeaconCtx.begin();
     for (; beacon_iter != m_mapBeaconCtx.end(); ++beacon_iter)
     {
         if (beacon_iter->second.iFd == 0)
@@ -1412,7 +1476,7 @@ bool Manager::ReportToBeacon()
     oReportData.Add("active_time", ev_now(m_loop));
     oReportData.Add("node", CJsonObject("{}"));
     oReportData.Add("worker", CJsonObject("[]"));
-    std::map<int, tagWorkerAttr>::iterator worker_iter = m_mapWorker.begin();
+    auto worker_iter = m_mapWorker.begin();
     for (; worker_iter != m_mapWorker.end(); ++worker_iter)
     {
         iLoad += worker_iter->second.iLoad;
@@ -1442,8 +1506,7 @@ bool Manager::ReportToBeacon()
     oMsgBody.set_data(oReportData.ToString());
     m_pLogger->WriteLog(Logger::TRACE, "%s()：  %s", __FUNCTION__, oReportData.ToString().c_str());
 
-    std::map<std::string, tagChannelContext>::iterator beacon_iter = m_mapBeaconCtx.begin();
-    for (; beacon_iter != m_mapBeaconCtx.end(); ++beacon_iter)
+    for (auto beacon_iter = m_mapBeaconCtx.begin(); beacon_iter != m_mapBeaconCtx.end(); ++beacon_iter)
     {
         if (beacon_iter->second.iFd == 0)
         {
@@ -1511,8 +1574,7 @@ bool Manager::AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout)
 SocketChannel* Manager::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
 {
     m_pLogger->WriteLog(Logger::DEBUG, "%s(iFd %d)", __FUNCTION__, iFd);
-    std::map<int, SocketChannel*>::iterator iter;
-    iter = m_mapSocketChannel.find(iFd);
+    auto iter = m_mapSocketChannel.find(iFd);
     if (iter == m_mapSocketChannel.end())
     {
         SocketChannel* pChannel = NULL;
@@ -1589,8 +1651,7 @@ bool Manager::DiscardSocketChannel(SocketChannel* pChannel)
 void Manager::SetWorkerLoad(int iPid, CJsonObject& oJsonLoad)
 {
     //m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
-    std::map<int, tagWorkerAttr>::iterator iter;
-    iter = m_mapWorker.find(iPid);
+    auto iter = m_mapWorker.find(iPid);
     if (iter != m_mapWorker.end())
     {
         oJsonLoad.Get("load", iter->second.iLoad);
@@ -1619,7 +1680,7 @@ bool Manager::OnWorkerData(SocketChannel* pChannel, const MsgHead& oInMsgHead, c
     m_pLogger->WriteLog(Logger::DEBUG, "%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
     if (CMD_REQ_UPDATE_WORKER_LOAD == oInMsgHead.cmd())    // 新请求
     {
-        std::map<int, int>::iterator iter = m_mapWorkerFdPid.find(pChannel->GetFd());
+        auto iter = m_mapWorkerFdPid.find(pChannel->GetFd());
         if (iter != m_mapWorkerFdPid.end())
         {
             CJsonObject oJsonLoad;
@@ -1637,7 +1698,6 @@ bool Manager::OnWorkerData(SocketChannel* pChannel, const MsgHead& oInMsgHead, c
 bool Manager::OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
 {
     m_pLogger->WriteLog(Logger::DEBUG, "%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
-    int iErrno = 0;
     ConnectWorker oConnWorker;
     MsgBody oOutMsgBody;
     m_pLogger->WriteLog(Logger::TRACE, "oInMsgHead.cmd() = %u, seq() = %u", oInMsgHead.cmd(), oInMsgHead.seq());
@@ -1645,7 +1705,7 @@ bool Manager::OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsg
     {
         if (oConnWorker.ParseFromString(oInMsgBody.data()))
         {
-            std::map<int, tagWorkerAttr>::iterator worker_iter;
+            std::unordered_map<int, tagWorkerAttr>::iterator worker_iter;
             for (worker_iter = m_mapWorker.begin();
                             worker_iter != m_mapWorker.end(); ++worker_iter)
             {
@@ -1886,7 +1946,7 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
                             DiscardSocketChannel(iter->second);
                             m_mapLoggerCtx.erase(iter);
                         }
-                        m_pLogger->WriteLog(Logger::DEBUG, "DelNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
+                        m_pLogger->WriteLog(Logger::DEBUG, "DelNodeIdentify(%s,%s)", strNodeType.c_str(), strIdentify);
                     }
                 }
                 if (m_mapLoggerCtx.size() == 0)

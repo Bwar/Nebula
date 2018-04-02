@@ -10,6 +10,7 @@
 #ifndef SRC_LABOR_WORKER_HPP_
 #define SRC_LABOR_WORKER_HPP_
 
+#include "Labor.hpp"
 #include "WorkerImpl.hpp"
 
 namespace neb
@@ -17,7 +18,7 @@ namespace neb
 
 class WorkerImpl;
 
-class Worker final : public Labor
+class Worker: public Labor
 {
 public:
     Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf);
@@ -36,7 +37,6 @@ public:
     virtual Session* GetSession(const std::string& strSessionId, const std::string& strSessionClass = "neb::Session");
 
     // 获取worker信息相关方法
-    virtual log4cplus::Logger GetLogger();
     virtual uint32 GetNodeId() const;
     virtual int GetWorkerIndex() const;
     virtual ev_tstamp GetDefaultTimeout() const;

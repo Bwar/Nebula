@@ -12,8 +12,7 @@
 
 #include <cstdio>
 #include <memory>
-#include "util/logger/Logger.hpp"
-#include "actor/Actor.hpp"
+#include "FileLogger.hpp"
 
 namespace neb
 {
@@ -25,9 +24,9 @@ class NetLogger: public Logger
 public:
     NetLogger(
         const std::string strLogFile,
-        int iLogLev = Logger::DEFAULT_LOG_LEVEL,
-        unsigned int uiMaxFileSize = Logger::uiMaxLogFileSize,
-        unsigned int uiMaxRollFileIndex = Logger::uiMaxRollLogFileIndex,
+        int iLogLev = Logger::INFO,
+        unsigned int uiMaxFileSize = gc_uiMaxLogFileSize,
+        unsigned int uiMaxRollFileIndex = gc_uiMaxRollLogFileIndex,
         Labor* pLabor = nullptr);
     virtual ~NetLogger();
 
@@ -50,7 +49,7 @@ public:
     }
 
 private:
-    std::unique_ptr<neb::Logger> m_pLog;
+    std::unique_ptr<neb::FileLogger> m_pLog;
     int m_iLogLevel;
     int m_iNetLogLevel;
     bool m_bEnableNetLogger;

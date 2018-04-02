@@ -12,11 +12,14 @@
 
 #include <string>
 
+#include "ev.h"
 #include "Error.hpp"
 #include "Definition.hpp"
 #include "pb/msg.pb.h"
 #include "pb/http.pb.h"
+#include "util/json/CJsonObject.hpp"
 #include "channel/Channel.hpp"
+#include "labor/Worker.hpp"
 
 namespace neb
 {
@@ -215,7 +218,7 @@ private:
 template <typename ...Targs>
 void Actor::Logger(int iLogLevel, Targs... args)
 {
-    return(m_pWorker->Logger(m_strTraceId, iLogLevel, std::forward<Targs>(args)...));
+    m_pWorker->Logger(m_strTraceId, iLogLevel, std::forward<Targs>(args)...);
 }
 
 template <typename ...Targs>

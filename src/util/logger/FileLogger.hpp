@@ -10,6 +10,8 @@
 #ifndef SRC_UTIL_LOGGER_FILELOGGER_HPP_
 #define SRC_UTIL_LOGGER_FILELOGGER_HPP_
 
+#include <cstdio>
+#include <string>
 #include "Logger.hpp"
 
 namespace neb
@@ -20,18 +22,18 @@ class FileLogger: public Logger
 public:
     explicit FileLogger(
             const std::string& strLogFile,
-            int iLogLev = Logger::DEFAULT_LOG_LEVEL,
-            unsigned int uiMaxFileSize = Logger::uiMaxLogFileSize,
-            unsigned int uiMaxRollFileIndex = Logger::uiMaxRollLogFileIndex);
+            int iLogLev = Logger::INFO,
+            unsigned int uiMaxFileSize = neb::gc_uiMaxLogFileSize,
+            unsigned int uiMaxRollFileIndex = neb::gc_uiMaxRollLogFileIndex);
     virtual ~FileLogger()
     {
         fclose(m_fp);
     }
 
     static FileLogger* Instance(const std::string& strLogFile = "../log/default.log",
-                    int iLogLev = Logger::DEFAULT_LOG_LEVEL,
-                    unsigned int uiMaxFileSize = Logger::uiMaxLogFileSize,
-                    unsigned int uiMaxRollFileIndex = Logger::uiMaxRollLogFileIndex)
+                    int iLogLev = Logger::INFO,
+                    unsigned int uiMaxFileSize = neb::gc_uiMaxLogFileSize,
+                    unsigned int uiMaxRollFileIndex = neb::gc_uiMaxRollLogFileIndex)
     {
         if (m_pInstance == nullptr)
         {

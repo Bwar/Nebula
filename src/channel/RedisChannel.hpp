@@ -17,6 +17,8 @@
 namespace neb
 {
 
+class RedisStep;
+
 class RedisChannel: public Channel
 {
 public:
