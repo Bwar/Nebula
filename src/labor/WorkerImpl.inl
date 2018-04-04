@@ -187,5 +187,4 @@ Module* WorkerImpl::NewModule(Actor* pCreator, const std::string& strModuleName,
     }
 }
 
-
 #endif /* SRC_LABOR_CHIEF_WORKERIMPL_INL_ */

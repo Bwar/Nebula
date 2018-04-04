@@ -55,8 +55,8 @@ enum E_CMD
     CMD_RSP_SET_LOG_LEVEL               = 30,   ///< 设置日志级别响应（无须响应）
     CMD_REQ_RELOAD_SO                   = 31,   ///< 重新加载so请求（manager to worker）
     CMD_RSP_RELOAD_SO                   = 32,   ///< 重新加载so响应（无须响应）
-    CMD_REQ_LOG_TRACE                   = 33,   ///< 分布式网络日志请求
-    CMD_RSP_LOG_TRACE                   = 34,   ///< 分布式网络日志响应（无须响应）
+    CMD_REQ_LOG4_TRACE                   = 33,   ///< 分布式网络日志请求
+    CMD_RSP_LOG4_TRACE                   = 34,   ///< 分布式网络日志响应（无须响应）
 
     // 接入层转发命令字，如客户端数据转发给Logic，Logic数据转发给客户端等
     CMD_REQ_FROM_CLIENT                 = 501,     ///< 客户端发送过来需由接入层转发的数据，传输的MsgHead里的Cmd不会被改变（无业务逻辑直接转发的场景，如登录等接入层有业务逻辑的场景不适用）

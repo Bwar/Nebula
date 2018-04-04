@@ -54,7 +54,7 @@ int NetLogger::WriteLog(int iLev, const char* szLogStr, ...)
         oTraceLog.set_log_content(szLogContent);
         oMsgBody.set_data(oTraceLog.SerializeAsString());
         oMsgBody.mutable_req_target()->set_route(m_pLabor->GetNodeIdentify());
-        m_pLabor->SendOriented("LOGGER", CMD_REQ_LOG_TRACE, 0, oMsgBody);
+        m_pLabor->SendOriented("LOGGER", CMD_REQ_LOG4_TRACE, 0, oMsgBody);
     }
 
     return 0;
@@ -86,7 +86,7 @@ int NetLogger::WriteLog(const std::string& strTraceId, int iLev, const char* szL
         oMsgBody.set_trace_id(strTraceId);
         oMsgBody.set_data(oTraceLog.SerializeAsString());
         oMsgBody.mutable_req_target()->set_route(strTraceId);
-        m_pLabor->SendOriented("LOGGER", CMD_REQ_LOG_TRACE, 0, oMsgBody);
+        m_pLabor->SendOriented("LOGGER", CMD_REQ_LOG4_TRACE, 0, oMsgBody);
     }
 
     return 0;

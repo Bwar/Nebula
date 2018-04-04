@@ -17,6 +17,7 @@ namespace neb
 {
 
 class WorkerImpl;
+class Actor;
 
 class Worker: public Labor
 {
@@ -66,7 +67,7 @@ public:
     bool AddIoTimeout(const tagChannelContext& stCtx);
 
 private:
-    std::unique_ptr<WorkerImpl> m_pImpl;
+    WorkerImpl* m_pImpl;
     friend class WorkerImpl;
     friend class WorkerFriend;
 };

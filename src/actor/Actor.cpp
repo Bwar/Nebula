@@ -18,7 +18,7 @@ namespace neb
 
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : m_eActorType(eActorType),
-      m_ulSequence(0), m_ulSessionId(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
+      m_ulSequence(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
       m_pWorker(NULL), m_pTimerWatcher(NULL)
 {
 }
@@ -126,6 +126,11 @@ bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, uint32
 bool Actor::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     return(m_pWorker->SendOriented(strNodeType, uiCmd, uiSeq, oMsgBody, this));
+}
+
+void Actor::SetWorker(Worker* pWorker)
+{
+    m_pWorker = pWorker;
 }
 
 ev_timer* Actor::AddTimerWatcher()

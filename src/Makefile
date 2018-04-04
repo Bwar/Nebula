@@ -1,7 +1,8 @@
 CC = gcc
 CXX = g++
 CFLAGS = -g -O2 -fPIC #-Wall
-CXXFLAG =  -std=c++14 -O0 -Wall -ggdb -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DNODE_BEAT=10.0 
+CXXFLAG =  -std=c++14 -O0 -ggdb -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DNODE_BEAT=10.0 
+#CXXFLAG =  -std=c++14 -O0 -Wall -ggdb -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DNODE_BEAT=10.0 
 
 DEFINE_SERVER =
 
@@ -39,7 +40,6 @@ LDFLAGS := $(LDFLAGS) -D_LINUX_OS_ \
            -L$(LIB3RD_PATH)/lib -lhiredis \
            -L$(LIB3RD_PATH)/lib -lcryptopp \
            -L$(LIB3RD_PATH)/lib -lprotobuf \
-           -L$(LIB3RD_PATH)/lib -llog4cplus \
            -L$(LIB3RD_PATH)/lib -lev \
            -L$(SYSTEM_LIB_PATH) -lpthread \
            -L$(SYSTEM_LIB_PATH) -lc -ldl -lrt

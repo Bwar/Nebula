@@ -48,7 +48,7 @@ E_CMD_STATUS StepTellWorker::Callback(
         TargetWorker oInTargetWorker;
         if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
         {
-            LOG_DEBUG("AddNodeIdentify(%s, fd %d, seq %llu)!",
+            LOG4_DEBUG("AddNodeIdentify(%s, fd %d, seq %llu)!",
                             oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.uiSeq);
             GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), stCtx);
             GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
@@ -57,20 +57,20 @@ E_CMD_STATUS StepTellWorker::Callback(
         }
         else
         {
-            LOG_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
+            LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
             return(CMD_STATUS_FAULT);
         }
     }
     else
     {
-        LOG_ERROR("error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
+        LOG4_ERROR("error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
         return(CMD_STATUS_FAULT);
     }
 }
 
 E_CMD_STATUS StepTellWorker::Timeout()
 {
-    LOG_ERROR("timeout!");
+    LOG4_ERROR("timeout!");
     return(CMD_STATUS_FAULT);
 }
 

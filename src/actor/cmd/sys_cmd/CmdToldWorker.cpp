@@ -34,7 +34,7 @@ bool CmdToldWorker::AnyMessage(
     if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
     {
         bResult = true;
-        LOG_DEBUG("AddNodeIdentify(%s, %s, fd %d, seq %llu)!", oInTargetWorker.node_type().c_str(),
+        LOG4_DEBUG("AddNodeIdentify(%s, %s, fd %d, seq %llu)!", oInTargetWorker.node_type().c_str(),
                         oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.uiSeq);
         GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), stCtx);
         GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
@@ -51,7 +51,7 @@ bool CmdToldWorker::AnyMessage(
         oOutTargetWorker.set_node_type(GetNodeType());
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
         oOutMsgBody.mutable_rsp_result()->set_msg("WorkerLoad ParseFromString error!");
-        LOG_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
+        LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
     }
     oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
     SendTo(stCtx, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);

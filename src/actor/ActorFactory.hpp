@@ -12,10 +12,11 @@
 
 #include <string>
 #include <unordered_map>
-#include "Actor.hpp"
 
 namespace neb
 {
+
+class Actor;
 
 template<typename ...Targs>
 class ActorFactory

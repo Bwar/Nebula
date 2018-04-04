@@ -7,26 +7,20 @@
  * @note
  * Modify history:
  ******************************************************************************/
+
 #include "Session.hpp"
 
 namespace neb
 {
 
 Session::Session(uint32 ulSessionId, ev_tstamp dSessionTimeout, const std::string& strSessionClass)
-    : Actor(ACT_SESSION),
-      m_strSessionId("0"), m_strSessionClassName(strSessionClass)
+    : SessionModel(ulSessionId, dSessionTimeout, strSessionClass)
 {
-    std::ostringstream oss;
-    oss << ulSessionId;
-    m_strSessionId = std::move(oss.str());
-    SetTimeout(dSessionTimeout);
 }
 
 Session::Session(const std::string& strSessionId, ev_tstamp dSessionTimeout, const std::string& strSessionClass)
-    : Actor(ACT_SESSION),
-      m_strSessionId(strSessionId), m_strSessionClassName(strSessionClass)
+    : SessionModel(strSessionId, dSessionTimeout, strSessionClass)
 {
-    SetTimeout(dSessionTimeout);
 }
 
 Session::~Session()

@@ -16,6 +16,7 @@
 #include "util/json/CJsonObject.hpp"
 
 #include "codec/Codec.hpp"
+#include "Channel.hpp"
 #include "Definition.hpp"
 
 namespace neb

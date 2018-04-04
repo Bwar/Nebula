@@ -10,15 +10,14 @@
 #ifndef SRC_ACTOR_SESSION_SESSION_HPP_
 #define SRC_ACTOR_SESSION_SESSION_HPP_
 
-#include "actor/Actor.hpp"
+#include "labor/Worker.hpp"
 #include "actor/DynamicCreator.hpp"
+#include "SessionModel.hpp"
 
 namespace neb
 {
 
-class WorkerImpl;
-
-class Session: public Actor
+class Session: public SessionModel
 {
 public:
     Session(uint32 ulSessionId, ev_tstamp dSessionTimeout = 60.0, const std::string& strSessionClass = "neb::Session");
@@ -33,22 +32,45 @@ public:
     virtual E_CMD_STATUS Timeout() = 0;
 
 protected:
-    const std::string& GetSessionId() const
-    {
-        return(m_strSessionId);
-    }
-
-    const std::string& GetSessionClass() const
-    {
-        return(m_strSessionClassName);
-    }
+    template <typename ...Targs> void Logger(int iLogLevel, Targs... args);
+    template <typename ...Targs> Step* NewStep(const std::string& strStepName, Targs... args);
+    template <typename ...Targs> Session* NewSession(const std::string& strSessionName, Targs... args);
+    template <typename ...Targs> Cmd* NewCmd(const std::string& strCmdName, Targs... args);
+    template <typename ...Targs> Module* NewModule(const std::string& strModuleName, Targs... args);
 
 private:
-    std::string m_strSessionId;
-    std::string m_strSessionClassName;
-
     friend class WorkerImpl;
 };
+
+template <typename ...Targs>
+void Session::Logger(int iLogLevel, Targs... args)
+{
+    m_pWorker->Logger(m_strTraceId, iLogLevel, std::forward<Targs>(args)...);
+}
+
+template <typename ...Targs>
+Step* Session::NewStep(const std::string& strStepName, Targs... args)
+{
+    return(m_pWorker->NewStep(this, strStepName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+Session* Session::NewSession(const std::string& strSessionName, Targs... args)
+{
+    return(m_pWorker->NewSession(this, strSessionName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+Cmd* Session::NewCmd(const std::string& strCmdName, Targs... args)
+{
+    return(m_pWorker->NewStep(this, strCmdName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+Module* Session::NewModule(const std::string& strModuleName, Targs... args)
+{
+    return(m_pWorker->NewSession(this, strModuleName, std::forward<Targs>(args)...));
+}
 
 } /* namespace neb */
 

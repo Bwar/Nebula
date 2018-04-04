@@ -11,7 +11,6 @@
 #define SRC_ACTOR_ACTOR_HPP_
 
 #include <string>
-
 #include "ev.h"
 #include "Error.hpp"
 #include "Definition.hpp"
@@ -19,7 +18,6 @@
 #include "pb/http.pb.h"
 #include "util/json/CJsonObject.hpp"
 #include "channel/Channel.hpp"
-#include "labor/Worker.hpp"
 
 namespace neb
 {
@@ -28,6 +26,7 @@ class Worker;
 class WorkerImpl;
 class WorkerFriend;
 
+class ActorCreator;
 class Cmd;
 class Module;
 class Session;
@@ -54,13 +53,6 @@ public:
     Actor(const Actor&) = delete;
     Actor& operator=(const Actor&) = delete;
     virtual ~Actor();
-
-protected:
-    template <typename ...Targs> void Logger(int iLogLevel, Targs... args);
-    template <typename ...Targs> Step* NewStep(const std::string& strStepName, Targs... args);
-    template <typename ...Targs> Session* NewSession(const std::string& strSessionName, Targs... args);
-    template <typename ...Targs> Cmd* NewCmd(const std::string& strCmdName, Targs... args);
-    template <typename ...Targs> Module* NewModule(const std::string& strModuleName, Targs... args);
 
 protected:
     uint32 GetSequence();
@@ -173,11 +165,6 @@ protected:
         return(m_dActiveTime);
     }
 
-    void SetTimeout(ev_tstamp dTimeout)
-    {
-        m_dTimeout = dTimeout;
-    }
-
     ev_tstamp GetTimeout() const
     {
         return(m_dTimeout);
@@ -189,10 +176,7 @@ protected:
     }
 
 private:
-    void SetWorker(Worker* pWorker)
-    {
-        m_pWorker = pWorker;
-    }
+    void SetWorker(Worker* pWorker);
 
     ev_timer* AddTimerWatcher();
     ev_timer* MutableTimerWatcher()
@@ -203,7 +187,6 @@ private:
 private:
     ACTOR_TYPE m_eActorType;
     uint32 m_ulSequence;
-    uint32 m_ulSessionId;
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
     Worker* m_pWorker;
@@ -212,38 +195,12 @@ private:
 
     friend class WorkerImpl;
     friend class WorkerFriend;
+    friend class Cmd;
+    friend class Module;
+    friend class Step;
+    friend class Session;
 };
 
-
-template <typename ...Targs>
-void Actor::Logger(int iLogLevel, Targs... args)
-{
-    m_pWorker->Logger(m_strTraceId, iLogLevel, std::forward<Targs>(args)...);
-}
-
-template <typename ...Targs>
-Step* Actor::NewStep(const std::string& strStepName, Targs... args)
-{
-    return(m_pWorker->NewStep(this, strStepName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-Session* Actor::NewSession(const std::string& strSessionName, Targs... args)
-{
-    return(m_pWorker->NewSession(this, strSessionName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-Cmd* Actor::NewCmd(const std::string& strCmdName, Targs... args)
-{
-    return(m_pWorker->NewStep(this, strCmdName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-Module* Actor::NewModule(const std::string& strModuleName, Targs... args)
-{
-    return(m_pWorker->NewSession(this, strModuleName, std::forward<Targs>(args)...));
-}
 
 } /* namespace neb */
 

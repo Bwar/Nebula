@@ -665,23 +665,19 @@ bool Manager::SendOriented(const std::string& strNodeType, unsigned int uiFactor
 
     if (m_mapLoggerCtx.size() == 0)
     {
-        m_pLogger->EnableNetLog(false);
+        m_pLogger->EnableNetLogger(false);
         m_pLogger->WriteLog(Logger::WARNING, "no channel match %s!", strNodeType.c_str());
         return(false);
     }
     else
     {
-        std::unordered_map<std::string, tagChannelContext> id_iter;
+        std::unordered_map<std::string, tagChannelContext>::iterator id_iter;
         int target_identify = uiFactor % m_mapLoggerCtx.size();
         int i = 0;
         for (i = 0, id_iter = m_mapLoggerCtx.begin(); i < m_mapLoggerCtx.size(); ++i, ++id_iter)
         {
             if (i == target_identify && id_iter != m_mapLoggerCtx.end())
             {
-                if (nullptr != pSender)
-                {
-                    (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
-                }
                 if (id_iter->second.iFd > 2 && id_iter->second.uiSeq > 0)
                 {
                     return(SendTo(id_iter->second, uiCmd, uiSeq, oMsgBody));
@@ -696,7 +692,7 @@ bool Manager::SendOriented(const std::string& strNodeType, unsigned int uiFactor
     }
 }
 
-bool Manager::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSendor)
+bool Manager::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     if (oMsgBody.has_req_target())
     {
@@ -722,7 +718,7 @@ bool Manager::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 
         }
         else
         {
-            return(SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
+            return(SendOriented(strNodeType, 1, uiCmd, uiSeq, oMsgBody, pSender));
         }
     }
     return(false);

@@ -21,12 +21,12 @@ Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int 
     : m_pImpl(nullptr)
 {
     // C++14: m_Impl = std::make_unique<WorkerImpl>(strWorkPath, iControlFd, iDataFd, iWorkerIndex, oJsonConf);
-    m_pImpl = std::unique_ptr<WorkerImpl>(new WorkerImpl(this, strWorkPath, iControlFd, iDataFd, iWorkerIndex, oJsonConf));
+    m_pImpl = new WorkerImpl(this, strWorkPath, iControlFd, iDataFd, iWorkerIndex, oJsonConf);
 }
 
 Worker::~Worker()
 {
-    // TODO Auto-generated destructor stub
+    DELETE(m_pImpl);
 }
 
 uint32 Worker::GetSequence() const

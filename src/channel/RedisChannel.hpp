@@ -17,6 +17,7 @@
 namespace neb
 {
 
+class WorkerImpl;
 class RedisStep;
 
 class RedisChannel: public Channel
@@ -45,6 +46,7 @@ private:
     redisAsyncContext* m_pRedisCtx;         ///< redis连接上下文地址
     std::string m_strIdentify;              ///< 连接标识（可以为空，不为空时用于标识业务层与连接的关系）
     std::list<RedisStep*> listPipelineStep; ///< RedisStep*的创建和回收在WorkerImpl
+    friend WorkerImpl;
 };
 
 } /* namespace neb */

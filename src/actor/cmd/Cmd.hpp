@@ -10,20 +10,18 @@
 #ifndef SRC_ACTOR_CMD_CMD_HPP_
 #define SRC_ACTOR_CMD_CMD_HPP_
 
-#include "actor/Actor.hpp"
+#include "labor/Worker.hpp"
+#include "CmdModel.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
 
-class WorkerImpl;
-
-class Cmd: public Actor
+class Cmd: public CmdModel
 {
 public:
     Cmd(int32 iCmd)
-        : Actor(ACT_CMD, gc_dNoTimeout),
-          m_iCmd(iCmd)
+        : CmdModel(iCmd)
     {
     }
     Cmd(const Cmd&) = delete;
@@ -60,15 +58,42 @@ public:
                     const MsgBody& oMsgBody) = 0;
 
 protected:
-    int GetCmd() const
-    {
-        return(m_iCmd);
-    }
-
-private:
-    int32 m_iCmd;
-    friend class WorkerImpl;
+    template <typename ...Targs> void Logger(int iLogLevel, Targs... args);
+    template <typename ...Targs> Step* NewStep(const std::string& strStepName, Targs... args);
+    template <typename ...Targs> Session* NewSession(const std::string& strSessionName, Targs... args);
+    template <typename ...Targs> Cmd* NewCmd(const std::string& strCmdName, Targs... args);
+    template <typename ...Targs> Module* NewModule(const std::string& strModuleName, Targs... args);
 };
+
+template <typename ...Targs>
+void Cmd::Logger(int iLogLevel, Targs... args)
+{
+    m_pWorker->Logger(m_strTraceId, iLogLevel, std::forward<Targs>(args)...);
+}
+
+template <typename ...Targs>
+Step* Cmd::NewStep(const std::string& strStepName, Targs... args)
+{
+    return(m_pWorker->NewStep(this, strStepName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+Session* Cmd::NewSession(const std::string& strSessionName, Targs... args)
+{
+    return(m_pWorker->NewSession(this, strSessionName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+Cmd* Cmd::NewCmd(const std::string& strCmdName, Targs... args)
+{
+    return(m_pWorker->NewStep(this, strCmdName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+Module* Cmd::NewModule(const std::string& strModuleName, Targs... args)
+{
+    return(m_pWorker->NewSession(this, strModuleName, std::forward<Targs>(args)...));
+}
 
 } /* namespace neb */
 

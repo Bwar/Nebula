@@ -26,7 +26,7 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
     CJsonObject oJson;
     if (!oJson.Parse(m_oMsgBody.data()))
     {
-        LOG_ERROR("failed to parse msgbody content!");
+        LOG4_ERROR("failed to parse msgbody content!");
         return(CMD_STATUS_FAULT);
     }
     std::string strNodeType;
@@ -45,7 +45,7 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
             {
                 snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
                 GetWorkerImpl(this)->AddNodeIdentify(strNodeType, std::string(szIdentify));
-                LOG_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
+                LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
             }
         }
     }
@@ -61,7 +61,7 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
             {
                 snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
                 GetWorkerImpl(this)->DelNodeIdentify(strNodeType, std::string(szIdentify));
-                LOG_DEBUG("DelNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
+                LOG4_DEBUG("DelNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
             }
         }
     }
@@ -77,7 +77,7 @@ E_CMD_STATUS StepNodeNotice::Callback(const tagChannelContext& stCtx,
 
 E_CMD_STATUS StepNodeNotice::Timeout()
 {
-    LOG_ERROR("timeout!");
+    LOG4_ERROR("timeout!");
     return (CMD_STATUS_FAULT);
 }
 

@@ -94,14 +94,14 @@
         }               \
     } while(0)
 
-#define LOG_FATAL(args...) Logger(neb::Logger::FATAL, ##args)
-#define LOG_ERROR(args...) Logger(neb::Logger::ERROR, ##args)
-#define LOG_WARNING(args...) Logger(neb::Logger::WARNING, ##args)
-#define LOG_NOTICE(args...) Logger(neb::Logger::NOTICE, ##args)
-#define LOG_INFO(args...) Logger(neb::Logger::INFO, ##args)
-#define LOG_CRITICAL(args...) Logger(neb::Logger::CRITICAL, ##args)
-#define LOG_DEBUG(args...) Logger(neb::Logger::DEBUG, ##args)
-#define LOG_TRACE(args...) Logger(neb::Logger::TRACE, ##args)
+#define LOG4_FATAL(args...) Logger(neb::Logger::FATAL, ##args)
+#define LOG4_ERROR(args...) Logger(neb::Logger::ERROR, ##args)
+#define LOG4_WARNING(args...) Logger(neb::Logger::WARNING, ##args)
+#define LOG4_NOTICE(args...) Logger(neb::Logger::NOTICE, ##args)
+#define LOG4_INFO(args...) Logger(neb::Logger::INFO, ##args)
+#define LOG4_CRITICAL(args...) Logger(neb::Logger::CRITICAL, ##args)
+#define LOG4_DEBUG(args...) Logger(neb::Logger::DEBUG, ##args)
+#define LOG4_TRACE(args...) Logger(neb::Logger::TRACE, ##args)
 
 typedef char int8;
 typedef unsigned char uint8;

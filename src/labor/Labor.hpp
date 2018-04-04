@@ -10,6 +10,9 @@
 #ifndef LABOR_LABOR_HPP_
 #define LABOR_LABOR_HPP_
 
+#include <ctime>
+#include <string>
+#include "pb/msg.pb.h"
 #include "Definition.hpp"
 
 namespace neb

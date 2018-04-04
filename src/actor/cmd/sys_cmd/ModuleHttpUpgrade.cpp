@@ -37,7 +37,7 @@ bool ModuleHttpUpgrade::AnyMessage(const tagChannelContext& stCtx, const HttpMsg
         }
     }
     HttpMsg oOutHttpMsg;
-    LOG_ERROR("the upgrade protocol %s not supported!", oHttpMsg.upgrade().protocol().c_str());
+    LOG4_ERROR("the upgrade protocol %s not supported!", oHttpMsg.upgrade().protocol().c_str());
     oOutHttpMsg.set_type(HTTP_RESPONSE);
     oOutHttpMsg.set_status_code(400);
     oOutHttpMsg.set_http_major(oHttpMsg.http_major());
@@ -70,7 +70,7 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
         }
         if (13 != iSecWebSocketVersion)
         {
-            LOG_ERROR("invalid Sec-WebSocket-Version %d, the version must be 13!", iSecWebSocketVersion);
+            LOG4_ERROR("invalid Sec-WebSocket-Version %d, the version must be 13!", iSecWebSocketVersion);
             SendTo(stCtx, oOutHttpMsg);
             return(false);
         }
@@ -91,7 +91,7 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
 //        }
         if (16 != oDecoder.MaxRetrievable())
         {
-            LOG_ERROR("invalid Sec-WebSocket-Key %s, the key len after base64 decode must be 16!", strSecWebSocketKey.c_str());
+            LOG4_ERROR("invalid Sec-WebSocket-Key %s, the key len after base64 decode must be 16!", strSecWebSocketKey.c_str());
             SendTo(stCtx, oOutHttpMsg);
             return(false);
         }
@@ -132,7 +132,7 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
     }
     else
     {
-        LOG_ERROR("websocket opening handshake failed for HTTP %d.%d and http method %s!",
+        LOG4_ERROR("websocket opening handshake failed for HTTP %d.%d and http method %s!",
                 oHttpMsg.http_major(), oHttpMsg.http_minor(),
                 http_method_str((http_method)oHttpMsg.method()));
     }
