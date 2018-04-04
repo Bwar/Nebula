@@ -1,8 +1,7 @@
 CC = gcc
 CXX = g++
 CFLAGS = -g -O2 -fPIC #-Wall
-CXXFLAG =  -std=c++14 -O0 -ggdb -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DNODE_BEAT=10.0 
-#CXXFLAG =  -std=c++14 -O0 -Wall -ggdb -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DNODE_BEAT=10.0 
+CXXFLAG =  -std=c++14 -O0 -Wall -ggdb -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DNODE_BEAT=10.0 
 
 DEFINE_SERVER =
 
@@ -45,14 +44,13 @@ LDFLAGS := $(LDFLAGS) -D_LINUX_OS_ \
            -L$(SYSTEM_LIB_PATH) -lc -ldl -lrt
 
 SUB_INCLUDE = channel labor codec pb
-DEEP_SUB_INCLUDE = actor storage util
+DEEP_SUB_INCLUDE = actor util
 COMM_PATH = $(NEBULA_PATH)/src/actor \
             $(NEBULA_PATH)/src/actor/cmd \
             $(NEBULA_PATH)/src/actor/step \
             $(NEBULA_PATH)/src/actor/session \
             $(NEBULA_PATH)/src/labor \
             $(NEBULA_PATH)/src/pb \
-            $(NEBULA_PATH)/src/storage \
             $(NEBULA_PATH)/src/util
 CPP_SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
 CC_SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cc))
