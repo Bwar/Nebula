@@ -1206,8 +1206,8 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, unsigned int uiFac
         else
         {
             std::unordered_set<std::string>::iterator id_iter;
-            int target_identify = uiFactor % node_type_iter->second.second.size();
-            int i = 0;
+            uint32 target_identify = uiFactor % node_type_iter->second.second.size();
+            uint32 i = 0;
             for (i = 0, id_iter = node_type_iter->second.second.begin();
                             i < node_type_iter->second.second.size();
                             ++i, ++id_iter)
@@ -1461,6 +1461,7 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 u
         pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
         m_mapSeq2WorkerIndex.insert(std::pair<uint32, int>(pChannel->GetSequence(), iWorkerIndex));
         AddNamedSocketChannel(strIdentify, pChannel);
+        return(true);
     }
     else    // 没有足够资源分配给新连接，直接close掉
     {
@@ -1997,7 +1998,7 @@ bool WorkerImpl::DiscardSocketChannel(SocketChannel* pChannel, bool bChannelNoti
         for (auto it = named_iter->second.begin();
                 it != named_iter->second.end(); ++it)
         {
-            if ((*it)->GetSequence() == pChannel->GetFd())
+            if ((*it)->GetSequence() == pChannel->GetSequence())
             {
                 named_iter->second.erase(it);
                 break;
@@ -2256,7 +2257,7 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
         }
         else
         {
-            snprintf(m_pErrBuff, gc_iErrBuffLen, "no callback or the callback for seq %lu had been timeout!", oMsgHead.seq());
+            snprintf(m_pErrBuff, gc_iErrBuffLen, "no callback or the callback for seq %u had been timeout!", oMsgHead.seq());
             m_pLogger->WriteLog(Logger::WARNING, m_pErrBuff);
             return(false);
         }

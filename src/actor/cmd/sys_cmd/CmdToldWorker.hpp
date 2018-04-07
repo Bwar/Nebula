@@ -16,7 +16,7 @@
 namespace neb
 {
 
-class CmdToldWorker: public Cmd, public DynamicCreator<CmdToldWorker>, public WorkerFriend
+class CmdToldWorker: public Cmd, public DynamicCreator<CmdToldWorker, int32>, public WorkerFriend
 {
 public:
     CmdToldWorker(int32 iCmd);

@@ -16,7 +16,7 @@
 namespace neb
 {
 
-class CmdUpdateNodeId: public Cmd, public DynamicCreator<CmdUpdateNodeId>, public WorkerFriend
+class CmdUpdateNodeId: public Cmd, public DynamicCreator<CmdUpdateNodeId, int32>, public WorkerFriend
 {
 public:
     CmdUpdateNodeId(int32 iCmd);

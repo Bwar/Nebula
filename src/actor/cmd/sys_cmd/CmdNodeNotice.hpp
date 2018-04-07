@@ -24,7 +24,7 @@ namespace neb
  * @date    2015年8月9日
  * @note    各个模块启动时需要向BEACON进行注册
  */
-class CmdNodeNotice : public Cmd, public DynamicCreator<CmdNodeNotice>, public WorkerFriend
+class CmdNodeNotice : public Cmd, public DynamicCreator<CmdNodeNotice, int32>, public WorkerFriend
 {
 public:
     CmdNodeNotice(int32 iCmd);

@@ -47,14 +47,24 @@
     "log_levels":{"FATAL":50000, "ERROR":40000, "WARN":30000, "INFO":20000, "DEBUG":10000, "TRACE":0},
     "log_level":10000,
     "net_log_level":20000,
+    "boot_load":{
+        "cmd":[
+            {"cmd":1001, "class":"neb::CmdHello"},
+            {"cmd":1003, "class":"neb::CmdDbAgent"}
+         ],
+         "module":[
+            {"path":"neb/switch", "class":"neb::ModuleSwitch"},
+            {"path":"neb/hello", "class":"neb::ModuleHello"}
+         ]
+    },
     "//refresh_interval":"刷新Server配置，检查、加载插件动态库时间周期（周期时间长短视服务器忙闲而定）",
-    "refresh_interval":60,
+    "refresh_interval":60,    
     "dynamic_loading":[
         {
             "so_path":"plugins/User.so", "load":false, "version":1,
             "cmd":[
-                {"cmd":1001, "class":"neb::CmdUserLogin"},
-                {"cmd":1003, "class":"neb::CmdUserLogout"}
+                {"cmd":2001, "class":"neb::CmdUserLogin"},
+                {"cmd":2003, "class":"neb::CmdUserLogout"}
              ],
              "module":[
                 {"path":"im/user/login", "class":"neb::ModuleLogin"},

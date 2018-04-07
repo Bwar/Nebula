@@ -672,8 +672,8 @@ bool Manager::SendOriented(const std::string& strNodeType, unsigned int uiFactor
     else
     {
         std::unordered_map<std::string, tagChannelContext>::iterator id_iter;
-        int target_identify = uiFactor % m_mapLoggerCtx.size();
-        int i = 0;
+        uint32 target_identify = uiFactor % m_mapLoggerCtx.size();
+        uint32 i = 0;
         for (i = 0, id_iter = m_mapLoggerCtx.begin(); i < m_mapLoggerCtx.size(); ++i, ++id_iter)
         {
             if (i == target_identify && id_iter != m_mapLoggerCtx.end())
@@ -1296,7 +1296,6 @@ bool Manager::SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 void Manager::RefreshServer()
 {
     m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
-    int iErrno = 0;
     if (GetConf())
     {
         if (m_oLastConf("log_level") != m_oCurrentConf("log_level") || m_oLastConf("net_log_level") != m_oCurrentConf("net_log_level") )
@@ -1778,7 +1777,6 @@ bool Manager::OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsg
 bool Manager::OnBeaconData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
 {
     m_pLogger->WriteLog(Logger::DEBUG, "%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
-    int iErrno = 0;
     if (gc_uiCmdReq & oInMsgHead.cmd())    // 新请求，直接转发给Worker，并回复beacon已收到请求
     {
         if (CMD_REQ_BEAT == oInMsgHead.cmd())   // beacon发过来的心跳包

@@ -16,7 +16,7 @@
 namespace neb
 {
 
-class CmdBeat: public Cmd, public DynamicCreator<CmdBeat>, public WorkerFriend
+class CmdBeat: public Cmd, public DynamicCreator<CmdBeat, int32>, public WorkerFriend
 {
 public:
     CmdBeat(int32 iCmd);
