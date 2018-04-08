@@ -684,12 +684,11 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
     {
         return(false);
     }
-    m_pCmdConnect = new CmdConnectWorker();
+    m_pCmdConnect = dynamic_cast<CmdConnectWorker*>(NewCmd(nullptr, "neb::CmdConnectWorker", CMD_REQ_CONNECT_TO_WORKER));
     if (m_pCmdConnect == nullptr)
     {
         return(false);
     }
-    m_pCmdConnect->SetWorker(m_pWorker);
     return(true);
 }
 

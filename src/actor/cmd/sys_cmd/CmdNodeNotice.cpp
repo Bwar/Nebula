@@ -38,25 +38,14 @@ bool CmdNodeNotice::AnyMessage(
         LOG4_DEBUG("CmdNodeNotice seq[%llu] jsonbuf[%s] Parse is ok",
             oInMsgHead.seq(),oInMsgBody.data().c_str());
 
-        Step* pStep = new StepNodeNotice(oInMsgBody);
-        if (pStep == NULL)
+        Step* pStep = NewStep("neb::StepNodeNotice", oInMsgBody);
+        if (nullptr == pStep)
         {
             LOG4_ERROR("error %d: new StepNodeNotice() error!", ERR_NEW);
-            return(CMD_STATUS_FAULT);
+            return(false);
         }
-
-        if (Register(pStep))
-        {
-            if (CMD_STATUS_RUNNING != pStep->Emit(ERR_OK))
-            {
-                GetWorkerImpl(this)->Remove(pStep);
-            }
-            return(true);
-        }
-        else
-        {
-            delete pStep;
-        }
+        pStep->Emit(ERR_OK);
+        return(true);
     }
     else
     {

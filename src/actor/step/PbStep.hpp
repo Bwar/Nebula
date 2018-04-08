@@ -20,7 +20,7 @@ class WorkerImpl;
 class PbStep: public Step
 {
 public:
-    PbStep(Step* pNextStep = NULL, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    PbStep(Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     PbStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody,
                     Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     PbStep(const PbStep&) = delete;

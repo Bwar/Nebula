@@ -39,7 +39,7 @@ E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
 E_CMD_STATUS StepIoTimeout::Callback(const tagChannelContext& stCtx,
         const MsgHead& oInMsgHead, const MsgBody& oInMsgBody, void* data)
 {
-    ((WorkerImpl*)m_pWorker)->AddIoTimeout(stCtx);
+    GetWorkerImpl(this)->AddIoTimeout(stCtx);
     return(CMD_STATUS_COMPLETED);
 }
 

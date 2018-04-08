@@ -10,6 +10,10 @@
 #ifndef SRC_LABOR_CHIEF_MANAGER_HPP_
 #define SRC_LABOR_CHIEF_MANAGER_HPP_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdlib.h>
 #include <netdb.h>
 #include <errno.h>
@@ -21,6 +25,12 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+#include "ev.h"
+
+#ifdef __cplusplus
+}
+#endif
+
 #include <memory>
 #include <string>
 #include <iostream>
@@ -29,7 +39,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <list>
-#include "ev.h"
 
 #include "util/json/CJsonObject.hpp"
 #include "util/CBuffer.hpp"
@@ -82,6 +91,7 @@ public:
         std::string strHostForServer;         ///< 对其他Server服务的IP地址，对应 m_iS2SListenFd
         std::string strHostForClient;         ///< 对Client服务的IP地址，对应 m_iC2SListenFd
         std::string strGateway;               ///< 对Client服务的真实IP地址（此ip转发给m_strHostForClient）
+        std::string strNodeIdentify;
 
         tagManagerInfo()
             : eCodec(CODEC_HTTP), uiNodeId(0), iPortForServer(16002), iPortForClient(16001), iGatewayPort(8080),
@@ -186,6 +196,26 @@ public:
     virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual void SetNodeId(uint32 uiNodeId) {m_stManagerInfo.uiNodeId = uiNodeId;}
+    uint32 GetSequence() const
+    {
+        return(m_uiSequence++);
+    }
+
+    virtual uint32 GetNodeId() const
+    {
+        return(m_stManagerInfo.uiNodeId);
+    }
+
+    virtual time_t GetNowTime() const
+    {
+        return((time_t)ev_now(m_loop));
+    }
+
+    virtual const std::string& GetNodeIdentify() const
+    {
+        return(m_stManagerInfo.strNodeIdentify);
+    }
+
     virtual void AddInnerChannel(const tagChannelContext& stCtx){};
 
     void SetWorkerLoad(int iPid, CJsonObject& oJsonLoad);
@@ -226,16 +256,6 @@ protected:
     bool OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnBeaconData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnNodeNotify(const MsgBody& oMsgBody);
-
-    uint32 GetSequence() const
-    {
-        return(m_uiSequence++);
-    }
-
-    virtual uint32 GetNodeId() const
-    {
-        return(m_stManagerInfo.uiNodeId);
-    }
 
 private:
     mutable uint32 m_uiSequence;

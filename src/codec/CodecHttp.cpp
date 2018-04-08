@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include <iostream>
+#include "util/logger/NetLogger.hpp"
 #include "CodecHttp.hpp"
 
 #define STATUS_CODE(code, str) case code: return str;

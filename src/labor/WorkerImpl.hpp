@@ -10,6 +10,10 @@
 #ifndef SRC_LABOR_WORKERIMPL_HPP_
 #define SRC_LABOR_WORKERIMPL_HPP_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <netdb.h>
@@ -20,15 +24,20 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include "ev.h"
+#include "hiredis/hiredis.h"
+#include "hiredis/async.h"
+#include "hiredis/adapters/libev.h"
+
+#ifdef __cplusplus
+}
+#endif
+
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <list>
 #include <sstream>
-#include "ev.h"
-#include "hiredis/hiredis.h"
-#include "hiredis/async.h"
-#include "hiredis/adapters/libev.h"
 
 #include "pb/msg.pb.h"
 #include "pb/http.pb.h"

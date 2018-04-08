@@ -12,8 +12,8 @@
 namespace neb
 {
 
-CmdConnectWorker::CmdConnectWorker()
-    : pStepConnectWorker(NULL)
+CmdConnectWorker::CmdConnectWorker(int iCmd)
+    : Cmd(iCmd), pStepConnectWorker(nullptr)
 {
 }
 
@@ -42,22 +42,14 @@ bool CmdConnectWorker::Start(const tagChannelContext& stCtx, int iWorkerIndex)
     LOG4_DEBUG("send cmd %d.", oMsgHead.cmd());
     for (int i = 0; i < 3; ++i)
     {
-        pStepConnectWorker = new StepConnectWorker(stCtx, oMsgHead, oMsgBody);
-        if (pStepConnectWorker == NULL)
+        pStepConnectWorker = dynamic_cast<StepConnectWorker*>(NewStep("neb::StepConnectWorker", stCtx, oMsgHead, oMsgBody));
+        if (nullptr == pStepConnectWorker)
         {
             LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
             return(false);
         }
-
-        if (Register(pStepConnectWorker))
-        {
-            pStepConnectWorker->Emit(ERR_OK);
-            return(true);
-        }
-        else
-        {
-            delete pStepConnectWorker;
-        }
+        pStepConnectWorker->Emit(ERR_OK);
+        return(true);
     }
     return(false);
 }

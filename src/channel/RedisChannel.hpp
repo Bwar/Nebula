@@ -11,6 +11,8 @@
 #define SRC_CHANNEL_REDISCHANNEL_HPP_
 
 #include <list>
+#include <string>
+#include "hiredis/async.h"
 #include "Channel.hpp"
 #include "Definition.hpp"
 

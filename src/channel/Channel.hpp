@@ -15,6 +15,7 @@ namespace neb
 
 class Channel
 {
+public:
     Channel(){}
     virtual ~Channel(){}
 };

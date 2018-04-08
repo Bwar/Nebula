@@ -42,26 +42,14 @@ E_CMD_STATUS StepConnectWorker::Callback(
     {
         if (ERR_OK == oInMsgBody.rsp_result().code())
         {
-            for (int i = 0; i < 3; ++i)
-            {
-                pStepTellWorker = new StepTellWorker(stCtx);
-                if (pStepTellWorker == NULL)
+                pStepTellWorker = dynamic_cast<StepTellWorker*>(NewStep("neb::StepTellWorker", stCtx));
+                if (nullptr == pStepTellWorker)
                 {
                     LOG4_ERROR("error %d: new StepTellWorker() error!", ERR_NEW);
                     return(CMD_STATUS_FAULT);
                 }
-
-                if (Register(pStepTellWorker))
-                {
-                    pStepTellWorker->Emit(ERR_OK);
-                    return(CMD_STATUS_COMPLETED);
-                }
-                else
-                {
-                    delete pStepTellWorker;
-                }
-            }
-            return(CMD_STATUS_FAULT);
+                pStepTellWorker->Emit(ERR_OK);
+                return(CMD_STATUS_COMPLETED);
         }
         else
         {

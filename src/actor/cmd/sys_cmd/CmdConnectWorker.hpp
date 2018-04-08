@@ -17,10 +17,10 @@
 namespace neb
 {
 
-class CmdConnectWorker: public Cmd, public DynamicCreator<CmdConnectWorker>
+class CmdConnectWorker: public Cmd, public DynamicCreator<CmdConnectWorker, int>
 {
 public:
-    CmdConnectWorker();
+    CmdConnectWorker(int iCmd);
     virtual ~CmdConnectWorker();
     virtual bool AnyMessage(
             const tagChannelContext& stCtx,

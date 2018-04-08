@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include <google/protobuf/util/json_util.h>
+#include "util/logger/NetLogger.hpp"
 #include "CodecWsExtentJson.hpp"
 
 namespace neb

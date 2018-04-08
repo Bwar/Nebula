@@ -775,6 +775,7 @@ bool Manager::GetConf()
             m_oCurrentConf.Get("access_port", m_stManagerInfo.iPortForClient);
             m_oCurrentConf.Get("gateway", m_stManagerInfo.strGateway);
             m_oCurrentConf.Get("gateway_port", m_stManagerInfo.iGatewayPort);
+            m_stManagerInfo.strNodeIdentify = m_stManagerInfo.strHostForServer + std::string(":") + std::to_string(m_stManagerInfo.iPortForServer);
         }
         int32 iCodec;
         if (m_oCurrentConf.Get("access_codec", iCodec))

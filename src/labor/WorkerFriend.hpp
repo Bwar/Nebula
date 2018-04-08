@@ -10,7 +10,7 @@
 #ifndef SRC_ACTOR_WORKERFRIEND_HPP_
 #define SRC_ACTOR_WORKERFRIEND_HPP_
 
-#include "WorkerImpl.hpp"
+#include "Worker.hpp"
 #include "actor/Actor.hpp"
 
 namespace neb
