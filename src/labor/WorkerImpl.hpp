@@ -108,8 +108,8 @@ public:
         int iVersion;
         std::vector<int> vecCmd;
         std::vector<std::string> vecPath;
-        tagSo();
-        ~tagSo();
+        tagSo(){};
+        ~tagSo(){};
     };
 
     // callback

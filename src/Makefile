@@ -1,7 +1,7 @@
 CC = gcc
 CXX = g++
-CFLAGS = -g -O2 -Wall -ggdb -m64 -Wl,--export-dynamic -D__GUNC__ -fPIC 
-CXXFLAG =  -std=c++14 -O2 -Wall -ggdb -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DNODE_BEAT=10.0 
+CFLAGS = -g -g2 -O3 -Wall -m64 -Wl,--export-dynamic -D__GUNC__ -fPIC 
+CXXFLAG =  -std=c++14 -g2 -O3 -Wall -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DNODE_BEAT=10.0 
 
 DEFINE_SERVER =
 

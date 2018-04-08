@@ -81,7 +81,7 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
          * 即使远程主机是已知的另一个名字，客户端必须等待直到连接已建立或由于连接已失败。
          */
         CryptoPP::Base64Decoder oDecoder;
-        oDecoder.Put( (byte*)strSecWebSocketKey.data(), strSecWebSocketKey.size() );
+        oDecoder.Put((CryptoPP::byte*)strSecWebSocketKey.data(), strSecWebSocketKey.size() );
         oDecoder.MessageEnd();
 //        CryptoPP::word64 size = oDecoder.MaxRetrievable();
 //        if(size && size <= SIZE_MAX)
@@ -106,13 +106,13 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
         oHashFilter.MessageEnd();
         //CryptoPP::StringSource(strSecWebSocketKey + mc_strWebSocketMagicGuid, true, new CryptoPP::HashFilter(oSha1, new CryptoPP::HexEncoder(new CryptoPP::StringSink(strSha1AcceptKey))));
         CryptoPP::Base64Encoder oEncoder;
-        oEncoder.Put((byte*)strSha1AcceptKey.data(), strSha1AcceptKey.size());
+        oEncoder.Put((CryptoPP::byte*)strSha1AcceptKey.data(), strSha1AcceptKey.size());
         oEncoder.MessageEnd();
         CryptoPP::word64 size = oEncoder.MaxRetrievable();
         if(size)
         {
             strBase64EncodeAcceptKey.resize(size);
-            oEncoder.Get((byte*)strBase64EncodeAcceptKey.data(), strBase64EncodeAcceptKey.size());
+            oEncoder.Get((CryptoPP::byte*)strBase64EncodeAcceptKey.data(), strBase64EncodeAcceptKey.size());
         }
         oOutHttpMsg.set_status_code(101);
         HttpMsg::Header* pHeader = oOutHttpMsg.add_headers();

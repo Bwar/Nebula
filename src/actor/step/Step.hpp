@@ -26,7 +26,7 @@ public:
     }
     Step(const Step&) = delete;
     Step& operator=(const Step&) = delete;
-    virtual ~Step();
+    virtual ~Step(){}
 
     /**
      * @brief 提交，发出

@@ -13,7 +13,7 @@
 	"repository":{ "type":"git", "url":"https://github.com/Bwar/Nebula.git"},
 	"dependencies":{
 	     "google/protobuf":"^3.5.2",
-	     "kindy/libev":"^4.5",
+	     "kindy/libev":"^4.22",
 	     "redis/hiredis":"^0.13.3",
 	     "weidai11/cryptopp":"^6.0.0",
 	     "nodejs/http-parser":"^2.8.0",

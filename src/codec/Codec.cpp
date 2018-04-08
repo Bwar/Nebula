@@ -151,14 +151,14 @@ bool Codec::Gzip(const std::string& strSrc, std::string& strDest)
     try
     {
         CryptoPP::Gzip oGzipper;
-        oGzipper.Put((byte*)strSrc.c_str(), strSrc.size());
+        oGzipper.Put((CryptoPP::byte*)strSrc.c_str(), strSrc.size());
         oGzipper.MessageEnd();
 
         CryptoPP::word64 avail = oGzipper.MaxRetrievable();
         if(avail)
         {
             strDest.resize(avail);
-            oGzipper.Get((byte*)&strDest[0], strDest.size());
+            oGzipper.Get((CryptoPP::byte*)&strDest[0], strDest.size());
         }
     }
     catch(CryptoPP::InvalidDataFormat& e)
@@ -174,13 +174,13 @@ bool Codec::Gunzip(const std::string& strSrc, std::string& strDest)
     try
     {
         CryptoPP::Gunzip oUnZipper;
-        oUnZipper.Put((byte*)strSrc.c_str(), strSrc.size());
+        oUnZipper.Put((CryptoPP::byte*)strSrc.c_str(), strSrc.size());
         oUnZipper.MessageEnd();
         CryptoPP::word64 avail = oUnZipper.MaxRetrievable();
         if(avail)
         {
             strDest.resize(avail);
-            oUnZipper.Get((byte*)&strDest[0], strDest.size());
+            oUnZipper.Get((CryptoPP::byte*)&strDest[0], strDest.size());
         }
     }
     catch(CryptoPP::InvalidDataFormat& e)
@@ -267,17 +267,17 @@ bool Codec::AesEncrypt(const std::string& strSrc, std::string& strDest)
     try
     {
         CryptoPP::CBC_Mode<CryptoPP::AES>::Encryption oAes;
-        oAes.SetKeyWithIV((const byte*)GetKey().c_str(), 16, (const byte*)"2015-08-10 08:53:47");
+        oAes.SetKeyWithIV((const CryptoPP::byte*)GetKey().c_str(), 16, (const CryptoPP::byte*)"2015-08-10 08:53:47");
         CryptoPP::StreamTransformationFilter oEncryptor(
                         oAes, NULL, CryptoPP::BlockPaddingSchemeDef::PKCS_PADDING);
         for (size_t i = 0; i < strSrc.size(); ++i)
         {
-            oEncryptor.Put((byte)strSrc[i]);
+            oEncryptor.Put((CryptoPP::byte)strSrc[i]);
         }
         oEncryptor.MessageEnd();
         size_t length = oEncryptor.MaxRetrievable();
         strDest.resize(length, 0);
-        oEncryptor.Get((byte*)&strDest[0], length);
+        oEncryptor.Get((CryptoPP::byte*)&strDest[0], length);
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
@@ -292,17 +292,17 @@ bool Codec::AesDecrypt(const std::string& strSrc, std::string& strDest)
     try
     {
         CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption oAes;
-        oAes.SetKeyWithIV((const byte*)GetKey().c_str(), 16, (const byte*)"2015-08-10 08:53:47");
+        oAes.SetKeyWithIV((const CryptoPP::byte*)GetKey().c_str(), 16, (const CryptoPP::byte*)"2015-08-10 08:53:47");
         CryptoPP::StreamTransformationFilter oDecryptor(
                         oAes, NULL, CryptoPP::BlockPaddingSchemeDef::PKCS_PADDING);
         for (size_t i = 0; i < strSrc.size(); ++i)
         {
-            oDecryptor.Put((byte)strSrc[i]);
+            oDecryptor.Put((CryptoPP::byte)strSrc[i]);
         }
         oDecryptor.MessageEnd();
     size_t length = oDecryptor.MaxRetrievable();
     strDest.resize(length, 0);
-    oDecryptor.Get((byte*)&strDest[0], length);
+    oDecryptor.Get((CryptoPP::byte*)&strDest[0], length);
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
