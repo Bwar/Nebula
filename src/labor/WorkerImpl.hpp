@@ -265,7 +265,8 @@ protected:
      */
     bool Handle(SocketChannel* pChannel, const HttpMsg& oHttpMsg);
 
-    void LoadCmd(CJsonObject& oCmdConf);
+    void BootLoadCmd(CJsonObject& oCmdConf);
+    void DynamicLoadCmd(CJsonObject& oCmdConf);
     tagSo* LoadSo(const std::string& strSoPath, int iVersion);
 
 private:

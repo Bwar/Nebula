@@ -161,7 +161,8 @@ WorkerImpl::WorkerImpl(Worker* pWorker, const std::string& strWorkPath, int iCon
         exit(-2);
     }
     LoadSysCmd();
-    LoadCmd(oJsonConf["dynamic_loading"]);
+    BootLoadCmd(oJsonConf["boot_load"]);
+    DynamicLoadCmd(oJsonConf["dynamic_loading"]);
     Run();
 }
 
@@ -1659,7 +1660,24 @@ bool WorkerImpl::SwitchCodec(const tagChannelContext& stCtx, E_CODEC_TYPE eCodec
     }
 }
 
-void WorkerImpl::LoadCmd(CJsonObject& oDynamicLoadingConf)
+void WorkerImpl::BootLoadCmd(CJsonObject& oCmdConf)
+{
+    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    int iCmd = 0;
+    std::string strUrlPath;
+    for (int i = 0; i < oCmdConf["cmd"].GetArraySize(); ++i)
+    {
+        oCmdConf["cmd"][i].Get("cmd", iCmd);
+        NewCmd(nullptr, oCmdConf["cmd"][i]("class"), iCmd);
+    }
+    for (int j = 0; j < oCmdConf["module"].GetArraySize(); ++j)
+    {
+        oCmdConf["module"][j].Get("path", strUrlPath);
+        NewModule(nullptr, oCmdConf["module"][j]("class"), strUrlPath);
+    }
+}
+
+void WorkerImpl::DynamicLoadCmd(CJsonObject& oDynamicLoadingConf)
 {
     m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
     int iVersion = 0;
@@ -2153,7 +2171,7 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
             else if (CMD_REQ_RELOAD_SO == oMsgHead.cmd())
             {
                 CJsonObject oSoConfJson;         // TODO So config
-                LoadCmd(oSoConfJson);
+                DynamicLoadCmd(oSoConfJson);
             }
             else
             {
