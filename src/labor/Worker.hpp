@@ -29,7 +29,8 @@ public:
     virtual ~Worker();
 
     // actor操作相关方法
-    template <typename ...Targs> void Logger(const std::string& strTraceId, int iLogLevel, Targs... args);
+    template <typename ...Targs>
+        void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
     template <typename ...Targs> Step* NewStep(Actor* pCreator, const std::string& strStepName, Targs... args);
     template <typename ...Targs> Session* NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
     template <typename ...Targs> Cmd* NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
@@ -78,9 +79,9 @@ private:
 };
 
 template <typename ...Targs>
-void Worker::Logger(const std::string& strTraceId, int iLogLevel, Targs... args)
+void Worker::Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
 {
-    return(m_pImpl->Logger(strTraceId, iLogLevel, std::forward<Targs>(args)...));
+    m_pImpl->Logger(strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }
 
 template <typename ...Targs>

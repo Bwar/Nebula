@@ -18,6 +18,7 @@
 #include "codec/Codec.hpp"
 #include "Channel.hpp"
 #include "Definition.hpp"
+#include "util/logger/NetLogger.hpp"
 
 namespace neb
 {
@@ -47,6 +48,8 @@ public:
     E_CODEC_STATUS Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody);
     E_CODEC_STATUS Fetch(HttpMsg& oHttpMsg);
     E_CODEC_STATUS Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg);
+
+    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
 
 public:
     int GetFd() const
@@ -206,6 +209,12 @@ private:
     friend class WorkerImpl;
     friend class Manager;
 };
+
+template <typename ...Targs>
+void SocketChannel::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
+{
+    m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
+}
 
 } /* namespace neb */
 

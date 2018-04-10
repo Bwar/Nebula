@@ -28,7 +28,7 @@ CodecWsExtentPb::~CodecWsExtentPb()
 E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
         const MsgBody& oMsgBody, CBuffer* pBuff)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     uint8 ucFirstByte = 0;
     uint8 ucSecondByte = 0;
     tagMsgHead stMsgHead;
@@ -40,14 +40,14 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
 //stMsgHead.checksum = htons((unsigned short)stMsgHead.checksum);
     if (oMsgBody.ByteSize() > 1000000) // pb 最大限制
     {
-        m_pLogger->WriteLog(Logger::ERROR, "oMsgBody.ByteSize() > 1000000");
+        LOG4_ERROR("oMsgBody.ByteSize() > 1000000");
         return (CODEC_STATUS_ERR);
     }
     int iErrno = 0;
     int iNeedWriteLen = 0;
     int iHadWriteLen = 0;
     int iWriteLen = 0;
-    m_pLogger->WriteLog(Logger::TRACE, "cmd %u, seq %u, len %u", oMsgHead.cmd(), oMsgHead.seq(), oMsgHead.len());
+    LOG4_TRACE("cmd %u, seq %u, len %u", oMsgHead.cmd(), oMsgHead.seq(), oMsgHead.len());
     if (oMsgHead.len() == 0)    // 无包体（心跳包等）
     {
         ucFirstByte |= WEBSOCKET_FIN;
@@ -55,7 +55,7 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
         {
             if (uiBeatSeq > 0)
             {
-                m_pLogger->WriteLog(Logger::WARNING, "sending a new beat while last beat had not been callback.");
+                LOG4_WARNING("sending a new beat while last beat had not been callback.");
                 return(CODEC_STATUS_OK);
             }
             uiBeatCmd = oMsgHead.cmd();
@@ -81,7 +81,7 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
         {
             if (!Zip(oMsgBody.SerializeAsString(), strCompressData))
             {
-                m_pLogger->WriteLog(Logger::ERROR, "zip error!");
+                LOG4_ERROR("zip error!");
                 return (CODEC_STATUS_ERR);
             }
         }
@@ -89,7 +89,7 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
         {
             if (!Gzip(oMsgBody.SerializeAsString(), strCompressData))
             {
-                m_pLogger->WriteLog(Logger::ERROR, "gzip error!");
+                LOG4_ERROR("gzip error!");
                 return (CODEC_STATUS_ERR);
             }
         }
@@ -99,7 +99,7 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
             {
                 if (!Rc5Encrypt(strCompressData, strEncryptData))
                 {
-                    m_pLogger->WriteLog(Logger::ERROR, "Rc5Encrypt error!");
+                    LOG4_ERROR("Rc5Encrypt error!");
                     return (CODEC_STATUS_ERR);
                 }
             }
@@ -107,7 +107,7 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
             {
                 if (!Rc5Encrypt(oMsgBody.SerializeAsString(), strEncryptData))
                 {
-                    m_pLogger->WriteLog(Logger::ERROR, "Rc5Encrypt error!");
+                    LOG4_ERROR("Rc5Encrypt error!");
                     return (CODEC_STATUS_ERR);
                 }
             }
@@ -162,11 +162,11 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
 
         iNeedWriteLen = sizeof(stMsgHead);
         iWriteLen = pBuff->Write(&stMsgHead, iNeedWriteLen);
-        m_pLogger->WriteLog(Logger::TRACE, "sizeof(stClientMsgHead) = %d, iWriteLen = %d",
+        LOG4_TRACE("sizeof(stClientMsgHead) = %d, iWriteLen = %d",
                 sizeof(stMsgHead), iWriteLen);
         if (iWriteLen != iNeedWriteLen)
         {
-            m_pLogger->WriteLog(Logger::ERROR, "buff write head iWriteLen != sizeof(stClientMsgHead)");
+            LOG4_ERROR("buff write head iWriteLen != sizeof(stClientMsgHead)");
             pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadWriteLen);
             return (CODEC_STATUS_ERR);
         }
@@ -188,13 +188,13 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
         }
         if (iWriteLen != iNeedWriteLen)
         {
-            m_pLogger->WriteLog(Logger::ERROR, "buff iWriteLen != iNeedWriteLen");
+            LOG4_ERROR("buff iWriteLen != iNeedWriteLen");
             pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadWriteLen);
             return (CODEC_STATUS_ERR);
         }
         iHadWriteLen += iWriteLen;
     }
-    m_pLogger->WriteLog(Logger::TRACE, "oMsgBody.ByteSize() = %d, iWriteLen = %d(compress or encrypt maybe)",
+    LOG4_TRACE("oMsgBody.ByteSize() = %d, iWriteLen = %d(compress or encrypt maybe)",
             oMsgBody.ByteSize(), iWriteLen);
     return (CODEC_STATUS_OK);
 }
@@ -202,7 +202,7 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
 E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
         MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s() pBuff->ReadableBytes() = %u", __FUNCTION__, pBuff->ReadableBytes());
+    LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
     size_t uiHeadSize = sizeof(tagMsgHead);
     if (pBuff->ReadableBytes() >= 2)
     {
@@ -213,7 +213,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
         pBuff->Read(&ucSecondByte, 1);
         if (!(WEBSOCKET_MASK & ucSecondByte))
         {
-            m_pLogger->WriteLog(Logger::ERROR, "a masked frame MUST have the field frame-masked set to 1 when client to server!");
+            LOG4_ERROR("a masked frame MUST have the field frame-masked set to 1 when client to server!");
             return (CODEC_STATUS_ERR);
         }
         if (0 == (WEBSOCKET_PAYLOAD_LEN & ucSecondByte))    // ping or pong
@@ -301,7 +301,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
         stMsgHead.body_len = ntohl(stMsgHead.body_len);
         stMsgHead.seq = ntohl(stMsgHead.seq);
         stMsgHead.checksum = ntohs(stMsgHead.checksum);
-        m_pLogger->WriteLog(Logger::TRACE, "cmd %u, seq %u, len %u, pBuff->ReadableBytes() %u",
+        LOG4_TRACE("cmd %u, seq %u, len %u, pBuff->ReadableBytes() %u",
                 stMsgHead.cmd, stMsgHead.seq, stMsgHead.body_len,
                 pBuff->ReadableBytes());
         oMsgHead.set_cmd(((unsigned int) stMsgHead.encript << 24) | stMsgHead.cmd);
@@ -309,7 +309,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
         oMsgHead.set_seq(stMsgHead.seq);
         if (uiHeadSize + stMsgHead.body_len != uiPayload)      // 数据包错误
         {
-            m_pLogger->WriteLog(Logger::ERROR, "uiHeadSize(%u) + stMsgHead.body_len()%u != uiPayload(%u)",
+            LOG4_ERROR("uiHeadSize(%u) + stMsgHead.body_len()%u != uiPayload(%u)",
                     uiHeadSize, stMsgHead.body_len, uiPayload);
             return (CODEC_STATUS_ERR);
         }
@@ -329,7 +329,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
                 strRawData.assign((const char*) pBuff->GetRawReadBuffer(), stMsgHead.body_len);
                 if (!Rc5Decrypt(strRawData, strDecryptData))
                 {
-                    m_pLogger->WriteLog(Logger::ERROR, "Rc5Decrypt error!");
+                    LOG4_ERROR("Rc5Decrypt error!");
                     return (CODEC_STATUS_ERR);
                 }
             }
@@ -339,7 +339,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
                 {
                     if (!Unzip(strDecryptData, strUncompressData))
                     {
-                        m_pLogger->WriteLog(Logger::ERROR, "uncompress error!");
+                        LOG4_ERROR("uncompress error!");
                         return (CODEC_STATUS_ERR);
                     }
                 }
@@ -349,7 +349,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
                     strRawData.assign((const char*) pBuff->GetRawReadBuffer(), stMsgHead.body_len);
                     if (!Unzip(strRawData, strUncompressData))
                     {
-                        m_pLogger->WriteLog(Logger::ERROR, "uncompress error!");
+                        LOG4_ERROR("uncompress error!");
                         return (CODEC_STATUS_ERR);
                     }
                 }
@@ -360,7 +360,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
                 {
                     if (!Gunzip(strDecryptData, strUncompressData))
                     {
-                        m_pLogger->WriteLog(Logger::ERROR, "uncompress error!");
+                        LOG4_ERROR("uncompress error!");
                         return (CODEC_STATUS_ERR);
                     }
                 }
@@ -372,7 +372,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
                             stMsgHead.body_len);
                     if (!Gunzip(strRawData, strUncompressData))
                     {
-                        m_pLogger->WriteLog(Logger::ERROR, "uncompress error!");
+                        LOG4_ERROR("uncompress error!");
                         return (CODEC_STATUS_ERR);
                     }
                 }
@@ -400,7 +400,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
         }
         else
         {
-            m_pLogger->WriteLog(Logger::ERROR, "cmd[%u], seq[%lu] oMsgBody.ParseFromArray() error!",
+            LOG4_ERROR("cmd[%u], seq[%lu] oMsgBody.ParseFromArray() error!",
                     oMsgHead.cmd(), oMsgHead.seq());
             return (CODEC_STATUS_ERR);
         }

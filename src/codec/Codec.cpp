@@ -162,7 +162,7 @@ bool Codec::Gzip(const std::string& strSrc, std::string& strDest)
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "%s", e.GetWhat().c_str());
+        LOG4_ERROR("%s", e.GetWhat().c_str());
         return(false);
     }
     return (true);
@@ -184,7 +184,7 @@ bool Codec::Gunzip(const std::string& strSrc, std::string& strDest)
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "%s", e.GetWhat().c_str());
+        LOG4_ERROR("%s", e.GetWhat().c_str());
         return(false);
     }
     return (true);
@@ -280,7 +280,7 @@ bool Codec::AesEncrypt(const std::string& strSrc, std::string& strDest)
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "%s", e.GetWhat().c_str());
+        LOG4_ERROR("%s", e.GetWhat().c_str());
         return(false);
     }
     return(true);
@@ -305,7 +305,7 @@ bool Codec::AesDecrypt(const std::string& strSrc, std::string& strDest)
     }
     catch(CryptoPP::InvalidDataFormat& e)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "%s", e.GetWhat().c_str());
+        LOG4_ERROR("%s", e.GetWhat().c_str());
         return(false);
     }
     return(true);

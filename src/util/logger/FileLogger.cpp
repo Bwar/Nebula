@@ -30,7 +30,7 @@ FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
 {
     m_fp = nullptr;
     OpenLogFile(strLogFile);
-    WriteLog(Logger::NOTICE, "new log instance.");
+    WriteLog(Logger::NOTICE, __FILE__, __LINE__, __FUNCTION__, "new log instance.");
 }
 
 int FileLogger::OpenLogFile(const std::string strLogFile)
@@ -44,7 +44,7 @@ int FileLogger::OpenLogFile(const std::string strLogFile)
     return 0;
 }
 
-int FileLogger::WriteLog(int iLev, const char* szLogStr, ...)
+int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, ...)
 {
     if (iLev > m_iLogLevel)
     {
@@ -59,7 +59,32 @@ int FileLogger::WriteLog(int iLev, const char* szLogStr, ...)
 
     va_list ap;
     va_start(ap, szLogStr);
-    Vappend(iLev, szLogStr, ap);
+    Vappend(iLev, szFileName, uiFileLine, szFunction, szLogStr, ap);
+    va_end(ap);
+
+    fprintf(m_fp, "\n");
+
+    fflush(m_fp);
+
+    return 0;
+}
+
+int FileLogger::WriteLog(const std::string& strTraceId, int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, ...)
+{
+    if (iLev > m_iLogLevel)
+    {
+        return 0;
+    }
+
+    if(nullptr == m_fp)
+    {
+        std::cerr << "Write log error: no log file handle." << std::endl;
+        return -1;
+    }
+
+    va_list ap;
+    va_start(ap, szLogStr);
+    Vappend(strTraceId, iLev, szFileName, uiFileLine, szFunction, szLogStr, ap);
     va_end(ap);
 
     fprintf(m_fp, "\n");
@@ -109,7 +134,7 @@ void FileLogger::RollOver()
     rename(m_strLogFileBase.c_str(), strBackupFile.c_str());
 }
 
-int FileLogger::Vappend(int iLev, const char* szLogStr, va_list ap)
+int FileLogger::Vappend(int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, va_list ap)
 {
     long file_size = -1;
     if (NULL != m_fp)
@@ -138,7 +163,46 @@ int FileLogger::Vappend(int iLev, const char* szLogStr, va_list ap)
     auto t = std::chrono::system_clock::to_time_t(time_now);
     std::ostringstream oss;
     oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S") << ","
-                    << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "] ";
+                    << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
+                    << szFileName << ":" << uiFileLine << "][" << szFunction << "] ";
+    fprintf(m_fp, oss.str().c_str());
+    //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
+    vfprintf(m_fp, szLogStr, ap);
+    fflush(m_fp);
+    return 0;
+}
+
+int FileLogger::Vappend(const std::string& strTraceId, int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, va_list ap)
+{
+    long file_size = -1;
+    if (NULL != m_fp)
+    {
+        file_size = ftell(m_fp);
+    }
+    //    if (0 == fstat(m_fd, &sb))
+    //    {
+    //        file_size = sb.st_size;
+    //    }
+    if (file_size < 0)
+    {
+        ReOpen();
+    }
+    else if (file_size >= m_uiMaxFileSize)
+    {
+        RollOver();
+        ReOpen();
+    }
+    if (NULL == m_fp)
+    {
+        return -1;
+    }
+    auto time_now = std::chrono::system_clock::now();
+    auto duration_in_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_now.time_since_epoch());
+    auto t = std::chrono::system_clock::to_time_t(time_now);
+    std::ostringstream oss;
+    oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S") << ","
+                    << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
+                    << szFileName << ":" << uiFileLine << "][" << szFunction << "][" << strTraceId << "] ";
     fprintf(m_fp, oss.str().c_str());
     //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
     vfprintf(m_fp, szLogStr, ap);

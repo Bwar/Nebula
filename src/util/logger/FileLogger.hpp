@@ -47,13 +47,15 @@ public:
         m_iLogLevel = iLev;
     }
 
-    virtual int WriteLog(int iLev = INFO, const char* szLogStr = "info", ...);
+    virtual int WriteLog(int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr = "info", ...);
+    virtual int WriteLog(const std::string& strTraceId, int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr = "info", ...);
 
 private:
     int OpenLogFile(const std::string strLogFile);
     void ReOpen();
     void RollOver();
-    int Vappend(int iLev, const char* szLogStr, va_list ap);
+    int Vappend(int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, va_list ap);
+    int Vappend(const std::string& strTraceId, int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, va_list ap);
 
     static FileLogger* m_pInstance;
 

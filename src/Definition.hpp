@@ -94,14 +94,15 @@
         }               \
     } while(0)
 
-#define LOG4_FATAL(args...) Logger(neb::Logger::FATAL, __FILE__, ":", __LINE__, " ", ##args)
-#define LOG4_ERROR(args...) Logger(neb::Logger::ERROR, __FILE__, ":", __LINE__, " ", ##args)
-#define LOG4_WARNING(args...) Logger(neb::Logger::WARNING, __FILE__, ":", __LINE__, " ", ##args)
-#define LOG4_NOTICE(args...) Logger(neb::Logger::NOTICE, __FILE__, ":", __LINE__, " ", ##args)
-#define LOG4_INFO(args...) Logger(neb::Logger::INFO, __FILE__, ":", __LINE__, " ", ##args)
-#define LOG4_CRITICAL(args...) Logger(neb::Logger::CRITICAL, __FILE__,":",  __LINE__, " ", ##args)
-#define LOG4_DEBUG(args...) Logger(neb::Logger::DEBUG, __FILE__, ":", __LINE__, " ", ##args)
-#define LOG4_TRACE(args...) Logger(neb::Logger::TRACE, __FILE__, ":", __LINE__, " ", ##args)
+#define LOG4_FATAL(args...) Logger(neb::Logger::FATAL, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_ERROR(args...) Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_WARNING(args...) Logger(neb::Logger::WARNING, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_NOTICE(args...) Logger(neb::Logger::NOTICE, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_INFO(args...) Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_CRITICAL(args...) Logger(neb::Logger::CRITICAL, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_DEBUG(args...) Logger(neb::Logger::DEBUG, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_TRACE(args...) Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, ##args)
+//#define LOG4_TRACE(...) Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 
 typedef char int8;
 typedef unsigned char uint8;

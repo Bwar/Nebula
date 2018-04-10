@@ -185,6 +185,9 @@ public:
 
     void Run();
 
+    template <typename ...Targs>
+        void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
+
 public:
     bool InitLogger(const CJsonObject& oJsonConf);
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
@@ -281,6 +284,12 @@ private:
 
     std::vector<int> m_vecFreeWorkerIdx;            ///< 空闲进程编号
 };
+
+template <typename ...Targs>
+void Manager::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
+{
+    m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
+}
 
 } /* namespace neb */
 

@@ -14,15 +14,15 @@ namespace neb
 {
 
 template <typename ...Targs>
-void WorkerImpl::Logger(int iLogLevel, Targs... args)
+void WorkerImpl::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
 {
-    m_pLogger->WriteLog(iLogLevel, std::forward<Targs>(args)...);
+    m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }
 
 template <typename ...Targs>
-void WorkerImpl::Logger(const std::string& strTraceId, int iLogLevel, Targs... args)
+void WorkerImpl::Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
 {
-    m_pLogger->WriteLog(strTraceId, iLogLevel, std::forward<Targs>(args)...);
+    m_pLogger->WriteLog(strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }
 
 template <typename ...Targs>
@@ -35,7 +35,7 @@ Step* WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs
     }
     StepModel* pStepAlias = (StepModel*)pStep;
     pStepAlias->m_dTimeout = (0 == pStepAlias->m_dTimeout) ? m_stWorkerInfo.dStepTimeout : pStepAlias->m_dTimeout;
-    m_pLogger->WriteLog(Logger::TRACE, "%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStepAlias, pStepAlias->m_dTimeout);
+    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStepAlias, pStepAlias->m_dTimeout);
 
     pStepAlias->SetWorker(m_pWorker);
     pStepAlias->SetActiveTime(ev_now(m_loop));
@@ -87,7 +87,7 @@ Step* WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs
             ev_timer_init (timer_watcher, StepTimeoutCallback, pStepAlias->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
             ev_timer_start (m_loop, timer_watcher);
         }
-        m_pLogger->WriteLog(Logger::TRACE, "Step(seq %u, active_time %lf, lifetime %lf) register successful.",
+        LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pStepAlias->GetSequence(), pStepAlias->GetActiveTime(), pStepAlias->GetTimeout());
         return(pStep);
     }
@@ -108,7 +108,7 @@ Session* WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionNa
         return(nullptr);
     }
     SessionModel* pSessionAlias = (SessionModel*)pSession;
-    m_pLogger->WriteLog(Logger::TRACE, "%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pSession, pSessionAlias->m_dTimeout);
+    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pSession, pSessionAlias->m_dTimeout);
 
     pSessionAlias->SetWorker(m_pWorker);
     pSessionAlias->SetActiveTime(ev_now(m_loop));
@@ -136,7 +136,7 @@ Session* WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionNa
     {
         ev_timer_init (timer_watcher, StepTimeoutCallback, pSessionAlias->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
-        m_pLogger->WriteLog(Logger::TRACE, "Step(seq %u, active_time %lf, lifetime %lf) register successful.",
+        LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pSessionAlias->GetSequence(), pSessionAlias->GetActiveTime(), pSessionAlias->GetTimeout());
         return(pSession);
     }
@@ -157,7 +157,7 @@ Cmd* WorkerImpl::NewCmd(Actor* pCreator, const std::string& strCmdName, Targs...
         return(nullptr);
     }
     CmdModel* pCmdAlias = (CmdModel*)pCmd;
-    m_pLogger->WriteLog(Logger::TRACE, "%s(Cmd* 0x%X)", __FUNCTION__, pCmd);
+    LOG4_TRACE("%s(Cmd* 0x%X)", __FUNCTION__, pCmd);
 
     pCmdAlias->SetWorker(m_pWorker);
     pCmdAlias->SetActiveTime(ev_now(m_loop));
@@ -184,7 +184,7 @@ Module* WorkerImpl::NewModule(Actor* pCreator, const std::string& strModuleName,
         return(nullptr);
     }
     ModuleModel* pModuleAlias = (ModuleModel*)pModule;
-    m_pLogger->WriteLog(Logger::TRACE, "%s(Module* 0x%X)", __FUNCTION__, pModule);
+    LOG4_TRACE("%s(Module* 0x%X)", __FUNCTION__, pModule);
 
     pModuleAlias->SetWorker(m_pWorker);
     pModuleAlias->SetActiveTime(ev_now(m_loop));

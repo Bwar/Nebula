@@ -181,17 +181,17 @@ void WorkerImpl::Run()
 
 void WorkerImpl::Terminated(struct ev_signal* watcher)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     int iSignum = watcher->signum;
     delete watcher;
     //Destroy();
-    m_pLogger->WriteLog(Logger::FATAL, "terminated by signal %d!", iSignum);
+    LOG4_FATAL("terminated by signal %d!", iSignum);
     exit(iSignum);
 }
 
 bool WorkerImpl::CheckParent()
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     pid_t iParentPid = getppid();
     if (iParentPid == 1)    // manager进程已不存在
     {
@@ -224,7 +224,7 @@ bool WorkerImpl::CheckParent()
 
 bool WorkerImpl::OnIoRead(SocketChannel* pChannel)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     if (pChannel->GetFd() == m_stWorkerInfo.iManagerDataFd)
     {
         return(FdTransfer());
@@ -237,7 +237,7 @@ bool WorkerImpl::OnIoRead(SocketChannel* pChannel)
 
 bool WorkerImpl::RecvDataAndHandle(SocketChannel* pChannel)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     E_CODEC_STATUS eCodecStatus;
     if (CODEC_HTTP == pChannel->GetCodecType())
     {
@@ -302,7 +302,7 @@ bool WorkerImpl::RecvDataAndHandle(SocketChannel* pChannel)
 
 bool WorkerImpl::FdTransfer()
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     char szIpAddr[16] = {0};
     int iCodec = 0;
     // int iAcceptFd = recv_fd(m_iManagerDataFd);
@@ -348,7 +348,7 @@ bool WorkerImpl::FdTransfer()
 
 bool WorkerImpl::OnIoWrite(SocketChannel* pChannel)
 {
-    //LOG4_TRACE("%s()", __FUNCTION__);
+    //LOG4_TRACE(" ");
     if (CHANNEL_STATUS_TRY_CONNECT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
     {
         auto index_iter = m_mapSeq2WorkerIndex.find(pChannel->GetSequence());
@@ -400,7 +400,7 @@ bool WorkerImpl::OnIoTimeout(SocketChannel* pChannel)
         return(true);
     }
 
-    LOG4_TRACE("%s(fd %d, seq %u):", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("fd %d, seq %u:", pChannel->GetFd(), pChannel->GetSequence());
     if (pChannel->NeedAliveCheck())     // 需要发送心跳检查
     {
         tagChannelContext stCtx;
@@ -445,8 +445,8 @@ bool WorkerImpl::OnStepTimeout(Step* pStep)
     }
     else    // 步骤已超时
     {
-        LOG4_TRACE("%s(seq %lu): active_time %lf, now_time %lf, lifetime %lf",
-                        __FUNCTION__, pStep->GetSequence(), pStep->GetActiveTime(), ev_now(m_loop), pStep->GetTimeout());
+        LOG4_TRACE("seq %lu: active_time %lf, now_time %lf, lifetime %lf",
+                        pStep->GetSequence(), pStep->GetActiveTime(), ev_now(m_loop), pStep->GetTimeout());
         E_CMD_STATUS eResult = pStep->Timeout();
         if (CMD_STATUS_RUNNING == eResult)
         {
@@ -477,8 +477,8 @@ bool WorkerImpl::OnSessionTimeout(Session* pSession)
     }
     else    // 会话已超时
     {
-        LOG4_TRACE("%s(session_name: %s,  session_id: %s)",
-                        __FUNCTION__, pSession->GetSessionClass().c_str(), pSession->GetSessionId().c_str());
+        LOG4_TRACE("session_name: %s,  session_id: %s",
+                        pSession->GetSessionClass().c_str(), pSession->GetSessionId().c_str());
         if (CMD_STATUS_RUNNING == pSession->Timeout())
         {
             ev_timer_stop (m_loop, watcher);
@@ -496,7 +496,7 @@ bool WorkerImpl::OnSessionTimeout(Session* pSession)
 
 bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto channel_iter = m_mapRedisChannel.find((redisAsyncContext*)c);
     if (channel_iter != m_mapRedisChannel.end())
     {
@@ -570,7 +570,7 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
 
 bool WorkerImpl::OnRedisDisconnected(const redisAsyncContext *c, int status)
 {
-    LOG4_DEBUG("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto channel_iter = m_mapRedisChannel.find((redisAsyncContext*)c);
     if (channel_iter != m_mapRedisChannel.end())
     {
@@ -594,7 +594,7 @@ bool WorkerImpl::OnRedisDisconnected(const redisAsyncContext *c, int status)
 
 bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privdata)
 {
-    LOG4_DEBUG("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto channel_iter = m_mapRedisChannel.find((redisAsyncContext*)c);
     if (channel_iter != m_mapRedisChannel.end())
     {
@@ -770,7 +770,7 @@ void WorkerImpl::LoadSysCmd()
 
 void WorkerImpl::Destroy()
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
 
     for (auto cmd_iter = m_mapCmd.begin(); cmd_iter != m_mapCmd.end(); ++cmd_iter)
     {
@@ -817,7 +817,7 @@ void WorkerImpl::Destroy()
 
 bool WorkerImpl::AddNamedSocketChannel(const std::string& strIdentify, const tagChannelContext& stCtx)
 {
-    LOG4_TRACE("%s(%s, fd %d, seq %u)", __FUNCTION__, strIdentify.c_str(), stCtx.iFd, stCtx.uiSeq);
+    LOG4_TRACE("%s, fd %d, seq %u", strIdentify.c_str(), stCtx.iFd, stCtx.uiSeq);
     auto channel_iter = m_mapSocketChannel.find(stCtx.iFd);
     if (channel_iter == m_mapSocketChannel.end())
     {
@@ -878,7 +878,7 @@ void WorkerImpl::DelNamedSocketChannel(const std::string& strIdentify)
 
 bool WorkerImpl::SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
@@ -903,7 +903,7 @@ bool WorkerImpl::SetChannelIdentify(const tagChannelContext& stCtx, const std::s
 
 bool WorkerImpl::AddNamedRedisChannel(const std::string& strIdentify, redisAsyncContext* pCtx)
 {
-    LOG4_TRACE("%s(%s)", __FUNCTION__, strIdentify.c_str());
+    LOG4_TRACE("%s", strIdentify.c_str());
     auto channel_iter = m_mapRedisChannel.find(pCtx);
     if (channel_iter == m_mapRedisChannel.end())
     {
@@ -960,7 +960,7 @@ void WorkerImpl::DelNamedRedisChannel(const std::string& strIdentify)
 
 void WorkerImpl::AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify)
 {
-    LOG4_TRACE("%s(%s, %s)", __FUNCTION__, strNodeType.c_str(), strIdentify.c_str());
+    LOG4_TRACE("%s, %s", strNodeType.c_str(), strIdentify.c_str());
     auto iter = m_mapIdentifyNodeType.find(strIdentify);
     if (iter == m_mapIdentifyNodeType.end())
     {
@@ -998,7 +998,7 @@ void WorkerImpl::AddNodeIdentify(const std::string& strNodeType, const std::stri
 
 void WorkerImpl::DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify)
 {
-    LOG4_TRACE("%s(%s, %s)", __FUNCTION__, strNodeType.c_str(), strIdentify.c_str());
+    LOG4_TRACE("%s, %s", strNodeType.c_str(), strIdentify.c_str());
     auto identify_iter = m_mapIdentifyNodeType.find(strIdentify);
     if (identify_iter != m_mapIdentifyNodeType.end())
     {
@@ -1031,12 +1031,12 @@ void WorkerImpl::AddInnerChannel(const tagChannelContext& stCtx)
     {
         iter->second = stCtx.uiSeq;
     }
-    LOG4_TRACE("%s() now m_mapInnerFd.size() = %u", __FUNCTION__, m_mapInnerFd.size());
+    LOG4_TRACE("now m_mapInnerFd.size() = %u", m_mapInnerFd.size());
 }
 
 bool WorkerImpl::SetClientData(const tagChannelContext& stCtx, const std::string& strClientData)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
@@ -1058,7 +1058,7 @@ bool WorkerImpl::SetClientData(const tagChannelContext& stCtx, const std::string
 
 bool WorkerImpl::SendTo(const tagChannelContext& stCtx)
 {
-    LOG4_TRACE("%s(fd %d, seq %lu) pWaitForSendBuff", __FUNCTION__, stCtx.iFd, stCtx.uiSeq);
+    LOG4_TRACE("fd %d, seq %lu pWaitForSendBuff", stCtx.iFd, stCtx.uiSeq);
     auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
@@ -1082,8 +1082,8 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx)
 
 bool WorkerImpl::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    LOG4_TRACE("%s(fd %d, fd_seq %lu, cmd %u, msg_seq %u)",
-                    __FUNCTION__, stCtx.iFd, stCtx.uiSeq, uiCmd, uiSeq);
+    LOG4_TRACE("fd %d, fd_seq %lu, cmd %u, msg_seq %u",
+                    stCtx.iFd, stCtx.uiSeq, uiCmd, uiSeq);
     auto conn_iter = m_mapSocketChannel.find(stCtx.iFd);
     if (conn_iter == m_mapSocketChannel.end())
     {
@@ -1116,7 +1116,7 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiS
 
 bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    LOG4_TRACE("%s(identify: %s)", __FUNCTION__, strIdentify.c_str());
+    LOG4_TRACE("identify: %s", strIdentify.c_str());
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
     {
@@ -1144,7 +1144,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiS
 
 bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    LOG4_TRACE("%s(node_type: %s)", __FUNCTION__, strNodeType.c_str());
+    LOG4_TRACE("node_type: %s", strNodeType.c_str());
     auto node_type_iter = m_mapNodeIdentify.find(strNodeType);
     if (node_type_iter == m_mapNodeIdentify.end())
     {
@@ -1187,7 +1187,7 @@ bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint3
 
 bool WorkerImpl::SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    LOG4_TRACE("%s(nody_type: %s, factor: %d)", __FUNCTION__, strNodeType.c_str(), uiFactor);
+    LOG4_TRACE("nody_type: %s, factor: %d", strNodeType.c_str(), uiFactor);
     auto node_type_iter = m_mapNodeIdentify.find(strNodeType);
     if (node_type_iter == m_mapNodeIdentify.end())
     {
@@ -1258,7 +1258,7 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint
 
 bool WorkerImpl::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    LOG4_TRACE("%s(node_type: %s)", __FUNCTION__, strNodeType.c_str());
+    LOG4_TRACE("node_type: %s", strNodeType.c_str());
     auto node_type_iter = m_mapNodeIdentify.find(strNodeType);
     if (node_type_iter == m_mapNodeIdentify.end())
     {
@@ -1292,7 +1292,7 @@ bool WorkerImpl::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 
 
 bool WorkerImpl::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
-    LOG4_TRACE("%s(fd %d, seq %lu)", __FUNCTION__, stCtx.iFd, stCtx.uiSeq);
+    LOG4_TRACE("fd %d, seq %lu", stCtx.iFd, stCtx.uiSeq);
     auto conn_iter = m_mapSocketChannel.find(stCtx.iFd);
     if (conn_iter == m_mapSocketChannel.end())
     {
@@ -1323,7 +1323,7 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, const std::string
 {
     char szIdentify[256] = {0};
     snprintf(szIdentify, sizeof(szIdentify), "%s:%d%s", strHost.c_str(), iPort, strUrlPath.c_str());
-    LOG4_TRACE("%s(identify: %s)", __FUNCTION__, szIdentify);
+    LOG4_TRACE("identify: %s", szIdentify);
     auto named_iter = m_mapNamedSocketChannel.find(szIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
     {
@@ -1351,7 +1351,7 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, const std::string
 
 bool WorkerImpl::SendTo(RedisChannel* pRedisChannel, RedisStep* pRedisStep)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     if (pRedisChannel->bIsReady)
     {
         int status;
@@ -1388,7 +1388,7 @@ bool WorkerImpl::SendTo(RedisChannel* pRedisChannel, RedisStep* pRedisStep)
 
 bool WorkerImpl::SendTo(const std::string& strHost, int iPort, RedisStep* pRedisStep)
 {
-    LOG4_TRACE("%s(%s, %d)", __FUNCTION__, strHost.c_str(), iPort);
+    LOG4_TRACE("%s, %d", strHost.c_str(), iPort);
     std::ostringstream oss;
     oss << strHost << ":" << iPort;
     std::string strIdentify = std::move(oss.str());
@@ -1406,7 +1406,7 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, RedisStep* pRedis
 
 bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    LOG4_TRACE("%s(%s)", __FUNCTION__, strIdentify.c_str());
+    LOG4_TRACE("%s", strIdentify.c_str());
     int iPosIpPortSeparator = strIdentify.find(':');
     if (iPosIpPortSeparator == std::string::npos)
     {
@@ -1470,7 +1470,7 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 u
 
 bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
-    LOG4_TRACE("%s(%s, %d, %s)", __FUNCTION__, strHost.c_str(), iPort, strUrlPath.c_str());
+    LOG4_TRACE("%s, %d, %s", strHost.c_str(), iPort, strUrlPath.c_str());
     struct sockaddr_in stAddr;
     int iFd;
     stAddr.sin_family = AF_INET;
@@ -1530,7 +1530,7 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
 
 bool WorkerImpl::AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* pRedisStep)
 {
-    LOG4_TRACE("%s() redisAsyncConnect(%s, %d)", __FUNCTION__, strHost.c_str(), iPort);
+    LOG4_TRACE("redisAsyncConnect(%s, %d)", strHost.c_str(), iPort);
     redisAsyncContext *c = redisAsyncConnect(strHost.c_str(), iPort);
     if (c->err)
     {
@@ -1595,7 +1595,7 @@ bool WorkerImpl::Disconnect(const std::string& strIdentify, bool bChannelNotice)
 
 std::string WorkerImpl::GetClientAddr(const tagChannelContext& stCtx)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
@@ -1616,7 +1616,7 @@ std::string WorkerImpl::GetClientAddr(const tagChannelContext& stCtx)
 
 bool WorkerImpl::DiscardNamedChannel(const std::string& strIdentify)
 {
-    LOG4_TRACE("%s(identify: %s)", __FUNCTION__, strIdentify.c_str());
+    LOG4_TRACE("identify: %s", strIdentify.c_str());
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
     {
@@ -1639,7 +1639,7 @@ bool WorkerImpl::DiscardNamedChannel(const std::string& strIdentify)
 
 bool WorkerImpl::SwitchCodec(const tagChannelContext& stCtx, E_CODEC_TYPE eCodecType)
 {
-    LOG4_DEBUG("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
@@ -1660,7 +1660,7 @@ bool WorkerImpl::SwitchCodec(const tagChannelContext& stCtx, E_CODEC_TYPE eCodec
 
 void WorkerImpl::BootLoadCmd(CJsonObject& oCmdConf)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     int iCmd = 0;
     std::string strUrlPath;
     for (int i = 0; i < oCmdConf["cmd"].GetArraySize(); ++i)
@@ -1677,7 +1677,7 @@ void WorkerImpl::BootLoadCmd(CJsonObject& oCmdConf)
 
 void WorkerImpl::DynamicLoadCmd(CJsonObject& oDynamicLoadingConf)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     int iVersion = 0;
     bool bIsload = false;
     int32 iCmd = 0;
@@ -1753,14 +1753,14 @@ void WorkerImpl::DynamicLoadCmd(CJsonObject& oDynamicLoadingConf)
 
 WorkerImpl::tagSo* WorkerImpl::LoadSo(const std::string& strSoPath, int iVersion)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     tagSo* pSo = nullptr;
     void* pHandle = nullptr;
     pHandle = dlopen(strSoPath.c_str(), RTLD_NOW);
     char* dlsym_error = dlerror();
     if (dlsym_error)
     {
-        m_pLogger->WriteLog(Logger::FATAL, "cannot load dynamic lib %s!" , dlsym_error);
+        LOG4_FATAL("cannot load dynamic lib %s!" , dlsym_error);
         if (pHandle != nullptr)
         {
             dlclose(pHandle);
@@ -1774,7 +1774,7 @@ WorkerImpl::tagSo* WorkerImpl::LoadSo(const std::string& strSoPath, int iVersion
 
 bool WorkerImpl::AddPeriodicTaskEvent()
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     ev_timer* timeout_watcher = (ev_timer*)malloc(sizeof(ev_timer));
     if (timeout_watcher == NULL)
     {
@@ -1789,7 +1789,7 @@ bool WorkerImpl::AddPeriodicTaskEvent()
 
 bool WorkerImpl::AddIoReadEvent(SocketChannel* pChannel)
 {
-    LOG4_TRACE("%s(%d, %u)", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
     if (NULL == io_watcher)
     {
@@ -1813,7 +1813,7 @@ bool WorkerImpl::AddIoReadEvent(SocketChannel* pChannel)
 
 bool WorkerImpl::AddIoWriteEvent(SocketChannel* pChannel)
 {
-    LOG4_TRACE("%s(%d, %u)", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
     if (NULL == io_watcher)
     {
@@ -1837,7 +1837,7 @@ bool WorkerImpl::AddIoWriteEvent(SocketChannel* pChannel)
 
 bool WorkerImpl::RemoveIoWriteEvent(SocketChannel* pChannel)
 {
-    LOG4_TRACE("%s(%d, %u)", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
     if (NULL == io_watcher)
     {
@@ -1854,7 +1854,7 @@ bool WorkerImpl::RemoveIoWriteEvent(SocketChannel* pChannel)
 
 bool WorkerImpl::AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout)
 {
-    LOG4_TRACE("%s(%d, %u)", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_timer* timer_watcher = pChannel->MutableTimerWatcher();
     if (NULL == timer_watcher)
     {
@@ -1881,7 +1881,7 @@ bool WorkerImpl::AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout)
 
 bool WorkerImpl::AddIoTimeout(const tagChannelContext& stCtx)
 {
-    LOG4_TRACE("%s(%d, %u)", __FUNCTION__, stCtx.iFd, stCtx.uiSeq);
+    LOG4_TRACE("%d, %u", stCtx.iFd, stCtx.uiSeq);
     auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter != m_mapSocketChannel.end())
     {
@@ -1961,7 +1961,7 @@ Session* WorkerImpl::GetSession(const std::string& strSessionId, const std::stri
 
 SocketChannel* WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType)
 {
-    LOG4_DEBUG("%s(iFd %d, codec_type %d)", __FUNCTION__, iFd, eCodecType);
+    LOG4_DEBUG("iFd %d, codec_type %d", iFd, eCodecType);
     auto iter = m_mapSocketChannel.find(iFd);
     if (iter == m_mapSocketChannel.end())
     {
@@ -2005,7 +2005,7 @@ bool WorkerImpl::DiscardSocketChannel(SocketChannel* pChannel, bool bChannelNoti
     auto inner_iter = m_mapInnerFd.find(pChannel->GetFd());
     if (inner_iter != m_mapInnerFd.end())
     {
-        LOG4_TRACE("%s() m_mapInnerFd.size() = %u", __FUNCTION__, m_mapInnerFd.size());
+        LOG4_TRACE("m_mapInnerFd.size() = %u", m_mapInnerFd.size());
         m_mapInnerFd.erase(inner_iter);
     }
     auto named_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
@@ -2049,7 +2049,7 @@ bool WorkerImpl::DiscardSocketChannel(SocketChannel* pChannel, bool bChannelNoti
 
 void WorkerImpl::Remove(Step* pStep)
 {
-    LOG4_TRACE("%s(Step* 0x%X)", __FUNCTION__, pStep);
+    LOG4_TRACE("Step* 0x%X", pStep);
     if (nullptr == pStep)
     {
         return;
@@ -2085,7 +2085,7 @@ void WorkerImpl::Remove(Step* pStep)
 
 void WorkerImpl::Remove(Session* pSession)
 {
-    LOG4_TRACE("%s(Session* 0x%X)", __FUNCTION__, pSession);
+    LOG4_TRACE("Session* 0x%X", pSession);
     if (nullptr == pSession)
     {
         return;
@@ -2114,7 +2114,7 @@ void WorkerImpl::Remove(Session* pSession)
 
 void WorkerImpl::ChannelNotice(const tagChannelContext& stCtx, const std::string& strIdentify, const std::string& strClientData)
 {
-    LOG4_TRACE("%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto cmd_iter = m_mapCmd.find(CMD_REQ_DISCONNECT);
     if (cmd_iter != m_mapCmd.end() && cmd_iter->second != NULL)
     {
@@ -2135,7 +2135,7 @@ void WorkerImpl::ChannelNotice(const tagChannelContext& stCtx, const std::string
 
 bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
 {
-    LOG4_DEBUG("%s(cmd %u, seq %lu)", __FUNCTION__, oMsgHead.cmd(), oMsgHead.seq());
+    LOG4_DEBUG("cmd %u, seq %lu", oMsgHead.cmd(), oMsgHead.seq());
     tagChannelContext stCtx;
     stCtx.iFd = pChannel->GetFd();
     stCtx.uiSeq = pChannel->GetSequence();
@@ -2283,8 +2283,8 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
 
 bool WorkerImpl::Handle(SocketChannel* pChannel, const HttpMsg& oHttpMsg)
 {
-    LOG4_DEBUG("%s() oInHttpMsg.type() = %d, oInHttpMsg.path() = %s",
-                    __FUNCTION__, oHttpMsg.type(), oHttpMsg.path().c_str());
+    LOG4_DEBUG("oInHttpMsg.type() = %d, oInHttpMsg.path() = %s",
+                    oHttpMsg.type(), oHttpMsg.path().c_str());
     tagChannelContext stCtx;
     stCtx.iFd = pChannel->GetFd();
     stCtx.uiSeq = pChannel->GetSequence();

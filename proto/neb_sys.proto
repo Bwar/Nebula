@@ -55,6 +55,9 @@ message TraceLog
 {
     uint32 node_id = 1;
     string node_identify = 2;
-    bytes log_content = 3;
+    string code_file_name = 3;
+    uint32 code_file_line = 4;
+    string code_function = 5;
+    bytes log_content = 6;
 }
 

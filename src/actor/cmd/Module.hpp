@@ -52,7 +52,7 @@ public:
                     const HttpMsg& oHttpMsg) = 0;
 
 protected:
-    template <typename ...Targs> void Logger(int iLogLevel, Targs... args);
+    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
     template <typename ...Targs> Step* NewStep(const std::string& strStepName, Targs... args);
     template <typename ...Targs> Session* NewSession(const std::string& strSessionName, Targs... args);
     template <typename ...Targs> Cmd* NewCmd(const std::string& strCmdName, Targs... args);
@@ -60,9 +60,9 @@ protected:
 };
 
 template <typename ...Targs>
-void Module::Logger(int iLogLevel, Targs... args)
+void Module::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
 {
-    m_pWorker->Logger(m_strTraceId, iLogLevel, std::forward<Targs>(args)...);
+    m_pWorker->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }
 
 template <typename ...Targs>

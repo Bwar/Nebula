@@ -171,12 +171,18 @@ public:     // about worker
     virtual time_t GetNowTime() const;
     virtual bool ResetTimeout(Actor* pObject);
 
-    template <typename ...Targs> void Logger(int iLogLevel, Targs... args);
-    template <typename ...Targs> void Logger(const std::string& strTraceId, int iLogLevel, Targs... args);
-    template <typename ...Targs> Step* NewStep(Actor* pCreator, const std::string& strStepName, Targs... args);
-    template <typename ...Targs> Session* NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
-    template <typename ...Targs> Cmd* NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
-    template <typename ...Targs> Module* NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
+    template <typename ...Targs>
+        void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
+    template <typename ...Targs>
+        void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
+    template <typename ...Targs>
+        Step* NewStep(Actor* pCreator, const std::string& strStepName, Targs... args);
+    template <typename ...Targs>
+        Session* NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
+    template <typename ...Targs>
+        Cmd* NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
+    template <typename ...Targs>
+        Module* NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
 
 public:     // about channel
     virtual bool SendTo(const tagChannelContext& stCtx);

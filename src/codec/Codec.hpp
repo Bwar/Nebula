@@ -86,6 +86,7 @@ public:
      */
     virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody) = 0;
 
+    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
 
 protected:
     const std::string& GetKey() const
@@ -111,6 +112,12 @@ private:
 
     friend class SocketChannel;
 };
+
+template <typename ...Targs>
+void Codec::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
+{
+    m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
+}
 
 } /* namespace neb */
 

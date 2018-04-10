@@ -133,7 +133,7 @@ Manager::~Manager()
 
 bool Manager::OnManagerTerminated(struct ev_signal* watcher)
 {
-    m_pLogger->WriteLog(Logger::WARNING, "%s terminated by signal %d!", m_oCurrentConf("server_name").c_str(), watcher->signum);
+    LOG4_WARNING("%s terminated by signal %d!", m_oCurrentConf("server_name").c_str(), watcher->signum);
     ev_break (m_loop, EVBREAK_ALL);
     exit(-1);
 }
@@ -159,7 +159,7 @@ bool Manager::OnChildTerminated(struct ev_signal* watcher)
             iReturnCode = WSTOPSIG(iStatus);
         }
 
-        m_pLogger->WriteLog(Logger::FATAL, "error %d: process %d exit and sent signal %d with code %d!",
+        LOG4_FATAL("error %d: process %d exit and sent signal %d with code %d!",
                         iStatus, iPid, watcher->signum, iReturnCode);
         RestartWorker(iPid);
     }
@@ -168,7 +168,7 @@ bool Manager::OnChildTerminated(struct ev_signal* watcher)
 
 bool Manager::OnIoRead(SocketChannel* pChannel)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     if (pChannel->GetFd() == m_stManagerInfo.iS2SListenFd)
     {
 #ifdef UNIT_TEST
@@ -190,14 +190,13 @@ bool Manager::OnIoRead(SocketChannel* pChannel)
 
 bool Manager::FdTransfer(int iFd)
 {
-    //m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
     char szIpAddr[16] = {0};
     struct sockaddr_in stClientAddr;
     socklen_t clientAddrSize = sizeof(stClientAddr);
     int iAcceptFd = accept(iFd, (struct sockaddr*) &stClientAddr, &clientAddrSize);
     if (iAcceptFd < 0)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         return(false);
     }
     strncpy(szIpAddr, inet_ntoa(stClientAddr.sin_addr), 16);
@@ -209,23 +208,23 @@ bool Manager::FdTransfer(int iFd)
     int iTcpNoDelay = 1;
     if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
     {
-        m_pLogger->WriteLog(Logger::WARNING, "fail to set SO_KEEPALIVE");
+        LOG4_WARNING("fail to set SO_KEEPALIVE");
     }
     if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
     {
-        m_pLogger->WriteLog(Logger::WARNING, "fail to set TCP_KEEPIDLE");
+        LOG4_WARNING("fail to set TCP_KEEPIDLE");
     }
     if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
     {
-        m_pLogger->WriteLog(Logger::WARNING, "fail to set TCP_KEEPINTVL");
+        LOG4_WARNING("fail to set TCP_KEEPINTVL");
     }
     if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
     {
-        m_pLogger->WriteLog(Logger::WARNING, "fail to set TCP_KEEPCNT");
+        LOG4_WARNING("fail to set TCP_KEEPCNT");
     }
     if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
     {
-        m_pLogger->WriteLog(Logger::WARNING, "fail to set TCP_NODELAY");
+        LOG4_WARNING("fail to set TCP_NODELAY");
     }
 
     auto iter = m_mapClientConnFrequency.find(stClientAddr.sin_addr.s_addr);
@@ -240,7 +239,7 @@ bool Manager::FdTransfer(int iFd)
 #ifdef NODE_TYPE_ACCESS
         if (iter->second > (uint32)m_iAddrPermitNum)
         {
-            m_pLogger->WriteLog(Logger::WARNING, "client addr %d had been connected more than %u times in %f seconds, it's not permitted",
+            LOG4_WARNING("client addr %d had been connected more than %u times in %f seconds, it's not permitted",
                             stClientAddr.sin_addr.s_addr, m_iAddrPermitNum, m_dAddrStatInterval);
             return(false);
         }
@@ -250,7 +249,7 @@ bool Manager::FdTransfer(int iFd)
     std::pair<int, int> worker_pid_fd = GetMinLoadWorkerDataFd();
     if (worker_pid_fd.second > 0)
     {
-        m_pLogger->WriteLog(Logger::DEBUG, "send new fd %d to worker communication fd %d",
+        LOG4_DEBUG("send new fd %d to worker communication fd %d",
                         iAcceptFd, worker_pid_fd.second);
         int iCodec = m_stManagerInfo.eCodec;
         //int iErrno = send_fd(worker_pid_fd.second, iAcceptFd);
@@ -261,7 +260,7 @@ bool Manager::FdTransfer(int iFd)
         }
         else
         {
-            m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", iErrno, strerror_r(iErrno, m_szErrBuff, 1024));
+            LOG4_ERROR("error %d: %s", iErrno, strerror_r(iErrno, m_szErrBuff, 1024));
         }
         close(iAcceptFd);
         return(true);
@@ -271,13 +270,12 @@ bool Manager::FdTransfer(int iFd)
 
 bool Manager::AcceptServerConn(int iFd)
 {
-    //m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
     struct sockaddr_in stClientAddr;
     socklen_t clientAddrSize = sizeof(stClientAddr);
     int iAcceptFd = accept(iFd, (struct sockaddr*) &stClientAddr, &clientAddrSize);
     if (iAcceptFd < 0)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         return(false);
     }
     else
@@ -290,23 +288,23 @@ bool Manager::AcceptServerConn(int iFd)
         int iTcpNoDelay = 1;
         if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
         {
-            m_pLogger->WriteLog(Logger::WARNING, "fail to set SO_KEEPALIVE");
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
         }
         if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
         {
-            m_pLogger->WriteLog(Logger::WARNING, "fail to set SO_KEEPIDLE");
+            LOG4_WARNING("fail to set SO_KEEPIDLE");
         }
         if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
         {
-            m_pLogger->WriteLog(Logger::WARNING, "fail to set SO_KEEPINTVL");
+            LOG4_WARNING("fail to set SO_KEEPINTVL");
         }
         if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
         {
-            m_pLogger->WriteLog(Logger::WARNING, "fail to set SO_KEEPALIVE");
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
         }
         if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
         {
-            m_pLogger->WriteLog(Logger::WARNING, "fail to set TCP_NODELAY");
+            LOG4_WARNING("fail to set TCP_NODELAY");
         }
         uint32 ulSeq = GetSequence();
         x_sock_set_block(iAcceptFd, 0);
@@ -322,7 +320,7 @@ bool Manager::AcceptServerConn(int iFd)
 
 bool Manager::DataRecvAndHandle(SocketChannel* pChannel)
 {
-    m_pLogger->WriteLog(Logger::DEBUG, "fd %d, seq %llu", pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_DEBUG("fd %d, seq %llu", pChannel->GetFd(), pChannel->GetSequence());
     E_CODEC_STATUS eCodecStatus;
     if (CODEC_HTTP == pChannel->GetCodecType())   // Manager只有pb协议编解码
     {
@@ -373,7 +371,7 @@ bool Manager::DataRecvAndHandle(SocketChannel* pChannel)
 
 bool Manager::OnIoWrite(SocketChannel* pChannel)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s(%d)", __FUNCTION__, pChannel->GetFd());
+    LOG4_TRACE("%d", pChannel->GetFd());
     if (CHANNEL_STATUS_INIT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
     {
         auto index_iter = m_mapSeq2WorkerIndex.find(pChannel->GetSequence());
@@ -384,7 +382,7 @@ bool Manager::OnIoWrite(SocketChannel* pChannel)
             oConnWorker.set_worker_index(index_iter->second);
             oMsgBody.set_data(oConnWorker.SerializeAsString());
             m_mapSeq2WorkerIndex.erase(index_iter);
-            m_pLogger->WriteLog(Logger::DEBUG, "send after connect, oMsgBody.ByteSize() = %d, oConnWorker.ByteSize() = %d",
+            LOG4_DEBUG("send after connect, oMsgBody.ByteSize() = %d, oConnWorker.ByteSize() = %d",
                             oMsgBody.ByteSize(), oConnWorker.ByteSize());
             SendTo(pChannel, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
             return(true);
@@ -412,7 +410,7 @@ bool Manager::OnIoWrite(SocketChannel* pChannel)
 
 bool Manager::OnIoError(SocketChannel* pChannel)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     return(false);
 }
 
@@ -429,7 +427,7 @@ bool Manager::OnIoTimeout(SocketChannel* pChannel)
     }
     else    // IO已超时，关闭文件描述符并清理相关资源
     {
-        m_pLogger->WriteLog(Logger::DEBUG, "%s()", __FUNCTION__);
+        LOG4_TRACE(" ");
         DiscardSocketChannel(pChannel);
         return(false);
     }
@@ -437,7 +435,6 @@ bool Manager::OnIoTimeout(SocketChannel* pChannel)
 
 bool Manager::OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher)
 {
-    //m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
     bool bRes = false;
     auto iter = m_mapClientConnFrequency.find(pData->iAddr);
     if (iter == m_mapClientConnFrequency.end())
@@ -461,7 +458,7 @@ bool Manager::OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_t
 
 void Manager::Run()
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     ev_run (m_loop, 0);
 }
 
@@ -492,7 +489,7 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         oJsonConf.Get("log_level", iLogLevel);
         m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, this);
         m_pLogger->SetNetLogLevel(iNetLogLevel);
-        m_pLogger->WriteLog(Logger::NOTICE, "%s program begin, and work path %s...", oJsonConf("server_name").c_str(), m_stManagerInfo.strWorkPath.c_str());
+        LOG4_NOTICE("%s program begin, and work path %s...", oJsonConf("server_name").c_str(), m_stManagerInfo.strWorkPath.c_str());
         return(true);
     }
 }
@@ -508,7 +505,7 @@ bool Manager::SendTo(const tagChannelContext& stCtx)
     auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
-        m_pLogger->WriteLog(Logger::ERROR, "no fd %d found in m_mapChannel", stCtx.iFd);
+        LOG4_ERROR("no fd %d found in m_mapChannel", stCtx.iFd);
         return(false);
     }
     else
@@ -535,11 +532,11 @@ bool Manager::SendTo(const tagChannelContext& stCtx)
 
 bool Manager::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s(cmd[%u], seq[%u])", __FUNCTION__, uiCmd, uiSeq);
+    LOG4_TRACE("cmd[%u], seq[%u]", uiCmd, uiSeq);
     auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
-        m_pLogger->WriteLog(Logger::ERROR, "no fd %d found in m_mapChannel", stCtx.iFd);
+        LOG4_ERROR("no fd %d found in m_mapChannel", stCtx.iFd);
         return(false);
     }
     else
@@ -563,7 +560,7 @@ bool Manager::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq,
         }
         else
         {
-            m_pLogger->WriteLog(Logger::ERROR, "fd %d sequence %llu not match the sequence %llu in m_mapChannel",
+            LOG4_ERROR("fd %d sequence %llu not match the sequence %llu in m_mapChannel",
                             stCtx.iFd, stCtx.uiSeq, iter->second->GetSequence());
             return(false);
         }
@@ -590,11 +587,11 @@ bool Manager::SendTo(SocketChannel* pSocketChannel, uint32 uiCmd, uint32 uiSeq, 
 
 bool Manager::SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto iter = m_mapSocketChannel.find(stCtx.iFd);
     if (iter == m_mapSocketChannel.end())
     {
-        m_pLogger->WriteLog(Logger::ERROR, "no fd %d found in m_mapChannel", stCtx.iFd);
+        LOG4_ERROR("no fd %d found in m_mapChannel", stCtx.iFd);
         return(false);
     }
     else
@@ -606,7 +603,7 @@ bool Manager::SetChannelIdentify(const tagChannelContext& stCtx, const std::stri
         }
         else
         {
-            m_pLogger->WriteLog(Logger::ERROR, "fd %d sequence %lu not match the sequence %lu in m_mapChannel",
+            LOG4_ERROR("fd %d sequence %lu not match the sequence %lu in m_mapChannel",
                     stCtx.iFd, stCtx.uiSeq, iter->second->GetSequence());
             return(false);
         }
@@ -615,7 +612,7 @@ bool Manager::SetChannelIdentify(const tagChannelContext& stCtx, const std::stri
 
 bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s(%s)", __FUNCTION__, strIdentify.c_str());
+    LOG4_TRACE("%s", strIdentify.c_str());
     int iPosIpPortSeparator = strIdentify.find(':');
     int iPosPortWorkerIndexSeparator = strIdentify.rfind('.');
     std::string strHost = strIdentify.substr(0, iPosIpPortSeparator);
@@ -660,14 +657,14 @@ bool Manager::SendOriented(const std::string& strNodeType, unsigned int uiFactor
 {
     if (std::string("LOGGER") != strNodeType)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "no channel match %s in manager process!", strNodeType.c_str());
+        LOG4_ERROR("no channel match %s in manager process!", strNodeType.c_str());
         return(false);
     }
 
     if (m_mapLoggerCtx.size() == 0)
     {
         m_pLogger->EnableNetLogger(false);
-        m_pLogger->WriteLog(Logger::WARNING, "no channel match %s!", strNodeType.c_str());
+        LOG4_WARNING("no channel match %s!", strNodeType.c_str());
         return(false);
     }
     else
@@ -812,7 +809,7 @@ bool Manager::Init()
     m_iC2SListenFd = socket(pAddrOuter->sa_family, SOCK_STREAM, 0);
     if (m_iC2SListenFd < 0)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         int iErrno = errno;
         exit(iErrno);
     }
@@ -822,7 +819,7 @@ bool Manager::Init()
     ::setsockopt(m_iC2SListenFd, IPPROTO_TCP, TCP_DEFER_ACCEPT, &timeout, sizeof(int));
     if (bind(m_iC2SListenFd, pAddrOuter, addressLen) < 0)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         close(m_iC2SListenFd);
         m_iC2SListenFd = -1;
         int iErrno = errno;
@@ -830,7 +827,7 @@ bool Manager::Init()
     }
     if (listen(m_iC2SListenFd, queueLen) < 0)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         close(m_iC2SListenFd);
         m_iC2SListenFd = -1;
         int iErrno = errno;
@@ -848,7 +845,7 @@ bool Manager::Init()
     m_stManagerInfo.iS2SListenFd = socket(pAddrInner->sa_family, SOCK_STREAM, 0);
     if (m_stManagerInfo.iS2SListenFd < 0)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         int iErrno = errno;
         exit(iErrno);
     }
@@ -858,7 +855,7 @@ bool Manager::Init()
     ::setsockopt(m_stManagerInfo.iS2SListenFd, IPPROTO_TCP, TCP_DEFER_ACCEPT, &timeout, sizeof(int));
     if (bind(m_stManagerInfo.iS2SListenFd, pAddrInner, addressLen) < 0)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         close(m_stManagerInfo.iS2SListenFd);
         m_stManagerInfo.iS2SListenFd = -1;
         int iErrno = errno;
@@ -866,7 +863,7 @@ bool Manager::Init()
     }
     if (listen(m_stManagerInfo.iS2SListenFd, queueLen) < 0)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         close(m_stManagerInfo.iS2SListenFd);
         m_stManagerInfo.iS2SListenFd = -1;
         int iErrno = errno;
@@ -879,7 +876,7 @@ bool Manager::Init()
         std::string strIdentify = m_oCurrentConf["beacon"][i]("host") + std::string(":")
             + m_oCurrentConf["beacon"][i]("port") + std::string(".1");     // BeaconServer只有一个Worker
         tagChannelContext stCtx;
-        m_pLogger->WriteLog(Logger::TRACE, "m_mapBeaconCtx.insert(%s, fd %d, seq %llu) = %u",
+        LOG4_TRACE("m_mapBeaconCtx.insert(%s, fd %d, seq %llu) = %u",
                         strIdentify.c_str(), stCtx.iFd, stCtx.uiSeq);
         m_mapBeaconCtx.insert(std::pair<std::string, tagChannelContext>(strIdentify, stCtx));
     }
@@ -889,7 +886,7 @@ bool Manager::Init()
 
 void Manager::Destroy()
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     m_mapWorker.clear();
     m_mapWorkerFdPid.clear();
     m_mapWorkerRestartNum.clear();
@@ -913,7 +910,7 @@ void Manager::Destroy()
 
 bool Manager::CreateEvents()
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     m_loop = ev_loop_new(EVFLAG_FORKCHECK | EVFLAG_SIGNALFD);
     if (m_loop == NULL)
     {
@@ -967,11 +964,11 @@ bool Manager::CreateEvents()
 
 bool Manager::AddPeriodicTaskEvent()
 {
-    m_pLogger->WriteLog(Logger::DEBUG, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     m_pPeriodicTaskWatcher = (ev_timer*)malloc(sizeof(ev_timer));
     if (m_pPeriodicTaskWatcher == NULL)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "new timeout_watcher error!");
+        LOG4_ERROR("new timeout_watcher error!");
         return(false);
     }
     ev_timer_init (m_pPeriodicTaskWatcher, PeriodicTaskCallback, NODE_BEAT + ev_time() - ev_now(m_loop), 0.);
@@ -982,7 +979,7 @@ bool Manager::AddPeriodicTaskEvent()
 
 bool Manager::AddIoReadEvent(SocketChannel* pChannel)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s(%d, %u)", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
     if (NULL == io_watcher)
     {
@@ -1006,7 +1003,7 @@ bool Manager::AddIoReadEvent(SocketChannel* pChannel)
 
 bool Manager::AddIoWriteEvent(SocketChannel* pChannel)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s(%d, %u)", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
     if (NULL == io_watcher)
     {
@@ -1030,7 +1027,7 @@ bool Manager::AddIoWriteEvent(SocketChannel* pChannel)
 
 bool Manager::RemoveIoWriteEvent(SocketChannel* pChannel)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s(%d, %u)", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
     if (NULL == io_watcher)
     {
@@ -1051,7 +1048,7 @@ bool Manager::DelEvents(ev_io* io_watcher)
     {
         return(false);
     }
-    m_pLogger->WriteLog(Logger::TRACE, "%s(fd %d)", __FUNCTION__, io_watcher->fd);
+    LOG4_TRACE("fd %d", io_watcher->fd);
     ev_io_stop (m_loop, io_watcher);
     return(true);
 }
@@ -1068,7 +1065,7 @@ bool Manager::DelEvents(ev_timer* timer_watcher)
 
 void Manager::CreateWorker()
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s", __FUNCTION__);
+    LOG4_TRACE(" ");
     int iPid = 0;
 
     for (unsigned int i = 1; i <= m_stManagerInfo.uiWorkerNum; ++i)
@@ -1077,11 +1074,11 @@ void Manager::CreateWorker()
         int iDataFds[2];
         if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
         {
-            m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         }
         if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
         {
-            m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         }
 
         iPid = fork();
@@ -1123,23 +1120,23 @@ void Manager::CreateWorker()
         }
         else
         {
-            m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
         }
     }
 }
 
 bool Manager::CheckWorker()
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
 
     for (auto worker_iter = m_mapWorker.begin();
                     worker_iter != m_mapWorker.end(); ++worker_iter)
     {
-        m_pLogger->WriteLog(Logger::TRACE, "now %lf, worker_beat_time %lf, worker_beat %d",
+        LOG4_TRACE("now %lf, worker_beat_time %lf, worker_beat %d",
                         ev_now(m_loop), worker_iter->second.dBeatTime, m_stManagerInfo.iWorkerBeat);
         if ((ev_now(m_loop) - worker_iter->second.dBeatTime) > m_stManagerInfo.iWorkerBeat)
         {
-            m_pLogger->WriteLog(Logger::INFO, "worker_%d pid %d is unresponsive, "
+            LOG4_INFO("worker_%d pid %d is unresponsive, "
                             "terminate it.", worker_iter->second.iWorkerIndex, worker_iter->first);
             kill(worker_iter->first, SIGKILL); //SIGINT);
 //            RestartWorker(worker_iter->first);
@@ -1150,13 +1147,13 @@ bool Manager::CheckWorker()
 
 bool Manager::RestartWorker(int iDeathPid)
 {
-    m_pLogger->WriteLog(Logger::DEBUG, "%s(%d)", __FUNCTION__, iDeathPid);
+    LOG4_DEBUG("%d", iDeathPid);
     int iNewPid = 0;
     char errMsg[1024] = {0};
     auto worker_iter = m_mapWorker.find(iDeathPid);
     if (worker_iter != m_mapWorker.end())
     {
-        m_pLogger->WriteLog(Logger::TRACE, "restart worker %d, close control fd %d and data fd %d first.",
+        LOG4_TRACE("restart worker %d, close control fd %d and data fd %d first.",
                         worker_iter->second.iWorkerIndex, worker_iter->second.iControlFd, worker_iter->second.iDataFd);
         int iWorkerIndex = worker_iter->second.iWorkerIndex;
         auto fd_iter = m_mapWorkerFdPid.find(worker_iter->second.iControlFd);
@@ -1176,18 +1173,18 @@ bool Manager::RestartWorker(int iDeathPid)
         auto restart_num_iter = m_mapWorkerRestartNum.find(iWorkerIndex);
         if (restart_num_iter != m_mapWorkerRestartNum.end())
         {
-            m_pLogger->WriteLog(Logger::INFO, "worker %d had been restarted %d times!", iWorkerIndex, restart_num_iter->second);
+            LOG4_INFO("worker %d had been restarted %d times!", iWorkerIndex, restart_num_iter->second);
         }
 
         int iControlFds[2];
         int iDataFds[2];
         if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
         {
-            m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, errMsg, 1024));
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, errMsg, 1024));
         }
         if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
         {
-            m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, errMsg, 1024));
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, errMsg, 1024));
         }
 
         iNewPid = fork();
@@ -1208,7 +1205,7 @@ bool Manager::RestartWorker(int iDeathPid)
         }
         else if (iNewPid > 0)   // 父进程
         {
-            m_pLogger->WriteLog(Logger::INFO, "worker %d restart successfully", iWorkerIndex);
+            LOG4_INFO("worker %d restart successfully", iWorkerIndex);
             ev_loop_fork(m_loop);
             close(iControlFds[1]);
             close(iDataFds[1]);
@@ -1219,7 +1216,7 @@ bool Manager::RestartWorker(int iDeathPid)
             stWorkerAttr.iControlFd = iControlFds[0];
             stWorkerAttr.iDataFd = iDataFds[0];
             stWorkerAttr.dBeatTime = ev_now(m_loop);
-            m_pLogger->WriteLog(Logger::TRACE, "m_mapWorker insert (iNewPid %d, worker_index %d)", iNewPid, iWorkerIndex);
+            LOG4_TRACE("m_mapWorker insert (iNewPid %d, worker_index %d)", iNewPid, iWorkerIndex);
             m_mapWorker.insert(std::pair<int, tagWorkerAttr>(iNewPid, stWorkerAttr));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFds[0], iNewPid));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFds[0], iNewPid));
@@ -1243,7 +1240,7 @@ bool Manager::RestartWorker(int iDeathPid)
         }
         else
         {
-            m_pLogger->WriteLog(Logger::ERROR, "error %d: %s", errno, strerror_r(errno, errMsg, 1024));
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, errMsg, 1024));
         }
     }
     return(false);
@@ -1251,7 +1248,7 @@ bool Manager::RestartWorker(int iDeathPid)
 
 std::pair<int, int> Manager::GetMinLoadWorkerDataFd()
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     int iMinLoadWorkerFd = 0;
     int iMinLoad = -1;
     std::pair<int, int> worker_pid_fd;
@@ -1301,7 +1298,7 @@ bool Manager::SendToWorker(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 
 void Manager::RefreshServer()
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     if (GetConf())
     {
         if (m_oLastConf("log_level") != m_oCurrentConf("log_level") || m_oLastConf("net_log_level") != m_oCurrentConf("net_log_level") )
@@ -1328,7 +1325,7 @@ void Manager::RefreshServer()
     }
     else
     {
-        m_pLogger->WriteLog(Logger::ERROR, "GetConf() error, please check the config file.", "");
+        LOG4_ERROR("GetConf() error, please check the config file.", "");
     }
 }
 
@@ -1338,7 +1335,7 @@ bool Manager::RegisterToBeacon()
     {
         return(true);
     }
-    m_pLogger->WriteLog(Logger::DEBUG, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     int iLoad = 0;
     int iConnect = 0;
     int iRecvNum = 0;
@@ -1406,12 +1403,12 @@ bool Manager::RegisterToBeacon()
     {
         if (beacon_iter->second.iFd == 0)
         {
-            m_pLogger->WriteLog(Logger::TRACE, "%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_REGISTER);
+            LOG4_TRACE("cmd %d", CMD_REQ_NODE_REGISTER);
             AutoSend(beacon_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
         }
         else
         {
-            m_pLogger->WriteLog(Logger::TRACE, "%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_REGISTER);
+            LOG4_TRACE("cmd %d", CMD_REQ_NODE_REGISTER);
             SendTo(beacon_iter->second, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
         }
     }
@@ -1505,18 +1502,18 @@ bool Manager::ReportToBeacon()
     oReportData["node"].Add("send_byte", iSendByte);
     oReportData["node"].Add("client", iClientNum);
     oMsgBody.set_data(oReportData.ToString());
-    m_pLogger->WriteLog(Logger::TRACE, "%s()：  %s", __FUNCTION__, oReportData.ToString().c_str());
+    LOG4_TRACE("%s", oReportData.ToString().c_str());
 
     for (auto beacon_iter = m_mapBeaconCtx.begin(); beacon_iter != m_mapBeaconCtx.end(); ++beacon_iter)
     {
         if (beacon_iter->second.iFd == 0)
         {
-            m_pLogger->WriteLog(Logger::TRACE, "%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_REGISTER);
+            LOG4_TRACE("cmd %d", CMD_REQ_NODE_REGISTER);
             AutoSend(beacon_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
         }
         else
         {
-            m_pLogger->WriteLog(Logger::TRACE, "%s() cmd %d", __FUNCTION__, CMD_REQ_NODE_STATUS_REPORT);
+            LOG4_TRACE("cmd %d", CMD_REQ_NODE_STATUS_REPORT);
             SendTo(beacon_iter->second, CMD_REQ_NODE_STATUS_REPORT, GetSequence(), oMsgBody);
         }
     }
@@ -1525,7 +1522,7 @@ bool Manager::ReportToBeacon()
 
 bool Manager::AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s(%d, %u)", __FUNCTION__, pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_timer* timer_watcher = pChannel->MutableTimerWatcher();
     if (NULL == timer_watcher)
     {
@@ -1550,17 +1547,17 @@ bool Manager::AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout)
 
 bool Manager::AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     ev_timer* timeout_watcher = new ev_timer();
     if (timeout_watcher == NULL)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "new timeout_watcher error!");
+        LOG4_ERROR("new timeout_watcher error!");
         return(false);
     }
     tagClientConnWatcherData* pData = new tagClientConnWatcherData();
     if (pData == NULL)
     {
-        m_pLogger->WriteLog(Logger::ERROR, "new tagClientConnWatcherData error!");
+        LOG4_ERROR("new tagClientConnWatcherData error!");
         delete timeout_watcher;
         return(false);
     }
@@ -1574,7 +1571,7 @@ bool Manager::AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout)
 
 SocketChannel* Manager::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
 {
-    m_pLogger->WriteLog(Logger::DEBUG, "%s(iFd %d)", __FUNCTION__, iFd);
+    LOG4_DEBUG("iFd", iFd);
     auto iter = m_mapSocketChannel.find(iFd);
     if (iter == m_mapSocketChannel.end())
     {
@@ -1585,7 +1582,7 @@ SocketChannel* Manager::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
         }
         catch(std::bad_alloc& e)
         {
-            m_pLogger->WriteLog(Logger::ERROR, "new channel for fd %d error: %s", e.what());
+            LOG4_ERROR("new channel for fd %d error: %s", e.what());
             return(NULL);
         }
         pChannel->SetLabor(this);
@@ -1602,7 +1599,7 @@ SocketChannel* Manager::CreateChannel(int iFd, E_CODEC_TYPE eCodecType)
     }
     else
     {
-        m_pLogger->WriteLog(Logger::WARNING, "fd %d is exist!", iFd);
+        LOG4_WARNING("fd %d is exist!", iFd);
         return(iter->second);
     }
 }
@@ -1626,7 +1623,7 @@ bool Manager::DiscardSocketChannel(const tagChannelContext& stCtx)
 
 bool Manager::DiscardSocketChannel(SocketChannel* pChannel)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
     {
         return(false);
@@ -1651,7 +1648,6 @@ bool Manager::DiscardSocketChannel(SocketChannel* pChannel)
 
 void Manager::SetWorkerLoad(int iPid, CJsonObject& oJsonLoad)
 {
-    //m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
     auto iter = m_mapWorker.find(iPid);
     if (iter != m_mapWorker.end())
     {
@@ -1668,7 +1664,7 @@ void Manager::SetWorkerLoad(int iPid, CJsonObject& oJsonLoad)
 
 void Manager::AddWorkerLoad(int iPid, int iLoad)
 {
-    m_pLogger->WriteLog(Logger::TRACE, "%s()", __FUNCTION__);
+    LOG4_TRACE(" ");
     auto iter = m_mapWorker.find(iPid);
     if (iter != m_mapWorker.end())
     {
@@ -1678,7 +1674,7 @@ void Manager::AddWorkerLoad(int iPid, int iLoad)
 
 bool Manager::OnWorkerData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
 {
-    m_pLogger->WriteLog(Logger::DEBUG, "%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
+    LOG4_DEBUG("cmd %u, seq %u", oInMsgHead.cmd(), oInMsgHead.seq());
     if (CMD_REQ_UPDATE_WORKER_LOAD == oInMsgHead.cmd())    // 新请求
     {
         auto iter = m_mapWorkerFdPid.find(pChannel->GetFd());
@@ -1691,17 +1687,17 @@ bool Manager::OnWorkerData(SocketChannel* pChannel, const MsgHead& oInMsgHead, c
     }
     else
     {
-        m_pLogger->WriteLog(Logger::WARNING, "unknow cmd %d from worker!", oInMsgHead.cmd());
+        LOG4_WARNING("unknow cmd %d from worker!", oInMsgHead.cmd());
     }
     return(true);
 }
 
 bool Manager::OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
 {
-    m_pLogger->WriteLog(Logger::DEBUG, "%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
+    LOG4_DEBUG("cmd %u, seq %u", oInMsgHead.cmd(), oInMsgHead.seq());
     ConnectWorker oConnWorker;
     MsgBody oOutMsgBody;
-    m_pLogger->WriteLog(Logger::TRACE, "oInMsgHead.cmd() = %u, seq() = %u", oInMsgHead.cmd(), oInMsgHead.seq());
+    LOG4_TRACE("oInMsgHead.cmd() = %u, seq() = %u", oInMsgHead.cmd(), oInMsgHead.seq());
     if (oInMsgHead.cmd() == CMD_REQ_CONNECT_TO_WORKER)
     {
         if (oConnWorker.ParseFromString(oInMsgBody.data()))
@@ -1736,7 +1732,7 @@ bool Manager::OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsg
                     //int iErrno = send_fd(worker_iter->second.iDataFd, stCtx.iFd);
                     if (iErrno != 0)
                     {
-                        m_pLogger->WriteLog(Logger::ERROR, "send_fd_with_attr error %d: %s!",
+                        LOG4_ERROR("send_fd_with_attr error %d: %s!",
                                         iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
                     }
                     DiscardSocketChannel(pChannel);
@@ -1753,14 +1749,14 @@ bool Manager::OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsg
         {
             oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
             oOutMsgBody.mutable_rsp_result()->set_msg("oConnWorker.ParseFromString() error!");
-            m_pLogger->WriteLog(Logger::ERROR, "oConnWorker.ParseFromString() error!");
+            LOG4_ERROR("oConnWorker.ParseFromString() error!");
         }
     }
     else
     {
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
         oOutMsgBody.mutable_rsp_result()->set_msg("unknow cmd!");
-        m_pLogger->WriteLog(Logger::DEBUG, "unknow cmd %d!", oInMsgHead.cmd());
+        LOG4_DEBUG("unknow cmd %d!", oInMsgHead.cmd());
     }
 
     E_CODEC_STATUS eCodecStatus = pChannel->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
@@ -1782,7 +1778,7 @@ bool Manager::OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsg
 
 bool Manager::OnBeaconData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
 {
-    m_pLogger->WriteLog(Logger::DEBUG, "%s(cmd %u, seq %u)", __FUNCTION__, oInMsgHead.cmd(), oInMsgHead.seq());
+    LOG4_DEBUG("cmd %u, seq %u", oInMsgHead.cmd(), oInMsgHead.seq());
     if (gc_uiCmdReq & oInMsgHead.cmd())    // 新请求，直接转发给Worker，并回复beacon已收到请求
     {
         if (CMD_REQ_BEAT == oInMsgHead.cmd())   // beacon发过来的心跳包
@@ -1837,7 +1833,7 @@ bool Manager::OnBeaconData(SocketChannel* pChannel, const MsgHead& oInMsgHead, c
             }
             else
             {
-                m_pLogger->WriteLog(Logger::ERROR, "register to beacon error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
+                LOG4_ERROR("register to beacon error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
             }
         }
         else if (CMD_RSP_CONNECT_TO_WORKER == oInMsgHead.cmd()) // 连接beacon时的回调
@@ -1894,7 +1890,7 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
     CJsonObject oJson;
     if (!oJson.Parse(oMsgBody.data()))
     {
-        m_pLogger->WriteLog(Logger::ERROR, "failed to parse msgbody content!");
+        LOG4_ERROR("failed to parse msgbody content!");
         return(false);
     }
     std::string strNodeType;
@@ -1918,7 +1914,7 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
                     std::string strIdentify = std::move(oss.str());
                     m_mapLoggerCtx.insert(make_pair(strIdentify, stCtx));
                     m_pLogger->EnableNetLogger(true);
-                    m_pLogger->WriteLog(Logger::DEBUG, "AddNodeIdentify(%s,%s)", strNodeType.c_str(), strIdentify.c_str());
+                    LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), strIdentify.c_str());
                 }
             }
         }
@@ -1946,7 +1942,7 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
                             DiscardSocketChannel(iter->second);
                             m_mapLoggerCtx.erase(iter);
                         }
-                        m_pLogger->WriteLog(Logger::DEBUG, "DelNodeIdentify(%s,%s)", strNodeType.c_str(), strIdentify);
+                        LOG4_DEBUG("DelNodeIdentify(%s,%s)", strNodeType.c_str(), strIdentify.c_str());
                     }
                 }
                 if (m_mapLoggerCtx.size() == 0)

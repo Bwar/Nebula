@@ -39,7 +39,7 @@ public:
 public:
     Logger(){};
     virtual ~Logger(){};
-    virtual int WriteLog(int iLev = INFO, const char* chLogStr = "info", ...) = 0;
+    virtual int WriteLog(int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* chLogStr = "info", ...) = 0;
     virtual void SetLogLevel(int iLev) = 0;
 };
 
