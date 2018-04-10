@@ -19,6 +19,7 @@
 #include "Error.hpp"
 #include "Definition.hpp"
 #include "CodecDefine.hpp"
+#include "util/logger/NetLogger.hpp"
 
 namespace neb
 {
@@ -55,8 +56,6 @@ enum E_CODEC_STATUS
     CODEC_STATUS_EOF        = 4,    ///< 连接正常关闭
     CODEC_STATUS_INT        = 5,    ///< 连接非正常关闭
 };
-
-class NetLogger;
 
 class Codec
 {

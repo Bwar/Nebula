@@ -29,6 +29,11 @@ Worker::~Worker()
     DELETE(m_pImpl);
 }
 
+void Worker::Run()
+{
+    m_pImpl->Run();
+}
+
 uint32 Worker::GetSequence() const
 {
     return(m_pImpl->GetSequence());

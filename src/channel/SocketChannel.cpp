@@ -43,7 +43,6 @@ SocketChannel::~SocketChannel()
 bool SocketChannel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
 {
     m_pLogger->WriteLog(Logger::TRACE, "%s(codec_type[%d])", __FUNCTION__, eCodecType);
-    // NEW_PTR(m_pRecvBuff, CBuffer);
     try
     {
         m_pRecvBuff = new CBuffer();

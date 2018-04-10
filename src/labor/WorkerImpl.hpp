@@ -145,6 +145,8 @@ public:
     bool OnRedisDisconnected(const redisAsyncContext *c, int status);
     bool OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privdata);
 
+    void Run();
+
 public:     // about worker
     virtual uint32 GetSequence() const
     {
@@ -169,6 +171,7 @@ public:     // about worker
     virtual time_t GetNowTime() const;
     virtual bool ResetTimeout(Actor* pObject);
 
+    template <typename ...Targs> void Logger(int iLogLevel, Targs... args);
     template <typename ...Targs> void Logger(const std::string& strTraceId, int iLogLevel, Targs... args);
     template <typename ...Targs> Step* NewStep(Actor* pCreator, const std::string& strStepName, Targs... args);
     template <typename ...Targs> Session* NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
@@ -217,7 +220,6 @@ public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worke
     virtual bool SetClientData(const tagChannelContext& stCtx, const std::string& strClientData);
 
 protected:
-    void Run();
     bool Init(CJsonObject& oJsonConf);
     bool InitLogger(const CJsonObject& oJsonConf);
     bool CreateEvents();
@@ -276,6 +278,7 @@ private:
     std::shared_ptr<NetLogger> m_pLogger = nullptr;
 
     tagWorkerInfo m_stWorkerInfo;
+    CJsonObject m_oWorkerConf;
     CJsonObject m_oCustomConf;    ///< 自定义配置
 
     struct ev_loop* m_loop;

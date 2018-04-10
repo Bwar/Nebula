@@ -111,6 +111,7 @@ Manager::Manager(const std::string& strConfFile)
         exit(1);
     }
 
+    m_stManagerInfo.strConfFile = strConfFile;
     if (!GetConf())
     {
         std::cerr << "GetConf() error!" << std::endl;
@@ -733,10 +734,10 @@ bool Manager::GetConf()
         if (getcwd(szFilePath, sizeof(szFilePath)))
         {
             m_stManagerInfo.strWorkPath = szFilePath;
-            //std::cout << "work dir: " << m_strWorkPath << std::endl;
         }
         else
         {
+            std::cerr << "failed to open work dir: " << m_stManagerInfo.strWorkPath << std::endl;
             return(false);
         }
     }
@@ -752,6 +753,7 @@ bool Manager::GetConf()
             ssContent.str("");
             fin.close();
             m_oCurrentConf = m_oLastConf;
+            std::cerr << "failed to parse json file " << m_stManagerInfo.strConfFile << std::endl;
             return(false);
         }
         ssContent.str("");
@@ -759,6 +761,7 @@ bool Manager::GetConf()
     }
     else
     {
+        std::cerr << "failed to open file " << m_stManagerInfo.strConfFile << std::endl;
         return(false);
     }
 
@@ -1093,7 +1096,8 @@ void Manager::CreateWorker()
             close(iDataFds[0]);
             x_sock_set_block(iControlFds[1], 0);
             x_sock_set_block(iDataFds[1], 0);
-            Worker worker(m_stManagerInfo.strWorkPath, iControlFds[1], iDataFds[1], i, m_oCurrentConf);
+            Worker oWorker(m_stManagerInfo.strWorkPath, iControlFds[1], iDataFds[1], i, m_oCurrentConf);
+            oWorker.Run();
             exit(-2);
         }
         else if (iPid > 0)   // 父进程
@@ -1198,7 +1202,8 @@ bool Manager::RestartWorker(int iDeathPid)
             close(iDataFds[0]);
             x_sock_set_block(iControlFds[1], 0);
             x_sock_set_block(iDataFds[1], 0);
-            Worker worker(m_stManagerInfo.strWorkPath, iControlFds[1], iDataFds[1], iWorkerIndex, m_oCurrentConf);
+            Worker oWorker(m_stManagerInfo.strWorkPath, iControlFds[1], iDataFds[1], iWorkerIndex, m_oCurrentConf);
+            oWorker.Run();
             exit(-2);   // 子进程worker没有正常运行
         }
         else if (iNewPid > 0)   // 父进程

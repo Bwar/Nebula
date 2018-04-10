@@ -15,7 +15,6 @@
 #include "cryptopp/gzip.h"
 #include "util/encrypt/hconv.h"
 #include "util/encrypt/rc5.h"
-#include "util/logger/NetLogger.hpp"
 
 namespace neb
 {

@@ -16,6 +16,7 @@
 namespace neb
 {
 
+class Manager;
 class WorkerImpl;
 class Actor;
 
@@ -67,9 +68,13 @@ public:
     bool AddIoTimeout(const tagChannelContext& stCtx);
 
 private:
+    void Run();
+
+private:
     WorkerImpl* m_pImpl;
     friend class WorkerImpl;
     friend class WorkerFriend;
+    friend class Manager;
 };
 
 template <typename ...Targs>

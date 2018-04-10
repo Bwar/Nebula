@@ -14,6 +14,12 @@ namespace neb
 {
 
 template <typename ...Targs>
+void WorkerImpl::Logger(int iLogLevel, Targs... args)
+{
+    m_pLogger->WriteLog(iLogLevel, std::forward<Targs>(args)...);
+}
+
+template <typename ...Targs>
 void WorkerImpl::Logger(const std::string& strTraceId, int iLogLevel, Targs... args)
 {
     m_pLogger->WriteLog(strTraceId, iLogLevel, std::forward<Targs>(args)...);
