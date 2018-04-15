@@ -26,7 +26,7 @@ void WorkerImpl::Logger(const std::string& strTraceId, int iLogLevel, const char
 }
 
 template <typename ...Targs>
-Step* WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs... args)
+std::shared_ptr<Step> WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs... args)
 {
     Step* pStep = dynamic_cast<Step*>(ActorFactory<Targs...>::Instance()->Create(strStepName, std::forward<Targs>(args)...));
     if (nullptr == pStep)
@@ -75,10 +75,11 @@ Step* WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs
         auto callback_iter = m_mapCallbackStep.find(*iter);
         if (callback_iter != m_mapCallbackStep.end())
         {
-            ((StepModel*)callback_iter->second)->m_setPreStepSeq.insert(pStepAlias->GetSequence());
+            (std::dynamic_pointer_cast<StepModel>(callback_iter->second))->m_setPreStepSeq.insert(pStepAlias->GetSequence());
         }
     }
 
+    std::shared_ptr<Step> pSharedStep(pStep);
     auto ret = m_mapCallbackStep.insert(std::make_pair(pStepAlias->GetSequence(), pStep));
     if (ret.second)
     {
@@ -89,18 +90,17 @@ Step* WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs
         }
         LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pStepAlias->GetSequence(), pStepAlias->GetActiveTime(), pStepAlias->GetTimeout());
-        return(pStep);
+        return(pSharedStep);
     }
     else
     {
-        delete pStep;
         pStepAlias = pStep = nullptr;
         return(nullptr);
     }
 }
 
 template <typename ...Targs>
-Session* WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args)
+std::shared_ptr<Session> WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args)
 {
     Session* pSession = dynamic_cast<Session*>(ActorFactory<Targs...>::Instance()->Create(strSessionName, std::forward<Targs>(args)...));
     if (nullptr == pSession)
@@ -120,11 +120,12 @@ Session* WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionNa
         return(nullptr);
     }
 
-    std::pair<std::unordered_map<std::string, Session*>::iterator, bool> ret;
+    std::shared_ptr<Session> pSharedSession(pSession);
+    std::pair<std::unordered_map<std::string, std::shared_ptr<Session>>::iterator, bool> ret;
     auto session_name_iter = m_mapCallbackSession.find(pSessionAlias->GetSessionClass());
     if (session_name_iter == m_mapCallbackSession.end())
     {
-        std::unordered_map<std::string, Session*> mapSession;
+        std::unordered_map<std::string, std::shared_ptr<Session>> mapSession;
         ret = mapSession.insert(std::make_pair(pSessionAlias->GetSessionId(), pSession));
         m_mapCallbackSession.insert(std::make_pair(pSessionAlias->GetSessionClass(), mapSession));
     }
@@ -138,18 +139,17 @@ Session* WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionNa
         ev_timer_start (m_loop, timer_watcher);
         LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pSessionAlias->GetSequence(), pSessionAlias->GetActiveTime(), pSessionAlias->GetTimeout());
-        return(pSession);
+        return(pSharedSession);
     }
     else
     {
-        delete pSession;
         pSessionAlias = pSession = nullptr;
         return(nullptr);
     }
 }
 
 template <typename ...Targs>
-Cmd* WorkerImpl::NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
+std::shared_ptr<Cmd> WorkerImpl::NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
 {
     Cmd* pCmd = dynamic_cast<Cmd*>(ActorFactory<Targs...>::Instance()->Create(strCmdName, std::forward<Targs>(args)...));
     if (nullptr == pCmd)
@@ -162,21 +162,21 @@ Cmd* WorkerImpl::NewCmd(Actor* pCreator, const std::string& strCmdName, Targs...
     pCmdAlias->SetWorker(m_pWorker);
     pCmdAlias->SetActiveTime(ev_now(m_loop));
 
-    auto ret = m_mapCmd.insert(std::make_pair(pCmdAlias->GetCmd(), pCmd));
+    std::shared_ptr<Cmd> pSharedCmd(pCmd);
+    auto ret = m_mapCmd.insert(std::make_pair(pCmdAlias->GetCmd(), pSharedCmd));
     if (ret.second)
     {
-        return(pCmd);
+        return(pSharedCmd);
     }
     else
     {
-        delete pCmd;
         pCmdAlias = pCmd = nullptr;
         return(nullptr);
     }
 }
 
 template <typename ...Targs>
-Module* WorkerImpl::NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
+std::shared_ptr<Module> WorkerImpl::NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
 {
     Module* pModule = dynamic_cast<Module*>(ActorFactory<Targs...>::Instance()->Create(strModuleName, std::forward<Targs>(args)...));
     if (nullptr == pModule)
@@ -189,14 +189,14 @@ Module* WorkerImpl::NewModule(Actor* pCreator, const std::string& strModuleName,
     pModuleAlias->SetWorker(m_pWorker);
     pModuleAlias->SetActiveTime(ev_now(m_loop));
 
-    auto ret = m_mapModule.insert(std::make_pair(pModuleAlias->GetModulePath(), pModule));
+    std::shared_ptr<Module> pSharedModule(pModule);
+    auto ret = m_mapModule.insert(std::make_pair(pModuleAlias->GetModulePath(), pSharedModule));
     if (ret.second)
     {
-        return(pModule);
+        return(pSharedModule);
     }
     else
     {
-        delete pModule;
         pModuleAlias = pModule = nullptr;
         return(nullptr);
     }

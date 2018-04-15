@@ -27,6 +27,11 @@ Actor::~Actor()
 {
 }
 
+std::shared_ptr<Actor> Actor::SharedFromThis()
+{
+    return(shared_from_this());
+}
+
 uint32 Actor::GetSequence()
 {
     if (0 == m_ulSequence)
@@ -78,12 +83,12 @@ const CJsonObject& Actor::GetCustomConf() const
 {
     return(m_pWorker->GetCustomConf());
 }
-Session* Actor::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> Actor::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
 {
     return(m_pWorker->GetSession(uiSessionId, strSessionClass));
 }
 
-Session* Actor::GetSession(const std::string& strSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId, const std::string& strSessionClass)
 {
     return(m_pWorker->GetSession(strSessionId, strSessionClass));
 }

@@ -10,6 +10,7 @@
 #ifndef SRC_CHANNEL_SOCKETCHANNEL_HPP_
 #define SRC_CHANNEL_SOCKETCHANNEL_HPP_
 
+#include <memory>
 #include "ev.h"
 #include "util/CBuffer.hpp"
 #include "util/StreamCodec.hpp"
@@ -28,7 +29,7 @@ class WorkerImpl;
 class Manager;
 class NetLogger;
 
-class SocketChannel: public Channel
+class SocketChannel: public Channel, public std::enable_shared_from_this<SocketChannel>
 {
 public:
     SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq);
@@ -120,6 +121,8 @@ public:
     {
         return(m_strErrMsg);
     }
+
+    std::shared_ptr<SocketChannel> SharedFromThis();
 
 private:
     void SetLabor(Labor* pLabor)

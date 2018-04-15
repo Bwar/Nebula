@@ -41,10 +41,10 @@ public:
 
 protected:
     template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
-    template <typename ...Targs> Step* NewStep(const std::string& strStepName, Targs... args);
-    template <typename ...Targs> Session* NewSession(const std::string& strSessionName, Targs... args);
-    template <typename ...Targs> Cmd* NewCmd(const std::string& strCmdName, Targs... args);
-    template <typename ...Targs> Module* NewModule(const std::string& strModuleName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Cmd> MakeSharedCmd(const std::string& strCmdName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Module> MakeSharedModule(const std::string& strModuleName, Targs... args);
 
 private:
     friend class WorkerImpl;
@@ -57,25 +57,25 @@ void Step::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine
 }
 
 template <typename ...Targs>
-Step* Step::NewStep(const std::string& strStepName, Targs... args)
+std::shared_ptr<Step> Step::MakeSharedStep(const std::string& strStepName, Targs... args)
 {
     return(m_pWorker->NewStep(this, strStepName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
-Session* Step::NewSession(const std::string& strSessionName, Targs... args)
+std::shared_ptr<Session> Step::MakeSharedSession(const std::string& strSessionName, Targs... args)
 {
     return(m_pWorker->NewSession(this, strSessionName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
-Cmd* Step::NewCmd(const std::string& strCmdName, Targs... args)
+std::shared_ptr<Cmd> Step::MakeSharedCmd(const std::string& strCmdName, Targs... args)
 {
     return(m_pWorker->NewStep(this, strCmdName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
-Module* Step::NewModule(const std::string& strModuleName, Targs... args)
+std::shared_ptr<Module> Step::MakeSharedModule(const std::string& strModuleName, Targs... args)
 {
     return(m_pWorker->NewSession(this, strModuleName, std::forward<Targs>(args)...));
 }

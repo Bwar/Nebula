@@ -42,7 +42,7 @@ E_CMD_STATUS StepConnectWorker::Callback(
     {
         if (ERR_OK == oInMsgBody.rsp_result().code())
         {
-                pStepTellWorker = dynamic_cast<StepTellWorker*>(NewStep("neb::StepTellWorker", stCtx));
+                pStepTellWorker =  std::dynamic_pointer_cast<StepTellWorker>(MakeSharedStep("neb::StepTellWorker", stCtx));
                 if (nullptr == pStepTellWorker)
                 {
                     LOG4_ERROR("error %d: new StepTellWorker() error!", ERR_NEW);

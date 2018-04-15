@@ -42,7 +42,7 @@ bool CmdConnectWorker::Start(const tagChannelContext& stCtx, int iWorkerIndex)
     LOG4_DEBUG("send cmd %d.", oMsgHead.cmd());
     for (int i = 0; i < 3; ++i)
     {
-        pStepConnectWorker = dynamic_cast<StepConnectWorker*>(NewStep("neb::StepConnectWorker", stCtx, oMsgHead, oMsgBody));
+        pStepConnectWorker = std::dynamic_pointer_cast<StepConnectWorker>(MakeSharedStep("neb::StepConnectWorker", stCtx, oMsgHead, oMsgBody));
         if (nullptr == pStepConnectWorker)
         {
             LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);

@@ -38,7 +38,7 @@ bool CmdNodeNotice::AnyMessage(
         LOG4_DEBUG("CmdNodeNotice seq[%llu] jsonbuf[%s] Parse is ok",
             oInMsgHead.seq(),oInMsgBody.data().c_str());
 
-        Step* pStep = NewStep("neb::StepNodeNotice", oInMsgBody);
+        std::shared_ptr<Step> pStep = MakeSharedStep("neb::StepNodeNotice", oInMsgBody);
         if (nullptr == pStep)
         {
             LOG4_ERROR("error %d: new StepNodeNotice() error!", ERR_NEW);

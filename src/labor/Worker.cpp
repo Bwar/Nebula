@@ -39,12 +39,12 @@ uint32 Worker::GetSequence() const
     return(m_pImpl->GetSequence());
 }
 
-Session* Worker::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> Worker::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
 {
     return(m_pImpl->GetSession(uiSessionId, strSessionClass));
 }
 
-Session* Worker::GetSession(const std::string& strSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> Worker::GetSession(const std::string& strSessionId, const std::string& strSessionClass)
 {
     return(m_pImpl->GetSession(strSessionId, strSessionClass));
 }
@@ -149,7 +149,7 @@ bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& st
     return(m_pImpl->SendTo(strHost, iPort, strUrlPath, oHttpMsg, uiHttpStepSeq));
 }
 
-bool Worker::SendTo(const std::string& strHost, int iPort, RedisStep* pRedisStep)
+bool Worker::SendTo(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep)
 {
     return(m_pImpl->SendTo(strHost, iPort, pRedisStep));
 }

@@ -36,7 +36,7 @@ public:
     virtual E_CMD_STATUS Timeout();
 
 public:
-    StepTellWorker* pStepTellWorker;        ///< 仅为了生成可读性高的类图，构造函数中不分配空间，析构函数中也不回收空间
+    std::shared_ptr<StepTellWorker> pStepTellWorker;        ///< 仅为了生成可读性高的类图，构造函数中不分配空间，析构函数中也不回收空间
 };
 
 } /* namespace neb */

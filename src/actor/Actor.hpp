@@ -10,6 +10,7 @@
 #ifndef SRC_ACTOR_ACTOR_HPP_
 #define SRC_ACTOR_ACTOR_HPP_
 
+#include <memory>
 #include <string>
 #include "ev.h"
 #include "Error.hpp"
@@ -33,7 +34,7 @@ class Session;
 class Timer;
 class Step;
 
-class Actor
+class Actor: public std::enable_shared_from_this<Actor>
 {
 public:
     enum ACTOR_TYPE
@@ -53,6 +54,7 @@ public:
     Actor(const Actor&) = delete;
     Actor& operator=(const Actor&) = delete;
     virtual ~Actor();
+    std::shared_ptr<Actor> SharedFromThis();
 
 protected:
     uint32 GetSequence();
@@ -70,8 +72,8 @@ protected:
      */
     const CJsonObject& GetCustomConf() const;
 
-    Session* GetSession(uint32 uiSessionId, const std::string& strSessionClass = "oss::Session");
-    Session* GetSession(const std::string& strSessionId, const std::string& strSessionClass = "oss::Session");
+    std::shared_ptr<Session> GetSession(uint32 uiSessionId, const std::string& strSessionClass = "oss::Session");
+    std::shared_ptr<Session> GetSession(const std::string& strSessionId, const std::string& strSessionClass = "oss::Session");
 
 protected:
     /**

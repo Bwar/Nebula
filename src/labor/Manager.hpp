@@ -177,10 +177,10 @@ public:
     static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     bool OnManagerTerminated(struct ev_signal* watcher);
     bool OnChildTerminated(struct ev_signal* watcher);
-    bool OnIoRead(SocketChannel* pChannel);
-    bool OnIoWrite(SocketChannel* pChannel);
-    bool OnIoError(SocketChannel* pChannel);
-    bool OnIoTimeout(SocketChannel* pChannel);
+    bool OnIoRead(std::shared_ptr<SocketChannel> pChannel);
+    bool OnIoWrite(std::shared_ptr<SocketChannel> pChannel);
+    bool OnIoError(std::shared_ptr<SocketChannel> pChannel);
+    bool OnIoTimeout(std::shared_ptr<SocketChannel> pChannel);
     bool OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher);
 
     void Run();
@@ -193,7 +193,7 @@ public:
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
     virtual bool SendTo(const tagChannelContext& stCtx);
     virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool SendTo(SocketChannel* pSocketChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pSocketChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
     virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
@@ -231,9 +231,9 @@ protected:
 
     bool CreateEvents();
     bool AddPeriodicTaskEvent();
-    bool AddIoReadEvent(SocketChannel* pChannel);
-    bool AddIoWriteEvent(SocketChannel* pChannel);
-    bool RemoveIoWriteEvent(SocketChannel* pChannel);
+    bool AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel);
+    bool AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
+    bool RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
     bool DelEvents(ev_io* io_watcher);
     bool DelEvents(ev_timer* timer_watcher);
 
@@ -247,17 +247,17 @@ protected:
     bool RegisterToBeacon();
     bool ReportToBeacon();
 
-    bool AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout = 1.0);
+    bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
     bool AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout = 60.0);
-    SocketChannel* CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
+    std::shared_ptr<SocketChannel> CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
     bool DiscardSocketChannel(const tagChannelContext& stCtx);
-    bool DiscardSocketChannel(SocketChannel* pChannel);
+    bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel);
     bool FdTransfer(int iFd);
     bool AcceptServerConn(int iFd);
-    bool DataRecvAndHandle(SocketChannel* pChannel);
-    bool OnWorkerData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
-    bool OnDataAndTransferFd(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
-    bool OnBeaconData(SocketChannel* pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
+    bool OnWorkerData(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    bool OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnNodeNotify(const MsgBody& oMsgBody);
 
 private:
@@ -278,7 +278,7 @@ private:
 
     std::unordered_map<std::string, tagChannelContext> m_mapBeaconCtx;  ///< 到beacon服务器的连接
     std::unordered_map<std::string, tagChannelContext> m_mapLoggerCtx;  ///< 程序日志服务器连接
-    std::unordered_map<int, SocketChannel*> m_mapSocketChannel;                   ///< 通信通道
+    std::unordered_map<int, std::shared_ptr<SocketChannel> > m_mapSocketChannel;                   ///< 通信通道
     std::unordered_map<uint32, int> m_mapSeq2WorkerIndex;             ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
     std::unordered_map<in_addr_t, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
 

@@ -35,7 +35,7 @@ namespace neb
 
 void WorkerImpl::TerminatedCallback(struct ev_loop* loop, struct ev_signal* watcher, int revents)
 {
-    if (watcher->data != NULL)
+    if (watcher->data != nullptr)
     {
         Worker* pWorker = (Worker*)watcher->data;
         pWorker->m_pImpl->Terminated(watcher);  // timeout，worker进程无响应或与Manager通信通道异常，被manager进程终止时返回
@@ -44,7 +44,7 @@ void WorkerImpl::TerminatedCallback(struct ev_loop* loop, struct ev_signal* watc
 
 void WorkerImpl::IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int revents)
 {
-    if (watcher->data != NULL)
+    if (watcher->data != nullptr)
     {
         Worker* pWorker = (Worker*)watcher->data;
         pWorker->m_pImpl->CheckParent();
@@ -53,42 +53,39 @@ void WorkerImpl::IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int
 
 void WorkerImpl::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents)
 {
-    if (watcher->data != NULL)
+    if (watcher->data != nullptr)
     {
-        SocketChannel* pChannel = (SocketChannel*)watcher->data;
+        SocketChannel* pChannel = static_cast<SocketChannel*>(watcher->data);
         Worker* pWorker = (Worker*)pChannel->m_pLabor;
         if (revents & EV_READ)
         {
-            pWorker->m_pImpl->OnIoRead(pChannel);
+            pWorker->m_pImpl->OnIoRead(pChannel->SharedFromThis());
         }
         if (revents & EV_WRITE)
         {
-            pWorker->m_pImpl->OnIoWrite(pChannel);
+            pWorker->m_pImpl->OnIoWrite(pChannel->SharedFromThis());
         }
-        if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
-        {
-            DELETE(pChannel);
-        }
+        watcher->data = nullptr;
     }
 }
 
 void WorkerImpl::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
-    if (watcher->data != NULL)
+    if (watcher->data != nullptr)
     {
-        SocketChannel* pChannel = (SocketChannel*)watcher->data;
+        SocketChannel* pChannel = static_cast<SocketChannel*>(watcher->data);
         Worker* pWorker = (Worker*)(pChannel->m_pLabor);
         if (pChannel->GetFd() < 3)      // TODO 这个判断是不得已的做法，需查找fd为0回调到这里的原因
         {
             return;
         }
-        pWorker->m_pImpl->OnIoTimeout(pChannel);
+        pWorker->m_pImpl->OnIoTimeout(pChannel->SharedFromThis());
     }
 }
 
 void WorkerImpl::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
-    if (watcher->data != NULL)
+    if (watcher->data != nullptr)
     {
         WorkerImpl* pWorkerImpl = (WorkerImpl*)(watcher->data);
         pWorkerImpl->CheckParent();
@@ -100,25 +97,25 @@ void WorkerImpl::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, i
 
 void WorkerImpl::StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
-    if (watcher->data != NULL)
+    if (watcher->data != nullptr)
     {
         Step* pStep = (Step*)watcher->data;
-        ((Worker*)(pStep->m_pWorker))->m_pImpl->OnStepTimeout(pStep);
+        ((Worker*)(pStep->m_pWorker))->m_pImpl->OnStepTimeout(std::dynamic_pointer_cast<Step>(pStep->SharedFromThis()));
     }
 }
 
 void WorkerImpl::SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
-    if (watcher->data != NULL)
+    if (watcher->data != nullptr)
     {
         Session* pSession = (Session*)watcher->data;
-        ((Worker*)pSession->m_pWorker)->m_pImpl->OnSessionTimeout(pSession);
+        ((Worker*)pSession->m_pWorker)->m_pImpl->OnSessionTimeout(std::dynamic_pointer_cast<Session>(pSession->SharedFromThis()));
     }
 }
 
 void WorkerImpl::RedisConnectCallback(const redisAsyncContext *c, int status)
 {
-    if (c->data != NULL)
+    if (c->data != nullptr)
     {
         Worker* pWorker = (Worker*)c->data;
         pWorker->m_pImpl->OnRedisConnected(c, status);
@@ -127,7 +124,7 @@ void WorkerImpl::RedisConnectCallback(const redisAsyncContext *c, int status)
 
 void WorkerImpl::RedisDisconnectCallback(const redisAsyncContext *c, int status)
 {
-    if (c->data != NULL)
+    if (c->data != nullptr)
     {
         Worker* pWorker = (Worker*)c->data;
         pWorker->m_pImpl->OnRedisDisconnected(c, status);
@@ -136,7 +133,7 @@ void WorkerImpl::RedisDisconnectCallback(const redisAsyncContext *c, int status)
 
 void WorkerImpl::RedisCmdCallback(redisAsyncContext *c, void *reply, void *privdata)
 {
-    if (c->data != NULL)
+    if (c->data != nullptr)
     {
         Worker* pWorker = (Worker*)c->data;
         pWorker->m_pImpl->OnRedisCmdResult(c, reply, privdata);
@@ -222,7 +219,7 @@ bool WorkerImpl::CheckParent()
     return(true);
 }
 
-bool WorkerImpl::OnIoRead(SocketChannel* pChannel)
+bool WorkerImpl::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE(" ");
     if (pChannel->GetFd() == m_stWorkerInfo.iManagerDataFd)
@@ -235,7 +232,7 @@ bool WorkerImpl::OnIoRead(SocketChannel* pChannel)
     }
 }
 
-bool WorkerImpl::RecvDataAndHandle(SocketChannel* pChannel)
+bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE(" ");
     E_CODEC_STATUS eCodecStatus;
@@ -323,8 +320,8 @@ bool WorkerImpl::FdTransfer()
     }
     else
     {
-        SocketChannel* pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec));
-        if (NULL != pChannel)
+        std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec));
+        if (nullptr != pChannel)
         {
             int z;                          /* status return code */
             struct sockaddr_in adr_inet;    /* AF_INET */
@@ -346,7 +343,7 @@ bool WorkerImpl::FdTransfer()
     return(false);
 }
 
-bool WorkerImpl::OnIoWrite(SocketChannel* pChannel)
+bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
     //LOG4_TRACE(" ");
     if (CHANNEL_STATUS_TRY_CONNECT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
@@ -360,7 +357,7 @@ bool WorkerImpl::OnIoWrite(SocketChannel* pChannel)
             AddInnerChannel(stCtx);
             if (CODEC_PROTOBUF == pChannel->GetCodecType())  // 系统内部Server间通信
             {
-                ((CmdConnectWorker*)m_pCmdConnect)->Start(stCtx, index_iter->second);
+                m_pCmdConnect->Start(stCtx, index_iter->second);
             }
             m_mapSeq2WorkerIndex.erase(index_iter);
             return(false);
@@ -389,7 +386,7 @@ bool WorkerImpl::OnIoWrite(SocketChannel* pChannel)
     return(true);
 }
 
-bool WorkerImpl::OnIoTimeout(SocketChannel* pChannel)
+bool WorkerImpl::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
 {
     ev_tstamp after = pChannel->GetActiveTime() - ev_now(m_loop) + m_stWorkerInfo.dIoTimeout;
     if (after > 0)    // IO在定时时间内被重新刷新过，重新设置定时器
@@ -406,7 +403,7 @@ bool WorkerImpl::OnIoTimeout(SocketChannel* pChannel)
         tagChannelContext stCtx;
         stCtx.iFd = pChannel->GetFd();
         stCtx.uiSeq = pChannel->GetSequence();
-        Step* pStepIoTimeout = NewStep(nullptr, "neb::StepIoTimeout", stCtx);
+        std::shared_ptr<Step> pStepIoTimeout = NewStep(nullptr, "neb::StepIoTimeout", stCtx);
         if (nullptr == pStepIoTimeout)
         {
             LOG4_ERROR("new StepIoTimeout error!");
@@ -432,7 +429,7 @@ bool WorkerImpl::OnIoTimeout(SocketChannel* pChannel)
     return(true);
 }
 
-bool WorkerImpl::OnStepTimeout(Step* pStep)
+bool WorkerImpl::OnStepTimeout(std::shared_ptr<Step> pStep)
 {
     ev_timer* watcher = pStep->MutableTimerWatcher();
     ev_tstamp after = pStep->GetActiveTime() - ev_now(m_loop) + pStep->GetTimeout();
@@ -464,7 +461,7 @@ bool WorkerImpl::OnStepTimeout(Step* pStep)
     }
 }
 
-bool WorkerImpl::OnSessionTimeout(Session* pSession)
+bool WorkerImpl::OnSessionTimeout(std::shared_ptr<Session> pSession)
 {
     ev_timer* watcher = pSession->MutableTimerWatcher();
     ev_tstamp after = pSession->GetActiveTime() - ev_now(m_loop) + pSession->GetTimeout();
@@ -518,7 +515,7 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
                     argv[i] = c_iter->first.c_str();
                     arglen[i] = c_iter->first.size();
                 }
-                iCmdStatus = redisAsyncCommandArgv((redisAsyncContext*)c, RedisCmdCallback, NULL, args_size, argv, arglen);
+                iCmdStatus = redisAsyncCommandArgv((redisAsyncContext*)c, RedisCmdCallback, nullptr, args_size, argv, arglen);
                 if (iCmdStatus == REDIS_OK)
                 {
                     LOG4_DEBUG("succeed in sending redis cmd: %s", (*step_iter)->CmdToString().c_str());
@@ -528,7 +525,7 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
                     auto interrupt_step_iter = step_iter;
                     for (; step_iter != channel_iter->second->listPipelineStep.end(); ++step_iter)
                     {
-                        (*step_iter)->Callback(c, status, NULL);
+                        (*step_iter)->Callback(c, status, nullptr);
                         Remove(*step_iter);
                     }
                     if (step_iter == channel_iter->second->listPipelineStep.begin())    // 第一个命令就发送失败
@@ -544,8 +541,6 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
                         }
                     }
                     DelNamedRedisChannel(channel_iter->second->GetIdentify());
-                    delete channel_iter->second;
-                    channel_iter->second = NULL;
                     m_mapRedisChannel.erase(channel_iter);
                 }
             }
@@ -555,13 +550,11 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
             for (auto step_iter = channel_iter->second->listPipelineStep.begin();
                             step_iter != channel_iter->second->listPipelineStep.end(); ++step_iter)
             {
-                (*step_iter)->Callback(c, status, NULL);
+                (*step_iter)->Callback(c, status, nullptr);
                 Remove(*step_iter);
             }
             channel_iter->second->listPipelineStep.clear();
             DelNamedRedisChannel(channel_iter->second->GetIdentify());
-            delete channel_iter->second;
-            channel_iter->second = nullptr;
             m_mapRedisChannel.erase(channel_iter);
         }
     }
@@ -579,14 +572,12 @@ bool WorkerImpl::OnRedisDisconnected(const redisAsyncContext *c, int status)
         {
             LOG4_ERROR("RedisDisconnect callback error %d of redis cmd: %s",
                             c->err, (*step_iter)->CmdToString().c_str());
-            (*step_iter)->Callback(c, c->err, NULL);
+            (*step_iter)->Callback(c, c->err, nullptr);
             Remove(*step_iter);
         }
         channel_iter->second->listPipelineStep.clear();
 
         DelNamedRedisChannel(channel_iter->second->GetIdentify());
-        delete channel_iter->second;
-        channel_iter->second = nullptr;
         m_mapRedisChannel.erase(channel_iter);
     }
     return(true);
@@ -599,21 +590,17 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
     if (channel_iter != m_mapRedisChannel.end())
     {
         auto step_iter = channel_iter->second->listPipelineStep.begin();
-        if (NULL == reply)
+        if (nullptr == reply)
         {
             LOG4_ERROR("redis %s error %d: %s", channel_iter->second->GetIdentify().c_str(), c->err, c->errstr);
             for ( ; step_iter != channel_iter->second->listPipelineStep.end(); ++step_iter)
             {
                 LOG4_ERROR("callback error %d of redis cmd: %s", c->err, (*step_iter)->CmdToString().c_str());
                 (*step_iter)->Callback(c, c->err, (redisReply*)reply);
-                delete (*step_iter);
-                (*step_iter) = NULL;
             }
             channel_iter->second->listPipelineStep.clear();
 
             DelNamedRedisChannel(channel_iter->second->GetIdentify());
-            delete channel_iter->second;
-            channel_iter->second = nullptr;
             m_mapRedisChannel.erase(channel_iter);
         }
         else
@@ -621,12 +608,7 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
             if (step_iter != channel_iter->second->listPipelineStep.end())
             {
                 LOG4_TRACE("callback of redis cmd: %s", (*step_iter)->CmdToString().c_str());
-                /** @note 注意，若Callback返回STATUS_CMD_RUNNING，框架不回收并且不再管理该RedisStep，该RedisStep后续必须重新RegisterCallback或由开发者自己回收 */
-                if (CMD_STATUS_RUNNING != (*step_iter)->Callback(c, REDIS_OK, (redisReply*)reply))
-                {
-                    Remove(*step_iter);
-                    (*step_iter) = nullptr;
-                }
+                (*step_iter)->Callback(c, REDIS_OK, (redisReply*)reply);
                 channel_iter->second->listPipelineStep.erase(step_iter);
                 //freeReplyObject(reply);
             }
@@ -644,10 +626,10 @@ time_t WorkerImpl::GetNowTime() const
     return((time_t)ev_now(m_loop));
 }
 
-bool WorkerImpl::ResetTimeout(Actor* pObject)
+bool WorkerImpl::ResetTimeout(std::shared_ptr<Actor> pActor)
 {
-    ev_timer* watcher = pObject->MutableTimerWatcher();
-    ev_tstamp after = ev_now(m_loop) + pObject->GetTimeout();
+    ev_timer* watcher = pActor->MutableTimerWatcher();
+    ev_tstamp after = ev_now(m_loop) + pActor->GetTimeout();
     ev_timer_stop (m_loop, watcher);
     ev_timer_set (watcher, after + ev_time() - ev_now(m_loop), 0);
     ev_timer_start (m_loop, watcher);
@@ -727,7 +709,7 @@ bool WorkerImpl::InitLogger(const CJsonObject& oJsonConf)
 bool WorkerImpl::CreateEvents()
 {
     m_loop = ev_loop_new(EVFLAG_AUTO);
-    if (m_loop == NULL)
+    if (m_loop == nullptr)
     {
         return(false);
     }
@@ -742,9 +724,9 @@ bool WorkerImpl::CreateEvents()
     AddPeriodicTaskEvent();
 
     // 注册网络IO事件
-    SocketChannel* pChannelData = CreateSocketChannel(m_stWorkerInfo.iManagerDataFd, CODEC_PROTOBUF);
-    SocketChannel* pChannelControl = CreateSocketChannel(m_stWorkerInfo.iManagerControlFd, CODEC_PROTOBUF);
-    if (NULL == pChannelData || NULL == pChannelControl)
+    std::shared_ptr<SocketChannel> pChannelData = CreateSocketChannel(m_stWorkerInfo.iManagerDataFd, CODEC_PROTOBUF);
+    std::shared_ptr<SocketChannel> pChannelControl = CreateSocketChannel(m_stWorkerInfo.iManagerControlFd, CODEC_PROTOBUF);
+    if (nullptr == pChannelData || nullptr == pChannelControl)
     {
         return(false);
     }
@@ -761,7 +743,7 @@ bool WorkerImpl::CreateEvents()
 
 void WorkerImpl::LoadSysCmd()
 {
-    m_pCmdConnect = dynamic_cast<CmdConnectWorker*>(NewCmd(nullptr, "neb::CmdConnectWorker", CMD_REQ_CONNECT_TO_WORKER));
+    m_pCmdConnect = std::dynamic_pointer_cast<CmdConnectWorker>(NewCmd(nullptr, "neb::CmdConnectWorker", CMD_REQ_CONNECT_TO_WORKER));
     NewCmd(nullptr, "neb::CmdToldWorker", CMD_REQ_TELL_WORKER);
     NewCmd(nullptr, "neb::CmdUpdateNodeId", CMD_REQ_REFRESH_NODE_ID);
     NewCmd(nullptr, "neb::CmdNodeNotice", CMD_REQ_NODE_REG_NOTICE);
@@ -772,25 +754,8 @@ void WorkerImpl::Destroy()
 {
     LOG4_TRACE(" ");
 
-    for (auto cmd_iter = m_mapCmd.begin(); cmd_iter != m_mapCmd.end(); ++cmd_iter)
-    {
-        DELETE(cmd_iter->second);
-    }
     m_mapCmd.clear();
-
-    for (auto step_iter = m_mapCallbackStep.begin();
-            step_iter != m_mapCallbackStep.end(); ++step_iter)
-    {
-        Remove(step_iter->second);
-    }
     m_mapCallbackStep.clear();
-
-    for (auto attr_iter = m_mapSocketChannel.begin();
-                    attr_iter != m_mapSocketChannel.end(); ++attr_iter)
-    {
-        LOG4_TRACE("for (std::map<int, tagConnectionAttr*>::iterator attr_iter = m_mapChannel.begin();");
-        DiscardSocketChannel(attr_iter->second);
-    }
     m_mapSocketChannel.clear();
 
     for (auto so_iter = m_mapLoadedSo.begin();
@@ -802,16 +767,16 @@ void WorkerImpl::Destroy()
 
     // TODO 待补充完整
 
-    if (m_loop != NULL)
+    if (m_loop != nullptr)
     {
         ev_loop_destroy(m_loop);
-        m_loop = NULL;
+        m_loop = nullptr;
     }
 
-    if (m_pErrBuff != NULL)
+    if (m_pErrBuff != nullptr)
     {
         delete[] m_pErrBuff;
-        m_pErrBuff = NULL;
+        m_pErrBuff = nullptr;
     }
 }
 
@@ -830,9 +795,9 @@ bool WorkerImpl::AddNamedSocketChannel(const std::string& strIdentify, const tag
             auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
             if (named_iter == m_mapNamedSocketChannel.end())
             {
-                std::list<SocketChannel*> listChannel;
+                std::list<std::shared_ptr<SocketChannel>> listChannel;
                 listChannel.push_back(channel_iter->second);
-                m_mapNamedSocketChannel.insert(std::pair<std::string, std::list<SocketChannel*> >(strIdentify, listChannel));
+                m_mapNamedSocketChannel.insert(std::make_pair(strIdentify, listChannel));
             }
             else
             {
@@ -845,14 +810,14 @@ bool WorkerImpl::AddNamedSocketChannel(const std::string& strIdentify, const tag
     }
 }
 
-bool WorkerImpl::AddNamedSocketChannel(const std::string& strIdentify, SocketChannel* pChannel)
+bool WorkerImpl::AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel)
 {
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
     {
-        std::list<SocketChannel*> listChannel;
+        std::list<std::shared_ptr<SocketChannel> > listChannel;
         listChannel.push_back(pChannel);
-        m_mapNamedSocketChannel.insert(std::pair<std::string, std::list<SocketChannel*> >(strIdentify, listChannel));
+        m_mapNamedSocketChannel.insert(std::make_pair(strIdentify, listChannel));
         return(true);
     }
     else
@@ -914,7 +879,7 @@ bool WorkerImpl::AddNamedRedisChannel(const std::string& strIdentify, redisAsync
         auto named_iter = m_mapNamedRedisChannel.find(strIdentify);
         if (named_iter == m_mapNamedRedisChannel.end())
         {
-            std::list<RedisChannel*> listChannel;
+            std::list<std::shared_ptr<RedisChannel>> listChannel;
             listChannel.push_back(channel_iter->second);
             m_mapNamedRedisChannel.insert(std::make_pair(strIdentify, listChannel));
         }
@@ -927,12 +892,12 @@ bool WorkerImpl::AddNamedRedisChannel(const std::string& strIdentify, redisAsync
     }
 }
 
-bool WorkerImpl::AddNamedRedisChannel(const std::string& strIdentify, RedisChannel* pChannel)
+bool WorkerImpl::AddNamedRedisChannel(const std::string& strIdentify, std::shared_ptr<RedisChannel> pChannel)
 {
     auto named_iter = m_mapNamedRedisChannel.find(strIdentify);
     if (named_iter == m_mapNamedRedisChannel.end())
     {
-        std::list<RedisChannel*> listChannel;
+        std::list<std::shared_ptr<RedisChannel> > listChannel;
         listChannel.push_back(pChannel);
         m_mapNamedRedisChannel.insert(std::make_pair(strIdentify, listChannel));
         return(true);
@@ -1025,7 +990,7 @@ void WorkerImpl::AddInnerChannel(const tagChannelContext& stCtx)
     auto iter = m_mapInnerFd.find(stCtx.iFd);
     if (iter == m_mapInnerFd.end())
     {
-        m_mapInnerFd.insert(std::pair<int, uint32>(stCtx.iFd, stCtx.uiSeq));
+        m_mapInnerFd.insert(std::make_pair(stCtx.iFd, stCtx.uiSeq));
     }
     else
     {
@@ -1056,6 +1021,16 @@ bool WorkerImpl::SetClientData(const tagChannelContext& stCtx, const std::string
     }
 }
 
+bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel)
+{
+    E_CODEC_STATUS eStatus = pChannel->Send();
+    if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
+    {
+        return(true);
+    }
+    return(false);
+}
+
 bool WorkerImpl::SendTo(const tagChannelContext& stCtx)
 {
     LOG4_TRACE("fd %d, seq %lu pWaitForSendBuff", stCtx.iFd, stCtx.uiSeq);
@@ -1076,6 +1051,20 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx)
             }
             return(false);
         }
+    }
+    return(false);
+}
+
+bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    if (nullptr != pSender)
+    {
+        (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+    }
+    E_CODEC_STATUS eStatus = pChannel->Send(uiCmd, uiSeq, oMsgBody);
+    if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
+    {
+        return(true);
     }
     return(false);
 }
@@ -1349,7 +1338,7 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, const std::string
     }
 }
 
-bool WorkerImpl::SendTo(RedisChannel* pRedisChannel, RedisStep* pRedisStep)
+bool WorkerImpl::SendTo(std::shared_ptr<RedisChannel> pRedisChannel, std::shared_ptr<RedisStep> pRedisStep)
 {
     LOG4_TRACE(" ");
     if (pRedisChannel->bIsReady)
@@ -1366,7 +1355,7 @@ bool WorkerImpl::SendTo(RedisChannel* pRedisChannel, RedisStep* pRedisStep)
             argv[i] = c_iter->first.c_str();
             arglen[i] = c_iter->first.size();
         }
-        status = redisAsyncCommandArgv((redisAsyncContext*)pRedisChannel->RedisContext(), RedisCmdCallback, NULL, args_size, argv, arglen);
+        status = redisAsyncCommandArgv((redisAsyncContext*)pRedisChannel->RedisContext(), RedisCmdCallback, nullptr, args_size, argv, arglen);
         if (status == REDIS_OK)
         {
             LOG4_DEBUG("succeed in sending redis cmd: %s", pRedisStep->CmdToString().c_str());
@@ -1386,7 +1375,7 @@ bool WorkerImpl::SendTo(RedisChannel* pRedisChannel, RedisStep* pRedisStep)
     }
 }
 
-bool WorkerImpl::SendTo(const std::string& strHost, int iPort, RedisStep* pRedisStep)
+bool WorkerImpl::SendTo(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep)
 {
     LOG4_TRACE("%s, %d", strHost.c_str(), iPort);
     std::ostringstream oss;
@@ -1440,8 +1429,8 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 u
     x_sock_set_block(iFd, 0);
     int nREUSEADDR = 1;
     setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
-    SocketChannel* pChannel = CreateSocketChannel(iFd, CODEC_PROTOBUF);
-    if (NULL != pChannel)
+    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, CODEC_PROTOBUF);
+    if (nullptr != pChannel)
     {
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
@@ -1480,7 +1469,7 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
     {
         struct hostent *he;
         he = gethostbyname(strHost.c_str());
-        if (he != NULL)
+        if (he != nullptr)
         {
             stAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)(he->h_addr)));
         }
@@ -1499,8 +1488,8 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
     x_sock_set_block(iFd, 0);
     int nREUSEADDR = 1;
     setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
-    SocketChannel* pChannel = CreateSocketChannel(iFd, CODEC_HTTP);
-    if (NULL != pChannel)
+    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, CODEC_HTTP);
+    if (nullptr != pChannel)
     {
         char szIdentify[32] = {0};
         AddIoTimeout(pChannel, 1.5);
@@ -1528,7 +1517,7 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
     }
 }
 
-bool WorkerImpl::AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* pRedisStep)
+bool WorkerImpl::AutoRedisCmd(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep)
 {
     LOG4_TRACE("redisAsyncConnect(%s, %d)", strHost.c_str(), iPort);
     redisAsyncContext *c = redisAsyncConnect(strHost.c_str(), iPort);
@@ -1539,10 +1528,10 @@ bool WorkerImpl::AutoRedisCmd(const std::string& strHost, int iPort, RedisStep* 
         return(false);
     }
     c->data = this;
-    RedisChannel* pRedisChannel = NULL;
+    std::shared_ptr<RedisChannel> pRedisChannel = nullptr;
     try
     {
-        pRedisChannel = new RedisChannel();
+        pRedisChannel = std::make_shared<RedisChannel>();
     }
     catch(std::bad_alloc& e)
     {
@@ -1581,7 +1570,7 @@ bool WorkerImpl::Disconnect(const std::string& strIdentify, bool bChannelNotice)
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter != m_mapNamedSocketChannel.end())
     {
-        std::list<SocketChannel*>::iterator channel_iter;
+        std::list<std::shared_ptr<SocketChannel>>::iterator channel_iter;
         while (named_iter->second.size() > 1)
         {
             channel_iter = named_iter->second.begin();
@@ -1684,7 +1673,7 @@ void WorkerImpl::DynamicLoadCmd(CJsonObject& oDynamicLoadingConf)
     std::string strUrlPath;
     std::string strSoPath;
     std::unordered_map<std::string, tagSo*>::iterator so_iter;
-    tagSo* pSo = NULL;
+    tagSo* pSo = nullptr;
     for (int i = 0; i < oDynamicLoadingConf.GetArraySize(); ++i)
     {
         oDynamicLoadingConf[i].Get("load", bIsload);
@@ -1776,7 +1765,7 @@ bool WorkerImpl::AddPeriodicTaskEvent()
 {
     LOG4_TRACE(" ");
     ev_timer* timeout_watcher = (ev_timer*)malloc(sizeof(ev_timer));
-    if (timeout_watcher == NULL)
+    if (timeout_watcher == nullptr)
     {
         LOG4_ERROR("malloc timeout_watcher error!");
         return(false);
@@ -1787,14 +1776,14 @@ bool WorkerImpl::AddPeriodicTaskEvent()
     return(true);
 }
 
-bool WorkerImpl::AddIoReadEvent(SocketChannel* pChannel)
+bool WorkerImpl::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
-    if (NULL == io_watcher)
+    if (nullptr == io_watcher)
     {
         io_watcher = pChannel->AddIoWatcher();
-        if (NULL == io_watcher)
+        if (nullptr == io_watcher)
         {
             return(false);
         }
@@ -1811,14 +1800,14 @@ bool WorkerImpl::AddIoReadEvent(SocketChannel* pChannel)
     return(true);
 }
 
-bool WorkerImpl::AddIoWriteEvent(SocketChannel* pChannel)
+bool WorkerImpl::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
-    if (NULL == io_watcher)
+    if (nullptr == io_watcher)
     {
         io_watcher = pChannel->AddIoWatcher();
-        if (NULL == io_watcher)
+        if (nullptr == io_watcher)
         {
             return(false);
         }
@@ -1835,11 +1824,11 @@ bool WorkerImpl::AddIoWriteEvent(SocketChannel* pChannel)
     return(true);
 }
 
-bool WorkerImpl::RemoveIoWriteEvent(SocketChannel* pChannel)
+bool WorkerImpl::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
-    if (NULL == io_watcher)
+    if (nullptr == io_watcher)
     {
         return(false);
     }
@@ -1852,15 +1841,15 @@ bool WorkerImpl::RemoveIoWriteEvent(SocketChannel* pChannel)
     return(true);
 }
 
-bool WorkerImpl::AddIoTimeout(SocketChannel* pChannel, ev_tstamp dTimeout)
+bool WorkerImpl::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout)
 {
     LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
     ev_timer* timer_watcher = pChannel->MutableTimerWatcher();
-    if (NULL == timer_watcher)
+    if (nullptr == timer_watcher)
     {
         timer_watcher = pChannel->AddTimerWatcher();
         LOG4_TRACE("pChannel = 0x%d,  timer_watcher = 0x%d", pChannel, timer_watcher);
-        if (NULL == timer_watcher)
+        if (nullptr == timer_watcher)
         {
             return(false);
         }
@@ -1888,11 +1877,11 @@ bool WorkerImpl::AddIoTimeout(const tagChannelContext& stCtx)
         if (stCtx.uiSeq == iter->second->GetSequence())
         {
             ev_timer* timer_watcher = iter->second->MutableTimerWatcher();
-            if (NULL == timer_watcher)
+            if (nullptr == timer_watcher)
             {
                 timer_watcher = iter->second->AddTimerWatcher();
                 LOG4_TRACE("timer_watcher = 0x%d", timer_watcher);
-                if (NULL == timer_watcher)
+                if (nullptr == timer_watcher)
                 {
                     return(false);
                 }
@@ -1913,7 +1902,7 @@ bool WorkerImpl::AddIoTimeout(const tagChannelContext& stCtx)
     return(false);
 }
 
-Session* WorkerImpl::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> WorkerImpl::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
 {
     auto name_iter = m_mapCallbackSession.find(strSessionClass);
     if (name_iter == m_mapCallbackSession.end())
@@ -1937,7 +1926,7 @@ Session* WorkerImpl::GetSession(uint32 uiSessionId, const std::string& strSessio
     }
 }
 
-Session* WorkerImpl::GetSession(const std::string& strSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> WorkerImpl::GetSession(const std::string& strSessionId, const std::string& strSessionClass)
 {
     auto name_iter = m_mapCallbackSession.find(strSessionClass);
     if (name_iter == m_mapCallbackSession.end())
@@ -1959,16 +1948,16 @@ Session* WorkerImpl::GetSession(const std::string& strSessionId, const std::stri
     }
 }
 
-SocketChannel* WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType)
+std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType)
 {
     LOG4_DEBUG("iFd %d, codec_type %d", iFd, eCodecType);
     auto iter = m_mapSocketChannel.find(iFd);
     if (iter == m_mapSocketChannel.end())
     {
-        SocketChannel* pChannel = NULL;
+        std::shared_ptr<SocketChannel> pChannel = nullptr;
         try
         {
-            pChannel = new SocketChannel(m_pLogger, iFd, GetSequence());
+            pChannel = std::make_shared<SocketChannel>(m_pLogger, iFd, GetSequence());
         }
         catch(std::bad_alloc& e)
         {
@@ -1984,8 +1973,7 @@ SocketChannel* WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType)
         }
         else
         {
-            DELETE(pChannel);
-            return(NULL);
+            return(nullptr);
         }
     }
     else
@@ -1995,7 +1983,7 @@ SocketChannel* WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType)
     }
 }
 
-bool WorkerImpl::DiscardSocketChannel(SocketChannel* pChannel, bool bChannelNotice)
+bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice)
 {
     LOG4_DEBUG("%s disconnect, identify %s", pChannel->GetRemoteAddr().c_str(), pChannel->GetIdentify().c_str());
     if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
@@ -2033,7 +2021,7 @@ bool WorkerImpl::DiscardSocketChannel(SocketChannel* pChannel, bool bChannelNoti
         ChannelNotice(stCtx, pChannel->GetIdentify(), pChannel->GetClientData());
     }
     ev_io_stop (m_loop, pChannel->MutableIoWatcher());
-    if (NULL != pChannel->MutableTimerWatcher())
+    if (nullptr != pChannel->MutableTimerWatcher())
     {
         ev_timer_stop (m_loop, pChannel->MutableTimerWatcher());
     }
@@ -2043,18 +2031,16 @@ bool WorkerImpl::DiscardSocketChannel(SocketChannel* pChannel, bool bChannelNoti
         m_mapSocketChannel.erase(channel_iter);
     }
     pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
-    DELETE(pChannel);
     return(true);
 }
 
-void WorkerImpl::Remove(Step* pStep)
+void WorkerImpl::Remove(std::shared_ptr<Step> pStep)
 {
-    LOG4_TRACE("Step* 0x%X", pStep);
     if (nullptr == pStep)
     {
         return;
     }
-    std::unordered_map<uint32, Step*>::iterator callback_iter;
+    std::unordered_map<uint32, std::shared_ptr<Step> >::iterator callback_iter;
     for (auto step_seq_iter = pStep->m_setPreStepSeq.begin();
                     step_seq_iter != pStep->m_setPreStepSeq.end(); )
     {
@@ -2066,31 +2052,29 @@ void WorkerImpl::Remove(Step* pStep)
         else
         {
             LOG4_DEBUG("step %u had pre step %u running, delay delete callback.", pStep->GetSequence(), *step_seq_iter);
-            ResetTimeout(pStep);
+            ResetTimeout(std::dynamic_pointer_cast<Actor>(pStep));
             return;
         }
     }
-    if (pStep->MutableTimerWatcher() != NULL)
+    if (pStep->MutableTimerWatcher() != nullptr)
     {
         ev_timer_stop (m_loop, pStep->MutableTimerWatcher());
     }
     callback_iter = m_mapCallbackStep.find(pStep->GetSequence());
     if (callback_iter != m_mapCallbackStep.end())
     {
-        LOG4_TRACE("delete step(seq %u)", pStep->GetSequence());
-        DELETE(pStep);
+        LOG4_TRACE("erase step(seq %u)", pStep->GetSequence());
         m_mapCallbackStep.erase(callback_iter);
     }
 }
 
-void WorkerImpl::Remove(Session* pSession)
+void WorkerImpl::Remove(std::shared_ptr<Session> pSession)
 {
-    LOG4_TRACE("Session* 0x%X", pSession);
     if (nullptr == pSession)
     {
         return;
     }
-    if (pSession->MutableTimerWatcher() != NULL)
+    if (pSession->MutableTimerWatcher() != nullptr)
     {
         ev_timer_stop (m_loop, pSession->MutableTimerWatcher());
     }
@@ -2100,9 +2084,8 @@ void WorkerImpl::Remove(Session* pSession)
         auto iter = callback_iter->second.find(pSession->GetSessionId());
         if (iter != callback_iter->second.end())
         {
-            LOG4_TRACE("delete session(session_name %s, session_id %s)",
+            LOG4_TRACE("erase session(session_name %s, session_id %s)",
                             pSession->GetSessionClass().c_str(), pSession->GetSessionId().c_str());
-            DELETE(pSession);
             callback_iter->second.erase(iter);
             if (callback_iter->second.empty())
             {
@@ -2116,7 +2099,7 @@ void WorkerImpl::ChannelNotice(const tagChannelContext& stCtx, const std::string
 {
     LOG4_TRACE(" ");
     auto cmd_iter = m_mapCmd.find(CMD_REQ_DISCONNECT);
-    if (cmd_iter != m_mapCmd.end() && cmd_iter->second != NULL)
+    if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
     {
         MsgHead oMsgHead;
         MsgBody oMsgBody;
@@ -2133,7 +2116,7 @@ void WorkerImpl::ChannelNotice(const tagChannelContext& stCtx, const std::string
     }
 }
 
-bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
 {
     LOG4_DEBUG("cmd %u, seq %lu", oMsgHead.cmd(), oMsgHead.seq());
     tagChannelContext stCtx;
@@ -2257,14 +2240,14 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
         {
             LOG4_TRACE("receive message, cmd = %d",
                             oMsgHead.cmd());
-            if (step_iter->second != NULL)
+            if (step_iter->second != nullptr)
             {
                 E_CMD_STATUS eResult;
                 step_iter->second->SetActiveTime(ev_now(m_loop));
                 LOG4_TRACE("cmd %u, seq %u, step_seq %u, step addr 0x%x, active_time %lf",
                                 oMsgHead.cmd(), oMsgHead.seq(), step_iter->second->GetSequence(),
                                 step_iter->second, step_iter->second->GetActiveTime());
-                eResult = ((PbStep*)step_iter->second)->Callback(stCtx, oMsgHead, oMsgBody);
+                eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(stCtx, oMsgHead, oMsgBody);
                 if (CMD_STATUS_RUNNING != eResult)
                 {
                     Remove(step_iter->second);
@@ -2281,7 +2264,7 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const MsgHead& oMsgHead, const 
     return(true);
 }
 
-bool WorkerImpl::Handle(SocketChannel* pChannel, const HttpMsg& oHttpMsg)
+bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
 {
     LOG4_DEBUG("oInHttpMsg.type() = %d, oInHttpMsg.path() = %s",
                     oHttpMsg.type(), oHttpMsg.path().c_str());
@@ -2333,7 +2316,7 @@ bool WorkerImpl::Handle(SocketChannel* pChannel, const HttpMsg& oHttpMsg)
         {
             E_CMD_STATUS eResult;
             http_step_iter->second->SetActiveTime(ev_now(m_loop));
-            eResult = ((HttpStep*)http_step_iter->second)->Callback(stCtx, oHttpMsg);
+            eResult = (std::dynamic_pointer_cast<HttpStep>(http_step_iter->second))->Callback(stCtx, oHttpMsg);
             if (CMD_STATUS_RUNNING != eResult)
             {
                 Remove(http_step_iter->second);

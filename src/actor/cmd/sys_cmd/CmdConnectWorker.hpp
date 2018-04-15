@@ -29,7 +29,7 @@ public:
     bool Start(const tagChannelContext& stCtx, int iWorkerIndex);
 
 public:
-    StepConnectWorker* pStepConnectWorker;        ///< 仅为了生成可读性高的类图，构造函数中不分配空间，析构函数中也不回收空间
+    std::shared_ptr<StepConnectWorker> pStepConnectWorker;
 };
 
 } /* namespace neb */

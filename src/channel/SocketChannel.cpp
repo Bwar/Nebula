@@ -653,4 +653,12 @@ ev_timer* SocketChannel::AddTimerWatcher()
     return(m_pTimerWatcher);
 }
 
+
+
+std::shared_ptr<SocketChannel> SocketChannel::SharedFromThis()
+{
+    return(shared_from_this());
+}
+
+
 } /* namespace neb */
