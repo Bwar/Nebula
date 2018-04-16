@@ -54,7 +54,6 @@ public:
     Actor(const Actor&) = delete;
     Actor& operator=(const Actor&) = delete;
     virtual ~Actor();
-    std::shared_ptr<Actor> SharedFromThis();
 
 protected:
     uint32 GetSequence();

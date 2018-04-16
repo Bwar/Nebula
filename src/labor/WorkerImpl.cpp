@@ -59,11 +59,11 @@ void WorkerImpl::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int rev
         Worker* pWorker = (Worker*)pChannel->m_pLabor;
         if (revents & EV_READ)
         {
-            pWorker->m_pImpl->OnIoRead(pChannel->SharedFromThis());
+            pWorker->m_pImpl->OnIoRead(pChannel->shared_from_this());
         }
         if (revents & EV_WRITE)
         {
-            pWorker->m_pImpl->OnIoWrite(pChannel->SharedFromThis());
+            pWorker->m_pImpl->OnIoWrite(pChannel->shared_from_this());
         }
         watcher->data = nullptr;
     }
@@ -79,7 +79,7 @@ void WorkerImpl::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int 
         {
             return;
         }
-        pWorker->m_pImpl->OnIoTimeout(pChannel->SharedFromThis());
+        pWorker->m_pImpl->OnIoTimeout(pChannel->shared_from_this());
     }
 }
 
@@ -100,7 +100,7 @@ void WorkerImpl::StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, in
     if (watcher->data != nullptr)
     {
         Step* pStep = (Step*)watcher->data;
-        ((Worker*)(pStep->m_pWorker))->m_pImpl->OnStepTimeout(std::dynamic_pointer_cast<Step>(pStep->SharedFromThis()));
+        ((Worker*)(pStep->m_pWorker))->m_pImpl->OnStepTimeout(std::dynamic_pointer_cast<Step>(pStep->shared_from_this()));
     }
 }
 
@@ -109,7 +109,7 @@ void WorkerImpl::SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher,
     if (watcher->data != nullptr)
     {
         Session* pSession = (Session*)watcher->data;
-        ((Worker*)pSession->m_pWorker)->m_pImpl->OnSessionTimeout(std::dynamic_pointer_cast<Session>(pSession->SharedFromThis()));
+        ((Worker*)pSession->m_pWorker)->m_pImpl->OnSessionTimeout(std::dynamic_pointer_cast<Session>(pSession->shared_from_this()));
     }
 }
 
@@ -573,7 +573,7 @@ bool WorkerImpl::OnRedisDisconnected(const redisAsyncContext *c, int status)
             LOG4_ERROR("RedisDisconnect callback error %d of redis cmd: %s",
                             c->err, (*step_iter)->CmdToString().c_str());
             (*step_iter)->Callback(c, c->err, nullptr);
-            Remove(*step_iter);
+            Remove(std::dynamic_pointer_cast<Step>(*step_iter));
         }
         channel_iter->second->listPipelineStep.clear();
 
@@ -589,6 +589,12 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
     auto channel_iter = m_mapRedisChannel.find((redisAsyncContext*)c);
     if (channel_iter != m_mapRedisChannel.end())
     {
+        if (channel_iter->second->listPipelineStep.empty())
+        {
+            LOG4_ERROR("no redis step!");
+            return(false);
+        }
+
         auto step_iter = channel_iter->second->listPipelineStep.begin();
         if (nullptr == reply)
         {
@@ -617,7 +623,10 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
                 LOG4_ERROR("no redis callback data found!");
             }
         }
+
+        Remove(std::dynamic_pointer_cast<Step>(*step_iter));
     }
+
     return(true);
 }
 

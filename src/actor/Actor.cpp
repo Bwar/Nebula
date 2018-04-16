@@ -27,11 +27,6 @@ Actor::~Actor()
 {
 }
 
-std::shared_ptr<Actor> Actor::SharedFromThis()
-{
-    return(shared_from_this());
-}
-
 uint32 Actor::GetSequence()
 {
     if (0 == m_ulSequence)

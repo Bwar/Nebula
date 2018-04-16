@@ -246,6 +246,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         if (m_iHttpMajor < 1 || (m_iHttpMajor == 1 && m_iHttpMinor < 1))
         {
             m_mapAddingHttpHeader.insert(std::pair<std::string, std::string>("Connection", "close"));
+            m_dKeepAlive = 0.0;
         }
         else
         {
@@ -813,11 +814,11 @@ int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
     {
         if (std::string("keep-alive") == pHeader->header_value())
         {
-            pHttpMsg->set_keep_alive(0.0);     // 由配置的IoTimeout决定
+            pHttpMsg->set_keep_alive(-1);     // 由配置的IoTimeout决定
         }
         else if (std::string("close") == pHeader->header_value())
         {
-            pHttpMsg->set_keep_alive(0.8);
+            pHttpMsg->set_keep_alive(0.0);
         }
 
         if (std::string("Upgrade") == pHeader->header_value())

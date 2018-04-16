@@ -19,9 +19,9 @@
 namespace neb
 {
 
-SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq)
+SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
     : m_ucChannelStatus(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulStepSeq(0),
-      m_ulForeignSeq(0), m_ulUnitTimeMsgNum(0), m_ulMsgNum(0), m_dActiveTime(0.0), m_dKeepAlive(0.0),
+      m_ulForeignSeq(0), m_ulUnitTimeMsgNum(0), m_ulMsgNum(0), m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
       m_pIoWatcher(nullptr), m_pTimerWatcher(nullptr),
       m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
       m_pCodec(nullptr), m_iErrno(0), m_pLabor(nullptr), m_pLogger(pLogger)
@@ -83,7 +83,7 @@ ev_tstamp SocketChannel::GetKeepAlive()
 {
     if (CODEC_HTTP == m_pCodec->GetCodecType())
     {
-        m_dKeepAlive = ((CodecHttp*)m_pCodec)->GetKeepAlive();
+        m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
     }
     return(m_dKeepAlive);
 }
@@ -291,7 +291,7 @@ E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
     {
         case CHANNEL_STATUS_ESTABLISHED:
             eCodecStatus = ((CodecHttp*)m_pCodec)->Encode(oHttpMsg, m_pSendBuff);
-            m_dKeepAlive = ((CodecHttp*)m_pCodec)->GetKeepAlive();
+            m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
             break;
         case CHANNEL_STATUS_TELL_WORKER:
         case CHANNEL_STATUS_WORKER:
@@ -446,7 +446,7 @@ E_CODEC_STATUS SocketChannel::Recv(HttpMsg& oHttpMsg)
     {
         m_dActiveTime = m_pLabor->GetNowTime();
         E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
-        m_dKeepAlive = ((CodecHttp*)m_pCodec)->GetKeepAlive();
+        m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
         return(eCodecStatus);
     }
     else if (iReadLen == 0)
@@ -495,7 +495,7 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg
         if (CODEC_HTTP == m_pCodec->GetCodecType())
         {
             E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
-            m_dKeepAlive = ((CodecHttp*)m_pCodec)->GetKeepAlive();
+            m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
             return(eCodecStatus);
         }
         else
@@ -561,7 +561,7 @@ E_CODEC_STATUS SocketChannel::Fetch(HttpMsg& oHttpMsg)
         return(CODEC_STATUS_EOF);
     }
     E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
-    m_dKeepAlive = ((CodecHttp*)m_pCodec)->GetKeepAlive();
+    m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
     return(eCodecStatus);
 }
 
@@ -576,7 +576,7 @@ E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMs
     if (CODEC_HTTP == m_pCodec->GetCodecType())
     {
         eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
-        m_dKeepAlive = ((CodecHttp*)m_pCodec)->GetKeepAlive();
+        m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
         return(eCodecStatus);
     }
     else
@@ -651,13 +651,6 @@ ev_timer* SocketChannel::AddTimerWatcher()
         m_pTimerWatcher->data = this;    // (void*)(Channel*)
     }
     return(m_pTimerWatcher);
-}
-
-
-
-std::shared_ptr<SocketChannel> SocketChannel::SharedFromThis()
-{
-    return(shared_from_this());
 }
 
 

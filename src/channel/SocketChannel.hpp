@@ -32,7 +32,7 @@ class NetLogger;
 class SocketChannel: public Channel, public std::enable_shared_from_this<SocketChannel>
 {
 public:
-    SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq);
+    SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive = 0.0);
     virtual ~SocketChannel();
 
     // bool Init(E_CODEC_TYPE eCodecType, IoCallbackFun io_cb, TimerCallbackFun timer_cb, const std::string& strKey = "That's a lizard.");
@@ -121,8 +121,6 @@ public:
     {
         return(m_strErrMsg);
     }
-
-    std::shared_ptr<SocketChannel> SharedFromThis();
 
 private:
     void SetLabor(Labor* pLabor)
