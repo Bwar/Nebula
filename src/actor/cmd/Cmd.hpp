@@ -74,25 +74,25 @@ void Cmd::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine,
 template <typename ...Targs>
 std::shared_ptr<Step> Cmd::MakeSharedStep(const std::string& strStepName, Targs... args)
 {
-    return(m_pWorker->NewStep(this, strStepName, std::forward<Targs>(args)...));
+    return(m_pWorker->MakeSharedStep(this, strStepName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Session> Cmd::MakeSharedSession(const std::string& strSessionName, Targs... args)
 {
-    return(m_pWorker->NewSession(this, strSessionName, std::forward<Targs>(args)...));
+    return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Cmd> Cmd::MakeSharedCmd(const std::string& strCmdName, Targs... args)
 {
-    return(m_pWorker->NewStep(this, strCmdName, std::forward<Targs>(args)...));
+    return(m_pWorker->MakeSharedStep(this, strCmdName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Module> Cmd::MakeSharedModule(const std::string& strModuleName, Targs... args)
 {
-    return(m_pWorker->NewSession(this, strModuleName, std::forward<Targs>(args)...));
+    return(m_pWorker->MakeSharedSession(this, strModuleName, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

@@ -26,7 +26,7 @@ void WorkerImpl::Logger(const std::string& strTraceId, int iLogLevel, const char
 }
 
 template <typename ...Targs>
-std::shared_ptr<Step> WorkerImpl::NewStep(Actor* pCreator, const std::string& strStepName, Targs... args)
+std::shared_ptr<Step> WorkerImpl::MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args)
 {
     Step* pStep = dynamic_cast<Step*>(ActorFactory<Targs...>::Instance()->Create(strStepName, std::forward<Targs>(args)...));
     if (nullptr == pStep)
@@ -35,7 +35,7 @@ std::shared_ptr<Step> WorkerImpl::NewStep(Actor* pCreator, const std::string& st
     }
     StepModel* pStepAlias = (StepModel*)pStep;
     pStepAlias->m_dTimeout = (0 == pStepAlias->m_dTimeout) ? m_stWorkerInfo.dStepTimeout : pStepAlias->m_dTimeout;
-    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pStepAlias, pStepAlias->m_dTimeout);
+    LOG4_TRACE("%s(StepName \"%s\", Step* 0x%X, lifetime %lf)", __FUNCTION__, strStepName.c_str(), pStepAlias, pStepAlias->m_dTimeout);
 
     pStepAlias->SetWorker(m_pWorker);
     pStepAlias->SetActiveTime(ev_now(m_loop));
@@ -79,8 +79,9 @@ std::shared_ptr<Step> WorkerImpl::NewStep(Actor* pCreator, const std::string& st
         }
     }
 
-    std::shared_ptr<Step> pSharedStep(pStep);
-    auto ret = m_mapCallbackStep.insert(std::make_pair(pStepAlias->GetSequence(), pStep));
+    std::shared_ptr<Step> pSharedStep;
+    pSharedStep.reset(pStep);
+    auto ret = m_mapCallbackStep.insert(std::make_pair(pStepAlias->GetSequence(), pSharedStep));
     if (ret.second)
     {
         if (gc_dNoTimeout != pStepAlias->m_dTimeout)
@@ -100,7 +101,7 @@ std::shared_ptr<Step> WorkerImpl::NewStep(Actor* pCreator, const std::string& st
 }
 
 template <typename ...Targs>
-std::shared_ptr<Session> WorkerImpl::NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args)
+std::shared_ptr<Session> WorkerImpl::MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs... args)
 {
     Session* pSession = dynamic_cast<Session*>(ActorFactory<Targs...>::Instance()->Create(strSessionName, std::forward<Targs>(args)...));
     if (nullptr == pSession)
@@ -108,7 +109,7 @@ std::shared_ptr<Session> WorkerImpl::NewSession(Actor* pCreator, const std::stri
         return(nullptr);
     }
     SessionModel* pSessionAlias = (SessionModel*)pSession;
-    LOG4_TRACE("%s(Step* 0x%X, lifetime %lf)", __FUNCTION__, pSession, pSessionAlias->m_dTimeout);
+    LOG4_TRACE("%s(SessionName \"%s\", Session* 0x%X, lifetime %lf)", __FUNCTION__, strSessionName.c_str(), pSession, pSessionAlias->m_dTimeout);
 
     pSessionAlias->SetWorker(m_pWorker);
     pSessionAlias->SetActiveTime(ev_now(m_loop));
@@ -120,18 +121,19 @@ std::shared_ptr<Session> WorkerImpl::NewSession(Actor* pCreator, const std::stri
         return(nullptr);
     }
 
-    std::shared_ptr<Session> pSharedSession(pSession);
+    std::shared_ptr<Session> pSharedSession;
+    pSharedSession.reset(pSession);
     std::pair<std::unordered_map<std::string, std::shared_ptr<Session>>::iterator, bool> ret;
     auto session_name_iter = m_mapCallbackSession.find(pSessionAlias->GetSessionClass());
     if (session_name_iter == m_mapCallbackSession.end())
     {
         std::unordered_map<std::string, std::shared_ptr<Session>> mapSession;
-        ret = mapSession.insert(std::make_pair(pSessionAlias->GetSessionId(), pSession));
+        ret = mapSession.insert(std::make_pair(pSessionAlias->GetSessionId(), pSharedSession));
         m_mapCallbackSession.insert(std::make_pair(pSessionAlias->GetSessionClass(), mapSession));
     }
     else
     {
-        ret = session_name_iter->second.insert(std::make_pair(pSessionAlias->GetSessionId(), pSession));
+        ret = session_name_iter->second.insert(std::make_pair(pSessionAlias->GetSessionId(), pSharedSession));
     }
     if (ret.second)
     {
@@ -149,7 +151,7 @@ std::shared_ptr<Session> WorkerImpl::NewSession(Actor* pCreator, const std::stri
 }
 
 template <typename ...Targs>
-std::shared_ptr<Cmd> WorkerImpl::NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
+std::shared_ptr<Cmd> WorkerImpl::MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
 {
     Cmd* pCmd = dynamic_cast<Cmd*>(ActorFactory<Targs...>::Instance()->Create(strCmdName, std::forward<Targs>(args)...));
     if (nullptr == pCmd)
@@ -157,12 +159,13 @@ std::shared_ptr<Cmd> WorkerImpl::NewCmd(Actor* pCreator, const std::string& strC
         return(nullptr);
     }
     CmdModel* pCmdAlias = (CmdModel*)pCmd;
-    LOG4_TRACE("%s(Cmd* 0x%X)", __FUNCTION__, pCmd);
+    LOG4_TRACE("%s(CmdName \"%s\", Cmd* 0x%X)", __FUNCTION__, strCmdName.c_str(), pCmd);
 
     pCmdAlias->SetWorker(m_pWorker);
     pCmdAlias->SetActiveTime(ev_now(m_loop));
 
-    std::shared_ptr<Cmd> pSharedCmd(pCmd);
+    std::shared_ptr<Cmd> pSharedCmd;
+    pSharedCmd.reset(pCmd);
     auto ret = m_mapCmd.insert(std::make_pair(pCmdAlias->GetCmd(), pSharedCmd));
     if (ret.second)
     {
@@ -176,7 +179,7 @@ std::shared_ptr<Cmd> WorkerImpl::NewCmd(Actor* pCreator, const std::string& strC
 }
 
 template <typename ...Targs>
-std::shared_ptr<Module> WorkerImpl::NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
+std::shared_ptr<Module> WorkerImpl::MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
 {
     Module* pModule = dynamic_cast<Module*>(ActorFactory<Targs...>::Instance()->Create(strModuleName, std::forward<Targs>(args)...));
     if (nullptr == pModule)
@@ -184,12 +187,13 @@ std::shared_ptr<Module> WorkerImpl::NewModule(Actor* pCreator, const std::string
         return(nullptr);
     }
     ModuleModel* pModuleAlias = (ModuleModel*)pModule;
-    LOG4_TRACE("%s(Module* 0x%X)", __FUNCTION__, pModule);
+    LOG4_TRACE("%s(ModuleName \"%s\", Module* 0x%X)", __FUNCTION__, strModuleName.c_str(), pModule);
 
     pModuleAlias->SetWorker(m_pWorker);
     pModuleAlias->SetActiveTime(ev_now(m_loop));
 
-    std::shared_ptr<Module> pSharedModule(pModule);
+    std::shared_ptr<Module> pSharedModule;
+    pSharedModule.reset(pModule);
     auto ret = m_mapModule.insert(std::make_pair(pModuleAlias->GetModulePath(), pSharedModule));
     if (ret.second)
     {

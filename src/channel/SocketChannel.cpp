@@ -38,6 +38,7 @@ SocketChannel::~SocketChannel()
     DELETE(m_pSendBuff);
     DELETE(m_pWaitForSendBuff);
     DELETE(m_pCodec);
+    LOG4_DEBUG("SocketChannel::~SocketChannel() fd %d, seq %u", m_iFd, m_ulSeq);
 }
 
 bool SocketChannel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
@@ -110,55 +111,32 @@ E_CODEC_STATUS SocketChannel::Send()
     }
     int iNeedWriteLen = 0;
     int iWriteLen = 0;
-    LOG4_TRACE("m_pSendBuff = 0x%d, m_pSendBuff->ReadableBytes() = %d", m_pSendBuff, m_pSendBuff->ReadableBytes());
     iNeedWriteLen = m_pSendBuff->ReadableBytes();
-    if (iNeedWriteLen > 0)
+    if (0 == iNeedWriteLen)
     {
-        iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
-        if (iWriteLen >= 0)
+        iNeedWriteLen = m_pWaitForSendBuff->ReadableBytes();
+        if (0 == iNeedWriteLen)
         {
-            m_dActiveTime = m_pLabor->GetNowTime();
-            if (iNeedWriteLen == iWriteLen)
+            if (m_dKeepAlive <= 0.0)
             {
-                CBuffer* pExchangeBuff = m_pSendBuff;
-                m_pSendBuff = m_pWaitForSendBuff;
-                m_pWaitForSendBuff = pExchangeBuff;
-            }
-            else
-            {
-                iNeedWriteLen = m_pWaitForSendBuff->ReadableBytes();
-                iWriteLen += m_pSendBuff->Write(m_pWaitForSendBuff, iNeedWriteLen - iWriteLen);
-                return(CODEC_STATUS_PAUSE);
+                m_ucChannelStatus = CHANNEL_STATUS_DISCARD;
+                return(CODEC_STATUS_EOF);
             }
         }
         else
         {
-            if (EAGAIN == m_iErrno && EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
-            {
-                iNeedWriteLen = m_pWaitForSendBuff->ReadableBytes();
-                iWriteLen += m_pSendBuff->Write(m_pWaitForSendBuff, iNeedWriteLen - iWriteLen);
-                m_dActiveTime = m_pLabor->GetNowTime();
-                return(CODEC_STATUS_PAUSE);
-            }
-            LOG4_ERROR("send to fd %d error %d: %s",
-                    m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
-            m_strErrMsg = m_szErrBuff;
-            return(CODEC_STATUS_INT);
+            CBuffer* pExchangeBuff = m_pSendBuff;
+            m_pSendBuff = m_pWaitForSendBuff;
+            m_pWaitForSendBuff = pExchangeBuff;
         }
     }
-    else if (m_pWaitForSendBuff->ReadableBytes() > 0)
-    {
-        CBuffer* pExchangeBuff = m_pSendBuff;
-        m_pSendBuff = m_pWaitForSendBuff;
-        m_pWaitForSendBuff = pExchangeBuff;
-    }
 
-    iNeedWriteLen = m_pSendBuff->ReadableBytes();
+    m_dActiveTime = m_pLabor->GetNowTime();
     iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
     if (iWriteLen >= 0)
     {
         m_dActiveTime = m_pLabor->GetNowTime();
-        if (iNeedWriteLen == iWriteLen)
+        if (iNeedWriteLen == iWriteLen && 0 == m_pWaitForSendBuff->ReadableBytes())
         {
             return(CODEC_STATUS_OK);
         }

@@ -403,7 +403,7 @@ bool WorkerImpl::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
         tagChannelContext stCtx;
         stCtx.iFd = pChannel->GetFd();
         stCtx.uiSeq = pChannel->GetSequence();
-        std::shared_ptr<Step> pStepIoTimeout = NewStep(nullptr, "neb::StepIoTimeout", stCtx);
+        std::shared_ptr<Step> pStepIoTimeout = MakeSharedStep(nullptr, "neb::StepIoTimeout", stCtx);
         if (nullptr == pStepIoTimeout)
         {
             LOG4_ERROR("new StepIoTimeout error!");
@@ -752,11 +752,11 @@ bool WorkerImpl::CreateEvents()
 
 void WorkerImpl::LoadSysCmd()
 {
-    m_pCmdConnect = std::dynamic_pointer_cast<CmdConnectWorker>(NewCmd(nullptr, "neb::CmdConnectWorker", CMD_REQ_CONNECT_TO_WORKER));
-    NewCmd(nullptr, "neb::CmdToldWorker", CMD_REQ_TELL_WORKER);
-    NewCmd(nullptr, "neb::CmdUpdateNodeId", CMD_REQ_REFRESH_NODE_ID);
-    NewCmd(nullptr, "neb::CmdNodeNotice", CMD_REQ_NODE_REG_NOTICE);
-    NewCmd(nullptr, "neb::CmdBeat", CMD_REQ_BEAT);
+    m_pCmdConnect = std::dynamic_pointer_cast<CmdConnectWorker>(MakeSharedCmd(nullptr, "neb::CmdConnectWorker", CMD_REQ_CONNECT_TO_WORKER));
+    MakeSharedCmd(nullptr, "neb::CmdToldWorker", CMD_REQ_TELL_WORKER);
+    MakeSharedCmd(nullptr, "neb::CmdUpdateNodeId", CMD_REQ_REFRESH_NODE_ID);
+    MakeSharedCmd(nullptr, "neb::CmdNodeNotice", CMD_REQ_NODE_REG_NOTICE);
+    MakeSharedCmd(nullptr, "neb::CmdBeat", CMD_REQ_BEAT);
 }
 
 void WorkerImpl::Destroy()
@@ -1033,8 +1033,14 @@ bool WorkerImpl::SetClientData(const tagChannelContext& stCtx, const std::string
 bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
     E_CODEC_STATUS eStatus = pChannel->Send();
-    if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
+    if (CODEC_STATUS_OK == eStatus)
     {
+        RemoveIoWriteEvent(pChannel);
+        return(true);
+    }
+    else if (CODEC_STATUS_PAUSE == eStatus)
+    {
+        AddIoWriteEvent(pChannel);
         return(true);
     }
     return(false);
@@ -1054,8 +1060,14 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx)
         if (iter->second->GetSequence() == stCtx.uiSeq)
         {
             E_CODEC_STATUS eStatus = iter->second->Send();
-            if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
+            if (CODEC_STATUS_OK == eStatus)
             {
+                RemoveIoWriteEvent(iter->second);
+                return(true);
+            }
+            else if (CODEC_STATUS_PAUSE == eStatus)
+            {
+                AddIoWriteEvent(iter->second);
                 return(true);
             }
             return(false);
@@ -1071,8 +1083,14 @@ bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, u
         (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
     }
     E_CODEC_STATUS eStatus = pChannel->Send(uiCmd, uiSeq, oMsgBody);
-    if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
+    if (CODEC_STATUS_OK == eStatus)
     {
+        // do not need to RemoveIoWriteEvent(pSocketChannel);  because had not been AddIoWriteEvent(pSocketChannel).
+        return(true);
+    }
+    else if (CODEC_STATUS_PAUSE == eStatus)
+    {
+        AddIoWriteEvent(pChannel);
         return(true);
     }
     return(false);
@@ -1097,8 +1115,14 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiS
                 (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
             }
             E_CODEC_STATUS eStatus = conn_iter->second->Send(uiCmd, uiSeq, oMsgBody);
-            if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
+            if (CODEC_STATUS_OK == eStatus)
             {
+                // do not need to RemoveIoWriteEvent(pSocketChannel);  because had not been AddIoWriteEvent(pSocketChannel).
+                return(true);
+            }
+            else if (CODEC_STATUS_PAUSE == eStatus)
+            {
+                AddIoWriteEvent(conn_iter->second);
                 return(true);
             }
             return(false);
@@ -1132,8 +1156,14 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiS
             (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
         }
         E_CODEC_STATUS eStatus = (*named_iter->second.begin())->Send(uiCmd, uiSeq, oMsgBody);
-        if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
+        if (CODEC_STATUS_OK == eStatus)
         {
+            // do not need to RemoveIoWriteEvent(pSocketChannel);  because had not been AddIoWriteEvent(pSocketChannel).
+            return(true);
+        }
+        else if (CODEC_STATUS_PAUSE == eStatus)
+        {
+            AddIoWriteEvent(*named_iter->second.begin());
             return(true);
         }
         return(false);
@@ -1302,8 +1332,17 @@ bool WorkerImpl::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg,
         if (conn_iter->second->GetSequence() == stCtx.uiSeq)
         {
             E_CODEC_STATUS eStatus = conn_iter->second->Send(oHttpMsg, uiHttpStepSeq);
-            if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
+            if (CODEC_STATUS_OK == eStatus)
             {
+                if (0.0 == conn_iter->second->GetKeepAlive())   // http1.0待响应数据发送完毕后在下一次epoll_wait中关闭连接
+                {
+                    AddIoWriteEvent(conn_iter->second);
+                }
+                return(true);
+            }
+            else if (CODEC_STATUS_PAUSE == eStatus)
+            {
+                AddIoWriteEvent(conn_iter->second);
                 return(true);
             }
             return(false);
@@ -1336,8 +1375,17 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, const std::string
             if (0 == (*channel_iter)->GetStepSeq())
             {
                 E_CODEC_STATUS eStatus = (*channel_iter)->Send(oHttpMsg, uiHttpStepSeq);
-                if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PAUSE == eStatus)
+                if (CODEC_STATUS_OK == eStatus)
                 {
+                    if (0.0 == (*channel_iter)->GetKeepAlive())   // http1.0待响应数据发送完毕后在下一次epoll_wait中关闭连接
+                    {
+                        AddIoWriteEvent(*channel_iter);
+                    }
+                    return(true);
+                }
+                else if (CODEC_STATUS_PAUSE == eStatus)
+                {
+                    AddIoWriteEvent(*channel_iter);
                     return(true);
                 }
                 return(false);
@@ -1664,12 +1712,12 @@ void WorkerImpl::BootLoadCmd(CJsonObject& oCmdConf)
     for (int i = 0; i < oCmdConf["cmd"].GetArraySize(); ++i)
     {
         oCmdConf["cmd"][i].Get("cmd", iCmd);
-        NewCmd(nullptr, oCmdConf["cmd"][i]("class"), iCmd);
+        MakeSharedCmd(nullptr, oCmdConf["cmd"][i]("class"), iCmd);
     }
     for (int j = 0; j < oCmdConf["module"].GetArraySize(); ++j)
     {
         oCmdConf["module"][j].Get("path", strUrlPath);
-        NewModule(nullptr, oCmdConf["module"][j]("class"), strUrlPath);
+        MakeSharedModule(nullptr, oCmdConf["module"][j]("class"), strUrlPath);
     }
 }
 
@@ -1702,12 +1750,12 @@ void WorkerImpl::DynamicLoadCmd(CJsonObject& oDynamicLoadingConf)
                         for (int j = 0; j < oDynamicLoadingConf[i]["cmd"].GetArraySize(); ++j)
                         {
                             oDynamicLoadingConf[i]["cmd"][j].Get("cmd", iCmd);
-                            NewCmd(nullptr, oDynamicLoadingConf[i]["cmd"][j]("class"), iCmd);
+                            MakeSharedCmd(nullptr, oDynamicLoadingConf[i]["cmd"][j]("class"), iCmd);
                         }
                         for (int k = 0; k < oDynamicLoadingConf[i]["module"].GetArraySize(); ++k)
                         {
                             oDynamicLoadingConf[i]["module"][k].Get("path", strUrlPath);
-                            NewModule(nullptr, oDynamicLoadingConf[i]["module"][k]("class"), strUrlPath);
+                            MakeSharedModule(nullptr, oDynamicLoadingConf[i]["module"][k]("class"), strUrlPath);
                         }
                     }
                 }

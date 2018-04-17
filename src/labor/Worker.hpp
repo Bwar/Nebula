@@ -33,16 +33,16 @@ public:
         void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Step> NewStep(Actor* pCreator, const std::string& strStepName, Targs... args);
+    std::shared_ptr<Step> MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Session> NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
+    std::shared_ptr<Session> MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Cmd> NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
+    std::shared_ptr<Cmd> MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Module> NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
+    std::shared_ptr<Module> MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
 
     virtual uint32 GetSequence() const;
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId, const std::string& strSessionClass = "neb::Session");
@@ -94,27 +94,27 @@ void Worker::Logger(const std::string& strTraceId, int iLogLevel, const char* sz
 }
 
 template <typename ...Targs>
-std::shared_ptr<Step> Worker::NewStep(Actor* pCreator, const std::string& strStepName, Targs... args)
+std::shared_ptr<Step> Worker::MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args)
 {
-    return(m_pImpl->NewStep(pCreator, strStepName, std::forward<Targs>(args)...));
+    return(m_pImpl->MakeSharedStep(pCreator, strStepName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
-std::shared_ptr<Session> Worker::NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args)
+std::shared_ptr<Session> Worker::MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs... args)
 {
-    return(m_pImpl->NewSession(pCreator, strSessionName, std::forward<Targs>(args)...));
+    return(m_pImpl->MakeSharedSession(pCreator, strSessionName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
-std::shared_ptr<Cmd> Worker::NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
+std::shared_ptr<Cmd> Worker::MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
 {
-    return(m_pImpl->NewStep(pCreator, strCmdName, std::forward<Targs>(args)...));
+    return(m_pImpl->MakeSharedStep(pCreator, strCmdName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
-std::shared_ptr<Module> Worker::NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
+std::shared_ptr<Module> Worker::MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
 {
-    return(m_pImpl->NewSession(pCreator, strModuleName, std::forward<Targs>(args)...));
+    return(m_pImpl->MakeSharedSession(pCreator, strModuleName, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

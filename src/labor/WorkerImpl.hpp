@@ -179,16 +179,16 @@ public:     // about worker
         void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Step> NewStep(Actor* pCreator, const std::string& strStepName, Targs... args);
+    std::shared_ptr<Step> MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Session> NewSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
+    std::shared_ptr<Session> MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Cmd> NewCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
+    std::shared_ptr<Cmd> MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Module> NewModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
+    std::shared_ptr<Module> MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
 
 public:     // about channel
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
