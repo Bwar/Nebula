@@ -27,6 +27,7 @@ class Worker;
 class WorkerImpl;
 class WorkerFriend;
 
+class SocketChannel;
 class ActorCreator;
 class Cmd;
 class Module;
@@ -84,7 +85,7 @@ protected:
      * @param stCtx 消息通道上下文
      * @return 是否发送成功
      */
-    bool SendTo(const tagChannelContext& stCtx);
+    bool SendTo(std::shared_ptr<SocketChannel> pChannel);
 
     /**
      * @brief 发送数据
@@ -96,7 +97,7 @@ protected:
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 发送数据
@@ -104,7 +105,7 @@ protected:
      * @param oHttpMsg http消息
      * @return 是否发送成功
      */
-    bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg);
+    bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
 
     /**
      * @brief 发送数据

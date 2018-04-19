@@ -20,7 +20,7 @@ namespace neb
 {
 
 SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
-    : m_ucChannelStatus(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulStepSeq(0),
+    : m_ucChannelStatus(0), m_ucInnerChannel(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulStepSeq(0),
       m_ulForeignSeq(0), m_ulUnitTimeMsgNum(0), m_ulMsgNum(0), m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
       m_pIoWatcher(nullptr), m_pTimerWatcher(nullptr),
       m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
@@ -103,6 +103,7 @@ E_CODEC_STATUS SocketChannel::Send()
     LOG4_TRACE("channel_fd[%d], channel_id[%u]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
+        LOG4_TRACE("channel_fd[%d], channel_id[%u] send EOF.", m_iFd, m_ulSeq);
         return(CODEC_STATUS_EOF);
     }
     else if (CHANNEL_STATUS_ESTABLISHED != m_ucChannelStatus)
@@ -164,6 +165,7 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
     LOG4_TRACE("channel_fd[%d], channel_id[%d], cmd[%u], seq[%u]", m_iFd, m_ulSeq, uiCmd, uiSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
+        LOG4_WARNING("channel_fd[%d], channel_id[%u] send EOF.", m_iFd, m_ulSeq);
         return(CODEC_STATUS_EOF);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
@@ -262,6 +264,7 @@ E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
     LOG4_TRACE("channel_fd[%d], channel_id[%u]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
+        LOG4_WARNING("channel_fd[%d], channel_id[%u] send EOF.", m_iFd, m_ulSeq);
         return(CODEC_STATUS_EOF);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;

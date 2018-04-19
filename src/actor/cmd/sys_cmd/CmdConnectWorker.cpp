@@ -22,14 +22,14 @@ CmdConnectWorker::~CmdConnectWorker()
 }
 
 bool CmdConnectWorker::AnyMessage(
-                const tagChannelContext& stCtx,
+                std::shared_ptr<SocketChannel> pChannel,
                 const MsgHead& oInMsgHead,
                 const MsgBody& oInMsgBody)
 {
     return(true);
 }
 
-bool CmdConnectWorker::Start(const tagChannelContext& stCtx, int iWorkerIndex)
+bool CmdConnectWorker::Start(std::shared_ptr<SocketChannel> pChannel, int iWorkerIndex)
 {
     MsgHead oMsgHead;
     MsgBody oMsgBody;
@@ -42,7 +42,7 @@ bool CmdConnectWorker::Start(const tagChannelContext& stCtx, int iWorkerIndex)
     LOG4_DEBUG("send cmd %d.", oMsgHead.cmd());
     for (int i = 0; i < 3; ++i)
     {
-        pStepConnectWorker = std::dynamic_pointer_cast<StepConnectWorker>(MakeSharedStep("neb::StepConnectWorker", stCtx, oMsgHead, oMsgBody));
+        pStepConnectWorker = std::dynamic_pointer_cast<StepConnectWorker>(MakeSharedStep("neb::StepConnectWorker", pChannel, oMsgHead, oMsgBody));
         if (nullptr == pStepConnectWorker)
         {
             LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);

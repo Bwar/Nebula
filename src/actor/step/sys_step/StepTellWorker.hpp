@@ -17,10 +17,10 @@
 namespace neb
 {
 
-class StepTellWorker: public PbStep, public DynamicCreator<StepTellWorker, tagChannelContext>, public WorkerFriend
+class StepTellWorker: public PbStep, public DynamicCreator<StepTellWorker, std::shared_ptr<SocketChannel> >, public WorkerFriend
 {
 public:
-    StepTellWorker(const tagChannelContext& stCtx);
+    StepTellWorker(std::shared_ptr<SocketChannel> pChannel);
     virtual ~StepTellWorker();
 
     virtual E_CMD_STATUS Emit(
@@ -29,7 +29,7 @@ public:
             void* data = NULL);
 
     virtual E_CMD_STATUS Callback(
-            const tagChannelContext& stCtx,
+            std::shared_ptr<SocketChannel> pChannel,
             const MsgHead& oInMsgHead,
             const MsgBody& oInMsgBody,
             void* data = NULL);
@@ -37,7 +37,7 @@ public:
     virtual E_CMD_STATUS Timeout();
 
 private:
-    tagChannelContext m_stCtx;
+    std::shared_ptr<SocketChannel> m_pUpstreamChannel;
 };
 
 } /* namespace neb */

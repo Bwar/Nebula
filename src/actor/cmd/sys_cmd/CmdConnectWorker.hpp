@@ -23,10 +23,10 @@ public:
     CmdConnectWorker(int iCmd);
     virtual ~CmdConnectWorker();
     virtual bool AnyMessage(
-            const tagChannelContext& stCtx,
+            std::shared_ptr<SocketChannel> pChannel,
             const MsgHead& oInMsgHead,
             const MsgBody& oInMsgBody);
-    bool Start(const tagChannelContext& stCtx, int iWorkerIndex);
+    bool Start(std::shared_ptr<SocketChannel> pChannel, int iWorkerIndex);
 
 public:
     std::shared_ptr<StepConnectWorker> pStepConnectWorker;

@@ -29,7 +29,7 @@ public:
             void* data = NULL);
 
     virtual E_CMD_STATUS Callback(
-            const tagChannelContext& stCtx,
+            std::shared_ptr<SocketChannel> pChannel,
             const MsgHead& oInMsgHead,
             const MsgBody& oInMsgBody,
             void* data = NULL);

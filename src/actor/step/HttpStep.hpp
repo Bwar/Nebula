@@ -20,13 +20,13 @@ class HttpStep: public Step
 {
 public:
     HttpStep(Step* pNextStep = NULL, ev_tstamp dTimeout = gc_dDefaultTimeout);
-    HttpStep(const tagChannelContext& stCtx, Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    HttpStep(std::shared_ptr<SocketChannel> pUpstreamChannel, Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     HttpStep(const HttpStep&) = delete;
     HttpStep& operator=(const HttpStep&) = delete;
     virtual ~HttpStep();
 
     virtual E_CMD_STATUS Callback(
-                    const tagChannelContext& stCtx,
+                    std::shared_ptr<SocketChannel> pUpstreamChannel,
                     const HttpMsg& oHttpMsg,
                     void* data = NULL) = 0;
 
@@ -36,7 +36,7 @@ public:
 protected:
     bool HttpRequest(const HttpMsg& oHttpMsg);
 
-    tagChannelContext m_stCtx;
+    std::shared_ptr<SocketChannel> m_pUpstreamChannel;
 };
 
 } /* namespace neb */

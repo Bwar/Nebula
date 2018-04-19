@@ -17,9 +17,9 @@ HttpStep::HttpStep(Step* pNextStep, ev_tstamp dTimeout)
 {
 }
 
-HttpStep::HttpStep(const tagChannelContext& stCtx, Step* pNextStep, ev_tstamp dTimeout)
+HttpStep::HttpStep(std::shared_ptr<SocketChannel> pUpstreamChannel, Step* pNextStep, ev_tstamp dTimeout)
     : Step(ACT_HTTP_STEP, pNextStep, dTimeout),
-      m_stCtx(stCtx)
+      m_pUpstreamChannel(pUpstreamChannel)
 {
 }
 

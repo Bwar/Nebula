@@ -22,7 +22,7 @@ public:
     CmdUpdateNodeId(int32 iCmd);
     virtual ~CmdUpdateNodeId();
     virtual bool AnyMessage(
-                    const tagChannelContext& stCtx,
+                    std::shared_ptr<SocketChannel> pChannel,
                     const MsgHead& oInMsgHead,
                     const MsgBody& oInMsgBody);
 };

@@ -88,19 +88,19 @@ std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId, cons
     return(m_pWorker->GetSession(strSessionId, strSessionClass));
 }
 
-bool Actor::SendTo(const tagChannelContext& stCtx)
+bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
-    return(m_pWorker->SendTo(stCtx));
+    return(m_pWorker->SendTo(pChannel));
 }
 
-bool Actor::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendTo(stCtx, uiCmd, uiSeq, oMsgBody, this));
+    return(m_pWorker->SendTo(pChannel, uiCmd, uiSeq, oMsgBody, this));
 }
 
-bool Actor::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg)
+bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
 {
-    return(m_pWorker->SendTo(stCtx, oHttpMsg));
+    return(m_pWorker->SendTo(pChannel, oHttpMsg));
 }
 
 bool Actor::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)

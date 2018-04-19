@@ -13,8 +13,8 @@
 namespace neb
 {
 
-StepIoTimeout::StepIoTimeout(const tagChannelContext& stCtx)
-    : m_stCtx(stCtx)
+StepIoTimeout::StepIoTimeout(std::shared_ptr<SocketChannel> pChannel)
+    : m_pUpstreamChannel(pChannel)
 {
 }
 
@@ -26,7 +26,7 @@ E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
         void* data)
 {
     MsgBody oOutMsgBody;
-    if (SendTo(m_stCtx, CMD_REQ_BEAT, GetSequence(), oOutMsgBody))
+    if (SendTo(m_pUpstreamChannel, CMD_REQ_BEAT, GetSequence(), oOutMsgBody))
     {
         return(CMD_STATUS_RUNNING);
     }
@@ -36,16 +36,16 @@ E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
     }
 }
 
-E_CMD_STATUS StepIoTimeout::Callback(const tagChannelContext& stCtx,
+E_CMD_STATUS StepIoTimeout::Callback(std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead, const MsgBody& oInMsgBody, void* data)
 {
-    GetWorkerImpl(this)->AddIoTimeout(stCtx);
+    GetWorkerImpl(this)->AddIoTimeout(pChannel);
     return(CMD_STATUS_COMPLETED);
 }
 
 E_CMD_STATUS StepIoTimeout::Timeout()
 {
-    GetWorkerImpl(this)->Disconnect(m_stCtx);
+    GetWorkerImpl(this)->Disconnect(m_pUpstreamChannel);
     return(CMD_STATUS_FAULT);
 }
 

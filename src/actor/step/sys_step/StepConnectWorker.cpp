@@ -12,8 +12,8 @@
 namespace neb
 {
 
-StepConnectWorker::StepConnectWorker(const tagChannelContext& stCtx, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
-    : PbStep(stCtx, oInMsgHead, oInMsgBody),
+StepConnectWorker::StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
+    : PbStep(pChannel, oInMsgHead, oInMsgBody),
       pStepTellWorker(NULL)
 {
 }
@@ -28,12 +28,12 @@ E_CMD_STATUS StepConnectWorker::Emit(
         void* data)
 {
     m_oReqMsgHead.set_seq(GetSequence());
-    SendTo(m_stCtx, m_oReqMsgHead.cmd(), m_oReqMsgHead.seq(), m_oReqMsgBody);
+    SendTo(m_pUpstreamChannel, m_oReqMsgHead.cmd(), m_oReqMsgHead.seq(), m_oReqMsgBody);
     return(CMD_STATUS_RUNNING);
 }
 
 E_CMD_STATUS StepConnectWorker::Callback(
-        const tagChannelContext& stCtx,
+        std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody,
         void* data)
@@ -42,7 +42,7 @@ E_CMD_STATUS StepConnectWorker::Callback(
     {
         if (ERR_OK == oInMsgBody.rsp_result().code())
         {
-                pStepTellWorker =  std::dynamic_pointer_cast<StepTellWorker>(MakeSharedStep("neb::StepTellWorker", stCtx));
+                pStepTellWorker =  std::dynamic_pointer_cast<StepTellWorker>(MakeSharedStep("neb::StepTellWorker", pChannel));
                 if (nullptr == pStepTellWorker)
                 {
                     LOG4_ERROR("error %d: new StepTellWorker() error!", ERR_NEW);

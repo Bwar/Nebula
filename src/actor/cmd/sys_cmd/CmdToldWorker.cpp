@@ -23,7 +23,7 @@ CmdToldWorker::~CmdToldWorker()
 }
 
 bool CmdToldWorker::AnyMessage(
-        const tagChannelContext& stCtx,
+        std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
 {
@@ -34,11 +34,11 @@ bool CmdToldWorker::AnyMessage(
     if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
     {
         bResult = true;
-        LOG4_DEBUG("AddNodeIdentify(%s, %s, fd %d, seq %llu)!", oInTargetWorker.node_type().c_str(),
-                        oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.uiSeq);
-        GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), stCtx);
+        LOG4_DEBUG("AddNodeIdentify(%s, %s)!", oInTargetWorker.node_type().c_str(),
+                        oInTargetWorker.worker_identify().c_str());
+        GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
         GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
-        GetWorkerImpl(this)->AddInnerChannel(stCtx);
+        GetWorkerImpl(this)->SetInnerChannel(pChannel);
         oOutTargetWorker.set_worker_identify(GetNodeIdentify());
         oOutTargetWorker.set_node_type(GetNodeType());
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
@@ -54,7 +54,7 @@ bool CmdToldWorker::AnyMessage(
         LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
     }
     oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
-    SendTo(stCtx, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
+    SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
     return(bResult);
 }
 

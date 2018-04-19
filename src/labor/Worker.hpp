@@ -63,19 +63,16 @@ public:
     virtual time_t GetNowTime() const;
 
     // 网络IO相关方法
-    virtual bool SendTo(const tagChannelContext& stCtx);
-    virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(const std::string& strHost, int iPort, std::shared_ptr<RedisStep>  pRedisStep);
-    virtual std::string GetClientAddr(const tagChannelContext& stCtx);
-
-    bool AddIoTimeout(const tagChannelContext& stCtx);
 
 private:
     void Run();

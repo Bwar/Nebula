@@ -63,6 +63,11 @@ public:
         return(m_ulSeq);
     }
 
+    bool IsInnerChannel() const
+    {
+        return(m_ucInnerChannel);
+    }
+
     uint32 GetStepSeq() const
     {
         return(m_ulStepSeq);
@@ -128,6 +133,11 @@ private:
         m_pLabor = pLabor;
     }
 
+    void SetInnerChannel()
+    {
+        m_ucInnerChannel = 1;
+    }
+
     /*
     void SetActiveTime(ev_tstamp dTime)
     {
@@ -182,6 +192,7 @@ private:
 
 private:
     uint8 m_ucChannelStatus;
+    uint8 m_ucInnerChannel;
     char m_szErrBuff[256];
     int32 m_iFd;                          ///< 文件描述符
     uint32 m_ulSeq;                       ///< 文件描述符创建时对应的序列号

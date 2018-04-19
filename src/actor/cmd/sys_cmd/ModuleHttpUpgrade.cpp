@@ -27,13 +27,13 @@ ModuleHttpUpgrade::~ModuleHttpUpgrade()
 {
 }
 
-bool ModuleHttpUpgrade::AnyMessage(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg)
+bool ModuleHttpUpgrade::AnyMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
 {
     if (oHttpMsg.has_upgrade() && oHttpMsg.upgrade().is_upgrade())
     {
         if (std::string("websocket") == oHttpMsg.upgrade().protocol())
         {
-            return(WebSocket(stCtx, oHttpMsg));
+            return(WebSocket(pChannel, oHttpMsg));
         }
     }
     HttpMsg oOutHttpMsg;
@@ -45,7 +45,7 @@ bool ModuleHttpUpgrade::AnyMessage(const tagChannelContext& stCtx, const HttpMsg
     return(false);
 }
 
-bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg)
+bool ModuleHttpUpgrade::WebSocket(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
 {
     HttpMsg oOutHttpMsg;
     oOutHttpMsg.set_type(HTTP_RESPONSE);
@@ -71,7 +71,7 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
         if (13 != iSecWebSocketVersion)
         {
             LOG4_ERROR("invalid Sec-WebSocket-Version %d, the version must be 13!", iSecWebSocketVersion);
-            SendTo(stCtx, oOutHttpMsg);
+            SendTo(pChannel, oOutHttpMsg);
             return(false);
         }
 
@@ -92,7 +92,7 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
         if (16 != oDecoder.MaxRetrievable())
         {
             LOG4_ERROR("invalid Sec-WebSocket-Key %s, the key len after base64 decode must be 16!", strSecWebSocketKey.c_str());
-            SendTo(stCtx, oOutHttpMsg);
+            SendTo(pChannel, oOutHttpMsg);
             return(false);
         }
 
@@ -127,8 +127,8 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
         pHeader = oOutHttpMsg.add_headers();
         pHeader->set_header_name("Sec-WebSocket-Accept");
         pHeader->set_header_value(strBase64EncodeAcceptKey);
-        SendTo(stCtx, oOutHttpMsg);
-        GetWorkerImpl(this)->SwitchCodec(stCtx, CODEC_WS_EXTEND_JSON);
+        SendTo(pChannel, oOutHttpMsg);
+        GetWorkerImpl(this)->SwitchCodec(pChannel, CODEC_WS_EXTEND_JSON);
     }
     else
     {
@@ -136,7 +136,7 @@ bool ModuleHttpUpgrade::WebSocket(const tagChannelContext& stCtx, const HttpMsg&
                 oHttpMsg.http_major(), oHttpMsg.http_minor(),
                 http_method_str((http_method)oHttpMsg.method()));
     }
-    SendTo(stCtx, oOutHttpMsg);
+    SendTo(pChannel, oOutHttpMsg);
     return(false);
 }
 

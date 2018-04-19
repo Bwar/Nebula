@@ -339,8 +339,7 @@ bool Manager::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             auto worker_fd_iter = m_mapWorkerFdPid.find(pChannel->GetFd());
             if (worker_fd_iter == m_mapWorkerFdPid.end())   // 其他Server发过来要将连接传送到某个指定Worker进程信息
             {
-                auto beacon_iter = m_mapBeaconCtx.find(pChannel->GetIdentify());
-                if (beacon_iter == m_mapBeaconCtx.end())       // 不是与beacon连接
+                if (std::string("BEACON") == pChannel->GetIdentify())       // 不是与beacon连接
                 {
                     OnDataAndTransferFd(pChannel, oMsgHead, oMsgBody);
                 }
@@ -478,7 +477,6 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
     {
         int32 iMaxLogFileSize = 0;
         int32 iMaxLogFileNum = 0;
-        int32 iLoggingPort = 9000;
         std::string strLoggingHost;
         std::string strLogname = oJsonConf("log_path") + std::string("/") + getproctitle() + std::string(".log");
         std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
@@ -500,113 +498,137 @@ bool Manager::SetProcessName(const CJsonObject& oJsonConf)
     return(true);
 }
 
-bool Manager::SendTo(const tagChannelContext& stCtx)
+bool Manager::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
-    auto iter = m_mapSocketChannel.find(stCtx.iFd);
-    if (iter == m_mapSocketChannel.end())
-    {
-        LOG4_ERROR("no fd %d found in m_mapChannel", stCtx.iFd);
-        return(false);
-    }
-    else
-    {
-        if (iter->second->GetSequence() == stCtx.uiSeq)
-        {
-            E_CODEC_STATUS eCodecStatus = iter->second->Send();
-            if (CODEC_STATUS_OK == eCodecStatus)
-            {
-                RemoveIoWriteEvent(iter->second);
-            }
-            else if (CODEC_STATUS_PAUSE == eCodecStatus)
-            {
-                AddIoWriteEvent(iter->second);
-            }
-            else
-            {
-                DiscardSocketChannel(stCtx);
-            }
-        }
-    }
-    return(false);
-}
-
-bool Manager::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
-{
-    LOG4_TRACE("cmd[%u], seq[%u]", uiCmd, uiSeq);
-    auto iter = m_mapSocketChannel.find(stCtx.iFd);
-    if (iter == m_mapSocketChannel.end())
-    {
-        LOG4_ERROR("no fd %d found in m_mapChannel", stCtx.iFd);
-        return(false);
-    }
-    else
-    {
-        if (iter->second->GetSequence() == stCtx.uiSeq)
-        {
-            E_CODEC_STATUS eCodecStatus = iter->second->Send(uiCmd, uiSeq, oMsgBody);
-            if (CODEC_STATUS_OK == eCodecStatus)
-            {
-                RemoveIoWriteEvent(iter->second);
-            }
-            else if (CODEC_STATUS_PAUSE == eCodecStatus)
-            {
-                AddIoWriteEvent(iter->second);
-            }
-            else
-            {
-                DiscardSocketChannel(stCtx);
-            }
-            return(true);
-        }
-        else
-        {
-            LOG4_ERROR("fd %d sequence %llu not match the sequence %llu in m_mapChannel",
-                            stCtx.iFd, stCtx.uiSeq, iter->second->GetSequence());
-            return(false);
-        }
-    }
-}
-
-bool Manager::SendTo(std::shared_ptr<SocketChannel> pSocketChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
-{
-    E_CODEC_STATUS eCodecStatus = pSocketChannel->Send(uiCmd, uiSeq, oMsgBody);
+    E_CODEC_STATUS eCodecStatus = pChannel->Send();
     if (CODEC_STATUS_OK == eCodecStatus)
     {
-        RemoveIoWriteEvent(pSocketChannel);
+        RemoveIoWriteEvent(pChannel);
     }
     else if (CODEC_STATUS_PAUSE == eCodecStatus)
     {
-        AddIoWriteEvent(pSocketChannel);
+        AddIoWriteEvent(pChannel);
     }
     else
     {
-        DiscardSocketChannel(pSocketChannel);
+        DiscardSocketChannel(pChannel);
+        return(false);
     }
     return(true);
 }
 
-bool Manager::SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify)
+bool Manager::SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    LOG4_TRACE(" ");
-    auto iter = m_mapSocketChannel.find(stCtx.iFd);
-    if (iter == m_mapSocketChannel.end())
+    LOG4_TRACE("cmd[%u], seq[%u]", uiCmd, uiSeq);
+    E_CODEC_STATUS eCodecStatus = pChannel->Send(uiCmd, uiSeq, oMsgBody);
+    if (CODEC_STATUS_OK == eCodecStatus)
     {
-        LOG4_ERROR("no fd %d found in m_mapChannel", stCtx.iFd);
-        return(false);
+        RemoveIoWriteEvent(pChannel);
+    }
+    else if (CODEC_STATUS_PAUSE == eCodecStatus)
+    {
+        AddIoWriteEvent(pChannel);
     }
     else
     {
-        if (iter->second->GetSequence() == stCtx.uiSeq)
+        DiscardSocketChannel(pChannel);
+        return(false);
+    }
+    return(true);
+}
+
+bool Manager::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    LOG4_TRACE("identify: %s", strIdentify.c_str());
+    auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
+    if (named_iter == m_mapNamedSocketChannel.end())
+    {
+        LOG4_TRACE("no channel match %s.", strIdentify.c_str());
+        return(AutoSend(strIdentify, uiCmd, uiSeq, oMsgBody));
+    }
+    else
+    {
+        E_CODEC_STATUS eStatus = named_iter->second->Send(uiCmd, uiSeq, oMsgBody);
+        if (CODEC_STATUS_OK == eStatus)
         {
-            iter->second->SetIdentify(strIdentify);
+            // do not need to RemoveIoWriteEvent(pSocketChannel);  because had not been AddIoWriteEvent(pSocketChannel).
             return(true);
+        }
+        else if (CODEC_STATUS_PAUSE == eStatus)
+        {
+            AddIoWriteEvent(named_iter->second);
+            return(true);
+        }
+        return(false);
+    }
+}
+
+bool Manager::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    LOG4_TRACE("node_type: %s", strNodeType.c_str());
+    std::string strOnlineNode;
+    if (m_pSessionNode->GetNode(strNodeType, strOnlineNode))
+    {
+        return(SendTo(strOnlineNode, uiCmd, uiSeq, oMsgBody));
+    }
+    else
+    {
+        LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
+        return(false);
+    }
+}
+
+bool Manager::SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    if (std::string("LOGGER") != strNodeType)
+    {
+        LOG4_ERROR("SendOriented() only support node_type \"LOGGER\" in manager process!");
+        return(false);
+    }
+
+    std::string strOnlineNode;
+    if (m_pSessionNode->GetNode(strNodeType, uiFactor, strOnlineNode))
+    {
+        return(SendTo(strOnlineNode, uiCmd, uiSeq, oMsgBody));
+    }
+    else
+    {
+        LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
+        return(false);
+    }
+}
+
+bool Manager::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    LOG4_TRACE("nody_type: %s", strNodeType.c_str());
+    if (oMsgBody.has_req_target())
+    {
+        if (0 != oMsgBody.req_target().route_id())
+        {
+            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), uiCmd, uiSeq, oMsgBody, pSender));
+        }
+        else if (oMsgBody.req_target().route().length() > 0)
+        {
+            std::string strOnlineNode;
+            if (m_pSessionNode->GetNode(strNodeType, oMsgBody.req_target().route(), strOnlineNode))
+            {
+                return(SendTo(strOnlineNode, uiCmd, uiSeq, oMsgBody));
+            }
+            else
+            {
+                LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
+                return(false);
+            }
         }
         else
         {
-            LOG4_ERROR("fd %d sequence %lu not match the sequence %lu in m_mapChannel",
-                    stCtx.iFd, stCtx.uiSeq, iter->second->GetSequence());
-            return(false);
+            return(SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
         }
+    }
+    else
+    {
+        LOG4_ERROR("MsgBody is not a request message!");
+        return(false);
     }
 }
 
@@ -638,87 +660,21 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
         pChannel->SetIdentify(strIdentify);
-        pChannel->Send(uiCmd, uiSeq, oMsgBody);
-        m_mapSeq2WorkerIndex.insert(std::pair<uint32, int>(pChannel->GetSequence(), iWorkerIndex));
-        auto beacon_iter = m_mapBeaconCtx.find(strIdentify);
-        if (beacon_iter != m_mapBeaconCtx.end())
+        pChannel->SetRemoteAddr(strHost);
+        pChannel->SetChannelStatus(CHANNEL_STATUS_INIT);
+        E_CODEC_STATUS eCodecStatus = pChannel->Send(uiCmd, uiSeq, oMsgBody);
+        if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
-            beacon_iter->second.iFd = iFd;
-            beacon_iter->second.uiSeq = pChannel->GetSequence();
+            DiscardSocketChannel(pChannel);
         }
+
         connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
+        pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+        m_mapSeq2WorkerIndex.insert(std::pair<uint32, int>(pChannel->GetSequence(), iWorkerIndex));
+        AddNamedSocketChannel(strIdentify, pChannel);
         return(true);
     }
     close(iFd);
-    return(false);
-}
-
-bool Manager::SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
-{
-    if (std::string("LOGGER") != strNodeType)
-    {
-        LOG4_ERROR("no channel match %s in manager process!", strNodeType.c_str());
-        return(false);
-    }
-
-    if (m_mapLoggerCtx.size() == 0)
-    {
-        m_pLogger->EnableNetLogger(false);
-        LOG4_WARNING("no channel match %s!", strNodeType.c_str());
-        return(false);
-    }
-    else
-    {
-        std::unordered_map<std::string, tagChannelContext>::iterator id_iter;
-        uint32 target_identify = uiFactor % m_mapLoggerCtx.size();
-        uint32 i = 0;
-        for (i = 0, id_iter = m_mapLoggerCtx.begin(); i < m_mapLoggerCtx.size(); ++i, ++id_iter)
-        {
-            if (i == target_identify && id_iter != m_mapLoggerCtx.end())
-            {
-                if (id_iter->second.iFd > 2 && id_iter->second.uiSeq > 0)
-                {
-                    return(SendTo(id_iter->second, uiCmd, uiSeq, oMsgBody));
-                }
-                else
-                {
-                    return(AutoSend(id_iter->first, uiCmd, uiSeq, oMsgBody));
-                }
-            }
-        }
-        return(false);
-    }
-}
-
-bool Manager::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
-{
-    if (oMsgBody.has_req_target())
-    {
-        if (0 != oMsgBody.req_target().route_id())
-        {
-            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), uiCmd, uiSeq, oMsgBody, pSender));
-        }
-        else if (oMsgBody.req_target().route().length() > 0)
-        {
-            auto hashf = [](const std::string& strRoute)
-            {
-                uint32_t hash = (uint32_t) FNV_64_INIT;
-                size_t x;
-                for (x = 0; x < strRoute.length(); x++)
-                {
-                  uint32_t val = (uint32_t)strRoute[x];
-                  hash ^= val;
-                  hash *= (uint32_t) FNV_64_PRIME;
-                }
-                return(hash);
-            };
-            return(SendOriented(strNodeType, hashf(oMsgBody.req_target().route()), uiCmd, uiSeq, oMsgBody, pSender));
-        }
-        else
-        {
-            return(SendOriented(strNodeType, 1, uiCmd, uiSeq, oMsgBody, pSender));
-        }
-    }
     return(false);
 }
 
@@ -791,6 +747,7 @@ bool Manager::GetConf()
 bool Manager::Init()
 {
     InitLogger(m_oCurrentConf);
+    m_pSessionNode = std::make_unique<SessionNode>();
 
     socklen_t addressLen = 0;
     int queueLen = 100;
@@ -875,10 +832,7 @@ bool Manager::Init()
     {
         std::string strIdentify = m_oCurrentConf["beacon"][i]("host") + std::string(":")
             + m_oCurrentConf["beacon"][i]("port") + std::string(".1");     // BeaconServer只有一个Worker
-        tagChannelContext stCtx;
-        LOG4_TRACE("m_mapBeaconCtx.insert(%s, fd %d, seq %llu) = %u",
-                        strIdentify.c_str(), stCtx.iFd, stCtx.uiSeq);
-        m_mapBeaconCtx.insert(std::pair<std::string, tagChannelContext>(strIdentify, stCtx));
+        AddNodeIdentify(std::string("BEACON"), strIdentify);
     }
 
     return(true);
@@ -1331,10 +1285,6 @@ void Manager::RefreshServer()
 
 bool Manager::RegisterToBeacon()
 {
-    if (m_mapBeaconCtx.size() == 0)
-    {
-        return(true);
-    }
     LOG4_TRACE(" ");
     int iLoad = 0;
     int iConnect = 0;
@@ -1398,20 +1348,7 @@ bool Manager::RegisterToBeacon()
     oReportData["node"].Add("send_byte", iSendByte);
     oReportData["node"].Add("client", iClientNum);
     oMsgBody.set_data(oReportData.ToString());
-    auto beacon_iter = m_mapBeaconCtx.begin();
-    for (; beacon_iter != m_mapBeaconCtx.end(); ++beacon_iter)
-    {
-        if (beacon_iter->second.iFd == 0)
-        {
-            LOG4_TRACE("cmd %d", CMD_REQ_NODE_REGISTER);
-            AutoSend(beacon_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
-        }
-        else
-        {
-            LOG4_TRACE("cmd %d", CMD_REQ_NODE_REGISTER);
-            SendTo(beacon_iter->second, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
-        }
-    }
+    Broadcast("BEACON", CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
     return(true);
 }
 
@@ -1504,20 +1441,67 @@ bool Manager::ReportToBeacon()
     oMsgBody.set_data(oReportData.ToString());
     LOG4_TRACE("%s", oReportData.ToString().c_str());
 
-    for (auto beacon_iter = m_mapBeaconCtx.begin(); beacon_iter != m_mapBeaconCtx.end(); ++beacon_iter)
-    {
-        if (beacon_iter->second.iFd == 0)
-        {
-            LOG4_TRACE("cmd %d", CMD_REQ_NODE_REGISTER);
-            AutoSend(beacon_iter->first, CMD_REQ_NODE_REGISTER, GetSequence(), oMsgBody);
-        }
-        else
-        {
-            LOG4_TRACE("cmd %d", CMD_REQ_NODE_STATUS_REPORT);
-            SendTo(beacon_iter->second, CMD_REQ_NODE_STATUS_REPORT, GetSequence(), oMsgBody);
-        }
-    }
+    Broadcast("BEACON", CMD_RSP_NODE_STATUS_REPORT, GetSequence(), oMsgBody);
     return(true);
+}
+
+bool Manager::AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel)
+{
+    LOG4_TRACE("%s", strIdentify.c_str());
+    auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
+    if (named_iter == m_mapNamedSocketChannel.end())
+    {
+        m_mapNamedSocketChannel.insert(std::make_pair(strIdentify, pChannel));
+    }
+    else
+    {
+        return(false);
+    }
+    pChannel->SetIdentify(strIdentify);
+    return(true);
+
+}
+
+void Manager::DelNamedSocketChannel(const std::string& strIdentify)
+{
+    auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
+    if (named_iter == m_mapNamedSocketChannel.end())
+    {
+        ;
+    }
+    else
+    {
+        m_mapNamedSocketChannel.erase(named_iter);
+    }
+}
+
+void Manager::AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify)
+{
+    LOG4_TRACE("%s, %s", strNodeType.c_str(), strIdentify.c_str());
+    m_pSessionNode->AddNode(strNodeType, strIdentify);
+
+    std::string strOnlineNode;
+    if (std::string("LOGGER") == strNodeType && m_pSessionNode->GetNode(strNodeType, strOnlineNode))
+    {
+        m_pLogger->EnableNetLogger(true);
+    }
+}
+
+void Manager::DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify)
+{
+    LOG4_TRACE("%s, %s", strNodeType.c_str(), strIdentify.c_str());
+    if (std::string("BEACON") == strNodeType)
+    {
+        LOG4_WARNING("node_type BEACON should not be deleted!");
+    }
+
+    m_pSessionNode->DelNode(strNodeType, strIdentify);
+
+    std::string strOnlineNode;
+    if (std::string("LOGGER") == strNodeType && !m_pSessionNode->GetNode(strNodeType, strOnlineNode))
+    {
+        m_pLogger->EnableNetLogger(false);
+    }
 }
 
 bool Manager::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout)
@@ -1603,23 +1587,6 @@ std::shared_ptr<SocketChannel> Manager::CreateChannel(int iFd, E_CODEC_TYPE eCod
     }
 }
 
-bool Manager::DiscardSocketChannel(const tagChannelContext& stCtx)
-{
-    auto iter = m_mapSocketChannel.find(stCtx.iFd);
-    if (iter == m_mapSocketChannel.end())
-    {
-        return(false);
-    }
-    else
-    {
-        if (stCtx.uiSeq == iter->second->GetSequence())
-        {
-            return(DiscardSocketChannel(iter->second));
-        }
-        return(false);
-    }
-}
-
 bool Manager::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE(" ");
@@ -1627,11 +1594,10 @@ bool Manager::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel)
     {
         return(false);
     }
-    auto beacon_iter = m_mapBeaconCtx.find(pChannel->GetIdentify());
-    if (beacon_iter != m_mapBeaconCtx.end())
+    auto name_channel_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
+    if (name_channel_iter != m_mapNamedSocketChannel.end())
     {
-        beacon_iter->second.iFd = 0;
-        beacon_iter->second.uiSeq = 0;
+        m_mapNamedSocketChannel.erase(name_channel_iter);
     }
     DelEvents(pChannel->MutableIoWatcher());
     DelEvents(pChannel->MutableTimerWatcher());
@@ -1641,7 +1607,6 @@ bool Manager::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel)
         m_mapSocketChannel.erase(iter);
     }
     pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
-    // TODO close channel ?
     return(true);
 }
 
@@ -1728,7 +1693,6 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
                     char szIp[16] = {0};
                     strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
                     int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->GetFd(), szIp, 16, CODEC_PROTOBUF);
-                    //int iErrno = send_fd(worker_iter->second.iDataFd, stCtx.iFd);
                     if (iErrno != 0)
                     {
                         LOG4_ERROR("send_fd_with_attr error %d: %s!",
@@ -1907,12 +1871,11 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
             {
                 for(int j = 1; j <= iWorkerNum; ++j)
                 {
-                    tagChannelContext stCtx;
+                    std::shared_ptr<SocketChannel> pChannel = std::make_shared<SocketChannel>(m_pLogger, 0, 0);
                     std::ostringstream oss;
                     oss << strNodeHost << ":" << iNodePort << "." << j;
                     std::string strIdentify = std::move(oss.str());
-                    m_mapLoggerCtx.insert(make_pair(strIdentify, stCtx));
-                    m_pLogger->EnableNetLogger(true);
+                    AddNodeIdentify(strNodeType, strIdentify);
                     LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), strIdentify.c_str());
                 }
             }
@@ -1935,18 +1898,9 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
                     std::string strIdentify = std::move(oss.str());
                     if (std::string("LOGGER") == strNodeType)
                     {
-                        auto iter = m_mapLoggerCtx.find(strIdentify);
-                        if (iter != m_mapLoggerCtx.end())
-                        {
-                            DiscardSocketChannel(iter->second);
-                            m_mapLoggerCtx.erase(iter);
-                        }
+                        DelNodeIdentify(strNodeType, strIdentify);
                         LOG4_DEBUG("DelNodeIdentify(%s,%s)", strNodeType.c_str(), strIdentify.c_str());
                     }
-                }
-                if (m_mapLoggerCtx.size() == 0)
-                {
-                    m_pLogger->EnableNetLogger(false);
                 }
             }
         }

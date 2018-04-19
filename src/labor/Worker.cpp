@@ -104,14 +104,14 @@ time_t Worker::GetNowTime() const
     return(m_pImpl->GetNowTime());
 }
 
-bool Worker::SendTo(const tagChannelContext& stCtx)
+bool Worker::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
-    return(m_pImpl->SendTo(stCtx));
+    return(m_pImpl->SendTo(pChannel));
 }
 
-bool Worker::SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Worker::SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    return(m_pImpl->SendTo(stCtx, uiCmd, uiSeq, oMsgBody, pSender));
+    return(m_pImpl->SendTo(pChannel, uiCmd, uiSeq, oMsgBody, pSender));
 }
 
 bool Worker::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
@@ -139,9 +139,9 @@ bool Worker::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSe
     return(m_pImpl->Broadcast(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
 }
 
-bool Worker::SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
+bool Worker::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
-    return(m_pImpl->SendTo(stCtx, oHttpMsg, uiHttpStepSeq));
+    return(m_pImpl->SendTo(pChannel, oHttpMsg, uiHttpStepSeq));
 }
 
 bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
@@ -152,11 +152,6 @@ bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& st
 bool Worker::SendTo(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep)
 {
     return(m_pImpl->SendTo(strHost, iPort, pRedisStep));
-}
-
-std::string Worker::GetClientAddr(const tagChannelContext& stCtx)
-{
-    return(m_pImpl->GetClientAddr(stCtx));
 }
 
 } /* namespace neb */

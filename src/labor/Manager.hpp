@@ -50,6 +50,7 @@ extern "C" {
 #include "Labor.hpp"
 #include "channel/Channel.hpp"
 #include "actor/cmd/Cmd.hpp"
+#include "actor/session/sys_session/SessionNode.hpp"
 
 
 namespace neb
@@ -191,13 +192,14 @@ public:
 public:
     bool InitLogger(const CJsonObject& oJsonConf);
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
-    virtual bool SendTo(const tagChannelContext& stCtx);
-    virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool SendTo(std::shared_ptr<SocketChannel> pSocketChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
-    virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual void SetNodeId(uint32 uiNodeId) {m_stManagerInfo.uiNodeId = uiNodeId;}
     uint32 GetSequence() const
     {
@@ -219,7 +221,7 @@ public:
         return(m_stManagerInfo.strNodeIdentify);
     }
 
-    virtual void AddInnerChannel(const tagChannelContext& stCtx){};
+    virtual void AddInnerChannel(std::shared_ptr<SocketChannel> pChannel){};
 
     void SetWorkerLoad(int iPid, CJsonObject& oJsonLoad);
     void AddWorkerLoad(int iPid, int iLoad = 1);
@@ -247,10 +249,13 @@ protected:
     bool RegisterToBeacon();
     bool ReportToBeacon();
 
+    bool AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel);
+    void DelNamedSocketChannel(const std::string& strIdentify);
+    void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
+    void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
     bool AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout = 60.0);
     std::shared_ptr<SocketChannel> CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
-    bool DiscardSocketChannel(const tagChannelContext& stCtx);
     bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel);
     bool FdTransfer(int iFd);
     bool AcceptServerConn(int iFd);
@@ -271,13 +276,13 @@ private:
     ev_timer* m_pPeriodicTaskWatcher;              ///< 周期任务定时器
 
     tagManagerInfo m_stManagerInfo;
+    std::unique_ptr<SessionNode> m_pSessionNode = nullptr;
 
     std::unordered_map<int, tagWorkerAttr> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
     std::unordered_map<int, int> m_mapWorkerRestartNum;       ///< 进程被重启次数，key为WorkerIdx
     std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
 
-    std::unordered_map<std::string, tagChannelContext> m_mapBeaconCtx;  ///< 到beacon服务器的连接
-    std::unordered_map<std::string, tagChannelContext> m_mapLoggerCtx;  ///< 程序日志服务器连接
+    std::unordered_map<std::string, std::shared_ptr<SocketChannel> > m_mapNamedSocketChannel;
     std::unordered_map<int, std::shared_ptr<SocketChannel> > m_mapSocketChannel;                   ///< 通信通道
     std::unordered_map<uint32, int> m_mapSeq2WorkerIndex;             ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
     std::unordered_map<in_addr_t, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率

@@ -55,6 +55,7 @@ extern "C" {
 #include "actor/cmd/ModuleModel.hpp"
 #include "actor/session/SessionModel.hpp"
 #include "actor/step/StepModel.hpp"
+#include "actor/session/sys_session/SessionNode.hpp"
 
 namespace neb
 {
@@ -70,8 +71,6 @@ class Step;
 class RedisStep;
 class HttpStep;
 
-class CmdConnectWorker;
-
 class WorkerImpl
 {
 public:
@@ -82,6 +81,8 @@ public:
         int32 iManagerDataFd;               ///< 与Manager父进程通信fd（数据流）
         int32 iWorkerIndex;
         int32 iWorkerPid;
+        int32 iConnectionNum;
+        int32 iClientNum;
         int32 iRecvNum;                     ///< 接收数据包（head+body）数量
         int32 iRecvByte;                    ///< 接收字节数（已到达应用层缓冲区）
         int32 iSendNum;                     ///< 发送数据包（head+body）数量（只到达应用层缓冲区，不一定都已发送出去）
@@ -98,6 +99,7 @@ public:
 
         tagWorkerInfo()
             : uiNodeId(0), iManagerControlFd(0), iManagerDataFd(0), iWorkerIndex(0), iWorkerPid(0),
+              iConnectionNum(0), iClientNum(0),
               iRecvNum(0), iRecvByte(0), iSendNum(0), iSendByte(0), iMsgPermitNum(60),
               dMsgStatInterval(60.0), dIoTimeout(480.0), dStepTimeout(3.0), iPortForServer(15000)
         {
@@ -126,8 +128,6 @@ public:
     static void RedisDisconnectCallback(const redisAsyncContext *c, int status);
     static void RedisCmdCallback(redisAsyncContext *c, void *reply, void *privdata);
 
-public:
-    typedef std::unordered_map<std::string, std::pair<std::unordered_set<std::string>::iterator, std::unordered_set<std::string> > > T_MAP_NODE_TYPE_IDENTIFY;
 public:
     WorkerImpl(Worker* pWorker, const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf);
     WorkerImpl(const WorkerImpl&) = delete;
@@ -192,27 +192,24 @@ public:     // about worker
 
 public:     // about channel
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
-    virtual bool SendTo(const tagChannelContext& stCtx);
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendTo(const tagChannelContext& stCtx, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendTo(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(std::shared_ptr<RedisChannel> pRedisChannel, std::shared_ptr<RedisStep> pRedisStep);
     virtual bool SendTo(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep);
     virtual bool AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual bool AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool AutoRedisCmd(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep);
-    virtual bool Disconnect(const tagChannelContext& stCtx, bool bChannelNotice = true);
+    virtual bool Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
     virtual bool Disconnect(const std::string& strIdentify, bool bChannelNotice = true);
-    virtual std::string GetClientAddr(const tagChannelContext& stCtx);
     virtual bool DiscardNamedChannel(const std::string& strIdentify);
-    virtual bool SwitchCodec(const tagChannelContext& stCtx, E_CODEC_TYPE eCodecType);
-    bool AddIoTimeout(const tagChannelContext& stCtx);
+    virtual bool SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType);
+    virtual void SetInnerChannel(std::shared_ptr<SocketChannel> pChannel);
 
 public:     // about session
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId, const std::string& strSessionClass = "neb::Session");
@@ -220,18 +217,18 @@ public:     // about session
 
 public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worker自身的初始化和更新）
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
-    virtual bool AddNamedSocketChannel(const std::string& strIdentify, const tagChannelContext& stCtx);
     virtual bool AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel);
     virtual void DelNamedSocketChannel(const std::string& strIdentify);
-    virtual bool SetChannelIdentify(const tagChannelContext& stCtx, const std::string& strIdentify);
+    virtual void SetChannelIdentify(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify);
     virtual bool AddNamedRedisChannel(const std::string& strIdentify, redisAsyncContext* pCtx);
     virtual bool AddNamedRedisChannel(const std::string& strIdentify, std::shared_ptr<RedisChannel> pChannel);
     virtual void DelNamedRedisChannel(const std::string& strIdentify);
     virtual void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     virtual void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
-    virtual void AddInnerChannel(const tagChannelContext& stCtx);
     virtual void SetNodeId(uint32 uiNodeId) {m_stWorkerInfo.uiNodeId = uiNodeId;}
-    virtual bool SetClientData(const tagChannelContext& stCtx, const std::string& strClientData);
+    virtual bool SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData);
+
+    bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
 
 protected:
     bool Init(CJsonObject& oJsonConf);
@@ -246,12 +243,11 @@ protected:
     bool AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel);
     bool AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
     bool RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
-    bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
     std::shared_ptr<SocketChannel> CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType);
     bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
     void Remove(std::shared_ptr<Step> pStep);
     void Remove(std::shared_ptr<Session> pSession);
-    void ChannelNotice(const tagChannelContext& stCtx, const std::string& strIdentify, const std::string& strClientData);
+    void ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const std::string& strClientData);
 
     /**
      * @brief 收到完整数据包后处理
@@ -296,7 +292,10 @@ private:
     CJsonObject m_oCustomConf;    ///< 自定义配置
 
     struct ev_loop* m_loop;
-    std::shared_ptr<CmdConnectWorker> m_pCmdConnect;
+    std::shared_ptr<SocketChannel> m_pManagerControlChannel;        // std::unique_ptr<SocketChannel> is perfect
+    std::shared_ptr<SocketChannel> m_pManagerDataChannel;
+    std::shared_ptr<Cmd> m_pCmdConnect;
+    std::unique_ptr<SessionNode> m_pSessionNode;
 
     // Cmd and Module
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;
@@ -308,16 +307,14 @@ private:
     std::unordered_map<std::string, std::unordered_map<std::string, std::shared_ptr<Session>> > m_mapCallbackSession;
 
     // Channel
-    std::unordered_map<int, std::shared_ptr<SocketChannel> > m_mapSocketChannel;            ///< 通信通道
+    std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapSocketChannel;
     std::unordered_map<redisAsyncContext*, std::shared_ptr<RedisChannel> >  m_mapRedisChannel;
-    std::unordered_map<int, uint32> m_mapInnerFd;              ///< 服务端之间连接的文件描述符（用于区分连接是服务内部还是外部客户端接入）
     std::unordered_map<uint32, int> m_mapSeq2WorkerIndex;      ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
 
     /* named Channel */
     std::unordered_map<std::string, std::list<std::shared_ptr<SocketChannel> > > m_mapNamedSocketChannel;      ///< key为Identify，连接存在时，if(http连接)list.size()>=1;else list.size()==1;
     std::unordered_map<std::string, std::list<std::shared_ptr<RedisChannel> > > m_mapNamedRedisChannel;        ///< key为identify，list.size()==1
-    std::unordered_map<std::string, std::string> m_mapIdentifyNodeType;    // key为Identify，value为node_type
-    T_MAP_NODE_TYPE_IDENTIFY m_mapNodeIdentify;
+    // TODO named channel pool;  redis chanel check;
 };
 
 

@@ -21,7 +21,7 @@ class PbStep: public Step
 {
 public:
     PbStep(Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
-    PbStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody,
+    PbStep(std::shared_ptr<SocketChannel> pUpstreamChannel, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody,
                     Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     PbStep(const PbStep&) = delete;
     PbStep& operator=(const PbStep&) = delete;
@@ -39,13 +39,13 @@ public:
      * @param data 数据指针，基本网络IO时为空，有专用数据时使用，比如redis的reply。
      */
     virtual E_CMD_STATUS Callback(
-            const tagChannelContext& stCtx,
+            std::shared_ptr<SocketChannel> pUpstreamChannel,
             const MsgHead& oMsgHead,
             const MsgBody& oMsgBody,
             void* data = NULL) = 0;
 
 protected:  // 请求端的上下文信息，通过Step构造函数初始化，若调用的是不带参数的构造函数Step()，则这几个成员不会被初始化
-    tagChannelContext m_stCtx;
+    std::shared_ptr<SocketChannel> m_pUpstreamChannel;
     MsgHead m_oReqMsgHead;
     MsgBody m_oReqMsgBody;
 

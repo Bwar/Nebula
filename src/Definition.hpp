@@ -136,9 +136,6 @@ const uint32 gc_uiClientMsgHeadSize = 14;
 const ev_tstamp gc_dNoTimeout = -1;
 const ev_tstamp gc_dDefaultTimeout = 0;
 
-const unsigned long FNV_64_INIT = 0x100000001b3;
-const unsigned long FNV_64_PRIME = 0xcbf29ce484222325;
-
 /**
  * @brief 命令执行状态
  */
@@ -165,34 +162,6 @@ enum E_CHANNEL_STATUS
     CHANNEL_STATUS_ESTABLISHED          = 6,    ///< 与对端Worker的连接就绪（可以正常收发消息）
     CHANNEL_STATUS_DISCARD              = 7,    ///< 被丢弃待回收
     CHANNEL_STATUS_DESTROY              = 8,    ///< 连接已被销毁
-};
-
-/**
- * @brief 消息通信上下文
- * @note 当外部请求到达时，因Server所有操作均为异步操作，无法立刻对请求作出响应，在完成若干个
- * 异步调用之后再响应，响应时需要有请求通道信息tagChannelContext。接收请求时在原消息前面加上
- * tagChannelContext，响应消息从通过tagChannelContext里的信息原路返回给请求方。若通过tagChannelContext
- * 里的信息无法找到请求路径，则表明请求方已发生故障或已超时被清理，消息直接丢弃。
- */
-struct tagChannelContext
-{
-    int32 iFd;          ///< 请求消息来源文件描述符
-    uint32 uiSeq;       ///< 文件描述符创建时对应的序列号
-
-    tagChannelContext() : iFd(0), uiSeq(0)
-    {
-    }
-
-    tagChannelContext(const tagChannelContext& stCtx) : iFd(stCtx.iFd), uiSeq(stCtx.uiSeq)
-    {
-    }
-
-    tagChannelContext& operator=(const tagChannelContext& stCtx)
-    {
-        iFd = stCtx.iFd;
-        uiSeq = stCtx.uiSeq;
-        return(*this);
-    }
 };
 
 }

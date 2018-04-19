@@ -12,8 +12,8 @@
 namespace neb
 {
 
-StepTellWorker::StepTellWorker(const tagChannelContext& stCtx)
-    : m_stCtx(stCtx)
+StepTellWorker::StepTellWorker(std::shared_ptr<SocketChannel> pChannel)
+    : m_pUpstreamChannel(pChannel)
 {
 }
 
@@ -33,12 +33,12 @@ E_CMD_STATUS StepTellWorker::Emit(
     oOutMsgBody.mutable_rsp_result()->set_code(0);
     oOutMsgBody.mutable_rsp_result()->set_msg("OK");
     oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
-    Step::SendTo(m_stCtx, CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
+    Step::SendTo(m_pUpstreamChannel, CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
     return(CMD_STATUS_RUNNING);
 }
 
 E_CMD_STATUS StepTellWorker::Callback(
-        const tagChannelContext& stCtx,
+        std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody,
         void* data)
@@ -48,11 +48,10 @@ E_CMD_STATUS StepTellWorker::Callback(
         TargetWorker oInTargetWorker;
         if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
         {
-            LOG4_DEBUG("AddNodeIdentify(%s, fd %d, seq %llu)!",
-                            oInTargetWorker.worker_identify().c_str(), stCtx.iFd, stCtx.uiSeq);
-            GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), stCtx);
+            LOG4_DEBUG("AddNodeIdentify(%s)!", oInTargetWorker.worker_identify().c_str());
+            GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
             GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
-            SendTo(stCtx);
+            SendTo(pChannel);
             return(CMD_STATUS_COMPLETED);
         }
         else

@@ -22,7 +22,7 @@ public:
     CmdToldWorker(int32 iCmd);
     virtual ~CmdToldWorker();
     virtual bool AnyMessage(
-                    const tagChannelContext& stCtx,
+                    std::shared_ptr<SocketChannel> pChannel,
                     const MsgHead& oInMsgHead,
                     const MsgBody& oInMsgBody);
 };

@@ -52,7 +52,7 @@ public:
      * @return 命令是否处理成功
      */
     virtual bool AnyMessage(
-                    const tagChannelContext& stCtx,
+                    std::shared_ptr<SocketChannel> pChannel,
                     const MsgHead& oMsgHead,
                     const MsgBody& oMsgBody) = 0;
 

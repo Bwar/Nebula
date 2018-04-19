@@ -69,7 +69,7 @@ E_CMD_STATUS StepNodeNotice::Emit(int iErrno, const std::string& strErrMsg, void
     return(CMD_STATUS_COMPLETED);
 }
 
-E_CMD_STATUS StepNodeNotice::Callback(const tagChannelContext& stCtx,
+E_CMD_STATUS StepNodeNotice::Callback(std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead, const MsgBody& oInMsgBody, void* data)
 {
     return(CMD_STATUS_COMPLETED);

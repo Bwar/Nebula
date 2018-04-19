@@ -22,13 +22,13 @@ CmdBeat::~CmdBeat()
 }
 
 bool CmdBeat::AnyMessage(
-        const tagChannelContext& stCtx,
+        std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
 {
     bool bResult = false;
     MsgBody oOutMsgBody = oInMsgBody;
-    SendTo(stCtx, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
+    SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
     return(bResult);
 }
 

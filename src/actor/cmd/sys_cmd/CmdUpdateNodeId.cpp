@@ -22,7 +22,7 @@ CmdUpdateNodeId::~CmdUpdateNodeId()
 }
 
 bool CmdUpdateNodeId::AnyMessage(
-        const tagChannelContext& stCtx,
+        std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
 {

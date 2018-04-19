@@ -24,11 +24,11 @@ public:
     virtual ~ModuleHttpUpgrade();
 
     virtual bool AnyMessage(
-                    const tagChannelContext& stCtx,
+                    std::shared_ptr<SocketChannel> pChannel,
                     const HttpMsg& oHttpMsg);
 
 protected:
-    bool WebSocket(const tagChannelContext& stCtx, const HttpMsg& oHttpMsg);
+    bool WebSocket(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
 
 private:
     const std::string mc_strWebSocketMagicGuid;

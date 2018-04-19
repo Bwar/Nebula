@@ -23,10 +23,10 @@ namespace neb
  * 若该步骤正常回调，则重置连接超时，若该步骤超时，则关闭连接，销毁连接资源。该步骤实现的是服务
  * 端发起的心跳机制，心跳时间间隔就是IO超时时间。
  */
-class StepIoTimeout: public PbStep, public DynamicCreator<StepIoTimeout, tagChannelContext>, public WorkerFriend
+class StepIoTimeout: public PbStep, public DynamicCreator<StepIoTimeout, std::shared_ptr<SocketChannel> >, public WorkerFriend
 {
 public:
-    StepIoTimeout(const tagChannelContext& stCtx);
+    StepIoTimeout(std::shared_ptr<SocketChannel> pChannel);
     virtual ~StepIoTimeout();
 
     virtual E_CMD_STATUS Emit(
@@ -35,7 +35,7 @@ public:
             void* data = NULL);
 
     virtual E_CMD_STATUS Callback(
-            const tagChannelContext& stCtx,
+            std::shared_ptr<SocketChannel> pChannel,
             const MsgHead& oInMsgHead,
             const MsgBody& oInMsgBody,
             void* data = NULL);
@@ -43,7 +43,7 @@ public:
     virtual E_CMD_STATUS Timeout();
 
 private:
-    tagChannelContext m_stCtx;
+    std::shared_ptr<SocketChannel> m_pUpstreamChannel;
 };
 
 } /* namespace neb */

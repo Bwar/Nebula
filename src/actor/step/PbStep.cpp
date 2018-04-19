@@ -17,9 +17,9 @@ PbStep::PbStep(Step* pNextStep, ev_tstamp dTimeout)
 {
 }
 
-PbStep::PbStep(const tagChannelContext& stCtx, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody, Step* pNextStep, ev_tstamp dTimeout)
+PbStep::PbStep(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody, Step* pNextStep, ev_tstamp dTimeout)
     : Step(Actor::ACT_PB_STEP, pNextStep, dTimeout),
-      m_stCtx(stCtx), m_oReqMsgHead(oReqMsgHead), m_oReqMsgBody(oReqMsgBody)
+      m_pUpstreamChannel(pChannel), m_oReqMsgHead(oReqMsgHead), m_oReqMsgBody(oReqMsgBody)
 {
 }
 

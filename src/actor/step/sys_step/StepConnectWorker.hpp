@@ -16,10 +16,10 @@
 namespace neb
 {
 
-class StepConnectWorker: public PbStep, public DynamicCreator<StepConnectWorker, tagChannelContext, MsgHead, MsgBody>
+class StepConnectWorker: public PbStep, public DynamicCreator<StepConnectWorker, std::shared_ptr<SocketChannel>, MsgHead, MsgBody>
 {
 public:
-    StepConnectWorker(const tagChannelContext& stCtx, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     virtual ~StepConnectWorker();
 
     virtual E_CMD_STATUS Emit(
@@ -28,7 +28,7 @@ public:
             void* data = NULL);
 
     virtual E_CMD_STATUS Callback(
-            const tagChannelContext& stCtx,
+            std::shared_ptr<SocketChannel> pChannel,
             const MsgHead& oInMsgHead,
             const MsgBody& oInMsgBody,
             void* data = NULL);
