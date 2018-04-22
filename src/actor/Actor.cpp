@@ -138,7 +138,7 @@ ev_timer* Actor::AddTimerWatcher()
     m_pTimerWatcher = (ev_timer*)malloc(sizeof(ev_timer));
     if (NULL != m_pTimerWatcher)
     {
-        m_pTimerWatcher->data = this;    // (void*)(Channel*)
+        m_pTimerWatcher->data = this;    // (void*)(Actor*)
     }
     return(m_pTimerWatcher);
 }

@@ -284,7 +284,6 @@ private:
 
     std::unordered_map<std::string, std::shared_ptr<SocketChannel> > m_mapNamedSocketChannel;
     std::unordered_map<int, std::shared_ptr<SocketChannel> > m_mapSocketChannel;                   ///< 通信通道
-    std::unordered_map<uint32, int> m_mapSeq2WorkerIndex;             ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
     std::unordered_map<in_addr_t, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
 
     std::vector<int> m_vecFreeWorkerIdx;            ///< 空闲进程编号

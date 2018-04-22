@@ -20,7 +20,7 @@ namespace neb
 {
 
 SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
-    : m_ucChannelStatus(0), m_ucInnerChannel(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulStepSeq(0),
+    : m_ucChannelStatus(CHANNEL_STATUS_INIT), m_unRemoteWorkerIdx(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulStepSeq(0),
       m_ulForeignSeq(0), m_ulUnitTimeMsgNum(0), m_ulMsgNum(0), m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
       m_pIoWatcher(nullptr), m_pTimerWatcher(nullptr),
       m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
@@ -51,7 +51,7 @@ bool SocketChannel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
         m_pWaitForSendBuff = new CBuffer();
         switch (eCodecType)
         {
-            case CODEC_PROTOBUF:
+            case CODEC_NEBULA:
                 m_pCodec = new CodecProto(m_pLogger, eCodecType, strKey);
                 break;
             case CODEC_PRIVATE:
@@ -588,7 +588,7 @@ bool SocketChannel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
     {
         switch (eCodecType)
         {
-            case CODEC_PROTOBUF:
+            case CODEC_NEBULA:
                 pNewCodec = new CodecProto(m_pLogger, eCodecType, m_strKey);
                 break;
             case CODEC_PRIVATE:

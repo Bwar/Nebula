@@ -29,6 +29,7 @@ extern "C" {
 #include "actor/step/Step.hpp"
 #include "actor/cmd/sys_cmd/CmdConnectWorker.hpp"
 #include "actor/step/sys_step/StepIoTimeout.hpp"
+#include <iostream>
 
 namespace neb
 {
@@ -266,7 +267,7 @@ bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
 #ifdef NODE_TYPE_ACCESS
             if (!pChannel->IsChannelVerify())
             {
-                if (!pChannel->IsInnerChannel() && pChannel->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
+                if (CODEC_NEBULA != pChannel->GetCodecType() && pChannel->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
                 {
                     LOG4_DEBUG("invalid request, please login first!");
                     DiscardSocketChannel(pChannel);
@@ -325,7 +326,7 @@ bool WorkerImpl::FdTransfer()
             pChannel->SetRemoteAddr(inet_ntoa(adr_inet.sin_addr));
             AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
             AddIoReadEvent(pChannel);
-            if (CODEC_PROTOBUF != iCodec)
+            if (CODEC_NEBULA != iCodec)
             {
                 pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             }
@@ -340,23 +341,16 @@ bool WorkerImpl::FdTransfer()
 
 bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
-    //LOG4_TRACE(" ");
     if (CHANNEL_STATUS_TRY_CONNECT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
     {
-        auto index_iter = m_mapSeq2WorkerIndex.find(pChannel->GetSequence());
-        if (index_iter != m_mapSeq2WorkerIndex.end())
+        if (CODEC_NEBULA == pChannel->GetCodecType())  // 系统内部Server间通信
         {
-            pChannel->SetInnerChannel();
-            if (CODEC_PROTOBUF == pChannel->GetCodecType())  // 系统内部Server间通信
-            {
-                std::dynamic_pointer_cast<CmdConnectWorker>(m_pCmdConnect)->Start(pChannel, index_iter->second);
-            }
-            m_mapSeq2WorkerIndex.erase(index_iter);
-            return(false);
+            std::dynamic_pointer_cast<CmdConnectWorker>(m_pCmdConnect)->Start(pChannel, pChannel->m_unRemoteWorkerIdx);
+            return(true);
         }
     }
 
-    if (CODEC_PROTOBUF != pChannel->GetCodecType()
+    if (CODEC_NEBULA != pChannel->GetCodecType()
             && CHANNEL_STATUS_ESTABLISHED != pChannel->GetChannelStatus())
     {
         pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
@@ -408,7 +402,7 @@ bool WorkerImpl::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
     }
     else        // 关闭文件描述符并清理相关资源
     {
-        if (! pChannel->IsInnerChannel())   // 非内部服务器间的连接才会在超时中关闭
+        if (CODEC_NEBULA != pChannel->GetCodecType())   // 非内部服务器间的连接才会在超时中关闭
         {
             LOG4_TRACE("io timeout!");
             DiscardSocketChannel(pChannel);
@@ -568,6 +562,7 @@ bool WorkerImpl::OnRedisDisconnected(const redisAsyncContext *c, int status)
         DelNamedRedisChannel(channel_iter->second->GetIdentify());
         m_mapRedisChannel.erase(channel_iter);
     }
+    redisAsyncFree(const_cast<redisAsyncContext*>(c));
     return(true);
 }
 
@@ -723,11 +718,11 @@ bool WorkerImpl::CreateEvents()
     // 注册网络IO事件
     m_pManagerDataChannel = std::make_shared<SocketChannel>(m_pLogger, m_stWorkerInfo.iManagerDataFd, GetSequence());
     m_pManagerDataChannel->SetLabor(m_pWorker);
-    m_pManagerDataChannel->Init(CODEC_PROTOBUF);
+    m_pManagerDataChannel->Init(CODEC_NEBULA);
     m_pManagerDataChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     m_pManagerControlChannel = std::make_shared<SocketChannel>(m_pLogger, m_stWorkerInfo.iManagerControlFd, GetSequence());
     m_pManagerControlChannel->SetLabor(m_pWorker);
-    m_pManagerControlChannel->Init(CODEC_PROTOBUF);
+    m_pManagerControlChannel->Init(CODEC_NEBULA);
     m_pManagerControlChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     AddIoReadEvent(m_pManagerDataChannel);
     // AddIoTimeout(pChannelData, 60.0);   // TODO 需要优化
@@ -810,32 +805,6 @@ void WorkerImpl::DelNamedSocketChannel(const std::string& strIdentify)
 void WorkerImpl::SetChannelIdentify(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify)
 {
     pChannel->SetIdentify(strIdentify);
-}
-
-bool WorkerImpl::AddNamedRedisChannel(const std::string& strIdentify, redisAsyncContext* pCtx)
-{
-    LOG4_TRACE("%s", strIdentify.c_str());
-    auto channel_iter = m_mapRedisChannel.find(pCtx);
-    if (channel_iter == m_mapRedisChannel.end())
-    {
-        return(false);
-    }
-    else
-    {
-        auto named_iter = m_mapNamedRedisChannel.find(strIdentify);
-        if (named_iter == m_mapNamedRedisChannel.end())
-        {
-            std::list<std::shared_ptr<RedisChannel>> listChannel;
-            listChannel.push_back(channel_iter->second);
-            m_mapNamedRedisChannel.insert(std::make_pair(strIdentify, listChannel));
-        }
-        else
-        {
-            named_iter->second.push_back(channel_iter->second);
-        }
-        channel_iter->second->SetIdentify(strIdentify);
-        return(true);
-    }
 }
 
 bool WorkerImpl::AddNamedRedisChannel(const std::string& strIdentify, std::shared_ptr<RedisChannel> pChannel)
@@ -1095,29 +1064,30 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, const std::string
     }
     else
     {
-        for (auto channel_iter = named_iter->second.begin();
-                channel_iter != named_iter->second.end(); ++channel_iter)
+        if (named_iter->second.empty())
         {
-            if (0 == (*channel_iter)->GetStepSeq())
+            return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, uiHttpStepSeq));
+        }
+        else
+        {
+            auto channel_iter = named_iter->second.begin();
+            E_CODEC_STATUS eStatus = (*channel_iter)->Send(oHttpMsg, uiHttpStepSeq);
+            if (CODEC_STATUS_OK == eStatus)
             {
-                E_CODEC_STATUS eStatus = (*channel_iter)->Send(oHttpMsg, uiHttpStepSeq);
-                if (CODEC_STATUS_OK == eStatus)
-                {
-                    if (0.0 == (*channel_iter)->GetKeepAlive())   // http1.0待响应数据发送完毕后在下一次epoll_wait中关闭连接
-                    {
-                        AddIoWriteEvent(*channel_iter);
-                    }
-                    return(true);
-                }
-                else if (CODEC_STATUS_PAUSE == eStatus)
+                if (0.0 == (*channel_iter)->GetKeepAlive())   // http1.0待响应数据发送完毕后在下一次epoll_wait中关闭连接
                 {
                     AddIoWriteEvent(*channel_iter);
-                    return(true);
                 }
-                return(false);
+                named_iter->second.erase(channel_iter);     // erase from named channel pool, the channel remain in m_mapSocketChannel.
+                return(true);
             }
+            else if (CODEC_STATUS_PAUSE == eStatus)
+            {
+                AddIoWriteEvent(*channel_iter);
+                return(true);
+            }
+            return(false);
         }
-        return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, uiHttpStepSeq));
     }
 }
 
@@ -1212,7 +1182,7 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 u
     x_sock_set_block(iFd, 0);
     int nREUSEADDR = 1;
     setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
-    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, CODEC_PROTOBUF);
+    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, CODEC_NEBULA);
     if (nullptr != pChannel)
     {
         AddIoTimeout(pChannel, 1.5);
@@ -1229,7 +1199,7 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 u
 
         connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
-        m_mapSeq2WorkerIndex.insert(std::pair<uint32, int>(pChannel->GetSequence(), iWorkerIndex));
+        pChannel->m_unRemoteWorkerIdx = iWorkerIndex;
         AddNamedSocketChannel(strIdentify, pChannel);
         return(true);
     }
@@ -1281,7 +1251,6 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
         snprintf(szIdentify, sizeof(szIdentify), "%s:%d", strHost.c_str(), iPort);
         pChannel->SetIdentify(szIdentify);
         pChannel->SetRemoteAddr(strHost);
-        pChannel->SetChannelStatus(CHANNEL_STATUS_INIT);
         E_CODEC_STATUS eCodecStatus = pChannel->Send(oHttpMsg, uiHttpStepSeq);
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
@@ -1290,7 +1259,7 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
 
         connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT, uiHttpStepSeq);
-        AddNamedSocketChannel(szIdentify, pChannel);
+        // AddNamedSocketChannel(szIdentify, pChannel);   the channel should not add to named connection pool, because there is an uncompleted http request.
         return(true);
     }
     else    // 没有足够资源分配给新连接，直接close掉
@@ -1383,11 +1352,6 @@ bool WorkerImpl::DiscardNamedChannel(const std::string& strIdentify)
 bool WorkerImpl::SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType)
 {
     return(pChannel->SwitchCodec(eCodecType, m_stWorkerInfo.dIoTimeout));
-}
-
-void WorkerImpl::SetInnerChannel(std::shared_ptr<SocketChannel> pChannel)
-{
-    pChannel->SetInnerChannel();
 }
 
 void WorkerImpl::BootLoadCmd(CJsonObject& oCmdConf)
@@ -1584,6 +1548,11 @@ bool WorkerImpl::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
     return(true);
 }
 
+void WorkerImpl::SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData)
+{
+    pChannel->SetClientData(strClientData);
+}
+
 bool WorkerImpl::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout)
 {
     LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
@@ -1701,8 +1670,6 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     }
     pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
 
-    m_mapSocketChannel.erase(m_mapSocketChannel.find(pChannel->GetFd()));
-
     auto named_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
     if (named_iter != m_mapNamedSocketChannel.end())
     {
@@ -1720,6 +1687,8 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
             m_mapNamedSocketChannel.erase(named_iter);
         }
     }
+
+    m_mapSocketChannel.erase(m_mapSocketChannel.find(pChannel->GetFd()));
     return(true);
 }
 
@@ -1844,7 +1813,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
             else
             {
 //#ifdef NODE_TYPE_ACCESS
-                if (pChannel->IsInnerChannel())   // 内部服务往客户端发送  if (std::string("0.0.0.0") == strFromIp)
+                if (CODEC_NEBULA == pChannel->GetCodecType())   // 内部服务往客户端发送  if (std::string("0.0.0.0") == strFromIp)
                 {
                     cmd_iter = m_mapCmd.find(CMD_REQ_TO_CLIENT);
                     if (cmd_iter != m_mapCmd.end())
@@ -1993,6 +1962,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
         {
             LOG4_ERROR("no callback for http response from %s!", oHttpMsg.url().c_str());
             pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED, 0);
+            AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);       // push back to named socket channel pool.
         }
         else
         {
@@ -2003,6 +1973,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
             {
                 Remove(http_step_iter->second);
                 pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED, 0);
+                AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);       // push back to named socket channel pool.
             }
         }
     }

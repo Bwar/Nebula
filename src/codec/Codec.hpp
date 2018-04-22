@@ -32,8 +32,8 @@ const unsigned int gc_uiAesBit  = 0x02000000;          ///< 采用128位aes加�
 enum E_CODEC_TYPE
 {
     CODEC_UNKNOW            = 0,        ///< 未知
-    CODEC_TLV               = 1,        ///< TLV编解码
-    CODEC_PROTOBUF          = 2,        ///< Protobuf编解码
+    CODEC_PROTO             = 1,        ///< Protobuf编解码
+    CODEC_NEBULA            = 2,        ///< Nebula Protobuf 与CODEC_PROTO完全相同，只为程序判断内部服务器之间连接而用
     CODEC_HTTP              = 3,        ///< HTTP编解码
     CODEC_HTTP_CUSTOM       = 4,        ///< 带自定义HTTP头的http编解码
     CODEC_PRIVATE           = 5,        ///< 私有协议编解码

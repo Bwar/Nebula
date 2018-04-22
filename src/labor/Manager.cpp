@@ -308,7 +308,7 @@ bool Manager::AcceptServerConn(int iFd)
         }
         uint32 ulSeq = GetSequence();
         x_sock_set_block(iAcceptFd, 0);
-        std::shared_ptr<SocketChannel> pChannel = CreateChannel(iAcceptFd, CODEC_PROTOBUF);
+        std::shared_ptr<SocketChannel> pChannel = CreateChannel(iAcceptFd, CODEC_NEBULA);
         if (NULL != pChannel)
         {
             AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
@@ -354,7 +354,7 @@ bool Manager::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             }
             oMsgHead.Clear();       // 注意protobuf的Clear()使用不当容易造成内存泄露
             oMsgBody.Clear();
-            eCodecStatus = pChannel->Fetch(oMsgHead, oMsgBody); // TODO coredump when pChannel destroy in OnDataAndTransferFd() or OnBeaconData()...
+            eCodecStatus = pChannel->Fetch(oMsgHead, oMsgBody);
         }
 
         if (CODEC_STATUS_PAUSE == eCodecStatus)
@@ -371,22 +371,16 @@ bool Manager::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
 bool Manager::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE("%d", pChannel->GetFd());
-    if (CHANNEL_STATUS_INIT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
+    if (CHANNEL_STATUS_TRY_CONNECT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
     {
-        auto index_iter = m_mapSeq2WorkerIndex.find(pChannel->GetSequence());
-        if (index_iter != m_mapSeq2WorkerIndex.end())
-        {
-            MsgBody oMsgBody;
-            ConnectWorker oConnWorker;
-            oConnWorker.set_worker_index(index_iter->second);
-            oMsgBody.set_data(oConnWorker.SerializeAsString());
-            m_mapSeq2WorkerIndex.erase(index_iter);
-            LOG4_DEBUG("send after connect, oMsgBody.ByteSize() = %d, oConnWorker.ByteSize() = %d",
-                            oMsgBody.ByteSize(), oConnWorker.ByteSize());
-            SendTo(pChannel, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
-            return(true);
-        }
-        return(false);
+        MsgBody oMsgBody;
+        ConnectWorker oConnWorker;
+        oConnWorker.set_worker_index(pChannel->m_unRemoteWorkerIdx);
+        oMsgBody.set_data(oConnWorker.SerializeAsString());
+        LOG4_DEBUG("send after connect, oMsgBody.ByteSize() = %d, oConnWorker.ByteSize() = %d",
+                        oMsgBody.ByteSize(), oConnWorker.ByteSize());
+        SendTo(pChannel, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
+        return(true);
     }
     else
     {
@@ -632,6 +626,26 @@ bool Manager::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 
     }
 }
 
+bool Manager::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    LOG4_TRACE("node_type: %s", strNodeType.c_str());
+    std::unordered_set<std::string> setOnlineNodes;
+    if (m_pSessionNode->GetNode(strNodeType, setOnlineNodes))
+    {
+        bool bSendResult = false;
+        for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
+        {
+            bSendResult |= SendTo(*node_iter, uiCmd, uiSeq, oMsgBody);
+        }
+        return(bSendResult);
+    }
+    else
+    {
+        LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
+        return(false);
+    }
+}
+
 bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s", strIdentify.c_str());
@@ -653,7 +667,7 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
     x_sock_set_block(iFd, 0);
     int reuse = 1;
     ::setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-    std::shared_ptr<SocketChannel> pChannel = CreateChannel(iFd, CODEC_PROTOBUF);
+    std::shared_ptr<SocketChannel> pChannel = CreateChannel(iFd, CODEC_NEBULA);
     if (nullptr != pChannel)
     {
         AddIoTimeout(pChannel, 1.5);
@@ -661,7 +675,6 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
         AddIoWriteEvent(pChannel);
         pChannel->SetIdentify(strIdentify);
         pChannel->SetRemoteAddr(strHost);
-        pChannel->SetChannelStatus(CHANNEL_STATUS_INIT);
         E_CODEC_STATUS eCodecStatus = pChannel->Send(uiCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
@@ -670,7 +683,7 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
 
         connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
-        m_mapSeq2WorkerIndex.insert(std::pair<uint32, int>(pChannel->GetSequence(), iWorkerIndex));
+        pChannel->m_unRemoteWorkerIdx = iWorkerIndex;
         AddNamedSocketChannel(strIdentify, pChannel);
         return(true);
     }
@@ -874,7 +887,7 @@ bool Manager::CreateEvents()
 #ifdef NODE_TYPE_ACCESS
     pChannelListen = CreateChannel(m_stManagerInfo.iC2SListenFd, m_eCodec);
 #else
-    pChannelListen = CreateChannel(m_stManagerInfo.iS2SListenFd, CODEC_PROTOBUF);
+    pChannelListen = CreateChannel(m_stManagerInfo.iS2SListenFd, CODEC_NEBULA);
 #endif
     pChannelListen->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     AddIoReadEvent(pChannelListen);
@@ -1065,8 +1078,8 @@ void Manager::CreateWorker()
             m_mapWorker.insert(std::pair<int, tagWorkerAttr>(iPid, stWorkerAttr));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFds[0], iPid));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFds[0], iPid));
-            std::shared_ptr<SocketChannel> pChannelData = CreateChannel(iControlFds[0], CODEC_PROTOBUF);
-            std::shared_ptr<SocketChannel> pChannelControl = CreateChannel(iDataFds[0], CODEC_PROTOBUF);
+            std::shared_ptr<SocketChannel> pChannelData = CreateChannel(iControlFds[0], CODEC_NEBULA);
+            std::shared_ptr<SocketChannel> pChannelControl = CreateChannel(iDataFds[0], CODEC_NEBULA);
             pChannelData->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             pChannelControl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             AddIoReadEvent(pChannelData);
@@ -1174,8 +1187,8 @@ bool Manager::RestartWorker(int iDeathPid)
             m_mapWorker.insert(std::pair<int, tagWorkerAttr>(iNewPid, stWorkerAttr));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFds[0], iNewPid));
             m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFds[0], iNewPid));
-            std::shared_ptr<SocketChannel> pChannelData = CreateChannel(iControlFds[0], CODEC_PROTOBUF);
-            std::shared_ptr<SocketChannel> pChannelControl = CreateChannel(iDataFds[0], CODEC_PROTOBUF);
+            std::shared_ptr<SocketChannel> pChannelData = CreateChannel(iControlFds[0], CODEC_NEBULA);
+            std::shared_ptr<SocketChannel> pChannelControl = CreateChannel(iDataFds[0], CODEC_NEBULA);
             pChannelData->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             pChannelControl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             AddIoReadEvent(pChannelData);
@@ -1692,7 +1705,7 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
 
                     char szIp[16] = {0};
                     strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
-                    int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->GetFd(), szIp, 16, CODEC_PROTOBUF);
+                    int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->GetFd(), szIp, 16, CODEC_NEBULA);
                     if (iErrno != 0)
                     {
                         LOG4_ERROR("send_fd_with_attr error %d: %s!",

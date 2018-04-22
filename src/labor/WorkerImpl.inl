@@ -137,9 +137,12 @@ std::shared_ptr<Session> WorkerImpl::MakeSharedSession(Actor* pCreator, const st
     }
     if (ret.second)
     {
-        ev_timer_init (timer_watcher, StepTimeoutCallback, pSessionAlias->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
-        ev_timer_start (m_loop, timer_watcher);
-        LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
+        if (gc_dNoTimeout != pSessionAlias->m_dTimeout)
+        {
+            ev_timer_init (timer_watcher, SessionTimeoutCallback, pSessionAlias->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
+            ev_timer_start (m_loop, timer_watcher);
+        }
+        LOG4_TRACE("Session(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pSessionAlias->GetSequence(), pSessionAlias->GetActiveTime(), pSessionAlias->GetTimeout());
         return(pSharedSession);
     }
@@ -169,13 +172,13 @@ std::shared_ptr<Cmd> WorkerImpl::MakeSharedCmd(Actor* pCreator, const std::strin
     auto ret = m_mapCmd.insert(std::make_pair(pCmdAlias->GetCmd(), pSharedCmd));
     if (ret.second)
     {
-        return(pSharedCmd);
+        if (pCmdAlias->Init())
+        {
+            return(pSharedCmd);
+        }
     }
-    else
-    {
-        pCmdAlias = pCmd = nullptr;
-        return(nullptr);
-    }
+    pCmdAlias = pCmd = nullptr;
+    return(nullptr);
 }
 
 template <typename ...Targs>
@@ -197,13 +200,13 @@ std::shared_ptr<Module> WorkerImpl::MakeSharedModule(Actor* pCreator, const std:
     auto ret = m_mapModule.insert(std::make_pair(pModuleAlias->GetModulePath(), pSharedModule));
     if (ret.second)
     {
-        return(pSharedModule);
+        if (pModuleAlias->Init())
+        {
+            return(pSharedModule);
+        }
     }
-    else
-    {
-        pModuleAlias = pModule = nullptr;
-        return(nullptr);
-    }
+    pModuleAlias = pModule = nullptr;
+    return(nullptr);
 }
 
 }

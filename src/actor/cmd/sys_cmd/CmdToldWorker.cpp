@@ -38,7 +38,7 @@ bool CmdToldWorker::AnyMessage(
                         oInTargetWorker.worker_identify().c_str());
         GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
         GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
-        GetWorkerImpl(this)->SetInnerChannel(pChannel);
+        // GetWorkerImpl(this)->SetInnerChannel(pChannel):  CODEC_NEBULA == pChannel->GetCodecType()
         oOutTargetWorker.set_worker_identify(GetNodeIdentify());
         oOutTargetWorker.set_node_type(GetNodeType());
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);

@@ -63,11 +63,6 @@ public:
         return(m_ulSeq);
     }
 
-    bool IsInnerChannel() const
-    {
-        return(m_ucInnerChannel);
-    }
-
     uint32 GetStepSeq() const
     {
         return(m_ulStepSeq);
@@ -133,11 +128,6 @@ private:
         m_pLabor = pLabor;
     }
 
-    void SetInnerChannel()
-    {
-        m_ucInnerChannel = 1;
-    }
-
     /*
     void SetActiveTime(ev_tstamp dTime)
     {
@@ -192,8 +182,8 @@ private:
 
 private:
     uint8 m_ucChannelStatus;
-    uint8 m_ucInnerChannel;
     char m_szErrBuff[256];
+    uint16 m_unRemoteWorkerIdx;           ///< 对端Worker进程ID,若不涉及则无需关心
     int32 m_iFd;                          ///< 文件描述符
     uint32 m_ulSeq;                       ///< 文件描述符创建时对应的序列号
     uint32 m_ulForeignSeq;                ///< 外来的seq，每个连接的包都是有序的，用作接入Server数据包检查，防止篡包

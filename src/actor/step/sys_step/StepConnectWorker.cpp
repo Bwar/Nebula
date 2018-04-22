@@ -14,7 +14,7 @@ namespace neb
 
 StepConnectWorker::StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
     : PbStep(pChannel, oInMsgHead, oInMsgBody),
-      pStepTellWorker(NULL)
+      pStepTellWorker(nullptr)
 {
 }
 

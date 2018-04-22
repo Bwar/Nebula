@@ -209,7 +209,6 @@ public:     // about channel
     virtual bool Disconnect(const std::string& strIdentify, bool bChannelNotice = true);
     virtual bool DiscardNamedChannel(const std::string& strIdentify);
     virtual bool SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType);
-    virtual void SetInnerChannel(std::shared_ptr<SocketChannel> pChannel);
 
 public:     // about session
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId, const std::string& strSessionClass = "neb::Session");
@@ -220,13 +219,12 @@ public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worke
     virtual bool AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel);
     virtual void DelNamedSocketChannel(const std::string& strIdentify);
     virtual void SetChannelIdentify(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify);
-    virtual bool AddNamedRedisChannel(const std::string& strIdentify, redisAsyncContext* pCtx);
     virtual bool AddNamedRedisChannel(const std::string& strIdentify, std::shared_ptr<RedisChannel> pChannel);
     virtual void DelNamedRedisChannel(const std::string& strIdentify);
     virtual void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     virtual void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     virtual void SetNodeId(uint32 uiNodeId) {m_stWorkerInfo.uiNodeId = uiNodeId;}
-    virtual bool SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData);
+    virtual void SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData);
 
     bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
 
@@ -309,12 +307,10 @@ private:
     // Channel
     std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapSocketChannel;
     std::unordered_map<redisAsyncContext*, std::shared_ptr<RedisChannel> >  m_mapRedisChannel;
-    std::unordered_map<uint32, int> m_mapSeq2WorkerIndex;      ///< 序列号对应的Worker进程编号（用于connect成功后，向对端Manager发送希望连接的Worker进程编号）
 
     /* named Channel */
     std::unordered_map<std::string, std::list<std::shared_ptr<SocketChannel> > > m_mapNamedSocketChannel;      ///< key为Identify，连接存在时，if(http连接)list.size()>=1;else list.size()==1;
     std::unordered_map<std::string, std::list<std::shared_ptr<RedisChannel> > > m_mapNamedRedisChannel;        ///< key为identify，list.size()==1
-    // TODO named channel pool;  redis chanel check;
 };
 
 
