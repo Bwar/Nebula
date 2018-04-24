@@ -95,8 +95,8 @@ public:
         std::string strNodeIdentify;
 
         tagManagerInfo()
-            : eCodec(CODEC_HTTP), uiNodeId(0), iPortForServer(16002), iPortForClient(16001), iGatewayPort(8080),
-              uiWorkerNum(10), iAddrPermitNum(10),
+            : eCodec(CODEC_HTTP), uiNodeId(0), iPortForServer(0), iPortForClient(0), iGatewayPort(0),
+              uiWorkerNum(0), iAddrPermitNum(0),
               iWorkerBeat(7), iS2SListenFd(-1), iC2SListenFd(-1), dIoTimeout(300.0), dAddrStatInterval(60.0)
         {
         }

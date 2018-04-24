@@ -81,9 +81,7 @@ void Manager::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int 
     if (watcher->data != NULL)
     {
         Manager* pManager = (Manager*)(watcher->data);
-#ifndef NODE_TYPE_BEACON
         pManager->ReportToBeacon();
-#endif
         pManager->CheckWorker();
         pManager->RefreshServer();
     }
@@ -168,20 +166,15 @@ bool Manager::OnChildTerminated(struct ev_signal* watcher)
 
 bool Manager::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE(" ");
+    LOG4_TRACE("fd[%d]", pChannel->GetFd());
     if (pChannel->GetFd() == m_stManagerInfo.iS2SListenFd)
     {
-#ifdef UNIT_TEST
-        return(FdTransfer(pChannel->GetFd()));
-#endif
         return(AcceptServerConn(pChannel->GetFd()));
     }
-#ifdef NODE_TYPE_ACCESS
-    else if (pChannel->GetFd() == m_iC2SListenFd)
+    else if (m_stManagerInfo.iC2SListenFd > 2 && pChannel->GetFd() == m_stManagerInfo.iC2SListenFd)
     {
         return(FdTransfer(pChannel->GetFd()));
     }
-#endif
     else
     {
         return(DataRecvAndHandle(pChannel));
@@ -236,14 +229,12 @@ bool Manager::FdTransfer(int iFd)
     else
     {
         iter->second++;
-#ifdef NODE_TYPE_ACCESS
-        if (iter->second > (uint32)m_iAddrPermitNum)
+        if (m_stManagerInfo.iC2SListenFd > 2 && iter->second > (uint32)m_stManagerInfo.iAddrPermitNum)
         {
             LOG4_WARNING("client addr %d had been connected more than %u times in %f seconds, it's not permitted",
-                            stClientAddr.sin_addr.s_addr, m_iAddrPermitNum, m_dAddrStatInterval);
+                            stClientAddr.sin_addr.s_addr, m_stManagerInfo.iAddrPermitNum, m_stManagerInfo.dAddrStatInterval);
             return(false);
         }
-#endif
     }
 
     std::pair<int, int> worker_pid_fd = GetMinLoadWorkerDataFd();
@@ -339,13 +330,13 @@ bool Manager::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             auto worker_fd_iter = m_mapWorkerFdPid.find(pChannel->GetFd());
             if (worker_fd_iter == m_mapWorkerFdPid.end())   // 其他Server发过来要将连接传送到某个指定Worker进程信息
             {
-                if (std::string("BEACON") == pChannel->GetIdentify())       // 不是与beacon连接
-                {
-                    OnDataAndTransferFd(pChannel, oMsgHead, oMsgBody);
-                }
-                else    // 与beacon连接
+                if (m_pSessionNode->IsNodeType(pChannel->GetIdentify(), "BEACON"))       // 与beacon连接
                 {
                     OnBeaconData(pChannel, oMsgHead, oMsgBody);
+                }
+                else    // 不是与beacon连接
+                {
+                    OnDataAndTransferFd(pChannel, oMsgHead, oMsgBody);
                 }
             }
             else    // Worker进程发过来的消息
@@ -767,43 +758,44 @@ bool Manager::Init()
     int reuse = 1;
     int timeout = 1;
 
-#ifdef NODE_TYPE_ACCESS
-    // 接入节点才需要监听客户端连接
-    struct sockaddr_in stAddrOuter;
-    struct sockaddr *pAddrOuter;
-    stAddrOuter.sin_family = AF_INET;
-    stAddrOuter.sin_port = htons(m_iPortForClient);
-    stAddrOuter.sin_addr.s_addr = inet_addr(m_strHostForClient.c_str());
-    pAddrOuter = (struct sockaddr*)&stAddrOuter;
-    addressLen = sizeof(struct sockaddr);
-    m_iC2SListenFd = socket(pAddrOuter->sa_family, SOCK_STREAM, 0);
-    if (m_iC2SListenFd < 0)
+    if (m_stManagerInfo.strHostForClient.size() > 0 && m_stManagerInfo.iPortForClient > 0)
     {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-        int iErrno = errno;
-        exit(iErrno);
+        // 接入节点才需要监听客户端连接
+        struct sockaddr_in stAddrOuter;
+        struct sockaddr *pAddrOuter;
+        stAddrOuter.sin_family = AF_INET;
+        stAddrOuter.sin_port = htons(m_stManagerInfo.iPortForClient);
+        stAddrOuter.sin_addr.s_addr = inet_addr(m_stManagerInfo.strHostForClient.c_str());
+        pAddrOuter = (struct sockaddr*)&stAddrOuter;
+        addressLen = sizeof(struct sockaddr);
+        m_stManagerInfo.iC2SListenFd = socket(pAddrOuter->sa_family, SOCK_STREAM, 0);
+        if (m_stManagerInfo.iC2SListenFd < 0)
+        {
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+            int iErrno = errno;
+            exit(iErrno);
+        }
+        reuse = 1;
+        timeout = 1;
+        ::setsockopt(m_stManagerInfo.iC2SListenFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+        ::setsockopt(m_stManagerInfo.iC2SListenFd, IPPROTO_TCP, TCP_DEFER_ACCEPT, &timeout, sizeof(int));
+        if (bind(m_stManagerInfo.iC2SListenFd, pAddrOuter, addressLen) < 0)
+        {
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+            close(m_stManagerInfo.iC2SListenFd);
+            m_stManagerInfo.iC2SListenFd = -1;
+            int iErrno = errno;
+            exit(iErrno);
+        }
+        if (listen(m_stManagerInfo.iC2SListenFd, queueLen) < 0)
+        {
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+            close(m_stManagerInfo.iC2SListenFd);
+            m_stManagerInfo.iC2SListenFd = -1;
+            int iErrno = errno;
+            exit(iErrno);
+        }
     }
-    reuse = 1;
-    timeout = 1;
-    ::setsockopt(m_iC2SListenFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-    ::setsockopt(m_iC2SListenFd, IPPROTO_TCP, TCP_DEFER_ACCEPT, &timeout, sizeof(int));
-    if (bind(m_iC2SListenFd, pAddrOuter, addressLen) < 0)
-    {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-        close(m_iC2SListenFd);
-        m_iC2SListenFd = -1;
-        int iErrno = errno;
-        exit(iErrno);
-    }
-    if (listen(m_iC2SListenFd, queueLen) < 0)
-    {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-        close(m_iC2SListenFd);
-        m_iC2SListenFd = -1;
-        int iErrno = errno;
-        exit(iErrno);
-    }
-#endif
 
     struct sockaddr_in stAddrInner;
     struct sockaddr *pAddrInner;
@@ -884,11 +876,13 @@ bool Manager::CreateEvents()
         return(false);
     }
     std::shared_ptr<SocketChannel> pChannelListen = NULL;
-#ifdef NODE_TYPE_ACCESS
-    pChannelListen = CreateChannel(m_stManagerInfo.iC2SListenFd, m_eCodec);
-#else
+    if (m_stManagerInfo.iC2SListenFd > 2)
+    {
+        LOG4_DEBUG("C2SListenFd[%d]", m_stManagerInfo.iC2SListenFd);
+        pChannelListen = CreateChannel(m_stManagerInfo.iC2SListenFd, m_stManagerInfo.eCodec);
+    }
+    LOG4_DEBUG("S2SListenFd[%d]", m_stManagerInfo.iS2SListenFd);
     pChannelListen = CreateChannel(m_stManagerInfo.iS2SListenFd, CODEC_NEBULA);
-#endif
     pChannelListen->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     AddIoReadEvent(pChannelListen);
 
@@ -1053,9 +1047,10 @@ void Manager::CreateWorker()
         {
             ev_loop_destroy(m_loop);
             close(m_stManagerInfo.iS2SListenFd);
-#ifdef NODE_TYPE_ACCESS
-            close(m_iC2SListenFd);
-#endif
+            if (m_stManagerInfo.iC2SListenFd > 2)
+            {
+                close(m_stManagerInfo.iC2SListenFd);
+            }
             close(iControlFds[0]);
             close(iDataFds[0]);
             x_sock_set_block(iControlFds[1], 0);
@@ -1159,9 +1154,10 @@ bool Manager::RestartWorker(int iDeathPid)
         {
             ev_loop_destroy(m_loop);
             close(m_stManagerInfo.iS2SListenFd);
-#ifdef NODE_TYPE_ACCESS
-            close(m_iC2SListenFd);
-#endif
+            if (m_stManagerInfo.iC2SListenFd > 2)
+            {
+                close(m_stManagerInfo.iC2SListenFd);
+            }
             close(iControlFds[0]);
             close(iDataFds[0]);
             x_sock_set_block(iControlFds[1], 0);
@@ -1298,6 +1294,10 @@ void Manager::RefreshServer()
 
 bool Manager::RegisterToBeacon()
 {
+    if (std::string("BEACON") == m_stManagerInfo.strNodeType)
+    {
+        return(true);
+    }
     LOG4_TRACE(" ");
     int iLoad = 0;
     int iConnect = 0;
@@ -1390,6 +1390,10 @@ bool Manager::RegisterToBeacon()
  */
 bool Manager::ReportToBeacon()
 {
+    if (std::string("BEACON") == m_stManagerInfo.strNodeType)
+    {
+        return(true);
+    }
     int iLoad = 0;
     int iConnect = 0;
     int iRecvNum = 0;
@@ -1454,7 +1458,7 @@ bool Manager::ReportToBeacon()
     oMsgBody.set_data(oReportData.ToString());
     LOG4_TRACE("%s", oReportData.ToString().c_str());
 
-    Broadcast("BEACON", CMD_RSP_NODE_STATUS_REPORT, GetSequence(), oMsgBody);
+    Broadcast("BEACON", CMD_REQ_NODE_STATUS_REPORT, GetSequence(), oMsgBody);
     return(true);
 }
 
@@ -1602,11 +1606,13 @@ std::shared_ptr<SocketChannel> Manager::CreateChannel(int iFd, E_CODEC_TYPE eCod
 
 bool Manager::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE(" ");
+    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
+    LOG4_TRACE("fd[%d], seq[%u]", pChannel->GetFd(), pChannel->GetSequence());
     if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
     {
         return(false);
     }
+    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     auto name_channel_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
     if (name_channel_iter != m_mapNamedSocketChannel.end())
     {
@@ -1614,11 +1620,13 @@ bool Manager::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel)
     }
     DelEvents(pChannel->MutableIoWatcher());
     DelEvents(pChannel->MutableTimerWatcher());
+    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     auto iter = m_mapSocketChannel.find(pChannel->GetFd());
     if (iter != m_mapSocketChannel.end())
     {
         m_mapSocketChannel.erase(iter);
     }
+    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
     return(true);
 }
@@ -1703,16 +1711,28 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
                         return(false);
                     }
 
-                    char szIp[16] = {0};
-                    strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
-                    int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->GetFd(), szIp, 16, CODEC_NEBULA);
-                    if (iErrno != 0)
+                    auto channel_iter = m_mapSocketChannel.find(worker_iter->second.iDataFd);
+                    if (channel_iter == m_mapSocketChannel.end())
                     {
-                        LOG4_ERROR("send_fd_with_attr error %d: %s!",
-                                        iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
+                        LOG4_ERROR("no socket channel found for fd %d", worker_iter->second.iDataFd);
+                        return(false);
                     }
-                    DiscardSocketChannel(pChannel);
-                    return(false);
+                    else
+                    {
+                        char szIp[16] = {0};
+                        strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
+                        //int iErrno = send_fd(channel_iter->second->GetFd(), pChannel->GetFd());
+                        int iErrno = send_fd_with_attr(channel_iter->second->GetFd(), pChannel->GetFd(), szIp, 16, CODEC_NEBULA);
+                        if (iErrno != 0)
+                        {
+                            LOG4_ERROR("send_fd_with_attr error %d: %s!",
+                                            iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
+                            DiscardSocketChannel(pChannel);
+                            return(false);
+                        }
+                        DiscardSocketChannel(pChannel);
+                        return(true);
+                    }
                 }
             }
             if (worker_iter == m_mapWorker.end())

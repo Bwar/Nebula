@@ -26,7 +26,10 @@ bool CmdConnectWorker::AnyMessage(
                 const MsgHead& oInMsgHead,
                 const MsgBody& oInMsgBody)
 {
-    return(true);
+    MsgBody oOutMsgBody;
+    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+    oOutMsgBody.mutable_rsp_result()->set_msg("OK");
+    return(SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody));
 }
 
 bool CmdConnectWorker::Start(std::shared_ptr<SocketChannel> pChannel, int iWorkerIndex)

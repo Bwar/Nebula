@@ -168,6 +168,7 @@ void WorkerImpl::Run()
 
     if (!CreateEvents())
     {
+        Destroy();
         exit(-2);
     }
     LoadSysCmd();
@@ -184,6 +185,7 @@ void WorkerImpl::Terminated(struct ev_signal* watcher)
     delete watcher;
     //Destroy();
     LOG4_FATAL("terminated by signal %d!", iSignum);
+    Destroy();
     exit(iSignum);
 }
 
@@ -194,7 +196,7 @@ bool WorkerImpl::CheckParent()
     if (iParentPid == 1)    // manager进程已不存在
     {
         LOG4_INFO("no manager process exist, worker %d exit.", m_stWorkerInfo.iWorkerIndex);
-        //Destroy();
+        Destroy();
         exit(0);
     }
     MsgBody oMsgBody;
@@ -218,7 +220,7 @@ bool WorkerImpl::CheckParent()
 
 bool WorkerImpl::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE(" ");
+    LOG4_TRACE("fd[%d]", pChannel->GetFd());
     if (pChannel->GetFd() == m_stWorkerInfo.iManagerDataFd)
     {
         return(FdTransfer());
@@ -264,8 +266,7 @@ bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
         eCodecStatus = pChannel->Recv(oMsgHead, oMsgBody);
         while (CODEC_STATUS_OK == eCodecStatus)
         {
-#ifdef NODE_TYPE_ACCESS
-            if (!pChannel->IsChannelVerify())
+            if (m_stWorkerInfo.bIsAccess && !pChannel->IsChannelVerify())
             {
                 if (CODEC_NEBULA != pChannel->GetCodecType() && pChannel->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
                 {
@@ -274,7 +275,6 @@ bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     return(false);
                 }
             }
-#endif
             Handle(pChannel, oMsgHead, oMsgBody);
             oMsgHead.Clear();       // 注意protobuf的Clear()使用不当容易造成内存泄露
             oMsgBody.Clear();
@@ -304,13 +304,14 @@ bool WorkerImpl::FdTransfer()
     {
         if (iAcceptFd == 0)
         {
-            LOG4_ERROR("recv_fd from m_iManagerDataFd %d len %d", m_stWorkerInfo.iManagerDataFd, iAcceptFd);
+            LOG4_WARNING("m_iManagerDataFd %d had been closed, worker exit!", m_stWorkerInfo.iManagerDataFd, iAcceptFd);
+            Destroy();
             exit(2); // manager与worker通信fd已关闭，worker进程退出
         }
         else if (errno != EAGAIN)
         {
             LOG4_ERROR("recv_fd from m_iManagerDataFd %d error %d", m_stWorkerInfo.iManagerDataFd, errno);
-            //Destroy();
+            Destroy();
             exit(2); // manager与worker通信fd已关闭，worker进程退出
         }
     }
@@ -653,10 +654,13 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
     std::ostringstream oss;
     oss << m_stWorkerInfo.strHostForServer << ":" << m_stWorkerInfo.iPortForServer << "." << m_stWorkerInfo.iWorkerIndex;
     m_stWorkerInfo.strWorkerIdentify = std::move(oss.str());
-#ifdef NODE_TYPE_ACCESS
-    oJsonConf["permission"]["uin_permit"].Get("stat_interval", m_dMsgStatInterval);
-    oJsonConf["permission"]["uin_permit"].Get("permit_num", m_iMsgPermitNum);
-#endif
+
+    if (oJsonConf("access_host").size() > 0 && oJsonConf("access_port").size() > 0)
+    {
+        m_stWorkerInfo.bIsAccess = true;
+        oJsonConf["permission"]["uin_permit"].Get("stat_interval", m_stWorkerInfo.dMsgStatInterval);
+        oJsonConf["permission"]["uin_permit"].Get("permit_num", m_stWorkerInfo.iMsgPermitNum);
+    }
     if (!InitLogger(oJsonConf))
     {
         return(false);
@@ -733,11 +737,12 @@ bool WorkerImpl::CreateEvents()
 
 void WorkerImpl::LoadSysCmd()
 {
-    m_pCmdConnect = MakeSharedCmd(nullptr, "neb::CmdConnectWorker", CMD_REQ_CONNECT_TO_WORKER);
-    MakeSharedCmd(nullptr, "neb::CmdToldWorker", CMD_REQ_TELL_WORKER);
-    MakeSharedCmd(nullptr, "neb::CmdUpdateNodeId", CMD_REQ_REFRESH_NODE_ID);
-    MakeSharedCmd(nullptr, "neb::CmdNodeNotice", CMD_REQ_NODE_REG_NOTICE);
-    MakeSharedCmd(nullptr, "neb::CmdBeat", CMD_REQ_BEAT);
+    // 调用MakeSharedCmd等系列函数必须严格匹配参数类型，类型不符需显式转换，如 (int)CMD_REQ_CONNECT_TO_WORKER
+    m_pCmdConnect = MakeSharedCmd(nullptr, "neb::CmdConnectWorker", (int)CMD_REQ_CONNECT_TO_WORKER);
+    MakeSharedCmd(nullptr, "neb::CmdToldWorker", (int)CMD_REQ_TELL_WORKER);
+    MakeSharedCmd(nullptr, "neb::CmdUpdateNodeId", (int)CMD_REQ_REFRESH_NODE_ID);
+    MakeSharedCmd(nullptr, "neb::CmdNodeNotice", (int)CMD_REQ_NODE_REG_NOTICE);
+    MakeSharedCmd(nullptr, "neb::CmdBeat", (int)CMD_REQ_BEAT);
     m_pSessionNode = std::make_unique<SessionNode>();
 }
 
@@ -747,6 +752,11 @@ void WorkerImpl::Destroy()
 
     m_mapCmd.clear();
     m_mapCallbackStep.clear();
+    m_mapCallbackSession.clear();
+    m_mapSocketChannel.clear();
+    m_mapRedisChannel.clear();
+    m_mapNamedSocketChannel.clear();
+    m_mapNamedRedisChannel.clear();
 
     for (auto so_iter = m_mapLoadedSo.begin();
                     so_iter != m_mapLoadedSo.end(); ++so_iter)
@@ -1654,6 +1664,7 @@ std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_
 
 bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice)
 {
+    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     LOG4_DEBUG("%s disconnect, identify %s", pChannel->GetRemoteAddr().c_str(), pChannel->GetIdentify().c_str());
     if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
     {
@@ -1670,6 +1681,7 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     }
     pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
 
+    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     auto named_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
     if (named_iter != m_mapNamedSocketChannel.end())
     {
@@ -1688,7 +1700,9 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         }
     }
 
+    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     m_mapSocketChannel.erase(m_mapSocketChannel.find(pChannel->GetFd()));
+    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     return(true);
 }
 
@@ -1812,7 +1826,6 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
             }
             else
             {
-//#ifdef NODE_TYPE_ACCESS
                 if (CODEC_NEBULA == pChannel->GetCodecType())   // 内部服务往客户端发送  if (std::string("0.0.0.0") == strFromIp)
                 {
                     cmd_iter = m_mapCmd.find(CMD_REQ_TO_CLIENT);

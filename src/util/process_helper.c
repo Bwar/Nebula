@@ -5,6 +5,7 @@
  *      Author: lbh
  */
 
+#include <string.h>
 #include "process_helper.h"
 
 //int send_fd(int fd, int fd_to_send)
@@ -282,9 +283,10 @@ int send_fd(int sock_fd, int send_fd)
 	struct msghdr msg;
 	struct cmsghdr *p_cmsg;
 	struct iovec vec;
-	char cmsgbuf[CMSG_SPACE(sizeof(send_fd))];
+	char cmsgbuf[CMSG_SPACE(sizeof(send_fd))] = {0};
 	int *p_fds;
 	char sendchar = 0;
+    memset(&msg, 0, sizeof(struct msghdr));
 	msg.msg_control = cmsgbuf;
 	msg.msg_controllen = sizeof(cmsgbuf);
 	p_cmsg = CMSG_FIRSTHDR(&msg);
@@ -313,9 +315,10 @@ int recv_fd(const int sock_fd) {
 	char recvchar;
 	struct iovec vec;
 	int recv_fd;
-	char cmsgbuf[CMSG_SPACE(sizeof(recv_fd))];
+	char cmsgbuf[CMSG_SPACE(sizeof(recv_fd))] = {0};
 	struct cmsghdr *p_cmsg;
 	int *p_fd;
+    memset(&msg, 0, sizeof(struct msghdr));
 	vec.iov_base = &recvchar;
 	vec.iov_len = sizeof(recvchar);
 	msg.msg_name = NULL;
@@ -355,9 +358,12 @@ int send_fd_with_attr(int sock_fd, int send_fd, void* addr, int addr_len, int se
     struct msghdr msg;
     struct cmsghdr *p_cmsg;
     struct iovec vec[2];
-    char cmsgbuf[CMSG_SPACE(sizeof(send_fd))];
+    char cmsgbuf[CMSG_SPACE(sizeof(send_fd))] = {0};
     int *p_fds;
 //    char sendchar = 0;
+    memset(&msg, 0, sizeof(struct msghdr));
+    memset(&vec[0], 0, sizeof(struct iovec));
+    memset(&vec[1], 0, sizeof(struct iovec));
     msg.msg_control = cmsgbuf;
     msg.msg_controllen = sizeof(cmsgbuf);
     p_cmsg = CMSG_FIRSTHDR(&msg);
@@ -389,9 +395,12 @@ int recv_fd_with_attr(const int sock_fd, void* addr, int addr_len, int* send_fd_
 //    char recvchar;
     struct iovec vec[2];
     int recv_fd;
-    char cmsgbuf[CMSG_SPACE(sizeof(recv_fd))];
+    char cmsgbuf[CMSG_SPACE(sizeof(recv_fd))] = {0};
     struct cmsghdr *p_cmsg;
     int *p_fd;
+    memset(&msg, 0, sizeof(struct msghdr));
+    memset(&vec[0], 0, sizeof(struct iovec));
+    memset(&vec[1], 0, sizeof(struct iovec));
     vec[0].iov_base = addr;
     vec[0].iov_len = addr_len;
     vec[1].iov_base = send_fd_attr;

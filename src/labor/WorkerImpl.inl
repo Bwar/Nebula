@@ -156,6 +156,7 @@ std::shared_ptr<Session> WorkerImpl::MakeSharedSession(Actor* pCreator, const st
 template <typename ...Targs>
 std::shared_ptr<Cmd> WorkerImpl::MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
 {
+    LOG4_TRACE("%s(CmdName \"%s\")", __FUNCTION__, strCmdName.c_str());
     Cmd* pCmd = dynamic_cast<Cmd*>(ActorFactory<Targs...>::Instance()->Create(strCmdName, std::forward<Targs>(args)...));
     if (nullptr == pCmd)
     {

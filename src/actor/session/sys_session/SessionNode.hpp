@@ -104,6 +104,8 @@ public:
      */
     void DelNode(const std::string& strNodeType, const std::string& strNodeIdentify);
 
+    bool IsNodeType(const std::string& strNodeIdentify, const std::string& strNodeType);
+
 protected:
     uint32 hash_fnv1_64(const char *key, size_t key_length);
     uint32 hash_fnv1a_64(const char *key, size_t key_length);

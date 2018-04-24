@@ -88,6 +88,7 @@ public:
         int32 iSendNum;                     ///< 发送数据包（head+body）数量（只到达应用层缓冲区，不一定都已发送出去）
         int32 iSendByte;                    ///< 发送字节数（已到达系统发送缓冲区，可认为已发送出去）
         int32 iMsgPermitNum;                ///< 客户端统计时间内允许发送消息数量
+        bool bIsAccess;                     ///< 是否接入Server
         ev_tstamp dMsgStatInterval;       ///< 客户端连接发送数据包统计时间间隔
         ev_tstamp dIoTimeout;             ///< IO（连接）超时配置
         ev_tstamp dStepTimeout;           ///< 步骤超时
@@ -100,7 +101,7 @@ public:
         tagWorkerInfo()
             : uiNodeId(0), iManagerControlFd(0), iManagerDataFd(0), iWorkerIndex(0), iWorkerPid(0),
               iConnectionNum(0), iClientNum(0),
-              iRecvNum(0), iRecvByte(0), iSendNum(0), iSendByte(0), iMsgPermitNum(60),
+              iRecvNum(0), iRecvByte(0), iSendNum(0), iSendByte(0), iMsgPermitNum(60), bIsAccess(false),
               dMsgStatInterval(60.0), dIoTimeout(480.0), dStepTimeout(3.0), iPortForServer(15000)
         {
         }
@@ -235,9 +236,6 @@ protected:
     void LoadSysCmd();
     void Destroy();
     bool AddPeriodicTaskEvent();
-    bool AddIoReadEvent(int iFd);
-    bool AddIoWriteEvent(int iFd);
-    bool RemoveIoWriteEvent(int iFd);
     bool AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel);
     bool AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
     bool RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);

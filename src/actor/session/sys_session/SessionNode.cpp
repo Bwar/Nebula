@@ -203,6 +203,20 @@ void SessionNode::DelNode(const std::string& strNodeType, const std::string& str
     }
 }
 
+bool SessionNode::IsNodeType(const std::string& strNodeIdentify, const std::string& strNodeType)
+{
+    auto node_type_iter = m_mapNode.find(strNodeType);
+    if (node_type_iter != m_mapNode.end())
+    {
+        auto node_iter = node_type_iter->second->mapNode2Hash.find(strNodeIdentify);
+        if (node_iter != node_type_iter->second->mapNode2Hash.end())
+        {
+            return(true);
+        }
+    }
+    return(false);
+}
+
 uint32 SessionNode::hash_fnv1_64(const char *key, size_t key_length)
 {
     uint64_t hash = FNV_64_INIT;

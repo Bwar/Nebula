@@ -43,7 +43,7 @@ SocketChannel::~SocketChannel()
 
 bool SocketChannel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
 {
-    LOG4_TRACE("codec_type[%d]", eCodecType);
+    LOG4_TRACE("fd[%d], codec_type[%d]", m_iFd, eCodecType);
     try
     {
         m_pRecvBuff = new CBuffer();
