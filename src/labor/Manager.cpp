@@ -7,8 +7,18 @@
  * @note
  * Modify history:
  ******************************************************************************/
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "util/proctitle_helper.h"
 #include "util/process_helper.h"
+
+#ifdef __cplusplus
+}
+#endif
+
 #include "Manager.hpp"
 #include "Worker.hpp"
 
@@ -1721,12 +1731,10 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
                     {
                         char szIp[16] = {0};
                         strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
-                        //int iErrno = send_fd(channel_iter->second->GetFd(), pChannel->GetFd());
-                        int iErrno = send_fd_with_attr(channel_iter->second->GetFd(), pChannel->GetFd(), szIp, 16, CODEC_NEBULA);
+                        int iErrno = send_fd_with_attr(channel_iter->second->GetFd(), pChannel->GetFd(), szIp, 16, (int)CODEC_NEBULA);
                         if (iErrno != 0)
                         {
-                            LOG4_ERROR("send_fd_with_attr error %d: %s!",
-                                            iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
+                            LOG4_ERROR("transfer fd error %d: %s!", iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
                             DiscardSocketChannel(pChannel);
                             return(false);
                         }

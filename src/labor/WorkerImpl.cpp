@@ -298,7 +298,6 @@ bool WorkerImpl::FdTransfer()
     LOG4_TRACE(" ");
     char szIpAddr[16] = {0};
     int iCodec = 0;
-    // int iAcceptFd = recv_fd(m_iManagerDataFd);
     int iAcceptFd = recv_fd_with_attr(m_stWorkerInfo.iManagerDataFd, szIpAddr, 16, &iCodec);
     if (iAcceptFd <= 0)
     {
