@@ -55,6 +55,7 @@ bool CmdToldWorker::AnyMessage(
     }
     oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
     SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
+    GetWorkerImpl(this)->SetChannelStatus(pChannel, CHANNEL_STATUS_ESTABLISHED);
     return(bResult);
 }
 

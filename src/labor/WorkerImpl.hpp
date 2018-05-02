@@ -23,6 +23,7 @@ extern "C" {
 #include <sys/wait.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <arpa/inet.h>
 #include "ev.h"
 #include "hiredis/hiredis.h"
@@ -210,6 +211,7 @@ public:     // about channel
     virtual bool Disconnect(const std::string& strIdentify, bool bChannelNotice = true);
     virtual bool DiscardNamedChannel(const std::string& strIdentify);
     virtual bool SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType);
+    virtual void SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus);
 
 public:     // about session
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId, const std::string& strSessionClass = "neb::Session");

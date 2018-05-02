@@ -7,7 +7,8 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#include <labor/WorkerImpl.hpp>
+#include <cstring>
+#include "labor/WorkerImpl.hpp"
 #include "codec/CodecProto.hpp"
 #include "codec/CodecPrivate.hpp"
 #include "codec/CodecHttp.hpp"
@@ -100,10 +101,9 @@ bool SocketChannel::NeedAliveCheck() const
 
 E_CODEC_STATUS SocketChannel::Send()
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%u]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_id[%u] send EOF.", m_iFd, m_ulSeq);
+        LOG4_TRACE("channel_fd[%d], channel_seq[%u] send EOF.", m_iFd, m_ulSeq);
         return(CODEC_STATUS_EOF);
     }
     else if (CHANNEL_STATUS_ESTABLISHED != m_ucChannelStatus)
@@ -134,6 +134,7 @@ E_CODEC_STATUS SocketChannel::Send()
 
     m_dActiveTime = m_pLabor->GetNowTime();
     iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
+    LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
     if (iWriteLen >= 0)
     {
         m_dActiveTime = m_pLabor->GetNowTime();
@@ -162,10 +163,10 @@ E_CODEC_STATUS SocketChannel::Send()
 
 E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%d], cmd[%u], seq[%u]", m_iFd, m_ulSeq, uiCmd, uiSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d], cmd[%u], seq[%u]", m_iFd, m_ulSeq, uiCmd, uiSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
-        LOG4_WARNING("channel_fd[%d], channel_id[%u] send EOF.", m_iFd, m_ulSeq);
+        LOG4_WARNING("channel_fd[%d], channel_seq[%u] send EOF.", m_iFd, m_ulSeq);
         return(CODEC_STATUS_EOF);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
@@ -231,6 +232,7 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
         return(eCodecStatus);
     }
 
+    errno = 0;
     int iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
     LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
     if (iWriteLen >= 0)
@@ -261,10 +263,10 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
 
 E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%u]", m_iFd, m_ulSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%u]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
-        LOG4_WARNING("channel_fd[%d], channel_id[%u] send EOF.", m_iFd, m_ulSeq);
+        LOG4_WARNING("channel_fd[%d], channel_seq[%u] send EOF.", m_iFd, m_ulSeq);
         return(CODEC_STATUS_EOF);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
@@ -332,7 +334,7 @@ E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 
 E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%d]", m_iFd, m_ulSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -388,7 +390,7 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                     return(CODEC_STATUS_OK);
             }
         }
-        LOG4_TRACE("channel_fd[%d], channel_id[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
+        LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
         return(eCodecStatus);
     }
     else if (iReadLen == 0)
@@ -414,7 +416,7 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 
 E_CODEC_STATUS SocketChannel::Recv(HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%d]", m_iFd, m_ulSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -461,7 +463,7 @@ E_CODEC_STATUS SocketChannel::Recv(HttpMsg& oHttpMsg)
 
 E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%d]", m_iFd, m_ulSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -488,7 +490,7 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg
                 ++m_ulUnitTimeMsgNum;
                 ++m_ulMsgNum;
                 oMsgBody.set_add_on(m_strClientData);
-                LOG4_TRACE("channel_fd[%d], channel_id[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
+                LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
             }
             return(eCodecStatus);
         }
@@ -516,7 +518,7 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg
 
 E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%d]", m_iFd, m_ulSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -529,14 +531,14 @@ E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
         m_ulForeignSeq = oMsgHead.seq();
         ++m_ulUnitTimeMsgNum;
         ++m_ulMsgNum;
-        LOG4_TRACE("channel_fd[%d], channel_id[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
+        LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
     }
     return(eCodecStatus);
 }
 
 E_CODEC_STATUS SocketChannel::Fetch(HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%d]", m_iFd, m_ulSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -548,7 +550,7 @@ E_CODEC_STATUS SocketChannel::Fetch(HttpMsg& oHttpMsg)
 
 E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%d]", m_iFd, m_ulSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
@@ -568,7 +570,7 @@ E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMs
             m_ulForeignSeq = oMsgHead.seq();
             ++m_ulUnitTimeMsgNum;
             ++m_ulMsgNum;
-            LOG4_TRACE("channel_fd[%d], channel_id[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
+            LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
         }
         return(eCodecStatus);
     }
@@ -576,7 +578,7 @@ E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMs
 
 bool SocketChannel::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
 {
-    LOG4_TRACE("channel_fd[%d], channel_id[%d], codec_type[%d], new_codec_type[%d]",
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d], codec_type[%d], new_codec_type[%d]",
                     m_iFd, m_ulSeq, m_pCodec->GetCodecType(), eCodecType);
     if (eCodecType == m_pCodec->GetCodecType())
     {
@@ -632,6 +634,141 @@ ev_timer* SocketChannel::AddTimerWatcher()
         m_pTimerWatcher->data = this;    // (void*)(Channel*)
     }
     return(m_pTimerWatcher);
+}
+
+
+int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std::shared_ptr<NetLogger> pLogger)
+{
+    ssize_t             n;
+    struct iovec        iov[1];
+    struct msghdr       msg;
+    tagChannelCtx stCh;
+    int iError = 0;
+
+    stCh.iFd = iSendFd;
+    stCh.iCodecType = iCodecType;
+
+    union
+    {
+        struct cmsghdr  cm;
+        char            space[CMSG_SPACE(sizeof(int))];
+    } cmsg;
+
+    if (stCh.iFd == -1)
+    {
+        msg.msg_control = NULL;
+        msg.msg_controllen = 0;
+
+    }
+    else
+    {
+        msg.msg_control = (caddr_t) &cmsg;
+        msg.msg_controllen = sizeof(cmsg);
+
+        memset(&cmsg, 0, sizeof(cmsg));
+
+        cmsg.cm.cmsg_len = CMSG_LEN(sizeof(int));
+        cmsg.cm.cmsg_level = SOL_SOCKET;
+        cmsg.cm.cmsg_type = SCM_RIGHTS;
+
+        *(int *) CMSG_DATA(&cmsg.cm) = stCh.iFd;
+    }
+
+    msg.msg_flags = 0;
+
+    iov[0].iov_base = (char*)&stCh;
+    iov[0].iov_len = sizeof(tagChannelCtx);
+
+    msg.msg_name = NULL;
+    msg.msg_namelen = 0;
+    msg.msg_iov = iov;
+    msg.msg_iovlen = 1;
+
+    n = sendmsg(iSocketFd, &msg, 0);
+
+    if (n == -1)
+    {
+        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "sendmsg() failed, errno %d", errno);
+        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
+        return(iError);
+    }
+
+    return(ERR_OK);
+}
+
+int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iCodecType, std::shared_ptr<NetLogger> pLogger)
+{
+    ssize_t             n;
+    struct iovec        iov[1];
+    struct msghdr       msg;
+    tagChannelCtx stCh;
+    int iError = 0;
+
+    union {
+        struct cmsghdr  cm;
+        char            space[CMSG_SPACE(sizeof(int))];
+    } cmsg;
+
+    iov[0].iov_base = (char*)&stCh;
+    iov[0].iov_len = sizeof(tagChannelCtx);
+
+    msg.msg_name = NULL;
+    msg.msg_namelen = 0;
+    msg.msg_iov = iov;
+    msg.msg_iovlen = 1;
+
+    msg.msg_control = (caddr_t) &cmsg;
+    msg.msg_controllen = sizeof(cmsg);
+
+    n = recvmsg(iSocketFd, &msg, 0);
+
+    if (n == -1) {
+        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "recvmsg() failed, errno %d", errno);
+        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
+        return(iError);
+    }
+
+    if (n == 0) {
+        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "recvmsg() return zero, errno %d", errno);
+        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
+        return(ERR_CHANNEL_EOF);
+    }
+
+    if ((size_t) n < sizeof(tagChannelCtx))
+    {
+        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "rrecvmsg() returned not enough data: %z, errno %d", n, errno);
+        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
+        return(iError);
+    }
+
+    if (cmsg.cm.cmsg_len < (socklen_t) CMSG_LEN(sizeof(int)))
+    {
+        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "recvmsg() returned too small ancillary data");
+        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
+        return(iError);
+    }
+
+    if (cmsg.cm.cmsg_level != SOL_SOCKET || cmsg.cm.cmsg_type != SCM_RIGHTS)
+    {
+        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
+                        "recvmsg() returned invalid ancillary data level %d or type %d", cmsg.cm.cmsg_level, cmsg.cm.cmsg_type);
+        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
+        return(iError);
+    }
+
+    stCh.iFd = *(int *) CMSG_DATA(&cmsg.cm);
+
+    if (msg.msg_flags & (MSG_TRUNC|MSG_CTRUNC))
+    {
+        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "recvmsg() truncated data");
+        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
+        return(iError);
+    }
+
+    iRecvFd = stCh.iFd;
+    iCodecType = stCh.iCodecType;
+
+    return(ERR_OK);
 }
 
 

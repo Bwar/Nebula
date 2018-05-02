@@ -204,31 +204,31 @@ bool Manager::FdTransfer(int iFd)
     }
     strncpy(szIpAddr, inet_ntoa(stClientAddr.sin_addr), 16);
     /* tcp连接检测 */
-    int iKeepAlive = 1;
-    int iKeepIdle = 1000;
-    int iKeepInterval = 10;
-    int iKeepCount = 3;
-    int iTcpNoDelay = 1;
-    if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
-    {
-        LOG4_WARNING("fail to set SO_KEEPALIVE");
-    }
-    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
-    {
-        LOG4_WARNING("fail to set TCP_KEEPIDLE");
-    }
-    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
-    {
-        LOG4_WARNING("fail to set TCP_KEEPINTVL");
-    }
-    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
-    {
-        LOG4_WARNING("fail to set TCP_KEEPCNT");
-    }
-    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
-    {
-        LOG4_WARNING("fail to set TCP_NODELAY");
-    }
+//    int iKeepAlive = 1;
+//    int iKeepIdle = 1000;
+//    int iKeepInterval = 10;
+//    int iKeepCount = 3;
+//    int iTcpNoDelay = 1;
+//    if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+//    {
+//        LOG4_WARNING("fail to set SO_KEEPALIVE");
+//    }
+//    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+//    {
+//        LOG4_WARNING("fail to set TCP_KEEPIDLE");
+//    }
+//    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+//    {
+//        LOG4_WARNING("fail to set TCP_KEEPINTVL");
+//    }
+//    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+//    {
+//        LOG4_WARNING("fail to set TCP_KEEPCNT");
+//    }
+//    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+//    {
+//        LOG4_WARNING("fail to set TCP_NODELAY");
+//    }
 
     auto iter = m_mapClientConnFrequency.find(stClientAddr.sin_addr.s_addr);
     if (iter == m_mapClientConnFrequency.end())
@@ -254,7 +254,8 @@ bool Manager::FdTransfer(int iFd)
                         iAcceptFd, worker_pid_fd.second);
         int iCodec = m_stManagerInfo.eCodec;
         //int iErrno = send_fd(worker_pid_fd.second, iAcceptFd);
-        int iErrno = send_fd_with_attr(worker_pid_fd.second, iAcceptFd, szIpAddr, 16, iCodec);
+        //int iErrno = send_fd_with_attr(worker_pid_fd.second, iAcceptFd, szIpAddr, 16, iCodec);
+        int iErrno = SocketChannel::SendChannelFd(worker_pid_fd.second, iAcceptFd, iCodec, m_pLogger);
         if (iErrno == 0)
         {
             AddWorkerLoad(worker_pid_fd.first);
@@ -282,31 +283,31 @@ bool Manager::AcceptServerConn(int iFd)
     else
     {
         /* tcp连接检测 */
-        int iKeepAlive = 1;
-        int iKeepIdle = 60;
-        int iKeepInterval = 5;
-        int iKeepCount = 3;
-        int iTcpNoDelay = 1;
-        if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
-        {
-            LOG4_WARNING("fail to set SO_KEEPALIVE");
-        }
-        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
-        {
-            LOG4_WARNING("fail to set SO_KEEPIDLE");
-        }
-        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
-        {
-            LOG4_WARNING("fail to set SO_KEEPINTVL");
-        }
-        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
-        {
-            LOG4_WARNING("fail to set SO_KEEPALIVE");
-        }
-        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
-        {
-            LOG4_WARNING("fail to set TCP_NODELAY");
-        }
+//        int iKeepAlive = 1;
+//        int iKeepIdle = 60;
+//        int iKeepInterval = 5;
+//        int iKeepCount = 3;
+//        int iTcpNoDelay = 1;
+//        if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+//        {
+//            LOG4_WARNING("fail to set SO_KEEPALIVE");
+//        }
+//        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+//        {
+//            LOG4_WARNING("fail to set SO_KEEPIDLE");
+//        }
+//        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+//        {
+//            LOG4_WARNING("fail to set SO_KEEPINTVL");
+//        }
+//        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+//        {
+//            LOG4_WARNING("fail to set SO_KEEPALIVE");
+//        }
+//        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+//        {
+//            LOG4_WARNING("fail to set TCP_NODELAY");
+//        }
         uint32 ulSeq = GetSequence();
         x_sock_set_block(iAcceptFd, 0);
         std::shared_ptr<SocketChannel> pChannel = CreateChannel(iAcceptFd, CODEC_NEBULA);
@@ -671,6 +672,32 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
     std::shared_ptr<SocketChannel> pChannel = CreateChannel(iFd, CODEC_NEBULA);
     if (nullptr != pChannel)
     {
+        int iKeepAlive = 1;
+        int iKeepIdle = 60;
+        int iKeepInterval = 5;
+        int iKeepCount = 3;
+        int iTcpNoDelay = 1;
+        if (setsockopt(iFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPIDLE");
+        }
+        if (setsockopt(iFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPINTVL");
+        }
+        if (setsockopt(iFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+        {
+            LOG4_WARNING("fail to set TCP_NODELAY");
+        }
+        connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
@@ -682,7 +709,6 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
             DiscardSocketChannel(pChannel);
         }
 
-        connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
         pChannel->m_unRemoteWorkerIdx = iWorkerIndex;
         AddNamedSocketChannel(strIdentify, pChannel);
@@ -1721,26 +1747,26 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
                         return(false);
                     }
 
-                    auto channel_iter = m_mapSocketChannel.find(worker_iter->second.iDataFd);
-                    if (channel_iter == m_mapSocketChannel.end())
+                    int iErrno = SocketChannel::SendChannelFd(worker_iter->second.iDataFd, pChannel->GetFd(), (int)pChannel->GetCodecType(), m_pLogger);
+                    if (iErrno != 0)
                     {
-                        LOG4_ERROR("no socket channel found for fd %d", worker_iter->second.iDataFd);
+                        DiscardSocketChannel(pChannel);
                         return(false);
                     }
-                    else
+                    DiscardSocketChannel(pChannel);
+                    /*
+                    char szIp[16] = {0};
+                    strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
+                    int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->GetFd(), szIp, 16, (int)CODEC_NEBULA);
+                    if (iErrno != 0)
                     {
-                        char szIp[16] = {0};
-                        strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
-                        int iErrno = send_fd_with_attr(channel_iter->second->GetFd(), pChannel->GetFd(), szIp, 16, (int)CODEC_NEBULA);
-                        if (iErrno != 0)
-                        {
-                            LOG4_ERROR("transfer fd error %d: %s!", iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
-                            DiscardSocketChannel(pChannel);
-                            return(false);
-                        }
+                        LOG4_ERROR("transfer fd error %d: %s!", iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
                         DiscardSocketChannel(pChannel);
-                        return(true);
+                        return(false);
                     }
+                    DiscardSocketChannel(pChannel);
+                    */
+                    return(true);
                 }
             }
             if (worker_iter == m_mapWorker.end())
@@ -1869,6 +1895,7 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
         }
         else if (CMD_RSP_TELL_WORKER == oInMsgHead.cmd()) // 连接beacon时的回调
         {
+            pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             E_CODEC_STATUS eCodecStatus = pChannel->Send();
             if (CODEC_STATUS_OK == eCodecStatus)
             {

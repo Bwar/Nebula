@@ -297,17 +297,13 @@ bool WorkerImpl::FdTransfer()
 {
     LOG4_TRACE(" ");
     char szIpAddr[16] = {0};
+    int iAcceptFd = -1;
     int iCodec = 0;
-    int iAcceptFd = recv_fd_with_attr(m_stWorkerInfo.iManagerDataFd, szIpAddr, 16, &iCodec);
-    if (iAcceptFd <= 0)
+    //int iAcceptFd = recv_fd_with_attr(m_stWorkerInfo.iManagerDataFd, szIpAddr, 16, &iCodec);
+    int iErrno = SocketChannel::RecvChannelFd(m_stWorkerInfo.iManagerDataFd, iAcceptFd, iCodec, m_pLogger);
+    if (iErrno != ERR_OK)
     {
-        if (iAcceptFd == 0)
-        {
-            LOG4_WARNING("m_iManagerDataFd %d had been closed, worker exit!", m_stWorkerInfo.iManagerDataFd, iAcceptFd);
-            Destroy();
-            exit(2); // manager与worker通信fd已关闭，worker进程退出
-        }
-        else if (errno != EAGAIN)
+        if (errno == ERR_CHANNEL_EOF)
         {
             LOG4_ERROR("recv_fd from m_iManagerDataFd %d error %d", m_stWorkerInfo.iManagerDataFd, errno);
             Destroy();
@@ -316,6 +312,31 @@ bool WorkerImpl::FdTransfer()
     }
     else
     {
+        int iKeepAlive = 1;
+        int iKeepIdle = 60;
+        int iKeepInterval = 5;
+        int iKeepCount = 3;
+        int iTcpNoDelay = 1;
+        if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPIDLE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPINTVL");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+        {
+            LOG4_WARNING("fail to set TCP_NODELAY");
+        }
         std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec));
         if (nullptr != pChannel)
         {
@@ -1194,6 +1215,7 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 u
     std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, CODEC_NEBULA);
     if (nullptr != pChannel)
     {
+        connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
@@ -1206,7 +1228,6 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 u
             DiscardSocketChannel(pChannel);
         }
 
-        connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
         pChannel->m_unRemoteWorkerIdx = iWorkerIndex;
         AddNamedSocketChannel(strIdentify, pChannel);
@@ -1253,6 +1274,7 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
     std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, CODEC_HTTP);
     if (nullptr != pChannel)
     {
+        connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         char szIdentify[32] = {0};
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
@@ -1266,7 +1288,6 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
             DiscardSocketChannel(pChannel);
         }
 
-        connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
         pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT, uiHttpStepSeq);
         // AddNamedSocketChannel(szIdentify, pChannel);   the channel should not add to named connection pool, because there is an uncompleted http request.
         return(true);
@@ -1361,6 +1382,11 @@ bool WorkerImpl::DiscardNamedChannel(const std::string& strIdentify)
 bool WorkerImpl::SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType)
 {
     return(pChannel->SwitchCodec(eCodecType, m_stWorkerInfo.dIoTimeout));
+}
+
+void WorkerImpl::SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus)
+{
+    pChannel->SetChannelStatus(eStatus);
 }
 
 void WorkerImpl::BootLoadCmd(CJsonObject& oCmdConf)
@@ -1494,7 +1520,7 @@ bool WorkerImpl::AddPeriodicTaskEvent()
 
 bool WorkerImpl::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("fd[%d], seq[%u]", pChannel->GetFd(), pChannel->GetSequence());
     ev_io* io_watcher = pChannel->MutableIoWatcher();
     if (nullptr == io_watcher)
     {

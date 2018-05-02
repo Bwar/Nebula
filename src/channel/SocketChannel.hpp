@@ -52,6 +52,14 @@ public:
 
     template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
 
+    struct tagChannelCtx
+    {
+        int iFd;
+        int iCodecType;
+    };
+    static int SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std::shared_ptr<NetLogger> pLogger);
+    static int RecvChannelFd(int iSocketFd, int& iRecvFd, int& iCodecType, std::shared_ptr<NetLogger> pLogger);
+
 public:
     int GetFd() const
     {

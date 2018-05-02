@@ -19,6 +19,8 @@ namespace neb
 enum E_ERROR_NO
 {
     ERR_OK                              = 0,        ///< 正确
+    ERR_CHANNEL_EOF                     = 9001,     ///< 连接关闭
+    ERR_TRANSFER_FD                     = 9002,     ///< 传输文件描述符出错(errno为0时返回)
     ERR_PARASE_PROTOBUF                 = 10000,    ///< 解析Protobuf出错
     ERR_NO_SUCH_WORKER_INDEX            = 10001,    ///< 未知的Worker进程编号
     ERR_UNKNOWN_CMD                     = 10002,    ///< 未知命令字
