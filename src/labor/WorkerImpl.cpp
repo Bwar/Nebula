@@ -66,7 +66,6 @@ void WorkerImpl::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int rev
         {
             pWorker->m_pImpl->OnIoWrite(pChannel->shared_from_this());
         }
-        watcher->data = nullptr;
     }
 }
 
@@ -288,6 +287,7 @@ bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
     }
     else    // 编解码出错或连接关闭或连接中断
     {
+        LOG4_DEBUG("codec error or connection closed!");
         DiscardSocketChannel(pChannel);
         return(false);
     }
@@ -323,15 +323,15 @@ bool WorkerImpl::FdTransfer()
         }
         if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
         {
-            LOG4_WARNING("fail to set SO_KEEPIDLE");
+            LOG4_WARNING("fail to set TCP_KEEPIDLE");
         }
         if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
         {
-            LOG4_WARNING("fail to set SO_KEEPINTVL");
+            LOG4_WARNING("fail to set TCP_KEEPINTVL");
         }
         if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
         {
-            LOG4_WARNING("fail to set SO_KEEPALIVE");
+            LOG4_WARNING("fail to set TCP_KEEPCNT");
         }
         if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
         {
@@ -347,7 +347,17 @@ bool WorkerImpl::FdTransfer()
             pChannel->SetRemoteAddr(inet_ntoa(adr_inet.sin_addr));
             AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
             AddIoReadEvent(pChannel);
-            if (CODEC_NEBULA != iCodec)
+            if (CODEC_NEBULA == iCodec)
+            {
+                std::shared_ptr<Step> pStepTellWorker =  MakeSharedStep(nullptr, "neb::StepTellWorker", pChannel);
+                if (nullptr == pStepTellWorker)
+                {
+                    return(false);
+                }
+                pStepTellWorker->Emit(ERR_OK);
+                return(true);
+            }
+            else
             {
                 pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             }
@@ -1664,6 +1674,32 @@ std::shared_ptr<Session> WorkerImpl::GetSession(const std::string& strSessionId,
 std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType)
 {
     LOG4_DEBUG("iFd %d, codec_type %d", iFd, eCodecType);
+
+        // SocketChannel* pChannel = new SocketChannel(m_pLogger, iFd, GetSequence());
+        // pChannel->SetLabor(m_pWorker);
+        // pChannel->Init((E_CODEC_TYPE)eCodecType);
+        
+        // ev_io* io_watcher = pChannel->MutableIoWatcher();
+        // if (nullptr == io_watcher)
+        // {
+        //     io_watcher = pChannel->AddIoWatcher();
+        //     if (nullptr == io_watcher)
+        //     {
+        //         return(nullptr);
+        //     }
+        //     ev_io_init (io_watcher, IoCallback, pChannel->GetFd(), EV_READ);
+        //     ev_io_start (m_loop, io_watcher);
+        // }
+        // else
+        // {
+        //     ev_io_stop(m_loop, io_watcher);
+        //     ev_io_set(io_watcher, io_watcher->fd, io_watcher->events | EV_READ);
+        //     ev_io_start (m_loop, io_watcher);
+        // }
+        // std::shared_ptr<SocketChannel> pSharedChannel = nullptr;
+        // pSharedChannel.reset(pChannel);
+        // m_mapSocketChannel.insert(std::make_pair(iFd, pSharedChannel));
+        // return(pSharedChannel);
     std::shared_ptr<SocketChannel> pChannel = nullptr;
     try
     {
@@ -1689,7 +1725,6 @@ std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_
 
 bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice)
 {
-    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     LOG4_DEBUG("%s disconnect, identify %s", pChannel->GetRemoteAddr().c_str(), pChannel->GetIdentify().c_str());
     if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
     {
@@ -1706,7 +1741,6 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     }
     pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
 
-    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     auto named_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
     if (named_iter != m_mapNamedSocketChannel.end())
     {
@@ -1725,9 +1759,7 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         }
     }
 
-    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     m_mapSocketChannel.erase(m_mapSocketChannel.find(pChannel->GetFd()));
-    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     return(true);
 }
 

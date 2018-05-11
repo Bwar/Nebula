@@ -283,31 +283,31 @@ bool Manager::AcceptServerConn(int iFd)
     else
     {
         /* tcp连接检测 */
-//        int iKeepAlive = 1;
-//        int iKeepIdle = 60;
-//        int iKeepInterval = 5;
-//        int iKeepCount = 3;
-//        int iTcpNoDelay = 1;
-//        if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
-//        {
-//            LOG4_WARNING("fail to set SO_KEEPALIVE");
-//        }
-//        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
-//        {
-//            LOG4_WARNING("fail to set SO_KEEPIDLE");
-//        }
-//        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
-//        {
-//            LOG4_WARNING("fail to set SO_KEEPINTVL");
-//        }
-//        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
-//        {
-//            LOG4_WARNING("fail to set SO_KEEPALIVE");
-//        }
-//        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
-//        {
-//            LOG4_WARNING("fail to set TCP_NODELAY");
-//        }
+       int iKeepAlive = 1;
+       int iKeepIdle = 60;
+       int iKeepInterval = 5;
+       int iKeepCount = 3;
+       int iTcpNoDelay = 1;
+       if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+       {
+           LOG4_WARNING("fail to set SO_KEEPALIVE");
+       }
+       if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+       {
+           LOG4_WARNING("fail to set SO_KEEPIDLE");
+       }
+       if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+       {
+           LOG4_WARNING("fail to set SO_KEEPINTVL");
+       }
+       if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+       {
+           LOG4_WARNING("fail to set SO_KEEPALIVE");
+       }
+       if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+       {
+           LOG4_WARNING("fail to set TCP_NODELAY");
+       }
         uint32 ulSeq = GetSequence();
         x_sock_set_block(iAcceptFd, 0);
         std::shared_ptr<SocketChannel> pChannel = CreateChannel(iAcceptFd, CODEC_NEBULA);
@@ -683,15 +683,15 @@ bool Manager::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSe
         }
         if (setsockopt(iFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
         {
-            LOG4_WARNING("fail to set SO_KEEPIDLE");
+            LOG4_WARNING("fail to set TCP_KEEPIDLE");
         }
         if (setsockopt(iFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
         {
-            LOG4_WARNING("fail to set SO_KEEPINTVL");
+            LOG4_WARNING("fail to set TCP_KEEPINTVL");
         }
         if (setsockopt(iFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
         {
-            LOG4_WARNING("fail to set SO_KEEPALIVE");
+            LOG4_WARNING("fail to set TCP_KEEPCNT");
         }
         if (setsockopt(iFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
         {
@@ -1729,24 +1729,6 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
             {
                 if (oConnWorker.worker_index() == worker_iter->second.iWorkerIndex)
                 {
-                    // TODO 这里假设传送文件描述符都成功，是因为对传送文件描述符成功后Manager顺利回复消息，需要一个更好的解决办法
-                    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
-                    oOutMsgBody.mutable_rsp_result()->set_msg("OK");
-                    E_CODEC_STATUS eCodecStatus = pChannel->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
-                    if (CODEC_STATUS_OK == eCodecStatus)
-                    {
-                        RemoveIoWriteEvent(pChannel);
-                    }
-                    else if (CODEC_STATUS_PAUSE == eCodecStatus)
-                    {
-                        AddIoWriteEvent(pChannel);
-                    }
-                    else
-                    {
-                        DiscardSocketChannel(pChannel);
-                        return(false);
-                    }
-
                     int iErrno = SocketChannel::SendChannelFd(worker_iter->second.iDataFd, pChannel->GetFd(), (int)pChannel->GetCodecType(), m_pLogger);
                     if (iErrno != 0)
                     {
@@ -1830,6 +1812,54 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
             }
             return(true);
         }
+        else if (CMD_REQ_TELL_WORKER == oInMsgHead.cmd()) 
+        {
+            bool bResult = false;
+            MsgBody oOutMsgBody;
+            TargetWorker oInTargetWorker;
+            TargetWorker oOutTargetWorker;
+            if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
+            {
+                bResult = true;
+                LOG4_DEBUG("AddNodeIdentify(%s, %s)!", oInTargetWorker.node_type().c_str(),
+                                oInTargetWorker.worker_identify().c_str());
+                AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
+                AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
+                oOutTargetWorker.set_worker_identify(GetNodeIdentify());
+                oOutTargetWorker.set_node_type(m_stManagerInfo.strNodeType);
+                oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+                oOutMsgBody.mutable_rsp_result()->set_msg("OK");
+            }
+            else
+            {
+                oOutTargetWorker.set_worker_identify("unknow");
+                oOutTargetWorker.set_node_type(m_stManagerInfo.strNodeType);
+                oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
+                oOutMsgBody.mutable_rsp_result()->set_msg("WorkerLoad ParseFromString error!");
+                LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
+            }
+            oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
+
+            E_CODEC_STATUS eCodecStatus = pChannel->Send(CMD_RSP_TELL_WORKER, oInMsgHead.seq(), oOutMsgBody);
+            if (CODEC_STATUS_OK == eCodecStatus)
+            {
+                eCodecStatus = pChannel->Send();
+            }
+            if (CODEC_STATUS_OK == eCodecStatus)
+            {
+                RemoveIoWriteEvent(pChannel);
+            }
+            else if (CODEC_STATUS_PAUSE == eCodecStatus)
+            {
+                AddIoWriteEvent(pChannel);
+            }
+            else
+            {
+                DiscardSocketChannel(pChannel);
+                return(false);
+            }
+            return(true);
+        }
         SendToWorker(oInMsgHead.cmd(), oInMsgHead.seq(), oInMsgBody);
         MsgBody oOutMsgBody;
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
@@ -1866,7 +1896,7 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
                 LOG4_ERROR("register to beacon error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
             }
         }
-        else if (CMD_RSP_CONNECT_TO_WORKER == oInMsgHead.cmd()) // 连接beacon时的回调
+        else if (CMD_RSP_CONNECT_TO_WORKER == oInMsgHead.cmd()) // 连接beacon时的回调  TODO delete
         {
             MsgBody oOutMsgBody;
             TargetWorker oTargetWorker;

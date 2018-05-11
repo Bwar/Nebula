@@ -101,9 +101,10 @@ bool SocketChannel::NeedAliveCheck() const
 
 E_CODEC_STATUS SocketChannel::Send()
 {
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_ulSeq, m_ucChannelStatus);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_seq[%u] send EOF.", m_iFd, m_ulSeq);
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
     else if (CHANNEL_STATUS_ESTABLISHED != m_ucChannelStatus)
@@ -118,10 +119,14 @@ E_CODEC_STATUS SocketChannel::Send()
         iNeedWriteLen = m_pWaitForSendBuff->ReadableBytes();
         if (0 == iNeedWriteLen)
         {
-            if (m_dKeepAlive <= 0.0)
+            if (CODEC_NEBULA != m_pCodec->GetCodecType() && m_dKeepAlive <= 0.0)
             {
                 m_ucChannelStatus = CHANNEL_STATUS_DISCARD;
                 return(CODEC_STATUS_EOF);
+            }
+            else
+            {
+                return(CODEC_STATUS_OK);
             }
         }
         else
@@ -166,7 +171,7 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], cmd[%u], seq[%u]", m_iFd, m_ulSeq, uiCmd, uiSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
-        LOG4_WARNING("channel_fd[%d], channel_seq[%u] send EOF.", m_iFd, m_ulSeq);
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
@@ -263,10 +268,10 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
 
 E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 {
-    LOG4_TRACE("channel_fd[%d], channel_seq[%u]", m_iFd, m_ulSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_ulSeq, m_ucChannelStatus);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
-        LOG4_WARNING("channel_fd[%d], channel_seq[%u] send EOF.", m_iFd, m_ulSeq);
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
@@ -334,9 +339,10 @@ E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 
 E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
-    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_ulSeq, m_ucChannelStatus);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
@@ -419,6 +425,7 @@ E_CODEC_STATUS SocketChannel::Recv(HttpMsg& oHttpMsg)
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
@@ -466,6 +473,7 @@ E_CODEC_STATUS SocketChannel::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
@@ -521,6 +529,7 @@ E_CODEC_STATUS SocketChannel::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
     LOG4_TRACE("fetch from fd %d and m_pRecvBuff->ReadableBytes() = %d",
@@ -541,6 +550,7 @@ E_CODEC_STATUS SocketChannel::Fetch(HttpMsg& oHttpMsg)
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
     E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
@@ -622,6 +632,7 @@ ev_io* SocketChannel::AddIoWatcher()
     if (NULL != m_pIoWatcher)
     {
         m_pIoWatcher->data = this;      // (void*)(Channel*)
+        m_pIoWatcher->fd = GetFd();
     }
     return(m_pIoWatcher);
 }
