@@ -137,6 +137,12 @@ E_CODEC_STATUS SocketChannel::Send()
         }
     }
 
+    if (0 == iNeedWriteLen)
+    {
+        LOG4_DEBUG("no data need to send.");
+        return(CODEC_STATUS_OK);
+    }
+
     m_dActiveTime = m_pLabor->GetNowTime();
     iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
     LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
@@ -166,9 +172,9 @@ E_CODEC_STATUS SocketChannel::Send()
     }
 }
 
-E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+E_CODEC_STATUS SocketChannel::Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    LOG4_TRACE("channel_fd[%d], channel_seq[%d], cmd[%u], seq[%u]", m_iFd, m_ulSeq, uiCmd, uiSeq);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d], cmd[%u], seq[%u]", m_iFd, m_ulSeq, iCmd, uiSeq);
     if (CHANNEL_STATUS_DISCARD == m_ucChannelStatus || CHANNEL_STATUS_DESTROY == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
@@ -177,7 +183,7 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int32 iMsgBodyLen = oMsgBody.ByteSize();
     MsgHead oMsgHead;
-    oMsgHead.set_cmd(uiCmd);
+    oMsgHead.set_cmd(iCmd);
     oMsgHead.set_seq(uiSeq);
     iMsgBodyLen = (iMsgBodyLen > 0) ? iMsgBodyLen : -1;     // proto3里int赋值为0会在指定固定大小的message时有问题
     oMsgHead.set_len(iMsgBodyLen);
@@ -193,7 +199,7 @@ E_CODEC_STATUS SocketChannel::Send(uint32 uiCmd, uint32 uiSeq, const MsgBody& oM
         case CHANNEL_STATUS_TRY_CONNECT:
         case CHANNEL_STATUS_INIT:
         {
-            switch (uiCmd)
+            switch (iCmd)
             {
                 case CMD_RSP_TELL_WORKER:
                     m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;

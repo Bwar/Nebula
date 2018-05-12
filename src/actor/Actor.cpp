@@ -93,9 +93,9 @@ bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel)
     return(m_pWorker->SendTo(pChannel));
 }
 
-bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendTo(pChannel, uiCmd, uiSeq, oMsgBody, this));
+    return(m_pWorker->SendTo(pChannel, iCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
@@ -103,9 +103,9 @@ bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttp
     return(m_pWorker->SendTo(pChannel, oHttpMsg));
 }
 
-bool Actor::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendTo(strIdentify, uiCmd, uiSeq, oMsgBody, this));
+    return(m_pWorker->SendTo(strIdentify, iCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg)
@@ -113,19 +113,19 @@ bool Actor::SendTo(const std::string& strHost, int iPort, const std::string& str
     return(m_pWorker->SendTo(strHost, iPort, strUrlPath, oHttpMsg, this->GetSequence()));
 }
 
-bool Actor::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, this));
+    return(m_pWorker->SendPolling(strNodeType, iCmd, uiSeq, oMsgBody, this));
 }
 
-bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendOriented(strNodeType, uiFactor, uiCmd, uiSeq, oMsgBody, this));
+    return(m_pWorker->SendOriented(strNodeType, uiFactor, iCmd, uiSeq, oMsgBody, this));
 }
 
-bool Actor::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendOriented(strNodeType, uiCmd, uiSeq, oMsgBody, this));
+    return(m_pWorker->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, this));
 }
 
 void Actor::SetWorker(Worker* pWorker)

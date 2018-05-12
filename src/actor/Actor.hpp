@@ -92,12 +92,12 @@ protected:
      * @note 使用指定连接将数据发送。如果能直接得知stCtx（比如刚从该连接接收到数据，欲回确认包），就
      * 应调用此函数发送。此函数是SendTo()函数中最高效的一个。
      * @param stCtx 消息通道上下文
-     * @param uiCmd 发送的命令字
+     * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 发送数据
@@ -110,16 +110,16 @@ protected:
     /**
      * @brief 发送数据
      * @note 指定连接标识符将数据发送。此函数先查找与strIdentify匹配的stMsgShell，如果找到就调用
-     * SendTo(const tagMsgShell& stMsgShell, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+     * SendTo(const tagMsgShell& stMsgShell, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
      * 发送，如果未找到则调用SendToWithAutoConnect(const std::string& strIdentify,
-     * uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)连接后再发送。
+     * uint32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)连接后再发送。
      * @param strIdentify 连接标识符(IP:port.worker_index, e.g 192.168.11.12:3001.1)
-     * @param uiCmd 发送的命令字
+     * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 发送数据
@@ -135,26 +135,26 @@ protected:
      * @brief 发送到下一个同一类型的节点
      * @note 发送到下一个同一类型的节点，适用于对同一类型节点做轮询方式发送以达到简单的负载均衡。
      * @param strNodeType 节点类型
-     * @param uiCmd 发送的命令字
+     * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 以取模方式选择发送到同一类型节点
      * @note 以取模方式选择发送到同一类型节点，实现简单有要求的负载均衡。
      * @param strNodeType 节点类型
      * @param uiFactor 定向发送因子
-     * @param uiCmd 发送的命令字
+     * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendOriented(const std::string& strNodeType, uint32 uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
-    bool SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
 protected:
     virtual void SetActiveTime(ev_tstamp dActiveTime)

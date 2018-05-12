@@ -918,13 +918,13 @@ bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel)
     return(false);
 }
 
-bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     if (nullptr != pSender)
     {
         (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
     }
-    E_CODEC_STATUS eStatus = pChannel->Send(uiCmd, uiSeq, oMsgBody);
+    E_CODEC_STATUS eStatus = pChannel->Send(iCmd, uiSeq, oMsgBody);
     if (CODEC_STATUS_OK == eStatus)
     {
         // do not need to RemoveIoWriteEvent(pSocketChannel);  because had not been AddIoWriteEvent(pSocketChannel).
@@ -938,7 +938,7 @@ bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, uint32 uiCmd, u
     return(false);
 }
 
-bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("identify: %s", strIdentify.c_str());
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
@@ -949,7 +949,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiS
         {
             (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
         }
-        return(AutoSend(strIdentify, uiCmd, uiSeq, oMsgBody));
+        return(AutoSend(strIdentify, iCmd, uiSeq, oMsgBody));
     }
     else
     {
@@ -957,7 +957,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiS
         {
             (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
         }
-        E_CODEC_STATUS eStatus = (*named_iter->second.begin())->Send(uiCmd, uiSeq, oMsgBody);
+        E_CODEC_STATUS eStatus = (*named_iter->second.begin())->Send(iCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK == eStatus)
         {
             // do not need to RemoveIoWriteEvent(pSocketChannel);  because had not been AddIoWriteEvent(pSocketChannel).
@@ -972,7 +972,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, uint32 uiCmd, uint32 uiS
     }
 }
 
-bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
@@ -982,7 +982,7 @@ bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint3
         {
             (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
         }
-        return(SendTo(strOnlineNode, uiCmd, uiSeq, oMsgBody));
+        return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody));
     }
     else
     {
@@ -991,7 +991,7 @@ bool WorkerImpl::SendPolling(const std::string& strNodeType, uint32 uiCmd, uint3
     }
 }
 
-bool WorkerImpl::SendOriented(const std::string& strNodeType, unsigned int uiFactor, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("nody_type: %s, factor: %d", strNodeType.c_str(), uiFactor);
     std::string strOnlineNode;
@@ -1001,7 +1001,7 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, unsigned int uiFac
         {
             (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
         }
-        return(SendTo(strOnlineNode, uiCmd, uiSeq, oMsgBody));
+        return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody));
     }
     else
     {
@@ -1010,14 +1010,14 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, unsigned int uiFac
     }
 }
 
-bool WorkerImpl::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("nody_type: %s", strNodeType.c_str());
     if (oMsgBody.has_req_target())
     {
         if (0 != oMsgBody.req_target().route_id())
         {
-            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), uiCmd, uiSeq, oMsgBody, pSender));
+            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, pSender));
         }
         else if (oMsgBody.req_target().route().length() > 0)
         {
@@ -1028,7 +1028,7 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint
                 {
                     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
                 }
-                return(SendTo(strOnlineNode, uiCmd, uiSeq, oMsgBody));
+                return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody));
             }
             else
             {
@@ -1038,7 +1038,7 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint
         }
         else
         {
-            return(SendPolling(strNodeType, uiCmd, uiSeq, oMsgBody, pSender));
+            return(SendPolling(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
         }
     }
     else
@@ -1048,7 +1048,7 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, uint32 uiCmd, uint
     }
 };
 
-bool WorkerImpl::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::unordered_set<std::string> setOnlineNodes;
@@ -1061,7 +1061,7 @@ bool WorkerImpl::Broadcast(const std::string& strNodeType, uint32 uiCmd, uint32 
         bool bSendResult = false;
         for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
         {
-            bSendResult |= SendTo(*node_iter, uiCmd, uiSeq, oMsgBody);
+            bSendResult |= SendTo(*node_iter, iCmd, uiSeq, oMsgBody);
         }
         return(bSendResult);
     }
@@ -1186,7 +1186,7 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, std::shared_ptr<R
     }
 }
 
-bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool WorkerImpl::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s", strIdentify.c_str());
     int iPosIpPortSeparator = strIdentify.find(':');
@@ -1232,7 +1232,7 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, uint32 uiCmd, uint32 u
         pChannel->SetIdentify(strIdentify);
         pChannel->SetRemoteAddr(strHost);
         pChannel->SetChannelStatus(CHANNEL_STATUS_INIT);
-        E_CODEC_STATUS eCodecStatus = pChannel->Send(uiCmd, uiSeq, oMsgBody);
+        E_CODEC_STATUS eCodecStatus = pChannel->Send(iCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
             DiscardSocketChannel(pChannel);
@@ -1759,7 +1759,11 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         }
     }
 
-    m_mapSocketChannel.erase(m_mapSocketChannel.find(pChannel->GetFd()));
+    auto channel_iter = m_mapSocketChannel.find(pChannel->GetFd());
+    if (channel_iter != m_mapSocketChannel.end())
+    {
+        m_mapSocketChannel.erase(channel_iter);
+    }
     return(true);
 }
 

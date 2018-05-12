@@ -32,7 +32,7 @@ public:
     virtual uint32 GetNodeId() const = 0;
     virtual time_t GetNowTime() const = 0;
     virtual const std::string& GetNodeIdentify() const = 0;
-    virtual bool SendOriented(const std::string& strNodeType, uint32 uiCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr) = 0;
+    virtual bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr) = 0;
 };
 
 } /* namespace neb */

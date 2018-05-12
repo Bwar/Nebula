@@ -31,6 +31,7 @@ std::shared_ptr<Step> WorkerImpl::MakeSharedStep(Actor* pCreator, const std::str
     Step* pStep = dynamic_cast<Step*>(ActorFactory<Targs...>::Instance()->Create(strStepName, std::forward<Targs>(args)...));
     if (nullptr == pStep)
     {
+        LOG4_ERROR("failed to make shared step \"%s\"", strStepName.c_str());
         return(nullptr);
     }
     StepModel* pStepAlias = (StepModel*)pStep;
@@ -106,6 +107,7 @@ std::shared_ptr<Session> WorkerImpl::MakeSharedSession(Actor* pCreator, const st
     Session* pSession = dynamic_cast<Session*>(ActorFactory<Targs...>::Instance()->Create(strSessionName, std::forward<Targs>(args)...));
     if (nullptr == pSession)
     {
+        LOG4_ERROR("failed to make shared session \"%s\"", strSessionName.c_str());
         return(nullptr);
     }
     SessionModel* pSessionAlias = (SessionModel*)pSession;
@@ -160,6 +162,7 @@ std::shared_ptr<Cmd> WorkerImpl::MakeSharedCmd(Actor* pCreator, const std::strin
     Cmd* pCmd = dynamic_cast<Cmd*>(ActorFactory<Targs...>::Instance()->Create(strCmdName, std::forward<Targs>(args)...));
     if (nullptr == pCmd)
     {
+        LOG4_ERROR("failed to make shared cmd \"%s\"", strCmdName.c_str());
         return(nullptr);
     }
     CmdModel* pCmdAlias = (CmdModel*)pCmd;
@@ -188,6 +191,7 @@ std::shared_ptr<Module> WorkerImpl::MakeSharedModule(Actor* pCreator, const std:
     Module* pModule = dynamic_cast<Module*>(ActorFactory<Targs...>::Instance()->Create(strModuleName, std::forward<Targs>(args)...));
     if (nullptr == pModule)
     {
+        LOG4_ERROR("failed to make shared module \"%s\"", strModuleName.c_str());
         return(nullptr);
     }
     ModuleModel* pModuleAlias = (ModuleModel*)pModule;
