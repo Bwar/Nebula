@@ -303,7 +303,7 @@ bool WorkerImpl::FdTransfer()
     int iErrno = SocketChannel::RecvChannelFd(m_stWorkerInfo.iManagerDataFd, iAcceptFd, iCodec, m_pLogger);
     if (iErrno != ERR_OK)
     {
-        if (errno == ERR_CHANNEL_EOF)
+        if (iErrno == ERR_CHANNEL_EOF)
         {
             LOG4_ERROR("recv_fd from m_iManagerDataFd %d error %d", m_stWorkerInfo.iManagerDataFd, errno);
             Destroy();
@@ -1495,7 +1495,11 @@ void WorkerImpl::DynamicLoadCmd(CJsonObject& oDynamicLoadingConf)
 WorkerImpl::tagSo* WorkerImpl::LoadSo(const std::string& strSoPath, int iVersion)
 {
     LOG4_TRACE(" ");
-    tagSo* pSo = nullptr;
+    tagSo* pSo = new tagSo();
+    if (nullptr == pSo)
+    {
+        return(nullptr);
+    }
     void* pHandle = nullptr;
     pHandle = dlopen(strSoPath.c_str(), RTLD_NOW);
     char* dlsym_error = dlerror();
@@ -1726,10 +1730,10 @@ std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_
 bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice)
 {
     LOG4_DEBUG("%s disconnect, identify %s", pChannel->GetRemoteAddr().c_str(), pChannel->GetIdentify().c_str());
-    if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
-    {
-        return(false);
-    }
+    // if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
+    // {
+    //     return(false);
+    // }
     if (bChannelNotice)
     {
         ChannelNotice(pChannel, pChannel->GetIdentify(), pChannel->GetClientData());

@@ -8,14 +8,14 @@
  * Modify history:
  ******************************************************************************/
 
-#include <actor/cmd/sys_cmd/CmdNodeNotice.hpp>
+#include "CmdNodeNotice.hpp"
 #include "util/json/CJsonObject.hpp"
 
 namespace neb
 {
 
 CmdNodeNotice::CmdNodeNotice(int32 iCmd)
-    : Cmd(iCmd), pStepNodeNotice(NULL)
+    : Cmd(iCmd)
 {
 }
 
@@ -36,16 +36,43 @@ bool CmdNodeNotice::AnyMessage(
     if (oJson.Parse(oInMsgBody.data()))
     {
         LOG4_DEBUG("CmdNodeNotice seq[%llu] jsonbuf[%s] Parse is ok",
-            oInMsgHead.seq(),oInMsgBody.data().c_str());
-
-        std::shared_ptr<Step> pStep = MakeSharedStep("neb::StepNodeNotice", oInMsgBody);
-        if (nullptr == pStep)
+            oInMsgHead.seq(),oInMsgBody.data().c_str());        
+        std::string strNodeType;
+        std::string strNodeHost;
+        int iNodePort = 0;
+        int iWorkerNum = 0;
+        char szIdentify[64] = {0};
+        for (int i = 0; i < oJson["add_nodes"].GetArraySize(); ++i)
         {
-            LOG4_ERROR("error %d: new StepNodeNotice() error!", ERR_NEW);
-            return(false);
+            if (oJson["add_nodes"][i].Get("node_type",strNodeType)
+                    && oJson["add_nodes"][i].Get("node_ip",strNodeHost)
+                    && oJson["add_nodes"][i].Get("node_port",iNodePort)
+                    && oJson["add_nodes"][i].Get("worker_num",iWorkerNum))
+            {
+                for(int j = 1; j <= iWorkerNum; ++j)
+                {
+                    snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
+                    GetWorkerImpl(this)->AddNodeIdentify(strNodeType, std::string(szIdentify));
+                    LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
+                }
+            }
         }
-        pStep->Emit(ERR_OK);
-        return(true);
+
+        for (int i = 0; i < oJson["del_nodes"].GetArraySize(); ++i)
+        {
+            if (oJson["del_nodes"][i].Get("node_type",strNodeType)
+                    && oJson["del_nodes"][i].Get("node_ip",strNodeHost)
+                    && oJson["del_nodes"][i].Get("node_port",iNodePort)
+                    && oJson["del_nodes"][i].Get("worker_num",iWorkerNum))
+            {
+                for(int j = 1; j <= iWorkerNum; ++j)
+                {
+                    snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
+                    GetWorkerImpl(this)->DelNodeIdentify(strNodeType, std::string(szIdentify));
+                    LOG4_DEBUG("DelNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
+                }
+            }
+        }
     }
     else
     {

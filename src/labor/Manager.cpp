@@ -917,6 +917,8 @@ bool Manager::CreateEvents()
     {
         LOG4_DEBUG("C2SListenFd[%d]", m_stManagerInfo.iC2SListenFd);
         pChannelListen = CreateChannel(m_stManagerInfo.iC2SListenFd, m_stManagerInfo.eCodec);
+        pChannelListen->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+        AddIoReadEvent(pChannelListen);
     }
     LOG4_DEBUG("S2SListenFd[%d]", m_stManagerInfo.iS2SListenFd);
     pChannelListen = CreateChannel(m_stManagerInfo.iS2SListenFd, CODEC_NEBULA);
@@ -1651,13 +1653,11 @@ std::shared_ptr<SocketChannel> Manager::CreateChannel(int iFd, E_CODEC_TYPE eCod
 
 bool Manager::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     LOG4_TRACE("fd[%d], seq[%u]", pChannel->GetFd(), pChannel->GetSequence());
-    if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
-    {
-        return(false);
-    }
-    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
+    // if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
+    // {
+    //     return(false);
+    // }
     auto name_channel_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
     if (name_channel_iter != m_mapNamedSocketChannel.end())
     {
@@ -1665,13 +1665,11 @@ bool Manager::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel)
     }
     DelEvents(pChannel->MutableIoWatcher());
     DelEvents(pChannel->MutableTimerWatcher());
-    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     auto iter = m_mapSocketChannel.find(pChannel->GetFd());
     if (iter != m_mapSocketChannel.end())
     {
         m_mapSocketChannel.erase(iter);
     }
-    LOG4_TRACE("pChannel.use_count() = %d", pChannel.use_count());
     pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
     return(true);
 }

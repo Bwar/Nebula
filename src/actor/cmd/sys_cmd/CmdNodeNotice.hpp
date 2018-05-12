@@ -12,7 +12,6 @@
 
 #include "actor/cmd/Cmd.hpp"
 #include "labor/WorkerFriend.hpp"
-#include "actor/step/sys_step/StepNodeNotice.hpp"
 #include "pb/neb_sys.pb.h"
 
 namespace neb
@@ -33,9 +32,6 @@ public:
                     std::shared_ptr<SocketChannel> pChannel,
                     const MsgHead& oInMsgHead,
                     const MsgBody& oInMsgBody);
-
-public:
-    StepNodeNotice* pStepNodeNotice;
 };
 
 } /* namespace neb */

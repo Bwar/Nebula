@@ -126,6 +126,7 @@ E_CODEC_STATUS SocketChannel::Send()
             }
             else
             {
+                LOG4_DEBUG("no data need to send.");
                 return(CODEC_STATUS_OK);
             }
         }
@@ -135,12 +136,6 @@ E_CODEC_STATUS SocketChannel::Send()
             m_pSendBuff = m_pWaitForSendBuff;
             m_pWaitForSendBuff = pExchangeBuff;
         }
-    }
-
-    if (0 == iNeedWriteLen)
-    {
-        LOG4_DEBUG("no data need to send.");
-        return(CODEC_STATUS_OK);
     }
 
     m_dActiveTime = m_pLabor->GetNowTime();
