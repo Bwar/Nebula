@@ -31,10 +31,6 @@
     "max_log_file_num":5,
     "//max_log_file_size":"单个日志文件大小限制",
     "max_log_file_size":20480000,
-    "//socket_logging_host":"程序网络日志服务器IP",
-    "socket_logging_host":"192.168.18.80",
-    "//socket_logging_port":"程序网络日志服务端口",
-    "socket_logging_port":9000,
     "//permission":"限制。addr_permit为连接限制，限制每个IP在统计时间内连接次数；uin_permit为消息数量限制，限制每个用户在单位统计时间内发送消息数量。",
     "permission":{
         "addr_permit":{"stat_interval":60.0, "permit_num":10},

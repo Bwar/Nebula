@@ -188,6 +188,8 @@ private:
         return(m_pTimerWatcher);
     }
 
+    void Abort();
+
 private:
     uint8 m_ucChannelStatus;
     char m_szErrBuff[256];

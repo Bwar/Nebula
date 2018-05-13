@@ -32,7 +32,7 @@ SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32
 
 SocketChannel::~SocketChannel()
 {
-    close(m_iFd);
+    Abort();
     FREE(m_pIoWatcher);
     FREE(m_pTimerWatcher);
     DELETE(m_pRecvBuff);
@@ -54,12 +54,15 @@ bool SocketChannel::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
         {
             case CODEC_NEBULA:
                 m_pCodec = new CodecProto(m_pLogger, eCodecType, strKey);
+                m_ucChannelStatus = CHANNEL_STATUS_INIT;
                 break;
             case CODEC_PRIVATE:
                 m_pCodec = new CodecPrivate(m_pLogger, eCodecType, strKey);
+                m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
                 break;
             case CODEC_HTTP:
                 m_pCodec = new CodecHttp(m_pLogger, eCodecType, strKey);
+                m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
                 break;
             default:
                 LOG4_ERROR("no codec defined for code type %d", eCodecType);
@@ -246,7 +249,14 @@ E_CODEC_STATUS SocketChannel::Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsg
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iWriteLen)
         {
-            return(CODEC_STATUS_OK);
+            if (CMD_RSP_TELL_WORKER == iCmd)
+            {
+                return(Send());
+            }
+            else
+            {
+                return(CODEC_STATUS_OK);
+            }
         }
         else
         {
@@ -280,7 +290,7 @@ E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
     {
         case CHANNEL_STATUS_ESTABLISHED:
             eCodecStatus = ((CodecHttp*)m_pCodec)->Encode(oHttpMsg, m_pSendBuff);
-            m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
+            m_dKeepAlive = ((CodecHttp*)m_pCodec)->GetKeepAlive();
             break;
         case CHANNEL_STATUS_TELL_WORKER:
         case CHANNEL_STATUS_WORKER:
@@ -317,6 +327,10 @@ E_CODEC_STATUS SocketChannel::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iWriteLen)
         {
+            if (ulStepSeq == 0 && m_dKeepAlive == 0.0)
+            {
+                return(CODEC_STATUS_EOF);
+            }
             return(CODEC_STATUS_OK);
         }
         else
@@ -648,6 +662,14 @@ ev_timer* SocketChannel::AddTimerWatcher()
     return(m_pTimerWatcher);
 }
 
+void SocketChannel::Abort()
+{
+    if (CHANNEL_STATUS_DESTROY != m_ucChannelStatus)
+    {
+        m_ucChannelStatus = CHANNEL_STATUS_DESTROY;
+        close(m_iFd);
+    }
+}
 
 int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std::shared_ptr<NetLogger> pLogger)
 {

@@ -66,8 +66,8 @@ E_CMD_STATUS StepConnectWorker::Callback(
 
 E_CMD_STATUS StepConnectWorker::Timeout()
 {
-    LOG4_ERROR("timeout!");
-    return(CMD_STATUS_FAULT);
+    LOG4_DEBUG(" ");
+    return(CMD_STATUS_COMPLETED);
 }
 
 } /* namespace neb */
