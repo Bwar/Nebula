@@ -27,9 +27,6 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* WorkerLoad_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   WorkerLoad_reflection_ = NULL;
-const ::google::protobuf::Descriptor* ConnectWorker_descriptor_ = NULL;
-const ::google::protobuf::internal::GeneratedMessageReflection*
-  ConnectWorker_reflection_ = NULL;
 const ::google::protobuf::Descriptor* TargetWorker_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   TargetWorker_reflection_ = NULL;
@@ -82,22 +79,7 @@ void protobuf_AssignDesc_neb_5fsys_2eproto() {
       sizeof(WorkerLoad),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WorkerLoad, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(WorkerLoad, _is_default_instance_));
-  ConnectWorker_descriptor_ = file->message_type(2);
-  static const int ConnectWorker_offsets_[1] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConnectWorker, worker_index_),
-  };
-  ConnectWorker_reflection_ =
-    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
-      ConnectWorker_descriptor_,
-      ConnectWorker::default_instance_,
-      ConnectWorker_offsets_,
-      -1,
-      -1,
-      -1,
-      sizeof(ConnectWorker),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConnectWorker, _internal_metadata_),
-      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConnectWorker, _is_default_instance_));
-  TargetWorker_descriptor_ = file->message_type(3);
+  TargetWorker_descriptor_ = file->message_type(2);
   static const int TargetWorker_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TargetWorker, worker_identify_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TargetWorker, node_type_),
@@ -113,7 +95,7 @@ void protobuf_AssignDesc_neb_5fsys_2eproto() {
       sizeof(TargetWorker),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TargetWorker, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TargetWorker, _is_default_instance_));
-  LogLevel_descriptor_ = file->message_type(4);
+  LogLevel_descriptor_ = file->message_type(3);
   static const int LogLevel_offsets_[2] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogLevel, log_level_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogLevel, net_log_level_),
@@ -129,7 +111,7 @@ void protobuf_AssignDesc_neb_5fsys_2eproto() {
       sizeof(LogLevel),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogLevel, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogLevel, _is_default_instance_));
-  TraceLog_descriptor_ = file->message_type(5);
+  TraceLog_descriptor_ = file->message_type(4);
   static const int TraceLog_offsets_[6] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, node_id_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, node_identify_),
@@ -167,8 +149,6 @@ void protobuf_RegisterTypes(const ::std::string&) {
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       WorkerLoad_descriptor_, &WorkerLoad::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
-      ConnectWorker_descriptor_, &ConnectWorker::default_instance());
-  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       TargetWorker_descriptor_, &TargetWorker::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       LogLevel_descriptor_, &LogLevel::default_instance());
@@ -183,8 +163,6 @@ void protobuf_ShutdownFile_neb_5fsys_2eproto() {
   delete ConfigInfo_reflection_;
   delete WorkerLoad::default_instance_;
   delete WorkerLoad_reflection_;
-  delete ConnectWorker::default_instance_;
-  delete ConnectWorker_reflection_;
   delete TargetWorker::default_instance_;
   delete TargetWorker_reflection_;
   delete LogLevel::default_instance_;
@@ -203,26 +181,23 @@ void protobuf_AddDesc_neb_5fsys_2eproto() {
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\rneb_sys.proto\022\003neb\"5\n\nConfigInfo\022\021\n\tfi"
     "le_name\030\001 \001(\t\022\024\n\014file_content\030\002 \001(\t\"\'\n\nW"
-    "orkerLoad\022\013\n\003pid\030\001 \001(\005\022\014\n\004load\030\002 \001(\005\"%\n\r"
-    "ConnectWorker\022\024\n\014worker_index\030\001 \001(\005\":\n\014T"
-    "argetWorker\022\027\n\017worker_identify\030\001 \001(\t\022\021\n\t"
-    "node_type\030\002 \001(\t\"4\n\010LogLevel\022\021\n\tlog_level"
-    "\030\001 \001(\005\022\025\n\rnet_log_level\030\002 \001(\005\"\216\001\n\010TraceL"
-    "og\022\017\n\007node_id\030\001 \001(\r\022\025\n\rnode_identify\030\002 \001"
-    "(\t\022\026\n\016code_file_name\030\003 \001(\t\022\026\n\016code_file_"
-    "line\030\004 \001(\r\022\025\n\rcode_function\030\005 \001(\t\022\023\n\013log"
-    "_content\030\006 \001(\014b\006proto3", 422);
+    "orkerLoad\022\013\n\003pid\030\001 \001(\005\022\014\n\004load\030\002 \001(\005\":\n\014"
+    "TargetWorker\022\027\n\017worker_identify\030\001 \001(\t\022\021\n"
+    "\tnode_type\030\002 \001(\t\"4\n\010LogLevel\022\021\n\tlog_leve"
+    "l\030\001 \001(\005\022\025\n\rnet_log_level\030\002 \001(\005\"\216\001\n\010Trace"
+    "Log\022\017\n\007node_id\030\001 \001(\r\022\025\n\rnode_identify\030\002 "
+    "\001(\t\022\026\n\016code_file_name\030\003 \001(\t\022\026\n\016code_file"
+    "_line\030\004 \001(\r\022\025\n\rcode_function\030\005 \001(\t\022\023\n\013lo"
+    "g_content\030\006 \001(\014b\006proto3", 383);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "neb_sys.proto", &protobuf_RegisterTypes);
   ConfigInfo::default_instance_ = new ConfigInfo();
   WorkerLoad::default_instance_ = new WorkerLoad();
-  ConnectWorker::default_instance_ = new ConnectWorker();
   TargetWorker::default_instance_ = new TargetWorker();
   LogLevel::default_instance_ = new LogLevel();
   TraceLog::default_instance_ = new TraceLog();
   ConfigInfo::default_instance_->InitAsDefaultInstance();
   WorkerLoad::default_instance_->InitAsDefaultInstance();
-  ConnectWorker::default_instance_->InitAsDefaultInstance();
   TargetWorker::default_instance_->InitAsDefaultInstance();
   LogLevel::default_instance_->InitAsDefaultInstance();
   TraceLog::default_instance_->InitAsDefaultInstance();
@@ -924,244 +899,6 @@ void WorkerLoad::clear_load() {
   
   load_ = value;
   // @@protoc_insertion_point(field_set:neb.WorkerLoad.load)
-}
-
-#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
-
-// ===================================================================
-
-#if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int ConnectWorker::kWorkerIndexFieldNumber;
-#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
-
-ConnectWorker::ConnectWorker()
-  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
-  SharedCtor();
-  // @@protoc_insertion_point(constructor:neb.ConnectWorker)
-}
-
-void ConnectWorker::InitAsDefaultInstance() {
-  _is_default_instance_ = true;
-}
-
-ConnectWorker::ConnectWorker(const ConnectWorker& from)
-  : ::google::protobuf::Message(),
-    _internal_metadata_(NULL) {
-  SharedCtor();
-  MergeFrom(from);
-  // @@protoc_insertion_point(copy_constructor:neb.ConnectWorker)
-}
-
-void ConnectWorker::SharedCtor() {
-    _is_default_instance_ = false;
-  _cached_size_ = 0;
-  worker_index_ = 0;
-}
-
-ConnectWorker::~ConnectWorker() {
-  // @@protoc_insertion_point(destructor:neb.ConnectWorker)
-  SharedDtor();
-}
-
-void ConnectWorker::SharedDtor() {
-  if (this != default_instance_) {
-  }
-}
-
-void ConnectWorker::SetCachedSize(int size) const {
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-}
-const ::google::protobuf::Descriptor* ConnectWorker::descriptor() {
-  protobuf_AssignDescriptorsOnce();
-  return ConnectWorker_descriptor_;
-}
-
-const ConnectWorker& ConnectWorker::default_instance() {
-  if (default_instance_ == NULL) protobuf_AddDesc_neb_5fsys_2eproto();
-  return *default_instance_;
-}
-
-ConnectWorker* ConnectWorker::default_instance_ = NULL;
-
-ConnectWorker* ConnectWorker::New(::google::protobuf::Arena* arena) const {
-  ConnectWorker* n = new ConnectWorker;
-  if (arena != NULL) {
-    arena->Own(n);
-  }
-  return n;
-}
-
-void ConnectWorker::Clear() {
-// @@protoc_insertion_point(message_clear_start:neb.ConnectWorker)
-  worker_index_ = 0;
-}
-
-bool ConnectWorker::MergePartialFromCodedStream(
-    ::google::protobuf::io::CodedInputStream* input) {
-#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
-  ::google::protobuf::uint32 tag;
-  // @@protoc_insertion_point(parse_start:neb.ConnectWorker)
-  for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
-    tag = p.first;
-    if (!p.second) goto handle_unusual;
-    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional int32 worker_index = 1;
-      case 1: {
-        if (tag == 8) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::int32, ::google::protobuf::internal::WireFormatLite::TYPE_INT32>(
-                 input, &worker_index_)));
-
-        } else {
-          goto handle_unusual;
-        }
-        if (input->ExpectAtEnd()) goto success;
-        break;
-      }
-
-      default: {
-      handle_unusual:
-        if (tag == 0 ||
-            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
-            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
-          goto success;
-        }
-        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
-        break;
-      }
-    }
-  }
-success:
-  // @@protoc_insertion_point(parse_success:neb.ConnectWorker)
-  return true;
-failure:
-  // @@protoc_insertion_point(parse_failure:neb.ConnectWorker)
-  return false;
-#undef DO_
-}
-
-void ConnectWorker::SerializeWithCachedSizes(
-    ::google::protobuf::io::CodedOutputStream* output) const {
-  // @@protoc_insertion_point(serialize_start:neb.ConnectWorker)
-  // optional int32 worker_index = 1;
-  if (this->worker_index() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteInt32(1, this->worker_index(), output);
-  }
-
-  // @@protoc_insertion_point(serialize_end:neb.ConnectWorker)
-}
-
-::google::protobuf::uint8* ConnectWorker::InternalSerializeWithCachedSizesToArray(
-    bool deterministic, ::google::protobuf::uint8* target) const {
-  // @@protoc_insertion_point(serialize_to_array_start:neb.ConnectWorker)
-  // optional int32 worker_index = 1;
-  if (this->worker_index() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteInt32ToArray(1, this->worker_index(), target);
-  }
-
-  // @@protoc_insertion_point(serialize_to_array_end:neb.ConnectWorker)
-  return target;
-}
-
-int ConnectWorker::ByteSize() const {
-// @@protoc_insertion_point(message_byte_size_start:neb.ConnectWorker)
-  int total_size = 0;
-
-  // optional int32 worker_index = 1;
-  if (this->worker_index() != 0) {
-    total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::Int32Size(
-        this->worker_index());
-  }
-
-  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = total_size;
-  GOOGLE_SAFE_CONCURRENT_WRITES_END();
-  return total_size;
-}
-
-void ConnectWorker::MergeFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:neb.ConnectWorker)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
-  }
-  const ConnectWorker* source = 
-      ::google::protobuf::internal::DynamicCastToGenerated<const ConnectWorker>(
-          &from);
-  if (source == NULL) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:neb.ConnectWorker)
-    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:neb.ConnectWorker)
-    MergeFrom(*source);
-  }
-}
-
-void ConnectWorker::MergeFrom(const ConnectWorker& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:neb.ConnectWorker)
-  if (GOOGLE_PREDICT_FALSE(&from == this)) {
-    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
-  }
-  if (from.worker_index() != 0) {
-    set_worker_index(from.worker_index());
-  }
-}
-
-void ConnectWorker::CopyFrom(const ::google::protobuf::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:neb.ConnectWorker)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void ConnectWorker::CopyFrom(const ConnectWorker& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:neb.ConnectWorker)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool ConnectWorker::IsInitialized() const {
-
-  return true;
-}
-
-void ConnectWorker::Swap(ConnectWorker* other) {
-  if (other == this) return;
-  InternalSwap(other);
-}
-void ConnectWorker::InternalSwap(ConnectWorker* other) {
-  std::swap(worker_index_, other->worker_index_);
-  _internal_metadata_.Swap(&other->_internal_metadata_);
-  std::swap(_cached_size_, other->_cached_size_);
-}
-
-::google::protobuf::Metadata ConnectWorker::GetMetadata() const {
-  protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::Metadata metadata;
-  metadata.descriptor = ConnectWorker_descriptor_;
-  metadata.reflection = ConnectWorker_reflection_;
-  return metadata;
-}
-
-#if PROTOBUF_INLINE_NOT_IN_HEADERS
-// ConnectWorker
-
-// optional int32 worker_index = 1;
-void ConnectWorker::clear_worker_index() {
-  worker_index_ = 0;
-}
- ::google::protobuf::int32 ConnectWorker::worker_index() const {
-  // @@protoc_insertion_point(field_get:neb.ConnectWorker.worker_index)
-  return worker_index_;
-}
- void ConnectWorker::set_worker_index(::google::protobuf::int32 value) {
-  
-  worker_index_ = value;
-  // @@protoc_insertion_point(field_set:neb.ConnectWorker.worker_index)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

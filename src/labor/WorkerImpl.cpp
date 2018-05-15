@@ -27,9 +27,6 @@ extern "C" {
 #include "actor/step/PbStep.hpp"
 #include "actor/step/RedisStep.hpp"
 #include "actor/step/Step.hpp"
-#include "actor/cmd/sys_cmd/CmdConnectWorker.hpp"
-#include "actor/step/sys_step/StepIoTimeout.hpp"
-#include <iostream>
 
 namespace neb
 {
@@ -141,7 +138,7 @@ void WorkerImpl::RedisCmdCallback(redisAsyncContext *c, void *reply, void *privd
 }
 
 WorkerImpl::WorkerImpl(Worker* pWorker, const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf)
-    : m_pErrBuff(nullptr), m_pWorker(pWorker), m_loop(nullptr), m_pCmdConnect(nullptr), m_pSessionNode(nullptr)
+    : m_pErrBuff(nullptr), m_pWorker(pWorker), m_loop(nullptr), m_pSessionNode(nullptr)
 {
     m_stWorkerInfo.iManagerControlFd = iControlFd;
     m_stWorkerInfo.iManagerDataFd = iDataFd;
@@ -375,7 +372,13 @@ bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     {
         if (CODEC_NEBULA == pChannel->m_pImpl->GetCodecType())  // 系统内部Server间通信
         {
-            std::dynamic_pointer_cast<CmdConnectWorker>(m_pCmdConnect)->Start(pChannel, pChannel->m_pImpl->m_unRemoteWorkerIdx);
+            std::shared_ptr<Step> pStepConnectWorker = MakeSharedStep(nullptr, "neb::StepConnectWorker", pChannel, pChannel->m_pImpl->m_unRemoteWorkerIdx);
+            if (nullptr == pStepConnectWorker)
+            {
+                LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
+                return(false);
+            }
+            pStepConnectWorker->Emit(ERR_OK);
             return(true);
         }
     }
@@ -761,7 +764,6 @@ bool WorkerImpl::CreateEvents()
 void WorkerImpl::LoadSysCmd()
 {
     // 调用MakeSharedCmd等系列函数必须严格匹配参数类型，类型不符需显式转换，如 (int)CMD_REQ_CONNECT_TO_WORKER
-    m_pCmdConnect = MakeSharedCmd(nullptr, "neb::CmdConnectWorker", (int)CMD_REQ_CONNECT_TO_WORKER);
     MakeSharedCmd(nullptr, "neb::CmdToldWorker", (int)CMD_REQ_TELL_WORKER);
     MakeSharedCmd(nullptr, "neb::CmdUpdateNodeId", (int)CMD_REQ_REFRESH_NODE_ID);
     MakeSharedCmd(nullptr, "neb::CmdNodeNotice", (int)CMD_REQ_NODE_REG_NOTICE);

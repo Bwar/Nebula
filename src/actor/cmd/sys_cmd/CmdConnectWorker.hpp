@@ -11,7 +11,6 @@
 #define SRC_ACTOR_CMD_SYS_CMD_CMDCONNECTWORKER_HPP_
 
 #include "actor/cmd/Cmd.hpp"
-#include "actor/step/sys_step/StepConnectWorker.hpp"
 #include "pb/neb_sys.pb.h"
 
 namespace neb
@@ -26,10 +25,6 @@ public:
             std::shared_ptr<SocketChannel> pChannel,
             const MsgHead& oInMsgHead,
             const MsgBody& oInMsgBody);
-    bool Start(std::shared_ptr<SocketChannel> pChannel, int iWorkerIndex);
-
-public:
-    std::shared_ptr<StepConnectWorker> pStepConnectWorker;
 };
 
 } /* namespace neb */

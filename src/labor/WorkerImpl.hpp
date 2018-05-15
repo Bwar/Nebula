@@ -291,7 +291,6 @@ private:
     struct ev_loop* m_loop;
     std::shared_ptr<SocketChannel> m_pManagerControlChannel;        // std::unique_ptr<SocketChannel> is perfect
     std::shared_ptr<SocketChannel> m_pManagerDataChannel;
-    std::shared_ptr<Cmd> m_pCmdConnect;
     std::unique_ptr<SessionNode> m_pSessionNode;
 
     // Cmd and Module

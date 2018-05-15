@@ -13,7 +13,7 @@ namespace neb
 {
 
 CmdConnectWorker::CmdConnectWorker(int iCmd)
-    : Cmd(iCmd), pStepConnectWorker(nullptr)
+    : Cmd(iCmd)
 {
 }
 
@@ -30,31 +30,6 @@ bool CmdConnectWorker::AnyMessage(
     oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
     oOutMsgBody.mutable_rsp_result()->set_msg("OK");
     return(SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody));
-}
-
-bool CmdConnectWorker::Start(std::shared_ptr<SocketChannel> pChannel, int iWorkerIndex)
-{
-    MsgHead oMsgHead;
-    MsgBody oMsgBody;
-    ConnectWorker oConnWorker;
-    oConnWorker.set_worker_index(iWorkerIndex);
-    oMsgBody.set_data(oConnWorker.SerializeAsString());
-    oMsgHead.set_cmd(CMD_REQ_CONNECT_TO_WORKER);
-//    oMsgHead.set_seq(pStepConnectWorker->GetSequence());
-    oMsgHead.set_len(oMsgBody.ByteSize());
-    LOG4_DEBUG("send cmd %d.", oMsgHead.cmd());
-    for (int i = 0; i < 3; ++i)
-    {
-        pStepConnectWorker = std::dynamic_pointer_cast<StepConnectWorker>(MakeSharedStep("neb::StepConnectWorker", pChannel, oMsgHead, oMsgBody));
-        if (nullptr == pStepConnectWorker)
-        {
-            LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
-            return(false);
-        }
-        pStepConnectWorker->Emit(ERR_OK);
-        return(true);
-    }
-    return(false);
 }
 
 } /* namespace neb */

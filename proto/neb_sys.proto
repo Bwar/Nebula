@@ -23,15 +23,6 @@ message WorkerLoad
 }
 
 /**
- * @brief 连接Worker信息
- * @note 连接Worker信息，对应系统命令字 CMD_REQ_CONNECT_TO_WORKER
- */
-message ConnectWorker
-{
-    int32 worker_index     = 1;    ///< worker进程编号
-}
-
-/**
  * @brief 目标Server连接标识
  * @note 目标Server连接标识用于唯一标识一个Worker进程，由ip、port、worker_index三部分构成，三个
  * 组成部分拼接成类似 192.168.1.235:9987.3 的字符串存储于各Worker进程内存，通过该标识可以查找到对应

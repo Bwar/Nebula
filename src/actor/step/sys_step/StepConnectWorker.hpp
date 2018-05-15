@@ -16,10 +16,10 @@
 namespace neb
 {
 
-class StepConnectWorker: public PbStep, public DynamicCreator<StepConnectWorker, std::shared_ptr<SocketChannel>, MsgHead, MsgBody>
+class StepConnectWorker: public PbStep, public DynamicCreator<StepConnectWorker, std::shared_ptr<SocketChannel>, uint16>
 {
 public:
-    StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
+    StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, uint16 unRemoteWorkerIndex);
     virtual ~StepConnectWorker();
 
     virtual E_CMD_STATUS Emit(
@@ -35,8 +35,9 @@ public:
 
     virtual E_CMD_STATUS Timeout();
 
-public:
-    std::shared_ptr<StepTellWorker> pStepTellWorker;        ///< 仅为了生成可读性高的类图，构造函数中不分配空间，析构函数中也不回收空间
+private:
+    std::shared_ptr<SocketChannel> m_pChannel;
+    uint16 m_unRemoteWorkerIndex;
 };
 
 } /* namespace neb */

@@ -377,11 +377,8 @@ bool Manager::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     if (CHANNEL_STATUS_TRY_CONNECT == pChannel->m_pImpl->GetChannelStatus())  // connect之后的第一个写事件
     {
         MsgBody oMsgBody;
-        ConnectWorker oConnWorker;
-        oConnWorker.set_worker_index(pChannel->m_pImpl->m_unRemoteWorkerIdx);
-        oMsgBody.set_data(oConnWorker.SerializeAsString());
-        LOG4_DEBUG("send after connect, oMsgBody.ByteSize() = %d, oConnWorker.ByteSize() = %d",
-                        oMsgBody.ByteSize(), oConnWorker.ByteSize());
+        oMsgBody.set_data(std::to_string(pChannel->m_pImpl->m_unRemoteWorkerIdx));
+        LOG4_DEBUG("send after connect, oMsgBody.ByteSize() = %d", oMsgBody.ByteSize());
         SendTo(pChannel, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
         return(true);
     }
@@ -1719,52 +1716,32 @@ bool Manager::OnWorkerData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
 bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody)
 {
     LOG4_DEBUG("cmd %u, seq %u", oInMsgHead.cmd(), oInMsgHead.seq());
-    ConnectWorker oConnWorker;
     MsgBody oOutMsgBody;
     LOG4_TRACE("oInMsgHead.cmd() = %u, seq() = %u", oInMsgHead.cmd(), oInMsgHead.seq());
     if (oInMsgHead.cmd() == CMD_REQ_CONNECT_TO_WORKER)
     {
-        if (oConnWorker.ParseFromString(oInMsgBody.data()))
+        int iWorkerIndex = std::stoi(oInMsgBody.data());
+        std::unordered_map<int, tagWorkerAttr>::iterator worker_iter;
+        for (worker_iter = m_mapWorker.begin();
+                        worker_iter != m_mapWorker.end(); ++worker_iter)
         {
-            std::unordered_map<int, tagWorkerAttr>::iterator worker_iter;
-            for (worker_iter = m_mapWorker.begin();
-                            worker_iter != m_mapWorker.end(); ++worker_iter)
+            if (iWorkerIndex == worker_iter->second.iWorkerIndex)
             {
-                if (oConnWorker.worker_index() == worker_iter->second.iWorkerIndex)
+                int iErrno = SocketChannel::SendChannelFd(
+                    worker_iter->second.iDataFd, pChannel->m_pImpl->GetFd(), (int)pChannel->m_pImpl->GetCodecType(), m_pLogger);
+                if (iErrno != 0)
                 {
-                    int iErrno = SocketChannel::SendChannelFd(worker_iter->second.iDataFd, pChannel->m_pImpl->GetFd(), (int)pChannel->m_pImpl->GetCodecType(), m_pLogger);
-                    if (iErrno != 0)
-                    {
-                        DiscardSocketChannel(pChannel);
-                        return(false);
-                    }
                     DiscardSocketChannel(pChannel);
-                    /*
-                    char szIp[16] = {0};
-                    strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
-                    int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->m_pImpl->GetFd(), szIp, 16, (int)CODEC_NEBULA);
-                    if (iErrno != 0)
-                    {
-                        LOG4_ERROR("transfer fd error %d: %s!", iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
-                        DiscardSocketChannel(pChannel);
-                        return(false);
-                    }
-                    DiscardSocketChannel(pChannel);
-                    */
-                    return(true);
+                    return(false);
                 }
-            }
-            if (worker_iter == m_mapWorker.end())
-            {
-                oOutMsgBody.mutable_rsp_result()->set_code(ERR_NO_SUCH_WORKER_INDEX);
-                oOutMsgBody.mutable_rsp_result()->set_msg("no such worker index!");
+                DiscardSocketChannel(pChannel);
+                return(true);
             }
         }
-        else
+        if (worker_iter == m_mapWorker.end())
         {
-            oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
-            oOutMsgBody.mutable_rsp_result()->set_msg("oConnWorker.ParseFromString() error!");
-            LOG4_ERROR("oConnWorker.ParseFromString() error!");
+            oOutMsgBody.mutable_rsp_result()->set_code(ERR_NO_SUCH_WORKER_INDEX);
+            oOutMsgBody.mutable_rsp_result()->set_msg("no such worker index!");
         }
     }
     else

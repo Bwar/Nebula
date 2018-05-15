@@ -37,7 +37,6 @@ void protobuf_AssignDesc_neb_5fsys_2eproto();
 void protobuf_ShutdownFile_neb_5fsys_2eproto();
 
 class ConfigInfo;
-class ConnectWorker;
 class LogLevel;
 class TargetWorker;
 class TraceLog;
@@ -230,88 +229,6 @@ class WorkerLoad : public ::google::protobuf::Message /* @@protoc_insertion_poin
 
   void InitAsDefaultInstance();
   static WorkerLoad* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class ConnectWorker : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:neb.ConnectWorker) */ {
- public:
-  ConnectWorker();
-  virtual ~ConnectWorker();
-
-  ConnectWorker(const ConnectWorker& from);
-
-  inline ConnectWorker& operator=(const ConnectWorker& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const ConnectWorker& default_instance();
-
-  void Swap(ConnectWorker* other);
-
-  // implements Message ----------------------------------------------
-
-  inline ConnectWorker* New() const { return New(NULL); }
-
-  ConnectWorker* New(::google::protobuf::Arena* arena) const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const ConnectWorker& from);
-  void MergeFrom(const ConnectWorker& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
-      bool deterministic, ::google::protobuf::uint8* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
-    return InternalSerializeWithCachedSizesToArray(false, output);
-  }
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  void InternalSwap(ConnectWorker* other);
-  private:
-  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
-    return _internal_metadata_.arena();
-  }
-  inline void* MaybeArenaPtr() const {
-    return _internal_metadata_.raw_arena_ptr();
-  }
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // optional int32 worker_index = 1;
-  void clear_worker_index();
-  static const int kWorkerIndexFieldNumber = 1;
-  ::google::protobuf::int32 worker_index() const;
-  void set_worker_index(::google::protobuf::int32 value);
-
-  // @@protoc_insertion_point(class_scope:neb.ConnectWorker)
- private:
-
-  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  bool _is_default_instance_;
-  ::google::protobuf::int32 worker_index_;
-  mutable int _cached_size_;
-  friend void  protobuf_AddDesc_neb_5fsys_2eproto();
-  friend void protobuf_AssignDesc_neb_5fsys_2eproto();
-  friend void protobuf_ShutdownFile_neb_5fsys_2eproto();
-
-  void InitAsDefaultInstance();
-  static ConnectWorker* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -768,24 +685,6 @@ inline void WorkerLoad::set_load(::google::protobuf::int32 value) {
 
 // -------------------------------------------------------------------
 
-// ConnectWorker
-
-// optional int32 worker_index = 1;
-inline void ConnectWorker::clear_worker_index() {
-  worker_index_ = 0;
-}
-inline ::google::protobuf::int32 ConnectWorker::worker_index() const {
-  // @@protoc_insertion_point(field_get:neb.ConnectWorker.worker_index)
-  return worker_index_;
-}
-inline void ConnectWorker::set_worker_index(::google::protobuf::int32 value) {
-  
-  worker_index_ = value;
-  // @@protoc_insertion_point(field_set:neb.ConnectWorker.worker_index)
-}
-
-// -------------------------------------------------------------------
-
 // TargetWorker
 
 // optional string worker_identify = 1;
@@ -1117,8 +1016,6 @@ inline void TraceLog::set_allocated_log_content(::std::string* log_content) {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
