@@ -56,7 +56,7 @@ void Manager::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revent
     if (watcher->data != NULL)
     {
         SocketChannel* pChannel = (SocketChannel*)watcher->data;
-        Manager* pManager = (Manager*)pChannel->m_pLabor;
+        Manager* pManager = (Manager*)pChannel->m_pImpl->m_pLabor;
         if (revents & EV_READ)
         {
             pManager->OnIoRead(pChannel->shared_from_this());
@@ -69,7 +69,7 @@ void Manager::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revent
         {
             pManager->OnIoError(pChannel->shared_from_this());
         }
-        if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
+        if (CHANNEL_STATUS_ABORT == pChannel->m_pImpl->GetChannelStatus())
         {
             watcher->data = NULL;
         }
@@ -81,7 +81,7 @@ void Manager::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int rev
     if (watcher->data != NULL)
     {
         SocketChannel* pChannel = (SocketChannel*)watcher->data;
-        Manager* pManager = (Manager*)pChannel->m_pLabor;
+        Manager* pManager = (Manager*)pChannel->m_pImpl->m_pLabor;
         pManager->OnIoTimeout(pChannel->shared_from_this());
     }
 }
@@ -176,14 +176,14 @@ bool Manager::OnChildTerminated(struct ev_signal* watcher)
 
 bool Manager::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("fd[%d]", pChannel->GetFd());
-    if (pChannel->GetFd() == m_stManagerInfo.iS2SListenFd)
+    LOG4_TRACE("fd[%d]", pChannel->m_pImpl->GetFd());
+    if (pChannel->m_pImpl->GetFd() == m_stManagerInfo.iS2SListenFd)
     {
-        return(AcceptServerConn(pChannel->GetFd()));
+        return(AcceptServerConn(pChannel->m_pImpl->GetFd()));
     }
-    else if (m_stManagerInfo.iC2SListenFd > 2 && pChannel->GetFd() == m_stManagerInfo.iC2SListenFd)
+    else if (m_stManagerInfo.iC2SListenFd > 2 && pChannel->m_pImpl->GetFd() == m_stManagerInfo.iC2SListenFd)
     {
-        return(FdTransfer(pChannel->GetFd()));
+        return(FdTransfer(pChannel->m_pImpl->GetFd()));
     }
     else
     {
@@ -322,12 +322,12 @@ bool Manager::AcceptServerConn(int iFd)
 
 bool Manager::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_DEBUG("fd %d, seq %llu", pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_DEBUG("fd %d, seq %llu", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
     E_CODEC_STATUS eCodecStatus;
-    if (CODEC_HTTP == pChannel->GetCodecType())   // Manager只有pb协议编解码
+    if (CODEC_HTTP == pChannel->m_pImpl->GetCodecType())   // Manager只有pb协议编解码
     {
 //        HttpMsg oHttpMsg;
-//        eCodecStatus = pChannel->Recv(oHttpMsg);
+//        eCodecStatus = pChannel->m_pImpl->Recv(oHttpMsg);
         DiscardSocketChannel(pChannel);
         return(false);
     }
@@ -335,13 +335,13 @@ bool Manager::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
     {
         MsgHead oMsgHead;
         MsgBody oMsgBody;
-        eCodecStatus = pChannel->Recv(oMsgHead, oMsgBody);
+        eCodecStatus = pChannel->m_pImpl->Recv(oMsgHead, oMsgBody);
         while (CODEC_STATUS_OK == eCodecStatus)
         {
-            auto worker_fd_iter = m_mapWorkerFdPid.find(pChannel->GetFd());
+            auto worker_fd_iter = m_mapWorkerFdPid.find(pChannel->m_pImpl->GetFd());
             if (worker_fd_iter == m_mapWorkerFdPid.end())   // 其他Server发过来要将连接传送到某个指定Worker进程信息
             {
-                if (m_pSessionNode->IsNodeType(pChannel->GetIdentify(), "BEACON"))       // 与beacon连接
+                if (m_pSessionNode->IsNodeType(pChannel->m_pImpl->GetIdentify(), "BEACON"))       // 与beacon连接
                 {
                     OnBeaconData(pChannel, oMsgHead, oMsgBody);
                 }
@@ -356,7 +356,7 @@ bool Manager::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             }
             oMsgHead.Clear();       // 注意protobuf的Clear()使用不当容易造成内存泄露
             oMsgBody.Clear();
-            eCodecStatus = pChannel->Fetch(oMsgHead, oMsgBody);
+            eCodecStatus = pChannel->m_pImpl->Fetch(oMsgHead, oMsgBody);
         }
 
         if (CODEC_STATUS_PAUSE == eCodecStatus)
@@ -373,12 +373,12 @@ bool Manager::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
 
 bool Manager::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("%d", pChannel->GetFd());
-    if (CHANNEL_STATUS_TRY_CONNECT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
+    LOG4_TRACE("%d", pChannel->m_pImpl->GetFd());
+    if (CHANNEL_STATUS_TRY_CONNECT == pChannel->m_pImpl->GetChannelStatus())  // connect之后的第一个写事件
     {
         MsgBody oMsgBody;
         ConnectWorker oConnWorker;
-        oConnWorker.set_worker_index(pChannel->m_unRemoteWorkerIdx);
+        oConnWorker.set_worker_index(pChannel->m_pImpl->m_unRemoteWorkerIdx);
         oMsgBody.set_data(oConnWorker.SerializeAsString());
         LOG4_DEBUG("send after connect, oMsgBody.ByteSize() = %d, oConnWorker.ByteSize() = %d",
                         oMsgBody.ByteSize(), oConnWorker.ByteSize());
@@ -387,7 +387,7 @@ bool Manager::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     }
     else
     {
-        E_CODEC_STATUS eCodecStatus = pChannel->Send();
+        E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send();
         if (CODEC_STATUS_OK == eCodecStatus)
         {
             RemoveIoWriteEvent(pChannel);
@@ -412,10 +412,10 @@ bool Manager::OnIoError(std::shared_ptr<SocketChannel> pChannel)
 
 bool Manager::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
 {
-    ev_tstamp after = pChannel->GetActiveTime() - ev_now(m_loop) + m_stManagerInfo.dIoTimeout;
+    ev_tstamp after = pChannel->m_pImpl->GetActiveTime() - ev_now(m_loop) + m_stManagerInfo.dIoTimeout;
     if (after > 0)    // IO在定时时间内被重新刷新过，重新设置定时器
     {
-        ev_timer* watcher = pChannel->MutableTimerWatcher();
+        ev_timer* watcher = pChannel->m_pImpl->MutableTimerWatcher();
         ev_timer_stop (m_loop, watcher);
         ev_timer_set (watcher, after + ev_time() - ev_now(m_loop), 0);
         ev_timer_start (m_loop, watcher);
@@ -497,7 +497,7 @@ bool Manager::SetProcessName(const CJsonObject& oJsonConf)
 
 bool Manager::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
-    E_CODEC_STATUS eCodecStatus = pChannel->Send();
+    E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send();
     if (CODEC_STATUS_OK == eCodecStatus)
     {
         RemoveIoWriteEvent(pChannel);
@@ -517,7 +517,7 @@ bool Manager::SendTo(std::shared_ptr<SocketChannel> pChannel)
 bool Manager::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("cmd[%u], seq[%u]", iCmd, uiSeq);
-    E_CODEC_STATUS eCodecStatus = pChannel->Send(iCmd, uiSeq, oMsgBody);
+    E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
     if (CODEC_STATUS_OK == eCodecStatus)
     {
         RemoveIoWriteEvent(pChannel);
@@ -545,7 +545,7 @@ bool Manager::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, c
     }
     else
     {
-        E_CODEC_STATUS eStatus = named_iter->second->Send(iCmd, uiSeq, oMsgBody);
+        E_CODEC_STATUS eStatus = named_iter->second->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK == eStatus)
         {
             // do not need to RemoveIoWriteEvent(pSocketChannel);  because had not been AddIoWriteEvent(pSocketChannel).
@@ -702,16 +702,16 @@ bool Manager::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq,
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
-        pChannel->SetIdentify(strIdentify);
-        pChannel->SetRemoteAddr(strHost);
-        E_CODEC_STATUS eCodecStatus = pChannel->Send(iCmd, uiSeq, oMsgBody);
+        pChannel->m_pImpl->SetIdentify(strIdentify);
+        pChannel->m_pImpl->SetRemoteAddr(strHost);
+        E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
             DiscardSocketChannel(pChannel);
         }
 
-        pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
-        pChannel->m_unRemoteWorkerIdx = iWorkerIndex;
+        pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+        pChannel->m_pImpl->m_unRemoteWorkerIdx = iWorkerIndex;
         AddNamedSocketChannel(strIdentify, pChannel);
         return(true);
     }
@@ -917,12 +917,12 @@ bool Manager::CreateEvents()
     {
         LOG4_DEBUG("C2SListenFd[%d]", m_stManagerInfo.iC2SListenFd);
         pChannelListen = CreateChannel(m_stManagerInfo.iC2SListenFd, m_stManagerInfo.eCodec);
-        pChannelListen->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+        pChannelListen->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
         AddIoReadEvent(pChannelListen);
     }
     LOG4_DEBUG("S2SListenFd[%d]", m_stManagerInfo.iS2SListenFd);
     pChannelListen = CreateChannel(m_stManagerInfo.iS2SListenFd, CODEC_NEBULA);
-    pChannelListen->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+    pChannelListen->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     AddIoReadEvent(pChannelListen);
 
     ev_signal* child_signal_watcher = new ev_signal();
@@ -979,16 +979,16 @@ bool Manager::AddPeriodicTaskEvent()
 
 bool Manager::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
-    ev_io* io_watcher = pChannel->MutableIoWatcher();
+    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (NULL == io_watcher)
     {
-        io_watcher = pChannel->AddIoWatcher();
+        io_watcher = pChannel->m_pImpl->AddIoWatcher();
         if (NULL == io_watcher)
         {
             return(false);
         }
-        ev_io_init (io_watcher, IoCallback, pChannel->GetFd(), EV_READ);
+        ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_READ);
         ev_io_start (m_loop, io_watcher);
         return(true);
     }
@@ -1003,16 +1003,16 @@ bool Manager::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 
 bool Manager::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
-    ev_io* io_watcher = pChannel->MutableIoWatcher();
+    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (NULL == io_watcher)
     {
-        io_watcher = pChannel->AddIoWatcher();
+        io_watcher = pChannel->m_pImpl->AddIoWatcher();
         if (NULL == io_watcher)
         {
             return(false);
         }
-        ev_io_init (io_watcher, IoCallback, pChannel->GetFd(), EV_WRITE);
+        ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_WRITE);
         ev_io_start (m_loop, io_watcher);
         return(true);
     }
@@ -1027,8 +1027,8 @@ bool Manager::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 
 bool Manager::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
-    ev_io* io_watcher = pChannel->MutableIoWatcher();
+    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (NULL == io_watcher)
     {
         return(false);
@@ -1114,8 +1114,8 @@ void Manager::CreateWorker()
             m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFds[0], iPid));
             std::shared_ptr<SocketChannel> pChannelData = CreateChannel(iControlFds[0], CODEC_NEBULA);
             std::shared_ptr<SocketChannel> pChannelControl = CreateChannel(iDataFds[0], CODEC_NEBULA);
-            pChannelData->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
-            pChannelControl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            pChannelData->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            pChannelControl->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             AddIoReadEvent(pChannelData);
             AddIoReadEvent(pChannelControl);
         }
@@ -1232,8 +1232,8 @@ bool Manager::RestartWorker(int iDeathPid)
             m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFds[0], iNewPid));
             std::shared_ptr<SocketChannel> pChannelData = CreateChannel(iControlFds[0], CODEC_NEBULA);
             std::shared_ptr<SocketChannel> pChannelControl = CreateChannel(iDataFds[0], CODEC_NEBULA);
-            pChannelData->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
-            pChannelControl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            pChannelData->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            pChannelControl->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             AddIoReadEvent(pChannelData);
             AddIoReadEvent(pChannelControl);
             restart_num_iter = m_mapWorkerRestartNum.find(iWorkerIndex);
@@ -1288,7 +1288,7 @@ bool Manager::SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
         worker_conn_iter = m_mapSocketChannel.find(worker_iter->second.iControlFd);
         if (worker_conn_iter != m_mapSocketChannel.end())
         {
-            E_CODEC_STATUS eCodecStatus = worker_conn_iter->second->Send(iCmd, uiSeq, oMsgBody);
+            E_CODEC_STATUS eCodecStatus = worker_conn_iter->second->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
                 RemoveIoWriteEvent(worker_conn_iter->second);
@@ -1521,7 +1521,7 @@ bool Manager::AddNamedSocketChannel(const std::string& strIdentify, std::shared_
     {
         return(false);
     }
-    pChannel->SetIdentify(strIdentify);
+    pChannel->m_pImpl->SetIdentify(strIdentify);
     return(true);
 
 }
@@ -1570,16 +1570,16 @@ void Manager::DelNodeIdentify(const std::string& strNodeType, const std::string&
 
 bool Manager::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout)
 {
-    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
-    ev_timer* timer_watcher = pChannel->MutableTimerWatcher();
+    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    ev_timer* timer_watcher = pChannel->m_pImpl->MutableTimerWatcher();
     if (NULL == timer_watcher)
     {
-        timer_watcher = pChannel->AddTimerWatcher();
+        timer_watcher = pChannel->m_pImpl->AddTimerWatcher();
         if (NULL == timer_watcher)
         {
             return(false);
         }
-        pChannel->SetKeepAlive(ev_now(m_loop));
+        pChannel->m_pImpl->SetKeepAlive(ev_now(m_loop));
         ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
         return(true);
@@ -1633,8 +1633,8 @@ std::shared_ptr<SocketChannel> Manager::CreateChannel(int iFd, E_CODEC_TYPE eCod
             LOG4_ERROR("new channel for fd %d error: %s", e.what());
             return(nullptr);
         }
-        pChannel->SetLabor(this);
-        if (pChannel->Init(eCodecType))
+        pChannel->m_pImpl->SetLabor(this);
+        if (pChannel->m_pImpl->Init(eCodecType))
         {
             m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
             return(pChannel);
@@ -1653,24 +1653,20 @@ std::shared_ptr<SocketChannel> Manager::CreateChannel(int iFd, E_CODEC_TYPE eCod
 
 bool Manager::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("fd[%d], seq[%u]", pChannel->GetFd(), pChannel->GetSequence());
-    // if (CHANNEL_STATUS_DISCARD == pChannel->GetChannelStatus() || CHANNEL_STATUS_DESTROY == pChannel->GetChannelStatus())
-    // {
-    //     return(false);
-    // }
-    auto name_channel_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
+    LOG4_TRACE("fd[%d], seq[%u]", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    auto name_channel_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
     if (name_channel_iter != m_mapNamedSocketChannel.end())
     {
         m_mapNamedSocketChannel.erase(name_channel_iter);
     }
-    DelEvents(pChannel->MutableIoWatcher());
-    DelEvents(pChannel->MutableTimerWatcher());
-    auto iter = m_mapSocketChannel.find(pChannel->GetFd());
+    DelEvents(pChannel->m_pImpl->MutableIoWatcher());
+    DelEvents(pChannel->m_pImpl->MutableTimerWatcher());
+    auto iter = m_mapSocketChannel.find(pChannel->m_pImpl->GetFd());
     if (iter != m_mapSocketChannel.end())
     {
         m_mapSocketChannel.erase(iter);
     }
-    pChannel->SetChannelStatus(CHANNEL_STATUS_DISCARD);
+    pChannel->m_pImpl->Abort();
     return(true);
 }
 
@@ -1705,7 +1701,7 @@ bool Manager::OnWorkerData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
     LOG4_DEBUG("cmd %u, seq %u", oInMsgHead.cmd(), oInMsgHead.seq());
     if (CMD_REQ_UPDATE_WORKER_LOAD == oInMsgHead.cmd())    // 新请求
     {
-        auto iter = m_mapWorkerFdPid.find(pChannel->GetFd());
+        auto iter = m_mapWorkerFdPid.find(pChannel->m_pImpl->GetFd());
         if (iter != m_mapWorkerFdPid.end())
         {
             CJsonObject oJsonLoad;
@@ -1736,7 +1732,7 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
             {
                 if (oConnWorker.worker_index() == worker_iter->second.iWorkerIndex)
                 {
-                    int iErrno = SocketChannel::SendChannelFd(worker_iter->second.iDataFd, pChannel->GetFd(), (int)pChannel->GetCodecType(), m_pLogger);
+                    int iErrno = SocketChannel::SendChannelFd(worker_iter->second.iDataFd, pChannel->m_pImpl->GetFd(), (int)pChannel->m_pImpl->GetCodecType(), m_pLogger);
                     if (iErrno != 0)
                     {
                         DiscardSocketChannel(pChannel);
@@ -1746,7 +1742,7 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
                     /*
                     char szIp[16] = {0};
                     strncpy(szIp, "0.0.0.0", 16);   // 内网其他Server的IP不重要
-                    int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->GetFd(), szIp, 16, (int)CODEC_NEBULA);
+                    int iErrno = send_fd_with_attr(worker_iter->second.iDataFd, pChannel->m_pImpl->GetFd(), szIp, 16, (int)CODEC_NEBULA);
                     if (iErrno != 0)
                     {
                         LOG4_ERROR("transfer fd error %d: %s!", iErrno, strerror_r(iErrno, m_szErrBuff, gc_iErrBuffLen));
@@ -1778,7 +1774,7 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
         LOG4_DEBUG("unknow cmd %d!", oInMsgHead.cmd());
     }
 
-    E_CODEC_STATUS eCodecStatus = pChannel->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
+    E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
     if (CODEC_STATUS_OK == eCodecStatus)
     {
         RemoveIoWriteEvent(pChannel);
@@ -1803,7 +1799,7 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
         if (CMD_REQ_BEAT == oInMsgHead.cmd())   // beacon发过来的心跳包
         {
             MsgBody oOutMsgBody = oInMsgBody;
-            E_CODEC_STATUS eCodecStatus = pChannel->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
+            E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
                 RemoveIoWriteEvent(pChannel);
@@ -1847,10 +1843,10 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
             }
             oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
 
-            E_CODEC_STATUS eCodecStatus = pChannel->Send(CMD_RSP_TELL_WORKER, oInMsgHead.seq(), oOutMsgBody);
+            E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(CMD_RSP_TELL_WORKER, oInMsgHead.seq(), oOutMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
-                eCodecStatus = pChannel->Send();
+                eCodecStatus = pChannel->m_pImpl->Send();
             }
             if (CODEC_STATUS_OK == eCodecStatus)
             {
@@ -1871,7 +1867,7 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
         MsgBody oOutMsgBody;
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
         oOutMsgBody.mutable_rsp_result()->set_msg("OK");
-        E_CODEC_STATUS eCodecStatus = pChannel->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
+        E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
         if (CODEC_STATUS_OK == eCodecStatus)
         {
             RemoveIoWriteEvent(pChannel);
@@ -1914,7 +1910,7 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
             oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
             oOutMsgBody.mutable_rsp_result()->set_msg("OK");
             oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
-            E_CODEC_STATUS eCodecStatus = pChannel->Send(CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
+            E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
                 RemoveIoWriteEvent(pChannel);
@@ -1932,8 +1928,8 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
         }
         else if (CMD_RSP_TELL_WORKER == oInMsgHead.cmd()) // 连接beacon时的回调
         {
-            pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
-            E_CODEC_STATUS eCodecStatus = pChannel->Send();
+            pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send();
             if (CODEC_STATUS_OK == eCodecStatus)
             {
                 RemoveIoWriteEvent(pChannel);

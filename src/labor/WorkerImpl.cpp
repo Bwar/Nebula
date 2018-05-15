@@ -57,7 +57,7 @@ void WorkerImpl::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int rev
     if (watcher->data != nullptr)
     {
         SocketChannel* pChannel = static_cast<SocketChannel*>(watcher->data);
-        Worker* pWorker = (Worker*)pChannel->m_pLabor;
+        Worker* pWorker = (Worker*)pChannel->m_pImpl->m_pLabor;
         if (revents & EV_READ)
         {
             pWorker->m_pImpl->OnIoRead(pChannel->shared_from_this());
@@ -74,8 +74,8 @@ void WorkerImpl::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int 
     if (watcher->data != nullptr)
     {
         SocketChannel* pChannel = static_cast<SocketChannel*>(watcher->data);
-        Worker* pWorker = (Worker*)(pChannel->m_pLabor);
-        if (pChannel->GetFd() < 3)      // TODO 这个判断是不得已的做法，需查找fd为0回调到这里的原因
+        Worker* pWorker = (Worker*)(pChannel->m_pImpl->m_pLabor);
+        if (pChannel->m_pImpl->GetFd() < 3)      // TODO 这个判断是不得已的做法，需查找fd为0回调到这里的原因
         {
             return;
         }
@@ -209,7 +209,7 @@ bool WorkerImpl::CheckParent()
     oJsonLoad.Add("client", m_stWorkerInfo.iClientNum);
     oMsgBody.set_data(oJsonLoad.ToString());
     LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
-    m_pManagerControlChannel->Send(CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
+    m_pManagerControlChannel->m_pImpl->Send(CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
     m_stWorkerInfo.iRecvNum = 0;
     m_stWorkerInfo.iRecvByte = 0;
     m_stWorkerInfo.iSendNum = 0;
@@ -219,8 +219,8 @@ bool WorkerImpl::CheckParent()
 
 bool WorkerImpl::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("fd[%d]", pChannel->GetFd());
-    if (pChannel->GetFd() == m_stWorkerInfo.iManagerDataFd)
+    LOG4_TRACE("fd[%d]", pChannel->m_pImpl->GetFd());
+    if (pChannel->m_pImpl->GetFd() == m_stWorkerInfo.iManagerDataFd)
     {
         return(FdTransfer());
     }
@@ -234,18 +234,18 @@ bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE(" ");
     E_CODEC_STATUS eCodecStatus;
-    if (CODEC_HTTP == pChannel->GetCodecType())
+    if (CODEC_HTTP == pChannel->m_pImpl->GetCodecType())
     {
         for (int i = 0; ; ++i)
         {
             HttpMsg oHttpMsg;
             if (0 == i)
             {
-                eCodecStatus = pChannel->Recv(oHttpMsg);
+                eCodecStatus = pChannel->m_pImpl->Recv(oHttpMsg);
             }
             else
             {
-                eCodecStatus = pChannel->Fetch(oHttpMsg);
+                eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
             }
 
             if (CODEC_STATUS_OK == eCodecStatus)
@@ -262,12 +262,12 @@ bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
     {
         MsgHead oMsgHead;
         MsgBody oMsgBody;
-        eCodecStatus = pChannel->Recv(oMsgHead, oMsgBody);
+        eCodecStatus = pChannel->m_pImpl->Recv(oMsgHead, oMsgBody);
         while (CODEC_STATUS_OK == eCodecStatus)
         {
-            if (m_stWorkerInfo.bIsAccess && !pChannel->IsChannelVerify())
+            if (m_stWorkerInfo.bIsAccess && !pChannel->m_pImpl->IsChannelVerify())
             {
-                if (CODEC_NEBULA != pChannel->GetCodecType() && pChannel->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
+                if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType() && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
                 {
                     LOG4_DEBUG("invalid request, please login first!");
                     DiscardSocketChannel(pChannel);
@@ -277,7 +277,7 @@ bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
             Handle(pChannel, oMsgHead, oMsgBody);
             oMsgHead.Clear();       // 注意protobuf的Clear()使用不当容易造成内存泄露
             oMsgBody.Clear();
-            eCodecStatus = pChannel->Fetch(oMsgHead, oMsgBody);
+            eCodecStatus = pChannel->m_pImpl->Fetch(oMsgHead, oMsgBody);
         }
     }
 
@@ -343,7 +343,7 @@ bool WorkerImpl::FdTransfer()
             unsigned int len_inet;                   /* length */
             z = getpeername(iAcceptFd, (struct sockaddr *)&adr_inet, &len_inet);
             LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, inet_ntoa(adr_inet.sin_addr));
-            pChannel->SetRemoteAddr(inet_ntoa(adr_inet.sin_addr));
+            pChannel->m_pImpl->SetRemoteAddr(inet_ntoa(adr_inet.sin_addr));
             AddIoReadEvent(pChannel);
             if (CODEC_NEBULA == iCodec)
             {
@@ -371,16 +371,16 @@ bool WorkerImpl::FdTransfer()
 
 bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
-    if (CHANNEL_STATUS_TRY_CONNECT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
+    if (CHANNEL_STATUS_TRY_CONNECT == pChannel->m_pImpl->GetChannelStatus())  // connect之后的第一个写事件
     {
-        if (CODEC_NEBULA == pChannel->GetCodecType())  // 系统内部Server间通信
+        if (CODEC_NEBULA == pChannel->m_pImpl->GetCodecType())  // 系统内部Server间通信
         {
-            std::dynamic_pointer_cast<CmdConnectWorker>(m_pCmdConnect)->Start(pChannel, pChannel->m_unRemoteWorkerIdx);
+            std::dynamic_pointer_cast<CmdConnectWorker>(m_pCmdConnect)->Start(pChannel, pChannel->m_pImpl->m_unRemoteWorkerIdx);
             return(true);
         }
     }
 
-    E_CODEC_STATUS eCodecStatus = pChannel->Send();
+    E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send();
     if (CODEC_STATUS_OK == eCodecStatus)
     {
         RemoveIoWriteEvent(pChannel);
@@ -398,17 +398,17 @@ bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 
 bool WorkerImpl::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
 {
-    ev_tstamp after = pChannel->GetActiveTime() - ev_now(m_loop) + m_stWorkerInfo.dIoTimeout;
+    ev_tstamp after = pChannel->m_pImpl->GetActiveTime() - ev_now(m_loop) + m_stWorkerInfo.dIoTimeout;
     if (after > 0)    // IO在定时时间内被重新刷新过，重新设置定时器
     {
-        ev_timer_stop (m_loop, pChannel->MutableTimerWatcher());
-        ev_timer_set (pChannel->MutableTimerWatcher(), after + ev_time() - ev_now(m_loop), 0);
-        ev_timer_start (m_loop, pChannel->MutableTimerWatcher());
+        ev_timer_stop (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
+        ev_timer_set (pChannel->m_pImpl->MutableTimerWatcher(), after + ev_time() - ev_now(m_loop), 0);
+        ev_timer_start (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
         return(true);
     }
 
-    LOG4_TRACE("fd %d, seq %u:", pChannel->GetFd(), pChannel->GetSequence());
-    if (pChannel->NeedAliveCheck())     // 需要发送心跳检查
+    LOG4_TRACE("fd %d, seq %u:", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    if (pChannel->m_pImpl->NeedAliveCheck())     // 需要发送心跳检查
     {
         std::shared_ptr<Step> pStepIoTimeout = MakeSharedStep(nullptr, "neb::StepIoTimeout", pChannel);
         if (nullptr == pStepIoTimeout)
@@ -426,7 +426,7 @@ bool WorkerImpl::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
     }
     else        // 关闭文件描述符并清理相关资源
     {
-        if (CODEC_NEBULA != pChannel->GetCodecType())   // 非内部服务器间的连接才会在超时中关闭
+        if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType())   // 非内部服务器间的连接才会在超时中关闭
         {
             LOG4_TRACE("io timeout!");
             DiscardSocketChannel(pChannel);
@@ -744,13 +744,13 @@ bool WorkerImpl::CreateEvents()
 
     // 注册网络IO事件
     m_pManagerDataChannel = std::make_shared<SocketChannel>(m_pLogger, m_stWorkerInfo.iManagerDataFd, GetSequence());
-    m_pManagerDataChannel->SetLabor(m_pWorker);
-    m_pManagerDataChannel->Init(CODEC_NEBULA);
-    m_pManagerDataChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+    m_pManagerDataChannel->m_pImpl->SetLabor(m_pWorker);
+    m_pManagerDataChannel->m_pImpl->Init(CODEC_NEBULA);
+    m_pManagerDataChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     m_pManagerControlChannel = std::make_shared<SocketChannel>(m_pLogger, m_stWorkerInfo.iManagerControlFd, GetSequence());
-    m_pManagerControlChannel->SetLabor(m_pWorker);
-    m_pManagerControlChannel->Init(CODEC_NEBULA);
-    m_pManagerControlChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+    m_pManagerControlChannel->m_pImpl->SetLabor(m_pWorker);
+    m_pManagerControlChannel->m_pImpl->Init(CODEC_NEBULA);
+    m_pManagerControlChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
     AddIoReadEvent(m_pManagerDataChannel);
     // AddIoTimeout(pChannelData, 60.0);   // TODO 需要优化
     AddIoReadEvent(m_pManagerControlChannel);
@@ -817,7 +817,7 @@ bool WorkerImpl::AddNamedSocketChannel(const std::string& strIdentify, std::shar
     {
         named_iter->second.push_back(pChannel);
     }
-    pChannel->SetIdentify(strIdentify);
+    pChannel->m_pImpl->SetIdentify(strIdentify);
     return(true);
 
 }
@@ -837,7 +837,7 @@ void WorkerImpl::DelNamedSocketChannel(const std::string& strIdentify)
 
 void WorkerImpl::SetChannelIdentify(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify)
 {
-    pChannel->SetIdentify(strIdentify);
+    pChannel->m_pImpl->SetIdentify(strIdentify);
 }
 
 bool WorkerImpl::AddNamedRedisChannel(const std::string& strIdentify, std::shared_ptr<RedisChannel> pChannel)
@@ -897,7 +897,7 @@ void WorkerImpl::DelNodeIdentify(const std::string& strNodeType, const std::stri
 
 bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
-    E_CODEC_STATUS eStatus = pChannel->Send();
+    E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send();
     if (CODEC_STATUS_OK == eStatus)
     {
         RemoveIoWriteEvent(pChannel);
@@ -917,7 +917,7 @@ bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uin
     {
         (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
     }
-    E_CODEC_STATUS eStatus = pChannel->Send(iCmd, uiSeq, oMsgBody);
+    E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
     if (CODEC_STATUS_OK == eStatus)
     {
         RemoveIoWriteEvent(pChannel);
@@ -950,7 +950,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
         {
             (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
         }
-        E_CODEC_STATUS eStatus = (*named_iter->second.begin())->Send(iCmd, uiSeq, oMsgBody);
+        E_CODEC_STATUS eStatus = (*named_iter->second.begin())->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK == eStatus)
         {
             RemoveIoWriteEvent(*named_iter->second.begin());
@@ -1067,7 +1067,7 @@ bool WorkerImpl::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 ui
 
 bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
-    E_CODEC_STATUS eStatus = pChannel->Send(oHttpMsg, uiHttpStepSeq);
+    E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(oHttpMsg, uiHttpStepSeq);
     switch (eStatus)
     {
         case CODEC_STATUS_OK:
@@ -1103,7 +1103,7 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, const std::string
         else
         {
             auto channel_iter = named_iter->second.begin();
-            E_CODEC_STATUS eStatus = (*channel_iter)->Send(oHttpMsg, uiHttpStepSeq);
+            E_CODEC_STATUS eStatus = (*channel_iter)->m_pImpl->Send(oHttpMsg, uiHttpStepSeq);
             if (CODEC_STATUS_OK == eStatus)
             {
                 named_iter->second.erase(channel_iter);     // erase from named channel pool, the channel remain in m_mapSocketChannel.               
@@ -1217,16 +1217,16 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiS
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
-        pChannel->SetIdentify(strIdentify);
-        pChannel->SetRemoteAddr(strHost);
-        E_CODEC_STATUS eCodecStatus = pChannel->Send(iCmd, uiSeq, oMsgBody);
+        pChannel->m_pImpl->SetIdentify(strIdentify);
+        pChannel->m_pImpl->SetRemoteAddr(strHost);
+        E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
             DiscardSocketChannel(pChannel);
         }
 
-        pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
-        pChannel->m_unRemoteWorkerIdx = iWorkerIndex;
+        pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+        pChannel->m_pImpl->m_unRemoteWorkerIdx = iWorkerIndex;
         AddNamedSocketChannel(strIdentify, pChannel);
         return(true);
     }
@@ -1277,15 +1277,15 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
         snprintf(szIdentify, sizeof(szIdentify), "%s:%d", strHost.c_str(), iPort);
-        pChannel->SetIdentify(szIdentify);
-        pChannel->SetRemoteAddr(strHost);
-        E_CODEC_STATUS eCodecStatus = pChannel->Send(oHttpMsg, uiHttpStepSeq);
+        pChannel->m_pImpl->SetIdentify(szIdentify);
+        pChannel->m_pImpl->SetRemoteAddr(strHost);
+        E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(oHttpMsg, uiHttpStepSeq);
         if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
         {
             DiscardSocketChannel(pChannel);
         }
 
-        pChannel->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT, uiHttpStepSeq);
+        pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT, uiHttpStepSeq);
         // AddNamedSocketChannel(szIdentify, pChannel);   the channel should not add to named connection pool, because there is an uncompleted http request.
         return(true);
     }
@@ -1367,8 +1367,8 @@ bool WorkerImpl::DiscardNamedChannel(const std::string& strIdentify)
         for (auto channel_iter = named_iter->second.begin();
                 channel_iter != named_iter->second.end(); ++channel_iter)
         {
-            (*channel_iter)->SetIdentify("");
-            (*channel_iter)->SetClientData("");
+            (*channel_iter)->m_pImpl->SetIdentify("");
+            (*channel_iter)->m_pImpl->SetClientData("");
         }
         named_iter->second.clear();
         m_mapNamedSocketChannel.erase(named_iter);
@@ -1378,7 +1378,7 @@ bool WorkerImpl::DiscardNamedChannel(const std::string& strIdentify)
 
 bool WorkerImpl::SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType)
 {
-    return(pChannel->SwitchCodec(eCodecType, m_stWorkerInfo.dIoTimeout));
+    return(pChannel->m_pImpl->SwitchCodec(eCodecType, m_stWorkerInfo.dIoTimeout));
 }
 
 void WorkerImpl::BootLoadCmd(CJsonObject& oCmdConf)
@@ -1516,16 +1516,16 @@ bool WorkerImpl::AddPeriodicTaskEvent()
 
 bool WorkerImpl::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("fd[%d], seq[%u]", pChannel->GetFd(), pChannel->GetSequence());
-    ev_io* io_watcher = pChannel->MutableIoWatcher();
+    LOG4_TRACE("fd[%d], seq[%u]", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (nullptr == io_watcher)
     {
-        io_watcher = pChannel->AddIoWatcher();
+        io_watcher = pChannel->m_pImpl->AddIoWatcher();
         if (nullptr == io_watcher)
         {
             return(false);
         }
-        ev_io_init (io_watcher, IoCallback, pChannel->GetFd(), EV_READ);
+        ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_READ);
         ev_io_start (m_loop, io_watcher);
         return(true);
     }
@@ -1540,16 +1540,16 @@ bool WorkerImpl::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 
 bool WorkerImpl::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
-    ev_io* io_watcher = pChannel->MutableIoWatcher();
+    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (nullptr == io_watcher)
     {
-        io_watcher = pChannel->AddIoWatcher();
+        io_watcher = pChannel->m_pImpl->AddIoWatcher();
         if (nullptr == io_watcher)
         {
             return(false);
         }
-        ev_io_init (io_watcher, IoCallback, pChannel->GetFd(), EV_WRITE);
+        ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_WRITE);
         ev_io_start (m_loop, io_watcher);
         return(true);
     }
@@ -1564,8 +1564,8 @@ bool WorkerImpl::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 
 bool WorkerImpl::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
-    ev_io* io_watcher = pChannel->MutableIoWatcher();
+    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (nullptr == io_watcher)
     {
         return(false);
@@ -1581,21 +1581,21 @@ bool WorkerImpl::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 
 void WorkerImpl::SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData)
 {
-    pChannel->SetClientData(strClientData);
+    pChannel->m_pImpl->SetClientData(strClientData);
 }
 
 bool WorkerImpl::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout)
 {
-    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
-    ev_timer* timer_watcher = pChannel->MutableTimerWatcher();
+    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    ev_timer* timer_watcher = pChannel->m_pImpl->MutableTimerWatcher();
     if (nullptr == timer_watcher)
     {
-        timer_watcher = pChannel->AddTimerWatcher();
+        timer_watcher = pChannel->m_pImpl->AddTimerWatcher();
         if (nullptr == timer_watcher)
         {
             return(false);
         }
-        // @deprecated pChannel->SetKeepAlive(m_dIoTimeout);
+        // @deprecated pChannel->m_pImpl->SetKeepAlive(m_dIoTimeout);
         ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
         ev_timer_start (m_loop, timer_watcher);
         return(true);
@@ -1670,8 +1670,8 @@ std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_
         LOG4_ERROR("new channel for fd %d error: %s", e.what());
         return(nullptr);
     }
-    pChannel->SetLabor(m_pWorker);
-    bool bInitResult = pChannel->Init(eCodecType);
+    pChannel->m_pImpl->SetLabor(m_pWorker);
+    bool bInitResult = pChannel->m_pImpl->Init(eCodecType);
     if (bInitResult)
     {
         m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
@@ -1685,24 +1685,24 @@ std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_
 
 bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice)
 {
-    LOG4_DEBUG("%s disconnect, fd %d, identify %s", pChannel->GetRemoteAddr().c_str(), pChannel->GetFd(), pChannel->GetIdentify().c_str());
+    LOG4_DEBUG("%s disconnect, fd %d, identify %s", pChannel->m_pImpl->GetRemoteAddr().c_str(), pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetIdentify().c_str());
     if (bChannelNotice)
     {
-        ChannelNotice(pChannel, pChannel->GetIdentify(), pChannel->GetClientData());
+        ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
     }
-    ev_io_stop (m_loop, pChannel->MutableIoWatcher());
-    if (nullptr != pChannel->MutableTimerWatcher())
+    ev_io_stop (m_loop, pChannel->m_pImpl->MutableIoWatcher());
+    if (nullptr != pChannel->m_pImpl->MutableTimerWatcher())
     {
-        ev_timer_stop (m_loop, pChannel->MutableTimerWatcher());
+        ev_timer_stop (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
     }
 
-    auto named_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
+    auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
     if (named_iter != m_mapNamedSocketChannel.end())
     {
         for (auto it = named_iter->second.begin();
                 it != named_iter->second.end(); ++it)
         {
-            if ((*it)->GetSequence() == pChannel->GetSequence())
+            if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
             {
                 named_iter->second.erase(it);
                 break;
@@ -1714,12 +1714,12 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         }
     }
 
-    auto channel_iter = m_mapSocketChannel.find(pChannel->GetFd());
+    auto channel_iter = m_mapSocketChannel.find(pChannel->m_pImpl->GetFd());
     if (channel_iter != m_mapSocketChannel.end())
     {
         m_mapSocketChannel.erase(channel_iter);
     }
-    pChannel->Abort();
+    pChannel->m_pImpl->Abort();
     return(true);
 }
 
@@ -1843,7 +1843,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
             }
             else
             {
-                if (CODEC_NEBULA == pChannel->GetCodecType())   // 内部服务往客户端发送  if (std::string("0.0.0.0") == strFromIp)
+                if (CODEC_NEBULA == pChannel->m_pImpl->GetCodecType())   // 内部服务往客户端发送  if (std::string("0.0.0.0") == strFromIp)
                 {
                     cmd_iter = m_mapCmd.find(CMD_REQ_TO_CLIENT);
                     if (cmd_iter != m_mapCmd.end())
@@ -1967,7 +1967,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
                 oOutHttpMsg.set_status_code(404);
                 oOutHttpMsg.set_http_major(oHttpMsg.http_major());
                 oOutHttpMsg.set_http_minor(oHttpMsg.http_minor());
-                pChannel->Send(oOutHttpMsg, 0);
+                pChannel->m_pImpl->Send(oOutHttpMsg, 0);
             }
             else
             {
@@ -1987,12 +1987,12 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
     }
     else
     {
-        auto http_step_iter = m_mapCallbackStep.find(pChannel->GetStepSeq());
+        auto http_step_iter = m_mapCallbackStep.find(pChannel->m_pImpl->GetStepSeq());
         if (http_step_iter == m_mapCallbackStep.end())
         {
             LOG4_ERROR("no callback for http response from %s!", oHttpMsg.url().c_str());
-            pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED, 0);
-            AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);       // push back to named socket channel pool.
+            pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED, 0);
+            AddNamedSocketChannel(pChannel->m_pImpl->GetIdentify(), pChannel);       // push back to named socket channel pool.
         }
         else
         {
@@ -2002,8 +2002,8 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
             if (CMD_STATUS_RUNNING != eResult)
             {
                 Remove(http_step_iter->second);
-                pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED, 0);
-                AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);       // push back to named socket channel pool.
+                pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED, 0);
+                AddNamedSocketChannel(pChannel->m_pImpl->GetIdentify(), pChannel);       // push back to named socket channel pool.
             }
         }
     }
