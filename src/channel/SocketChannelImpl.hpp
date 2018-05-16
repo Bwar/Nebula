@@ -123,7 +123,7 @@ public:
         return(m_strErrMsg);
     }
 
-private:
+public:
     void SetLabor(Labor* pLabor)
     {
         m_pLabor = pLabor;

@@ -378,7 +378,10 @@ bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
                 LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
                 return(false);
             }
-            pStepConnectWorker->Emit(ERR_OK);
+            if (CMD_STATUS_RUNNING != pStepConnectWorker->Emit(ERR_OK))
+            {
+                Remove(pStepConnectWorker);
+            }
             return(true);
         }
     }

@@ -29,6 +29,21 @@ SocketChannel::~SocketChannel()
 {
 }
 
+const std::string& SocketChannel::GetIdentify() const
+{
+    return(m_pImpl->GetIdentify());
+}
+
+const std::string& SocketChannel::GetRemoteAddr() const
+{
+    return(m_pImpl->GetRemoteAddr());
+}
+
+const std::string& SocketChannel::GetClientData() const
+{
+    return(m_pImpl->GetClientData());
+}
+
 int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std::shared_ptr<NetLogger> pLogger)
 {
     ssize_t             n;

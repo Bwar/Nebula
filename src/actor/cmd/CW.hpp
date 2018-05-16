@@ -31,7 +31,7 @@ enum E_CMD
     CMD_REQ_UPDATE_WORKER_LOAD          = 5,    ///< 更新Worker进程负载信息请求
     CMD_RSP_UPDATE_WORKER_LOAD          = 6,    ///< 更新Worker进程负载信息应答（一般无须应答）
     CMD_REQ_CONNECT_TO_WORKER           = 7,    ///< 连接到Worker进程请求（Manager进程在收到这个包之后才会将文件描述符转发给对应Worker进程）
-    CMD_RSP_CONNECT_TO_WORKER           = 8,    ///< 连接到Worker进程应答（收到CMD_RSP_CONNECT_TO_WORKER后应再发起CMD_REQ_TELL_WORKER）
+    CMD_RSP_CONNECT_TO_WORKER           = 8,    ///< 连接到Worker进程应答（无须响应）
     CMD_REQ_TELL_WORKER                 = 9,    ///< 将己方Worker信息告知对方，并请求对方作对等的回应
     CMD_RSP_TELL_WORKER                 = 10,   ///< 收到对方Worker告知的信息，并将己方的对等信息回应之
     CMD_REQ_NODE_STATUS_REPORT          = 11,   ///< 节点Server状态上报请求（各节点向控制中心上报自身状态信息）

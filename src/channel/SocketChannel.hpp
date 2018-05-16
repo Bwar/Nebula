@@ -30,6 +30,11 @@ public:
     static int SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std::shared_ptr<NetLogger> pLogger);
     static int RecvChannelFd(int iSocketFd, int& iRecvFd, int& iCodecType, std::shared_ptr<NetLogger> pLogger);
 
+
+    const std::string& GetIdentify() const;
+    const std::string& GetRemoteAddr() const;
+    const std::string& GetClientData() const;
+
 private:
     std::unique_ptr<SocketChannelImpl> m_pImpl;
     

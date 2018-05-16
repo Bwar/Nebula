@@ -137,6 +137,7 @@ E_CODEC_STATUS SocketChannelImpl::Send()
             CBuffer* pExchangeBuff = m_pSendBuff;
             m_pSendBuff = m_pWaitForSendBuff;
             m_pWaitForSendBuff = pExchangeBuff;
+            m_pWaitForSendBuff->Compact(1);
         }
     }
 
@@ -666,6 +667,8 @@ void SocketChannelImpl::Abort()
     if (CHANNEL_STATUS_ABORT != m_ucChannelStatus)
     {
         m_ucChannelStatus = CHANNEL_STATUS_ABORT;
+        m_pSendBuff->Compact(1);
+        m_pWaitForSendBuff->Compact(1);
         close(m_iFd);
     }
 }

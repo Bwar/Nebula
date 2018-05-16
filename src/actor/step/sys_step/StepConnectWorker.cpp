@@ -30,7 +30,7 @@ E_CMD_STATUS StepConnectWorker::Emit(
     MsgBody oMsgBody;
     oMsgBody.set_data(std::to_string((int)m_unRemoteWorkerIndex));
     SendTo(m_pChannel, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
-    return(CMD_STATUS_RUNNING);
+    return(CMD_STATUS_COMPLETED);
 }
 
 E_CMD_STATUS StepConnectWorker::Callback(
@@ -39,30 +39,7 @@ E_CMD_STATUS StepConnectWorker::Callback(
         const MsgBody& oInMsgBody,
         void* data)
 {
-    if (oInMsgBody.has_rsp_result())
-    {
-        if (ERR_OK == oInMsgBody.rsp_result().code())
-        {
-                std::shared_ptr<Step> pStepTellWorker = MakeSharedStep("neb::StepTellWorker", pChannel);
-                if (nullptr == pStepTellWorker)
-                {
-                    LOG4_ERROR("error %d: new StepTellWorker() error!", ERR_NEW);
-                    return(CMD_STATUS_FAULT);
-                }
-                pStepTellWorker->Emit(ERR_OK);
-                return(CMD_STATUS_COMPLETED);
-        }
-        else
-        {
-            LOG4_ERROR("error %d: %s!", oInMsgBody.rsp_result().code(), oInMsgBody.rsp_result().msg().c_str());
-            return(CMD_STATUS_FAULT);
-        }
-    }
-    else
-    {
-        LOG4_ERROR("error %d: oInMsgBody has no rsp_result!", ERR_PARASE_PROTOBUF);
-        return(CMD_STATUS_FAULT);
-    }
+    return(CMD_STATUS_COMPLETED);
 }
 
 E_CMD_STATUS StepConnectWorker::Timeout()
