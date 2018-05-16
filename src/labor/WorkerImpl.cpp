@@ -11,8 +11,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-#include "hiredis/async.h"
-#include "hiredis/adapters/libev.h"
 #include "util/process_helper.h"
 #include "util/proctitle_helper.h"
 #ifdef __cplusplus
@@ -33,7 +31,7 @@ namespace neb
 
 void WorkerImpl::TerminatedCallback(struct ev_loop* loop, struct ev_signal* watcher, int revents)
 {
-    if (watcher->data != nullptr)
+    if (watcher->data != NULL)
     {
         Worker* pWorker = (Worker*)watcher->data;
         pWorker->m_pImpl->Terminated(watcher);  // timeout，worker进程无响应或与Manager通信通道异常，被manager进程终止时返回
@@ -42,7 +40,7 @@ void WorkerImpl::TerminatedCallback(struct ev_loop* loop, struct ev_signal* watc
 
 void WorkerImpl::IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int revents)
 {
-    if (watcher->data != nullptr)
+    if (watcher->data != NULL)
     {
         Worker* pWorker = (Worker*)watcher->data;
         pWorker->m_pImpl->CheckParent();
@@ -51,7 +49,7 @@ void WorkerImpl::IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int
 
 void WorkerImpl::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents)
 {
-    if (watcher->data != nullptr)
+    if (watcher->data != NULL)
     {
         SocketChannel* pChannel = static_cast<SocketChannel*>(watcher->data);
         Worker* pWorker = (Worker*)pChannel->m_pImpl->m_pLabor;
@@ -68,7 +66,7 @@ void WorkerImpl::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int rev
 
 void WorkerImpl::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
-    if (watcher->data != nullptr)
+    if (watcher->data != NULL)
     {
         SocketChannel* pChannel = static_cast<SocketChannel*>(watcher->data);
         Worker* pWorker = (Worker*)(pChannel->m_pImpl->m_pLabor);
@@ -82,7 +80,7 @@ void WorkerImpl::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int 
 
 void WorkerImpl::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
-    if (watcher->data != nullptr)
+    if (watcher->data != NULL)
     {
         WorkerImpl* pWorkerImpl = (WorkerImpl*)(watcher->data);
         pWorkerImpl->CheckParent();
@@ -94,7 +92,7 @@ void WorkerImpl::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, i
 
 void WorkerImpl::StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
-    if (watcher->data != nullptr)
+    if (watcher->data != NULL)
     {
         Step* pStep = (Step*)watcher->data;
         ((Worker*)(pStep->m_pWorker))->m_pImpl->OnStepTimeout(std::dynamic_pointer_cast<Step>(pStep->shared_from_this()));
@@ -103,7 +101,7 @@ void WorkerImpl::StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, in
 
 void WorkerImpl::SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
-    if (watcher->data != nullptr)
+    if (watcher->data != NULL)
     {
         Session* pSession = (Session*)watcher->data;
         ((Worker*)pSession->m_pWorker)->m_pImpl->OnSessionTimeout(std::dynamic_pointer_cast<Session>(pSession->shared_from_this()));
@@ -112,7 +110,7 @@ void WorkerImpl::SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher,
 
 void WorkerImpl::RedisConnectCallback(const redisAsyncContext *c, int status)
 {
-    if (c->data != nullptr)
+    if (c->data != NULL)
     {
         Worker* pWorker = (Worker*)c->data;
         pWorker->m_pImpl->OnRedisConnected(c, status);
@@ -121,7 +119,7 @@ void WorkerImpl::RedisConnectCallback(const redisAsyncContext *c, int status)
 
 void WorkerImpl::RedisDisconnectCallback(const redisAsyncContext *c, int status)
 {
-    if (c->data != nullptr)
+    if (c->data != NULL)
     {
         Worker* pWorker = (Worker*)c->data;
         pWorker->m_pImpl->OnRedisDisconnected(c, status);
@@ -130,7 +128,7 @@ void WorkerImpl::RedisDisconnectCallback(const redisAsyncContext *c, int status)
 
 void WorkerImpl::RedisCmdCallback(redisAsyncContext *c, void *reply, void *privdata)
 {
-    if (c->data != nullptr)
+    if (c->data != NULL)
     {
         Worker* pWorker = (Worker*)c->data;
         pWorker->m_pImpl->OnRedisCmdResult(c, reply, privdata);
@@ -337,10 +335,17 @@ bool WorkerImpl::FdTransfer()
         {
             int z;                          /* status return code */
             struct sockaddr_in adr_inet;    /* AF_INET */
-            unsigned int len_inet;                   /* length */
+            unsigned int len_inet = 16;                   /* length */
             z = getpeername(iAcceptFd, (struct sockaddr *)&adr_inet, &len_inet);
-            LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, inet_ntoa(adr_inet.sin_addr));
-            pChannel->m_pImpl->SetRemoteAddr(inet_ntoa(adr_inet.sin_addr));
+            if (z == 0)
+            {
+                LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, inet_ntoa(adr_inet.sin_addr));
+                pChannel->m_pImpl->SetRemoteAddr(inet_ntoa(adr_inet.sin_addr));
+            }
+            else
+            {
+                LOG4_ERROR("getpeername error %d", errno);
+            }
             AddIoReadEvent(pChannel);
             if (CODEC_NEBULA == iCodec)
             {
@@ -1182,12 +1187,12 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, std::shared_ptr<R
 bool WorkerImpl::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s", strIdentify.c_str());
-    int iPosIpPortSeparator = strIdentify.find(':');
+    size_t iPosIpPortSeparator = strIdentify.find(':');
     if (iPosIpPortSeparator == std::string::npos)
     {
         return(false);
     }
-    int iPosPortWorkerIndexSeparator = strIdentify.rfind('.');
+    size_t iPosPortWorkerIndexSeparator = strIdentify.rfind('.');
     std::string strHost = strIdentify.substr(0, iPosIpPortSeparator);
     std::string strPort = strIdentify.substr(iPosIpPortSeparator + 1, iPosPortWorkerIndexSeparator - (iPosIpPortSeparator + 1));
     std::string strWorkerIndex = strIdentify.substr(iPosPortWorkerIndexSeparator + 1, std::string::npos);
@@ -1483,17 +1488,17 @@ WorkerImpl::tagSo* WorkerImpl::LoadSo(const std::string& strSoPath, int iVersion
 {
     LOG4_TRACE(" ");
     tagSo* pSo = new tagSo();
-    if (nullptr == pSo)
+    if (NULL == pSo)
     {
         return(nullptr);
     }
-    void* pHandle = nullptr;
+    void* pHandle = NULL;
     pHandle = dlopen(strSoPath.c_str(), RTLD_NOW);
     char* dlsym_error = dlerror();
     if (dlsym_error)
     {
         LOG4_FATAL("cannot load dynamic lib %s!" , dlsym_error);
-        if (pHandle != nullptr)
+        if (pHandle != NULL)
         {
             dlclose(pHandle);
         }
@@ -1523,10 +1528,10 @@ bool WorkerImpl::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE("fd[%d], seq[%u]", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
     ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
-    if (nullptr == io_watcher)
+    if (NULL == io_watcher)
     {
         io_watcher = pChannel->m_pImpl->AddIoWatcher();
-        if (nullptr == io_watcher)
+        if (NULL == io_watcher)
         {
             return(false);
         }
@@ -1547,10 +1552,10 @@ bool WorkerImpl::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
     ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
-    if (nullptr == io_watcher)
+    if (NULL == io_watcher)
     {
         io_watcher = pChannel->m_pImpl->AddIoWatcher();
-        if (nullptr == io_watcher)
+        if (NULL == io_watcher)
         {
             return(false);
         }
@@ -1571,7 +1576,7 @@ bool WorkerImpl::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
     ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
-    if (nullptr == io_watcher)
+    if (NULL == io_watcher)
     {
         return(false);
     }

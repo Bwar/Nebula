@@ -39,7 +39,6 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
         LOG4_ERROR("oMsgBody.ByteSize() > 1000000");
         return(CODEC_STATUS_ERR);
     }
-    int iErrno = 0;
     int iHadWriteLen = 0;
     int iWriteLen = 0;
     int iNeedWriteLen = sizeof(stMsgHead);

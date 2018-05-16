@@ -12,7 +12,16 @@
 
 #include <memory>
 #include <string>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 #include "ev.h"
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 #include "Error.hpp"
 #include "Definition.hpp"
 #include "pb/msg.pb.h"

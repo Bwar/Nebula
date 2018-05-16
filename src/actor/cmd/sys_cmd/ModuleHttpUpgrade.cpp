@@ -56,7 +56,7 @@ bool ModuleHttpUpgrade::WebSocket(std::shared_ptr<SocketChannel> pChannel, const
             && HTTP_GET == (http_method)oHttpMsg.method())
     {
         std::string strSecWebSocketKey;
-        int iSecWebSocketVersion;
+        int iSecWebSocketVersion = 0;
         for (int i = 0; i < oHttpMsg.headers_size(); ++i)
         {
             if (std::string("Sec-WebSocket-Key") == oHttpMsg.headers(i).header_name())

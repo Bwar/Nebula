@@ -11,7 +11,16 @@
 #define SRC_CHANNEL_SOCKETCHANNELIMPL_HPP_
 
 #include <memory>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 #include "ev.h"
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 #include "util/CBuffer.hpp"
 #include "util/StreamCodec.hpp"
 #include "util/json/CJsonObject.hpp"

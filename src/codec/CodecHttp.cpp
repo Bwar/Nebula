@@ -414,8 +414,8 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
                     {
                         iHadWriteSize += iWriteSize;
                     }
-                    int iChunkLength = 8192;
-                    for (int iPos = 0; iPos < strGzipData.size(); iPos += iChunkLength)
+                    size_t iChunkLength = 8192;
+                    for (size_t iPos = 0; iPos < strGzipData.size(); iPos += iChunkLength)
                     {
                         iChunkLength = (iChunkLength < strGzipData.size() - iPos) ? iChunkLength : (strGzipData.size() - iPos);
                         iWriteSize = pBuff->Printf("%x\r\n", iChunkLength);
@@ -495,8 +495,8 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
                     {
                         iHadWriteSize += iWriteSize;
                     }
-                    int iChunkLength = 8192;
-                    for (int iPos = 0; iPos < oHttpMsg.body().size(); iPos += iChunkLength)
+                    size_t iChunkLength = 8192;
+                    for (size_t iPos = 0; iPos < oHttpMsg.body().size(); iPos += iChunkLength)
                     {
                         iChunkLength = (iChunkLength < oHttpMsg.body().size() - iPos) ? iChunkLength : (oHttpMsg.body().size() - iPos);
                         iWriteSize = pBuff->Printf("%x\r\n", iChunkLength);
@@ -641,7 +641,6 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
     m_parser_setting.on_chunk_complete = OnChunkComplete;
     m_parser.data = &oHttpMsg;
     http_parser_init(&m_parser, HTTP_BOTH);
-    int iReadIdx = pBuff->GetReadIndex();
     size_t uiReadableBytes = pBuff->ReadableBytes();
     size_t uiLen = http_parser_execute(&m_parser, &m_parser_setting,
                     pBuff->GetRawReadBuffer(), uiReadableBytes);

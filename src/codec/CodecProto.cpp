@@ -26,7 +26,6 @@ CodecProto::~CodecProto()
 E_CODEC_STATUS CodecProto::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
 {
     LOG4_TRACE("pBuff->ReadableBytes()=%u, oMsgHead.ByteSize() = %d", pBuff->ReadableBytes(), oMsgHead.ByteSize());
-    int iErrno = 0;
     int iHadWriteLen = 0;
     int iWriteLen = 0;
     int iNeedWriteLen = gc_uiMsgHeadSize;

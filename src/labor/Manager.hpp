@@ -25,7 +25,15 @@ extern "C" {
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 #include "ev.h"
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 #ifdef __cplusplus
 }

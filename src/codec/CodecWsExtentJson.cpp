@@ -42,7 +42,6 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
         LOG4_ERROR("oMsgBody.ByteSize() > 1000000");
         return (CODEC_STATUS_ERR);
     }
-    int iErrno = 0;
     int iNeedWriteLen = 0;
     int iHadWriteLen = 0;
     int iWriteLen = 0;
@@ -298,7 +297,7 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(CBuffer* pBuff,
             uiPayload = (uint32)ucPayload;
         }
         pRawData = pBuff->GetRawReadBuffer();
-        for (int i = pBuff->GetReadIndex(), j = 0; j < uiPayload; ++i, ++j)
+        for (uint32 i = pBuff->GetReadIndex(), j = 0; j < uiPayload; ++i, ++j)
         {
             cData = pRawData[i] ^ szMaskKey[j % 4];
             pBuff->SetBytes(&cData, 1, i);

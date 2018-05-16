@@ -115,7 +115,7 @@ bool Codec::Unzip(const std::string& strSrc, std::string& strDest)
     memcpy(pInBuff, strSrc.c_str(), ulInLen);
     while (d_stream.total_out < ulOutBuffLen && d_stream.total_in < ulInLen)
     {
-        /* d_stream.avail_in = d_stream.avail_out = 1; // force small buffers
+        d_stream.avail_in = d_stream.avail_out = 1; // force small buffers
         iErr = inflate(&d_stream, Z_NO_FLUSH);
         if (iErr == Z_STREAM_END)
         {

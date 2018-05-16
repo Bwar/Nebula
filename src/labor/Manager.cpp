@@ -283,32 +283,31 @@ bool Manager::AcceptServerConn(int iFd)
     else
     {
         /* tcp连接检测 */
-       int iKeepAlive = 1;
-       int iKeepIdle = 60;
-       int iKeepInterval = 5;
-       int iKeepCount = 3;
-       int iTcpNoDelay = 1;
-       if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
-       {
-           LOG4_WARNING("fail to set SO_KEEPALIVE");
-       }
-       if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
-       {
-           LOG4_WARNING("fail to set SO_KEEPIDLE");
-       }
-       if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
-       {
-           LOG4_WARNING("fail to set SO_KEEPINTVL");
-       }
-       if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
-       {
-           LOG4_WARNING("fail to set SO_KEEPALIVE");
-       }
-       if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
-       {
-           LOG4_WARNING("fail to set TCP_NODELAY");
-       }
-        uint32 ulSeq = GetSequence();
+        int iKeepAlive = 1;
+        int iKeepIdle = 60;
+        int iKeepInterval = 5;
+        int iKeepCount = 3;
+        int iTcpNoDelay = 1;
+        if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPIDLE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPINTVL");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+        {
+            LOG4_WARNING("fail to set TCP_NODELAY");
+        }
         x_sock_set_block(iAcceptFd, 0);
         std::shared_ptr<SocketChannel> pChannel = CreateChannel(iAcceptFd, CODEC_NEBULA);
         if (NULL != pChannel)
@@ -1794,13 +1793,11 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
         }
         else if (CMD_REQ_TELL_WORKER == oInMsgHead.cmd()) 
         {
-            bool bResult = false;
             MsgBody oOutMsgBody;
             TargetWorker oInTargetWorker;
             TargetWorker oOutTargetWorker;
             if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
             {
-                bResult = true;
                 LOG4_DEBUG("AddNodeIdentify(%s, %s)!", oInTargetWorker.node_type().c_str(),
                                 oInTargetWorker.worker_identify().c_str());
                 AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
