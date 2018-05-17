@@ -9,4 +9,4 @@ Nebula is a MIT licensed, proto3-protocol event driven asynchronous c++ framewor
    * [hiredis](https://github.com/redis/hiredis)
    * [crypto++](http://www.cryptopp.com)
    * [http_parse](https://github.com/nodejs/http-parser) integrate into Nebula/src/util/http 
-   * [cjson](http://sourceforge.net/projects/cjson/) now moved to [cjson](https://github.com/DaveGamble/cJSON). nebula CJsonObject depend on a cjson version long time ago, cjson had been changed and integrated into Nebula/src/util/json
+   * [CJsonObject](https://github.com/Bwar/CJsonObject) integrate into Nebula/src/util/json
