@@ -183,20 +183,20 @@ static char *print_int(cJSON *item)
     {
         if (item->sign == -1)
         {
-            if (item->valueint <= INT_MAX && item->valueint >= INT_MIN)
+            if (item->valueint <= (int64)INT_MAX && item->valueint >= (int64)INT_MIN)
             {
-                sprintf(str, "%d", item->valueint);
+                sprintf(str, "%d", (int32)item->valueint);
             }
             else
             {
-                sprintf(str, "%lld", item->valueint);
+                sprintf(str, "%lld", (int64)item->valueint);
             }
         }
         else
         {
-            if (item->valueint <= UINT_MAX)
+            if (item->valueint <= (uint64)UINT_MAX)
             {
-                sprintf(str, "%u", item->valueint);
+                sprintf(str, "%u", (uint32)item->valueint);
             }
             else
             {
@@ -1083,49 +1083,5 @@ cJSON *cJSON_CreateStringArray(const char **strings, int count)
         p = n;
     }
     return a;
-}
-
-/* add by Bwar on 2014-07-08 */
-void MergeCJsonChild(cJSON* destObject, const char* pDestKeyString,
-                cJSON* beingCombinedChild, const char* pCombinedKeyString)
-{
-    cJSON *c = destObject->child;
-    char szDestKey[256] = {0};
-    while (c)
-    {
-        snprintf(szDestKey, sizeof(szDestKey), "%s|%s", pDestKeyString, c->string);
-        if (c->child)
-        {
-            MergeCJsonChild(c, szDestKey, beingCombinedChild, pCombinedKeyString);
-        }
-        else if (cJSON_strcasecmp(szDestKey, pCombinedKeyString) == 0)
-        {
-            cJSON_ReplaceItemInObject(destObject, beingCombinedChild->string, beingCombinedChild);
-            break;
-        }
-        c = c->next;
-    }
-}
-
-/* add by Bwar on 2014-07-08 */
-void MergeCJson(cJSON* destObject, cJSON* beingCombinedObject, const char* pCombinedKeyString)
-{
-    cJSON *c = beingCombinedObject->child;
-    char szCombinedKey[256] = {0};
-    while (c)
-    {
-        snprintf(szCombinedKey, sizeof(szCombinedKey), "%s|%s", pCombinedKeyString, c->string);
-        if (c->child)
-        {
-            MergeCJson(destObject, c, szCombinedKey);
-        }
-        cJSON* nextC = c->next;
-        cJSON* combinedC = cJSON_DetachItemFromObject(beingCombinedObject, c->string);
-        if (combinedC)
-        {
-            MergeCJsonChild(destObject, "", combinedC, szCombinedKey);
-        }
-        c = nextC;
-    }
 }
 
