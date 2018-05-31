@@ -42,17 +42,17 @@ Nebula 完成的文档在 [Nebula documentation](https://github.com/Bwar/Nebula/
 <a name="DependOn"></a>
 ## 依赖 
    * [protobuf](https://github.com/google/protobuf)
-   * [libev](http://software.schmorp.de/pkg/libev.html) or [libev](https://github.com/kindy/libev)
+   * [libev](http://software.schmorp.de/pkg/libev.html) 或 [libev](https://github.com/kindy/libev)
    * [hiredis](https://github.com/redis/hiredis)
    * [crypto++](http://www.cryptopp.com)
-   * [http_parse](https://github.com/nodejs/http-parser) integrate into Nebula/src/util/http
-   * [CJsonObject](https://github.com/Bwar/CJsonObject) integrate into Nebula/src/util/json
+   * [http_parse](https://github.com/nodejs/http-parser) 已集成到 Nebula/src/util/http
+   * [CJsonObject](https://github.com/Bwar/CJsonObject) 已集成到 Nebula/src/util/json
 
 <a name="TODO"></a>
 ## 开发任务
    - 2018年6月 增加https支持
    - 2018年8月 增加ipv6支持
-   - 2018年10月 增加协程知此恨
+   - 2018年10月 增加协程支持
 
 <a name="ChangeLog"></a>
 ## 版本历史
