@@ -11,6 +11,7 @@
 7. [Change log](#ChangeLog)
 
 ## Overview <a name="Overview"></a>
+
     Nebula is an event-driven TCP protocol network framework developed in C++ language. It supports multiple application layer communication protocols including proto3, http, https, and websocket. The purpose of developing the Nebula framework is to provide a fast and high-performance distributed service cluster based on C++.
     Nebula can be used as a single high-performance TCP server, but building a cluster based on Nebula can truly reflect its value. In order to quickly build distributed service clusters, Nebula Bootstrap cluster solutions including various types of services have been developed. For details on NebulaBootstrap, please refer to [NebulaBootstrap] (https://github.com/Bwar/NebulaBootstrap).
 
@@ -41,11 +42,11 @@ MIT License
 ## Build <a name="Build"></a>
    Nebula was builded passing with gcc6.4 on centos6.5(upgrade binutils to 2.22 or later) and centos7.4.
    First,
-   $ mkdir NebulaDepend
+>   $ mkdir NebulaDepend
    Secondly go to [Depend on](#DependOn), download and compile these dependent libraries, copy the shared library files to NebulaDepend/lib, copy the header files directory to NebulaDepend/include, and compile Nebula.
    Thirdly,
-   $ cd Nebula/src
-   $ make
+>   $ cd Nebula/src
+>   $ make
 
 ## Documentation <a name="Documentation"></a>
    The complete documentation for Nebula is available: [Nebula documentation](https://github.com/Bwar/Nebula/wiki)
@@ -64,10 +65,10 @@ MIT License
    - October 2018: coroutine support.
 
 ## Change log <a name="ChangeLog"></a>
-####v0.3
+#### v0.3
    - rewrite with C++14
    - create an actor by reflection (using template)
    - add distributed trace log
-####v0.2
+#### v0.2
    - the first runable version
 
