@@ -10,12 +10,15 @@
 6. [Todo list](#TODO)
 7. [Change log](#ChangeLog)
 
-## Overview <a name="Overview"></a>
+<a name="Overview"></a>
+## Overview 
 
-    Nebula is an event-driven TCP protocol network framework developed in C++ language. It supports multiple application layer communication protocols including proto3, http, https, and websocket. The purpose of developing the Nebula framework is to provide a fast and high-performance distributed service cluster based on C++.
-    Nebula can be used as a single high-performance TCP server, but building a cluster based on Nebula can truly reflect its value. In order to quickly build distributed service clusters, Nebula Bootstrap cluster solutions including various types of services have been developed. For details on NebulaBootstrap, please refer to [NebulaBootstrap] (https://github.com/Bwar/NebulaBootstrap).
+Nebula is an event-driven TCP protocol network framework developed in C++ language. It supports multiple application layer communication protocols including proto3, http, https, and websocket. The purpose of developing the Nebula framework is to provide a fast and high-performance distributed service cluster based on C++.
 
-## License <a name="License"></a>
+Nebula can be used as a single high-performance TCP server, but building a cluster based on Nebula can truly reflect its value. In order to quickly build distributed service clusters, Nebula Bootstrap cluster solutions including various types of services have been developed. For details on NebulaBootstrap, please refer to [NebulaBootstrap] (https://github.com/Bwar/NebulaBootstrap).
+
+<a name="License"></a>
+## License 
 
 MIT License
 
@@ -39,19 +42,21 @@ MIT License
 >  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 >  THE SOFTWARE.
 
-## Build <a name="Build"></a>
-   Nebula was builded passing with gcc6.4 on centos6.5(upgrade binutils to 2.22 or later) and centos7.4.
-   First,
->   $ mkdir NebulaDepend
-   Secondly go to [Depend on](#DependOn), download and compile these dependent libraries, copy the shared library files to NebulaDepend/lib, copy the header files directory to NebulaDepend/include, and compile Nebula.
-   Thirdly,
->   $ cd Nebula/src
->   $ make
+<a name="Build"></a>
+## Build 
+   Nebula was builded passing with gcc6.4 on centos6.5(upgrade binutils to 2.22 or later) and centos7.4.  
+   
+   build step：
+   1. $ mkdir NebulaDepend
+   2. go to [Depend on](#DependOn), download and compile these dependent libraries, copy the shared library files to NebulaDepend/lib, copy the header files directory to NebulaDepend/include, and compile Nebula.
+   3. $ cd Nebula/src;    $ make
 
-## Documentation <a name="Documentation"></a>
+<a name="Documentation"></a>
+## Documentation 
    The complete documentation for Nebula is available: [Nebula documentation](https://github.com/Bwar/Nebula/wiki)
     
-## Depend on <a name="DependOn"></a>
+<a name="DependOn"></a>
+## Depend on 
    * [protobuf](https://github.com/google/protobuf)
    * [libev](http://software.schmorp.de/pkg/libev.html) or [libev](https://github.com/kindy/libev)
    * [hiredis](https://github.com/redis/hiredis)
@@ -59,16 +64,21 @@ MIT License
    * [http_parse](https://github.com/nodejs/http-parser) integrate into Nebula/src/util/http 
    * [CJsonObject](https://github.com/Bwar/CJsonObject) integrate into Nebula/src/util/json
 
-## Todo list <a name="TODO"></a>
+<a name="TODO"></a>
+## Todo list 
    - June 2018:    https support.
    - Auguest 2018: ipv6 support.
    - October 2018: coroutine support.
 
-## Change log <a name="ChangeLog"></a>
+<a name="ChangeLog"></a>
+## Change log 
 #### v0.3
    - rewrite with C++14
    - create an actor by reflection (using template)
    - add distributed trace log
 #### v0.2
    - the first runable version
+
+<br/>
+
 
