@@ -1,10 +1,10 @@
-[中文](/README_cn.md)
+English | [中文](/README_cn.md)
 # Nebula : An event driven asynchronous C++ framework
 [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)<br/>
 
 1. [Overview](#Overview)
 2. [License](#License)
-3. [Build](#Build)
+3. [Building](#Building)
 4. [Documentation](#Documentation)
 5. [Depend on](#DependOn)
 6. [Todo list](#TODO)
@@ -15,7 +15,7 @@
 
 Nebula is an event-driven TCP protocol network framework developed in C++ language. It supports multiple application layer communication protocols including proto3, http, https, and websocket. The purpose of developing the Nebula framework is to provide a fast and high-performance distributed service cluster based on C++.
 
-Nebula can be used as a single high-performance TCP server, but building a cluster based on Nebula can truly reflect its value. In order to quickly build distributed service clusters, Nebula Bootstrap cluster solutions including various types of services have been developed. For details on NebulaBootstrap, please refer to [NebulaBootstrap] (https://github.com/Bwar/NebulaBootstrap).
+Nebula can be used as a single high-performance TCP server, but building a cluster based on Nebula can truly reflect its value. In order to quickly build distributed service clusters, Nebula Bootstrap cluster solutions including various types of services have been developed. For details on NebulaBootstrap, please refer to [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap).
 
 <a name="License"></a>
 ## License 
@@ -42,13 +42,13 @@ MIT License
 >  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 >  THE SOFTWARE.
 
-<a name="Build"></a>
-## Build 
+<a name="Building"></a>
+## Building 
    Nebula was builded passing with gcc6.4 on centos6.5(upgrade binutils to 2.22 or later) and centos7.4.  
    
    build step：
    1. $ mkdir NebulaDepend
-   2. go to [Depend on](#DependOn), download and compile these dependent libraries, copy the shared library files to NebulaDepend/lib, copy the header files directory to NebulaDepend/include, and compile Nebula.
+   2. go to [Depend on](#DependOn), download and compile these dependent libraries, copy the shared library files to NebulaDepend/lib, copy the header files directory to NebulaDepend/include.
    3. $ cd Nebula/src;    $ make
 
 <a name="Documentation"></a>
@@ -74,7 +74,7 @@ MIT License
 ## Change log 
 #### v0.3
    - rewrite with C++14
-   - create an actor by reflection (using template)
+   - create actors by reflection (using template)
    - add distributed trace log
 #### v0.2
    - the first runable version
