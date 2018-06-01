@@ -30,6 +30,7 @@ Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建�
 <a name="Building"></a>
 ## 编译
 Nebula在centos6.5（需升级binutils到2.22之后版本）和centos7.4上用gcc6.4编译通过。
+![nebula_build_dir](docs/image/build_dir.png)
 编译步骤：
   1. $ mkdir NebulaDepend
   2. 下载[依赖](#DependOn)并编译，编译完成后拷贝共享库到NebulaDepend/lib，拷贝头文件的文件夹到NebulaDepend/include。

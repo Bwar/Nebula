@@ -46,6 +46,7 @@ MIT License
 ## Building 
    Nebula was builded passing with gcc6.4 on centos6.5(upgrade binutils to 2.22 or later) and centos7.4.  
    
+![nebula_build_dir](docs/image/build_dir.png)
    build step：
    1. $ mkdir NebulaDepend
    2. go to [Depend on](#DependOn), download and compile these dependent libraries, copy the shared library files to NebulaDepend/lib, copy the header files directory to NebulaDepend/include.
