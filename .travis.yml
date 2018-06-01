@@ -10,6 +10,13 @@ env:
     - DOXYFILE: $TRAVIS_BUILD_DIR/Doxyfile
     - GH_REPO_REF: github.com/Bwar/Nebula.git
 
+deploy:
+  provider: pages
+  skip-cleanup: true
+  keep-history: true
+  on:
+    branch: gh-pages
+
 # Install dependencies
 addons:
   apt:
