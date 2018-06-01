@@ -1,4 +1,4 @@
-language: C++
+#language: C++
 
 # This will run on Travis' 'new' container-based infrastructure
 sudo: false
@@ -10,15 +10,9 @@ env:
     - DOXYFILE: $TRAVIS_BUILD_DIR/Doxyfile
     - GH_REPO_REF: github.com/Bwar/Nebula.git
 
-# blocklist
-branches:
-  except:
-  - develop
-
 # safelist
 branches:
   only:
-  - master
   - gh-pages
 
 deploy:
@@ -27,12 +21,6 @@ deploy:
   keep-history: true
   on:
     branch: gh-pages
-
-before_install:
-    - sudo apt-get install python-software-properties 
-    - sudo apt-add-repository -y ppa:libreoffice/libreoffice-4-2
-    - sudo apt-get update
-    - sudo apt-get install doxygen
 
 # Install dependencies
 addons:
