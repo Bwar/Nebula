@@ -10,6 +10,17 @@ env:
     - DOXYFILE: $TRAVIS_BUILD_DIR/Doxyfile
     - GH_REPO_REF: github.com/Bwar/Nebula.git
 
+# blocklist
+branches:
+  except:
+  - develop
+
+# safelist
+branches:
+  only:
+  - master
+  - gh-pages
+
 deploy:
   provider: pages
   skip-cleanup: true
