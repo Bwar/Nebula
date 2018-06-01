@@ -28,6 +28,12 @@ deploy:
   on:
     branch: gh-pages
 
+before_install:
+    - sudo apt-get install python-software-properties 
+    - sudo apt-add-repository -y ppa:libreoffice/libreoffice-4-2
+    - sudo apt-get update
+    - sudo apt-get install doxygen
+
 # Install dependencies
 addons:
   apt:
@@ -39,8 +45,9 @@ addons:
       - graphviz
 
 # Build your code e.g. by calling make
-script:
-  - make
+docs:
+  - doxygen Doxyfile
+# - make
 
 # Generate and deploy documentation
 after_success:
