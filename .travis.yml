@@ -27,6 +27,13 @@ addons:
 script:
   - doxygen Doxyfile
 
+deploy:
+  provider: pages
+  skip-cleanup: true
+  keep-history: true
+  on:
+     branch: gh-pages
+
 # Generate and deploy documentation
 after_success:
   - cd $TRAVIS_BUILD_DIR
