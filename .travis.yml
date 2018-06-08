@@ -1,0 +1,61 @@
+dist: trusty
+sudo: require
+language: cpp
+compiler: gcc
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-6
+      - g++-6
+script:
+    - sudo ln -s /usr/bin/gcc-6 /usr/local/bin/gcc
+    - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
+    - export CC=/usr/bin/gcc-6
+    - export CXX=/usr/bin/g++-6
+    - gcc -v && g++ -v
+    - mkdir BuildNebula
+    - cd BuildNebula
+    - export WORK_PATH=`pwd`
+    - mkdir NebulaDepend NebulaDependBuild
+    - cd NebulaDependBuild
+    - git clone https://github.com/google/protobuf.git protobuf
+    - cd protobuf
+    - ./autogen.sh
+    - ./configure --prefix=${WORK_PATH}/NebulaDepend
+    - make
+    - make install
+    - cd ..
+    - git clone https://github.com/kindy/libev.git libev
+    - cd libev/src
+    - chmod u+x autogen.sh
+    - ./autogen.sh
+    - ./configure --prefix=${WORK_PATH}/NebulaDepend
+    - make
+    - make install
+    - cd ../../
+    - git clone https://github.com/redis/hiredis.git hiredis
+    - cd hiredis
+    - make
+    - mkdir ../../NebulaDepend/include/hiredis
+    - cp -r adapters *.h ../../NebulaDepend/include/hiredis/
+    - cp libhiredis.so ../../NebulaDepend/lib/
+    - cd ..
+    - wget https://github.com/weidai11/cryptopp/archive/CRYPTOPP_6_0_0.tar.gz
+    - tar -zxvf CRYPTOPP_6_0_0.tar.gz
+    - cd cryptopp-CRYPTOPP_6_0_0
+    - make libcryptopp.so
+    - mkdir ../../NebulaDepend/include/cryptopp
+    - cp *.h ../../NebulaDepend/include/cryptopp/
+    - cp libcryptopp.so ../../NebulaDepend/lib/
+    - cd ..
+
+    # now build nebula
+    - cd ..
+    - git clone https://github.com/Bwar/Nebula.git Nebula
+    - cd Nebula/proto
+    - ${WORK_PATH}/NebulaDepend/bin/protoc *.proto --cpp_out=../src/pb
+    - cd ../src
+    - make
+
