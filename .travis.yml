@@ -54,6 +54,8 @@ script:
     # now build nebula
     - cd ..
     - git clone https://github.com/Bwar/Nebula.git Nebula
+    - mkdir Nebula/include
+    - mkdir Nebula/lib
     - cd Nebula/proto
     - ${WORK_PATH}/NebulaDepend/bin/protoc *.proto --cpp_out=../src/pb
     - cd ../src
