@@ -1,0 +1,10 @@
+<map id="neb::Codec::GetCodecType" name="neb::Codec::GetCodecType">
+<area shape="rect" id="node2" href="$classneb_1_1_socket_channel_impl.html#a52645f36c0e60b09cd9250bad93d43da" title="neb::SocketChannelImpl\l::GetCodecType" alt="" coords="240,5,405,46"/>
+<area shape="rect" id="node3" href="$classneb_1_1_socket_channel_impl.html#a8d9a01ff35ba205491bb34bb4a422bb5" title="neb::SocketChannelImpl\l::GetKeepAlive" alt="" coords="240,70,405,111"/>
+<area shape="rect" id="node4" href="$classneb_1_1_socket_channel_impl.html#a3b09316168b5072134f1c59735cf7678" title="neb::SocketChannelImpl\l::NeedAliveCheck" alt="" coords="240,135,405,177"/>
+<area shape="rect" id="node5" href="$classneb_1_1_socket_channel_impl.html#a8483606b2ef5d51e04bbdba60c487243" title="neb::SocketChannelImpl\l::Send" alt="" coords="240,201,405,242"/>
+<area shape="rect" id="node7" href="$classneb_1_1_socket_channel_impl.html#af2140cce9eb159f6267d48fc61c1aa28" title="neb::SocketChannelImpl\l::Recv" alt="" coords="240,266,405,307"/>
+<area shape="rect" id="node8" href="$classneb_1_1_socket_channel_impl.html#ac2b575d7d11f5b915de57e9766793e83" title="neb::SocketChannelImpl\l::Fetch" alt="" coords="240,331,405,373"/>
+<area shape="rect" id="node9" href="$classneb_1_1_socket_channel_impl.html#a323644dc0242dc5083ca03435bb401b5" title="neb::SocketChannelImpl\l::SwitchCodec" alt="" coords="240,397,405,438"/>
+<area shape="rect" id="node6" href="$classneb_1_1_socket_channel_impl.html#acdfff0a5710239c7dbea1fcd33238699" title="neb::SocketChannelImpl\l::Send" alt="" coords="453,201,619,242"/>
+</map>

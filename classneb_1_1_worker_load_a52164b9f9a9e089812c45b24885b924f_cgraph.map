@@ -1,0 +1,6 @@
+<map id="neb::WorkerLoad::MergeFrom" name="neb::WorkerLoad::MergeFrom">
+<area shape="rect" id="node2" href="$classneb_1_1_worker_load.html#a033c9246933fe5dca6b426b8b2ad4c8a" title="neb::WorkerLoad::pid" alt="" coords="264,5,411,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_worker_load.html#a7efe23896249b5d052e144e258d90926" title="neb::WorkerLoad::set_pid" alt="" coords="252,56,423,83"/>
+<area shape="rect" id="node4" href="$classneb_1_1_worker_load.html#a891156306a97353d85a3870dacfe18fc" title="neb::WorkerLoad::load" alt="" coords="261,107,414,133"/>
+<area shape="rect" id="node5" href="$classneb_1_1_worker_load.html#aa24696f78cb01e3fab73a05923cb0b85" title="neb::WorkerLoad::set_load" alt="" coords="248,157,427,184"/>
+</map>

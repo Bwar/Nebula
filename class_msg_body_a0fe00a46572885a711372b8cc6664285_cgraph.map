@@ -1,0 +1,5 @@
+<map id="MsgBody::req_target" name="MsgBody::req_target">
+<area shape="rect" id="node2" href="$class_msg_body.html#a86b0aefb20f53830ab52253f12bfa168" title="MsgBody::has_req_target" alt="" coords="203,5,373,32"/>
+<area shape="rect" id="node4" href="$class_msg_body___request.html#a57bbfce5042878422173cc213f445bff" title="MsgBody_Request::default\l_instance" alt="" coords="198,57,378,98"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="427,5,605,32"/>
+</map>

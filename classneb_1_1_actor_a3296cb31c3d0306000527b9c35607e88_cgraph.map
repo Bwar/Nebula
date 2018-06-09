@@ -1,0 +1,4 @@
+<map id="neb::Actor::GetSequence" name="neb::Actor::GetSequence">
+<area shape="rect" id="node2" href="$classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="225,5,405,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="453,5,659,32"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="neb::CodecHttp::OnHeadersComplete" name="neb::CodecHttp::OnHeadersComplete">
+<area shape="rect" id="node2" href="$http__parser_8c.html#abefaa63b2505a6d38f96fc782c41d111" title="http_should_keep_alive" alt="" coords="243,12,402,39"/>
+<area shape="rect" id="node3" href="$http__parser_8c.html#a55b76c7f4422dba1cbb2d8af509d727f" title="http_message_needs_eof" alt="" coords="451,12,621,39"/>
+</map>

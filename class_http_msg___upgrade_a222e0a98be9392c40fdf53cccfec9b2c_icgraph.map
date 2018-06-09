@@ -1,0 +1,9 @@
+<map id="HttpMsg_Upgrade::protocol" name="HttpMsg_Upgrade::protocol">
+<area shape="rect" id="node2" href="$classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="266,5,433,46"/>
+<area shape="rect" id="node3" href="$class_http_msg___upgrade.html#a5841dd6e20ed6cb6f30eaed2121518ba" title="HttpMsg_Upgrade::MergePartial\lFromCodedStream" alt="" coords="245,70,454,111"/>
+<area shape="rect" id="node4" href="$class_http_msg___upgrade.html#aa207be22fa49c9c5dcbc5ed6dd90e7bd" title="HttpMsg_Upgrade::Serialize\lWithCachedSizes" alt="" coords="256,135,443,177"/>
+<area shape="rect" id="node5" href="$class_http_msg___upgrade.html#a9fd7d538dc120352566fe86e264e7634" title="HttpMsg_Upgrade::Internal\lSerializeWithCachedSizesToArray" alt="" coords="238,201,461,242"/>
+<area shape="rect" id="node7" href="$class_http_msg___upgrade.html#ad9e5aa5e8e9348c88d04c7d57feed1c3" title="HttpMsg_Upgrade::ByteSize" alt="" coords="255,267,444,293"/>
+<area shape="rect" id="node8" href="$class_http_msg___upgrade.html#a759b47b07e87aa7e21e06828f8b57e13" title="HttpMsg_Upgrade::MergeFrom" alt="" coords="248,317,451,344"/>
+<area shape="rect" id="node6" href="$class_http_msg___upgrade.html#aebe91049b46ea8cc68e99b54789fc960" title="HttpMsg_Upgrade::Serialize\lWithCachedSizesToArray" alt="" coords="509,201,696,242"/>
+</map>

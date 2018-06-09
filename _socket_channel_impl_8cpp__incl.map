@@ -1,0 +1,27 @@
+<map id="src/channel/SocketChannelImpl.cpp" name="src/channel/SocketChannelImpl.cpp">
+<area shape="rect" id="node3" href="$_worker_impl_8hpp.html" title="labor/WorkerImpl.hpp" alt="" coords="2109,96,2256,123"/>
+<area shape="rect" id="node45" href="$_codec_proto_8hpp.html" title="codec/CodecProto.hpp" alt="" coords="4820,96,4975,123"/>
+<area shape="rect" id="node46" href="$_codec_private_8hpp.html" title="codec/CodecPrivate.hpp" alt="" coords="5007,96,5172,123"/>
+<area shape="rect" id="node47" href="$_codec_http_8hpp.html" title="codec/CodecHttp.hpp" alt="" coords="4641,96,4791,123"/>
+<area shape="rect" id="node29" href="$_labor_8hpp.html" title="labor/Labor.hpp" alt="" coords="1035,179,1145,205"/>
+<area shape="rect" id="node50" href="$_manager_8hpp.html" title="labor/Manager.hpp" alt="" coords="3917,96,4045,123"/>
+<area shape="rect" id="node35" href="$_net_logger_8hpp.html" title="util/logger/NetLogger.hpp" alt="" coords="4591,411,4757,437"/>
+<area shape="rect" id="node33" href="$_socket_channel_impl_8hpp.html" title="SocketChannelImpl.hpp" alt="" coords="4463,261,4624,288"/>
+<area shape="rect" id="node24" href="$msg_8pb_8h.html" title="pb/msg.pb.h" alt="" coords="1577,411,1671,437"/>
+<area shape="rect" id="node26" href="$http_8pb_8h.html" title="pb/http.pb.h" alt="" coords="1331,336,1421,363"/>
+<area shape="rect" id="node27" href="$neb__sys_8pb_8h.html" title="pb/neb_sys.pb.h" alt="" coords="3873,179,3991,205"/>
+<area shape="rect" id="node28" href="$_c_buffer_8hpp.html" title="util/CBuffer.hpp" alt="" coords="4330,411,4443,437"/>
+<area shape="rect" id="node32" href="$_socket_channel_8hpp.html" title="channel/SocketChannel.hpp" alt="" coords="2593,179,2777,205"/>
+<area shape="rect" id="node36" href="$_redis_channel_8hpp.html" title="channel/RedisChannel.hpp" alt="" coords="731,179,909,205"/>
+<area shape="rect" id="node34" href="$_codec_8hpp.html" title="codec/Codec.hpp" alt="" coords="4482,336,4605,363"/>
+<area shape="rect" id="node37" href="$_actor_8hpp.html" title="actor/Actor.hpp" alt="" coords="1619,261,1729,288"/>
+<area shape="rect" id="node38" href="$_actor_factory_8hpp.html" title="actor/ActorFactory.hpp" alt="" coords="1915,179,2069,205"/>
+<area shape="rect" id="node39" href="$_cmd_model_8hpp.html" title="actor/cmd/CmdModel.hpp" alt="" coords="1667,179,1839,205"/>
+<area shape="rect" id="node40" href="$_module_model_8hpp.html" title="actor/cmd/ModuleModel.hpp" alt="" coords="1405,179,1592,205"/>
+<area shape="rect" id="node41" href="$_session_model_8hpp.html" title="actor/session/SessionModel.hpp" alt="" coords="1171,179,1381,205"/>
+<area shape="rect" id="node42" href="$_step_model_8hpp.html" title="actor/step/StepModel.hpp" alt="" coords="2347,179,2517,205"/>
+<area shape="rect" id="node43" href="$_session_node_8hpp.html" title="actor/session/sys_session\l/SessionNode.hpp" alt="" coords="4118,171,4295,213"/>
+<area shape="rect" id="node44" href="$_worker_impl_8inl.html" title="WorkerImpl.inl" alt="" coords="93,179,200,205"/>
+<area shape="rect" id="node31" href="$_definition_8hpp.html" title="Definition.hpp" alt="" coords="2587,411,2689,437"/>
+<area shape="rect" id="node48" href="$http__parser_8h.html" title="util/http/http_parser.h" alt="" coords="4878,179,5023,205"/>
+</map>

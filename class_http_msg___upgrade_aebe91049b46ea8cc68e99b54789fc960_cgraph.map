@@ -1,0 +1,5 @@
+<map id="HttpMsg_Upgrade::SerializeWithCachedSizesToArray" name="HttpMsg_Upgrade::SerializeWithCachedSizesToArray">
+<area shape="rect" id="node2" href="$class_http_msg___upgrade.html#a9fd7d538dc120352566fe86e264e7634" title="HttpMsg_Upgrade::Internal\lSerializeWithCachedSizesToArray" alt="" coords="241,34,463,75"/>
+<area shape="rect" id="node3" href="$class_http_msg___upgrade.html#a8aac831f3b3fbc70c06d48af0f249a4c" title="HttpMsg_Upgrade::is\l_upgrade" alt="" coords="531,5,677,46"/>
+<area shape="rect" id="node4" href="$class_http_msg___upgrade.html#a222e0a98be9392c40fdf53cccfec9b2c" title="HttpMsg_Upgrade::protocol" alt="" coords="513,71,695,97"/>
+</map>

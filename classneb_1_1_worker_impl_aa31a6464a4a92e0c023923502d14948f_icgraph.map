@@ -1,0 +1,5 @@
+<map id="neb::WorkerImpl::SendOriented" name="neb::WorkerImpl::SendOriented">
+<area shape="rect" id="node2" href="$classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="271,5,451,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="259,56,464,83"/>
+<area shape="rect" id="node3" href="$classneb_1_1_actor.html#a9b33f919bba50ff5aef2b172129f6021" title="以取模方式选择发送到同一类型节点 " alt="" coords="513,5,682,32"/>
+</map>

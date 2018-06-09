@@ -1,0 +1,8 @@
+<map id="neb::Manager::SendPolling" name="neb::Manager::SendPolling">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a491bed90774e9489361bd3f903161847" title="neb::Manager::SendTo" alt="" coords="232,77,387,104"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a5bfbb5b167e1be8f61240e7a9fdc2606" title="neb::Manager::RemoveIoWrite\lEvent" alt="" coords="435,5,635,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#aa2ac3c9e55e4ae864ffa18ad7bba8f33" title="neb::Manager::AddIoWrite\lEvent" alt="" coords="447,70,622,111"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#a57e8adb622005fc5fe1ab5fbfe2840e5" title="neb::Manager::DiscardSocket\lChannel" alt="" coords="437,135,632,177"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#a676468e6f26f46f782cd296c23acca60" title="neb::Manager::IoCallback" alt="" coords="683,77,853,104"/>
+<area shape="rect" id="node7" href="$classneb_1_1_manager.html#a5fa2d8127a07de18616180ac94386b11" title="neb::Manager::DelEvents" alt="" coords="683,143,853,169"/>
+</map>

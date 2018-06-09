@@ -1,0 +1,4 @@
+<map id="HttpMsg::Clear" name="HttpMsg::Clear">
+<area shape="rect" id="node2" href="$class_http_msg.html#a096b7263d20b8317edc53f2511ba33de" title="HttpMsg::CopyFrom" alt="" coords="165,5,307,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#a38a2a7e185f608fe79d5f9334b5d7b9d" title="HttpMsg::operator=" alt="" coords="355,5,490,32"/>
+</map>

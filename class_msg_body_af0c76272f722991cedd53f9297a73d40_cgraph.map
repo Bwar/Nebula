@@ -1,0 +1,6 @@
+<map id="MsgBody::set_allocated_rsp_result" name="MsgBody::set_allocated_rsp_result">
+<area shape="rect" id="node2" href="$class_msg_body.html#ae1addf573a78417020dbcf87ac4fbd38" title="MsgBody::rsp_result" alt="" coords="217,35,359,61"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#afeada0eea52cddab0feb2bea05467ad0" title="MsgBody::has_rsp_result" alt="" coords="419,5,589,32"/>
+<area shape="rect" id="node5" href="$class_msg_body___response.html#a41231975fdfbf58923e5f373bffe2900" title="MsgBody_Response::default\l_instance" alt="" coords="409,57,599,98"/>
+<area shape="rect" id="node4" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="649,5,826,32"/>
+</map>

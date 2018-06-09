@@ -1,0 +1,1864 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>Nebula: src/util/http/http_parser.c 文件参考</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">Nebula
+   </div>
+   <div id="projectbrief">Nebula</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.8.5 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>首页</span></a></li>
+      <li><a href="pages.html"><span>相关页面</span></a></li>
+      <li><a href="namespaces.html"><span>命名空间</span></a></li>
+      <li><a href="annotated.html"><span>类</span></a></li>
+      <li class="current"><a href="files.html"><span>文件</span></a></li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>文件列表</span></a></li>
+      <li><a href="globals.html"><span>文件成员</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('http__parser_8c.html','');});
+</script>
+<div id="doc-content">
+<div class="header">
+  <div class="summary">
+<a href="#define-members">宏定义</a> &#124;
+<a href="#enum-members">枚举</a> &#124;
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle">
+<div class="title">http_parser.c 文件参考</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> http_parser.c 的引用(Include)关系图:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c__incl.png" border="0" usemap="#src_2util_2http_2http__parser_8c" alt=""/></div>
+<map name="src_2util_2http_2http__parser_8c" id="src_2util_2http_2http__parser_8c">
+<area shape="rect" id="node2" href="http__parser_8h.html" title="../http/http_parser.h" alt="" coords="33,96,169,123"/></map>
+</div>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+宏定义</h2></td></tr>
+<tr class="memitem:aa1dd7166a75b73ad62b111ae6fc17c59"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#aa1dd7166a75b73ad62b111ae6fc17c59">ULLONG_MAX</a>&#160;&#160;&#160;((uint64_t) -1) /* 2^64-1 */</td></tr>
+<tr class="separator:aa1dd7166a75b73ad62b111ae6fc17c59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3acffbd305ee72dcd4593c0d8af64a4f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a3acffbd305ee72dcd4593c0d8af64a4f">MIN</a>(a, b)&#160;&#160;&#160;((a) &lt; (b) ? (a) : (b))</td></tr>
+<tr class="separator:a3acffbd305ee72dcd4593c0d8af64a4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25f003de16c08a4888b69f619d70f427"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a25f003de16c08a4888b69f619d70f427">ARRAY_SIZE</a>(a)&#160;&#160;&#160;(sizeof(a) / sizeof((a)[0]))</td></tr>
+<tr class="separator:a25f003de16c08a4888b69f619d70f427"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ddbf0df312c3e6827f91bb214a74504"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a9ddbf0df312c3e6827f91bb214a74504">BIT_AT</a>(a, i)</td></tr>
+<tr class="separator:a9ddbf0df312c3e6827f91bb214a74504"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa71cc7f5abe91520af0521a28631872c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#aa71cc7f5abe91520af0521a28631872c">ELEM_AT</a>(a, i, v)&#160;&#160;&#160;((unsigned int) (i) &lt; <a class="el" href="http__parser_8c.html#a25f003de16c08a4888b69f619d70f427">ARRAY_SIZE</a>(a) ? (a)[(i)] : (v))</td></tr>
+<tr class="separator:aa71cc7f5abe91520af0521a28631872c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b6bf911f0667c475832a7494fa2ac89"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">SET_ERRNO</a>(e)</td></tr>
+<tr class="separator:a4b6bf911f0667c475832a7494fa2ac89"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a98c528ba187932652a95a7885b42c4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a8a98c528ba187932652a95a7885b42c4">CURRENT_STATE</a>()&#160;&#160;&#160;p_state</td></tr>
+<tr class="separator:a8a98c528ba187932652a95a7885b42c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9f3ba9d0c4048dddf8cf39dcaace63c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#aa9f3ba9d0c4048dddf8cf39dcaace63c">UPDATE_STATE</a>(V)&#160;&#160;&#160;p_state = (enum <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a>) (V);</td></tr>
+<tr class="separator:aa9f3ba9d0c4048dddf8cf39dcaace63c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9148a1b0bf42911a80c9a511caaa731"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#aa9148a1b0bf42911a80c9a511caaa731">RETURN</a>(V)</td></tr>
+<tr class="separator:aa9148a1b0bf42911a80c9a511caaa731"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5209a623e045903cfecc6f89bcd933b2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a5209a623e045903cfecc6f89bcd933b2">REEXECUTE</a>()&#160;&#160;&#160;goto reexecute;                                                    \</td></tr>
+<tr class="separator:a5209a623e045903cfecc6f89bcd933b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab624475df2c449ae2cc9f8121d065b08"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#ab624475df2c449ae2cc9f8121d065b08">LIKELY</a>(X)&#160;&#160;&#160;(X)</td></tr>
+<tr class="separator:ab624475df2c449ae2cc9f8121d065b08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9469bcba57388aacbc39962b86bea28b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a9469bcba57388aacbc39962b86bea28b">UNLIKELY</a>(X)&#160;&#160;&#160;(X)</td></tr>
+<tr class="separator:a9469bcba57388aacbc39962b86bea28b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a113a1652ef40761708379bdca7621b22"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a113a1652ef40761708379bdca7621b22">CALLBACK_NOTIFY_</a>(FOR, ER)</td></tr>
+<tr class="separator:a113a1652ef40761708379bdca7621b22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c9632a9d6bb3127511c39488a9c8988"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a3c9632a9d6bb3127511c39488a9c8988">CALLBACK_NOTIFY</a>(FOR)&#160;&#160;&#160;<a class="el" href="http__parser_8c.html#a113a1652ef40761708379bdca7621b22">CALLBACK_NOTIFY_</a>(FOR, p - data + 1)</td></tr>
+<tr class="separator:a3c9632a9d6bb3127511c39488a9c8988"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6454f57e0dd52996e34e40d55cc5157"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#af6454f57e0dd52996e34e40d55cc5157">CALLBACK_NOTIFY_NOADVANCE</a>(FOR)&#160;&#160;&#160;<a class="el" href="http__parser_8c.html#a113a1652ef40761708379bdca7621b22">CALLBACK_NOTIFY_</a>(FOR, p - data)</td></tr>
+<tr class="separator:af6454f57e0dd52996e34e40d55cc5157"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b1286a97c53328f38ddd44edadf3e41"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a8b1286a97c53328f38ddd44edadf3e41">CALLBACK_DATA_</a>(FOR, LEN, ER)</td></tr>
+<tr class="separator:a8b1286a97c53328f38ddd44edadf3e41"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac9ba0825311d1217085b8778d9db15ba"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#ac9ba0825311d1217085b8778d9db15ba">CALLBACK_DATA</a>(FOR)&#160;&#160;&#160;<a class="el" href="http__parser_8c.html#a8b1286a97c53328f38ddd44edadf3e41">CALLBACK_DATA_</a>(FOR, p - FOR##_mark, p - data + 1)</td></tr>
+<tr class="separator:ac9ba0825311d1217085b8778d9db15ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e64b3b96c722bc7b1f4a817b631fb23"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a0e64b3b96c722bc7b1f4a817b631fb23">CALLBACK_DATA_NOADVANCE</a>(FOR)&#160;&#160;&#160;<a class="el" href="http__parser_8c.html#a8b1286a97c53328f38ddd44edadf3e41">CALLBACK_DATA_</a>(FOR, p - FOR##_mark, p - data)</td></tr>
+<tr class="separator:a0e64b3b96c722bc7b1f4a817b631fb23"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a284a5ef12de6ef8f0c26ae9c4edfa0b1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a284a5ef12de6ef8f0c26ae9c4edfa0b1">MARK</a>(FOR)</td></tr>
+<tr class="separator:a284a5ef12de6ef8f0c26ae9c4edfa0b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3cb09ccf931795bcf4831d73359655f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#ac3cb09ccf931795bcf4831d73359655f">COUNT_HEADER_SIZE</a>(V)</td></tr>
+<tr class="separator:ac3cb09ccf931795bcf4831d73359655f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81f37e03d0ef3a6a147b2cb5c3ffe2ae"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a81f37e03d0ef3a6a147b2cb5c3ffe2ae">PROXY_CONNECTION</a>&#160;&#160;&#160;&quot;proxy-connection&quot;</td></tr>
+<tr class="separator:a81f37e03d0ef3a6a147b2cb5c3ffe2ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a624c91af530a96b476c8da486df55de9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a624c91af530a96b476c8da486df55de9">CONNECTION</a>&#160;&#160;&#160;&quot;connection&quot;</td></tr>
+<tr class="separator:a624c91af530a96b476c8da486df55de9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a750427eb640fda48be359218c08748e9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a750427eb640fda48be359218c08748e9">CONTENT_LENGTH</a>&#160;&#160;&#160;&quot;content-length&quot;</td></tr>
+<tr class="separator:a750427eb640fda48be359218c08748e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a67faa6e8b208b0e838ce0c279c58ad59"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a67faa6e8b208b0e838ce0c279c58ad59">TRANSFER_ENCODING</a>&#160;&#160;&#160;&quot;transfer-encoding&quot;</td></tr>
+<tr class="separator:a67faa6e8b208b0e838ce0c279c58ad59"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfb0312660e19551071145303c6d7f57"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#abfb0312660e19551071145303c6d7f57">UPGRADE</a>&#160;&#160;&#160;&quot;upgrade&quot;</td></tr>
+<tr class="separator:abfb0312660e19551071145303c6d7f57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a330b228059a71c76fa8b2070e824bcab"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a330b228059a71c76fa8b2070e824bcab">CHUNKED</a>&#160;&#160;&#160;&quot;chunked&quot;</td></tr>
+<tr class="separator:a330b228059a71c76fa8b2070e824bcab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b3395af262c467dd971b4796d5cdd42"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a3b3395af262c467dd971b4796d5cdd42">KEEP_ALIVE</a>&#160;&#160;&#160;&quot;keep-alive&quot;</td></tr>
+<tr class="separator:a3b3395af262c467dd971b4796d5cdd42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e29f488071372aa0530842e60b64511"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a0e29f488071372aa0530842e60b64511">CLOSE</a>&#160;&#160;&#160;&quot;close&quot;</td></tr>
+<tr class="separator:a0e29f488071372aa0530842e60b64511"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a001751e2abb71763b08651bec986b6f7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a001751e2abb71763b08651bec986b6f7">XX</a>(num, <a class="el" href="http__parser_8c.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, string)&#160;&#160;&#160;#string,</td></tr>
+<tr class="separator:a001751e2abb71763b08651bec986b6f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad24d0de3f597ca60dd95c4bc59c2ff73"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#ad24d0de3f597ca60dd95c4bc59c2ff73">T</a>(v)&#160;&#160;&#160;0</td></tr>
+<tr class="separator:ad24d0de3f597ca60dd95c4bc59c2ff73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35d16fba516e5fc0f03fe7ba728e8264"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a35d16fba516e5fc0f03fe7ba728e8264">PARSING_HEADER</a>(<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a>)&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a> &lt;= <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a209e6e32f0783f5d76fad26c46013390">s_headers_done</a>)</td></tr>
+<tr class="separator:a35d16fba516e5fc0f03fe7ba728e8264"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a876ce77f3c672c7162658151e648389e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a876ce77f3c672c7162658151e648389e">CR</a>&#160;&#160;&#160;'\r'</td></tr>
+<tr class="separator:a876ce77f3c672c7162658151e648389e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a350c9d6cb81908d59427ee96844d1a9c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a350c9d6cb81908d59427ee96844d1a9c">LF</a>&#160;&#160;&#160;'\n'</td></tr>
+<tr class="separator:a350c9d6cb81908d59427ee96844d1a9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a19160085d7c4378428f490a96587cd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a1a19160085d7c4378428f490a96587cd">LOWER</a>(c)&#160;&#160;&#160;(unsigned char)(c | 0x20)</td></tr>
+<tr class="separator:a1a19160085d7c4378428f490a96587cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abce481ac236ab589430f904c74ae2eba"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#abce481ac236ab589430f904c74ae2eba">IS_ALPHA</a>(c)&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#a1a19160085d7c4378428f490a96587cd">LOWER</a>(c) &gt;= 'a' &amp;&amp; <a class="el" href="http__parser_8c.html#a1a19160085d7c4378428f490a96587cd">LOWER</a>(c) &lt;= 'z')</td></tr>
+<tr class="separator:abce481ac236ab589430f904c74ae2eba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a977faf512b3cce7ff1253ea51dfd7d81"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a977faf512b3cce7ff1253ea51dfd7d81">IS_NUM</a>(c)&#160;&#160;&#160;((c) &gt;= '0' &amp;&amp; (c) &lt;= '9')</td></tr>
+<tr class="separator:a977faf512b3cce7ff1253ea51dfd7d81"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b278ae5554f29904ca8505922aba5a3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a4b278ae5554f29904ca8505922aba5a3">IS_ALPHANUM</a>(c)&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#abce481ac236ab589430f904c74ae2eba">IS_ALPHA</a>(c) || <a class="el" href="http__parser_8c.html#a977faf512b3cce7ff1253ea51dfd7d81">IS_NUM</a>(c))</td></tr>
+<tr class="separator:a4b278ae5554f29904ca8505922aba5a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae718b3144ae576960af543a99c2c3c39"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#ae718b3144ae576960af543a99c2c3c39">IS_HEX</a>(c)&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#a977faf512b3cce7ff1253ea51dfd7d81">IS_NUM</a>(c) || (<a class="el" href="http__parser_8c.html#a1a19160085d7c4378428f490a96587cd">LOWER</a>(c) &gt;= 'a' &amp;&amp; <a class="el" href="http__parser_8c.html#a1a19160085d7c4378428f490a96587cd">LOWER</a>(c) &lt;= 'f'))</td></tr>
+<tr class="separator:ae718b3144ae576960af543a99c2c3c39"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94278a8f219a550eb9d83606a40ccf88"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a94278a8f219a550eb9d83606a40ccf88">IS_MARK</a>(c)</td></tr>
+<tr class="separator:a94278a8f219a550eb9d83606a40ccf88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7922d0e223468c84a630f84a8109cd1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#ae7922d0e223468c84a630f84a8109cd1">IS_USERINFO_CHAR</a>(c)</td></tr>
+<tr class="separator:ae7922d0e223468c84a630f84a8109cd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c01754b8d37dc3048fb0419ec92de2d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a5c01754b8d37dc3048fb0419ec92de2d">STRICT_TOKEN</a>(c)&#160;&#160;&#160;(tokens[(unsigned char)c])</td></tr>
+<tr class="separator:a5c01754b8d37dc3048fb0419ec92de2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52423cb4f1850bd6747e2fde8789c3f4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a52423cb4f1850bd6747e2fde8789c3f4">TOKEN</a>(c)&#160;&#160;&#160;(tokens[(unsigned char)c])</td></tr>
+<tr class="separator:a52423cb4f1850bd6747e2fde8789c3f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a778cffb599fccf026d9d33e25572f1c0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a778cffb599fccf026d9d33e25572f1c0">IS_URL_CHAR</a>(c)&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#a9ddbf0df312c3e6827f91bb214a74504">BIT_AT</a>(normal_url_char, (unsigned char)c))</td></tr>
+<tr class="separator:a778cffb599fccf026d9d33e25572f1c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac02b395506c6b7a488e5d636b6831b2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#aac02b395506c6b7a488e5d636b6831b2">IS_HOST_CHAR</a>(c)&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#a4b278ae5554f29904ca8505922aba5a3">IS_ALPHANUM</a>(c) || (c) == '.' || (c) == '-')</td></tr>
+<tr class="separator:aac02b395506c6b7a488e5d636b6831b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb5146ad4f730c552f8874cb48462212"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#aeb5146ad4f730c552f8874cb48462212">start_state</a>&#160;&#160;&#160;(parser-&gt;type == <a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7aa9f727b57e9e9c1651ee0df29aa1b1713">HTTP_REQUEST</a> ? <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a726ed5570859dca67883ae410c1b9f5b">s_start_req</a> : <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a17f7885ac699f68b5179b74e264605d8">s_start_res</a>)</td></tr>
+<tr class="separator:aeb5146ad4f730c552f8874cb48462212"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5173bfe22390d084bfbda28b4952a73d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a5173bfe22390d084bfbda28b4952a73d">STRICT_CHECK</a>(cond)</td></tr>
+<tr class="separator:a5173bfe22390d084bfbda28b4952a73d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4184e961031ca60166ff1a39fabd992b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a4184e961031ca60166ff1a39fabd992b">NEW_MESSAGE</a>()&#160;&#160;&#160;(<a class="el" href="http__parser_8h.html#abefaa63b2505a6d38f96fc782c41d111">http_should_keep_alive</a>(parser) ? <a class="el" href="http__parser_8c.html#aeb5146ad4f730c552f8874cb48462212">start_state</a> : <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ae928e87617dbca34f86693408ffb8b08">s_dead</a>)</td></tr>
+<tr class="separator:a4184e961031ca60166ff1a39fabd992b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b84e0918dd0fb90c6c17c173e323aec"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a3b84e0918dd0fb90c6c17c173e323aec">HTTP_STRERROR_GEN</a>(n, s)&#160;&#160;&#160;{ &quot;HPE_&quot; #n, s },</td></tr>
+<tr class="separator:a3b84e0918dd0fb90c6c17c173e323aec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+枚举</h2></td></tr>
+<tr class="memitem:adc6e5733fc3c22f0a7b2914188c49c90"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a> { <br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ae928e87617dbca34f86693408ffb8b08">s_dead</a> = 1, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a5a871b16732400896f13a0b4bf4d2d2e">s_start_req_or_res</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ad55e2affc1684fca9fc2d2dfa0ef02be">s_res_or_resp_H</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a17f7885ac699f68b5179b74e264605d8">s_start_res</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a1e52abf531e01c40b73cb9e8b3fdd9f4">s_res_H</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90aef104c331e8e270e735d1aed0430d32e">s_res_HT</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90aac9df6a576e6b66610d1c78e0a0fce85">s_res_HTT</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a49cdf111588eeedd1593e549fdb2b4b7">s_res_HTTP</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a758a72c507e51909cd1ab0f84148ac3c">s_res_first_http_major</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a4581640a88dc9931031916da00dc9bc6">s_res_http_major</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a2a4dde0eafd4f5bcb5284744ccafe86a">s_res_first_http_minor</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a76ed9bbc2d835b88cb30299abcdd67e8">s_res_http_minor</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a246c6aaa49d61e24a43dbb1e4d601b2a">s_res_first_status_code</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90aefa1bc8b7519ce8b995dc7e71e551f15">s_res_status_code</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90aef8541c5f33f59dfbed9e429ecd92d21">s_res_status_start</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a3159d98e8c993680b7640db1e6eed22c">s_res_status</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a94807fb310f4104dd03e2ddb1ab4ae9b">s_res_line_almost_done</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a726ed5570859dca67883ae410c1b9f5b">s_start_req</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a5dd2f6b19fd4e3cb6b428e094ab7e443">s_req_method</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a48289d7f47c2a74a9b9c498e5c8070c8">s_req_spaces_before_url</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a77eeb3ce03bff5e0a71d81e6689715ea">s_req_schema</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ac76a17504862a273d8cb490d612f9759">s_req_schema_slash</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a80fae8bf0e824df045b912278ad0316d">s_req_schema_slash_slash</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90afe0af478bf5e6e82c2d36dc6209fa72c">s_req_server_start</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a68c1b3800638f03d6ad0e3cb6da31acf">s_req_server</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a0d0a86b054a404f46184e4e7e41e0d26">s_req_server_with_at</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a490988d398dd839f49be96a79f1dcffe">s_req_path</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a3c7bfb6f21eb5f914d33e49bd3ca4809">s_req_query_string_start</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a36add21fb73304295cc924d6014c11ef">s_req_query_string</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ae2c4dfd6dc9680c009c6e2554af4341d">s_req_fragment_start</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ac379ae76d71944b4daf9519e3b22a1a1">s_req_fragment</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90aeadb7f8e79fd094e250279f8afec062f">s_req_http_start</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a7c3dea78ecb0ee88212988ed0b90a5e7">s_req_http_H</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ae4f0cd1ac4cbbc85edd6073bc27b85b7">s_req_http_HT</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90aee2b77d4458cf570e1a7bab584ba5907">s_req_http_HTT</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a641d4adec0c7f121153854eae440c2c3">s_req_http_HTTP</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a8a068d6a93bae075f7ba5694c46d2de6">s_req_first_http_major</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90aad6b279013498df4ef81557cec965fe6">s_req_http_major</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90af5876995d7ba04281d118e845db8110d">s_req_first_http_minor</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a64272a20486c8d0694704832aea24872">s_req_http_minor</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90abb02b342bbb8d22a763b55386db8c0fb">s_req_line_almost_done</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a85e4e4637f2bc962302e1ba3a3f5f769">s_header_field_start</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a3353eed9aa8e2fd854b9f82d3ac1bff1">s_header_field</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ae58f59a3755eed3117db8930dc78c6ec">s_header_value_discard_ws</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a0eeafcb1a1e4409ffd8c034be9af860d">s_header_value_discard_ws_almost_done</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a2dc9752e25cc2a00c3c89bbdf9b0f23b">s_header_value_discard_lws</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90aa99f675903d976e1912fb54c5a71baa0">s_header_value_start</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a4aa98ee464114fd4b6a00b02d5a83a69">s_header_value</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ab837338881e7c475bbaff41b146fc57d">s_header_value_lws</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a484786609cb1b307e43c55b5b3078435">s_header_almost_done</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90af9d6a67a8cad297aa880c91180699409">s_chunk_size_start</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a63c8547a6c351def0a6d1d1529c90aad">s_chunk_size</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a6c9131528d4f92c9b42361fcd943744a">s_chunk_parameters</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a16494186a1ec7a1e140af1b4eaa09d20">s_chunk_size_almost_done</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90abe81888b100852a3ff950be05d2650fe">s_headers_almost_done</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a209e6e32f0783f5d76fad26c46013390">s_headers_done</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a1dfa1c7e958daff320dcca379e1891f2">s_chunk_data</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90aff85ea02669f8cf3bae62121928668c0">s_chunk_data_almost_done</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a159666494992773deef3d091d61efa64">s_chunk_data_done</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a08e05eb8bc0a42e6e84fa22dd75bdc95">s_body_identity</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a1ae8a6fc8117d6baa6a0812d077f5b73">s_body_identity_eof</a>, 
+<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ae830ce7380ef6c61643a332ab63f6774">s_message_done</a>
+<br/>
+ }</td></tr>
+<tr class="separator:adc6e5733fc3c22f0a7b2914188c49c90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30b263f03d96d31497fac23df89edbd9"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9">header_states</a> { <br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9af908d7445959c98762f6209c82d2b444">h_general</a> = 0, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9aa62bf09af527ca972b72a48f82991f70">h_C</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a78b29dafaeb2ad15d11af409f1621b34">h_CO</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a4fdf471421f86cf8aa023115a7aa8c98">h_CON</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a603e806a1dd3247dd99ad664c2ec46d1">h_matching_connection</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a82af9a1b681ac612613bb462a4f8ca33">h_matching_proxy_connection</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9acd7d8543919d17a23df9218dfe6c78dd">h_matching_content_length</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a0d568b9f13bdd4f4ca21bb776c020c48">h_matching_transfer_encoding</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a5fb1d7942e84b93ef936ba99bdca3f08">h_matching_upgrade</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9acea3f0b4072bc57fdfa61df765a7fbe1">h_connection</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a4482b673cd398fe046d6144daad04596">h_content_length</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9afcebd9d68c1375b2b3ae6d0b228f4f6f">h_transfer_encoding</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a691fa7ab38a1d07e9df4f35ecd3111f7">h_upgrade</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9aed57a8757f7254faf33df92acd2bf170">h_matching_transfer_encoding_chunked</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a999d063db7f9fcc3253cf9f605782009">h_matching_connection_token_start</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a99f608e97202aeb786f4125c1024c99e">h_matching_connection_keep_alive</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9adf5e6456b29db97763823ad8f9fb0201">h_matching_connection_close</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a2676579838d204ae1bdc89a824bccb3a">h_matching_connection_upgrade</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a22e11ba7dcc055fa05c95dd02c03b726">h_matching_connection_token</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9ab4f70a95992f6a9570b8279f4d279c79">h_transfer_encoding_chunked</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9a8ecd8e3e699445caa915502e2e7b5db0">h_connection_keep_alive</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9ad648307f5aeea55477ef6f1453ba6c9c">h_connection_close</a>, 
+<a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9aaa672acedf566012dd9e149ecdb3e901">h_connection_upgrade</a>
+<br/>
+ }</td></tr>
+<tr class="separator:a30b263f03d96d31497fac23df89edbd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8df1d915c4ab1e80985eb2611ccbdc9"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9">http_host_state</a> { <br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9a8dc5edf98d137784dd3b3579eb5b2b36">s_http_host_dead</a> = 1, 
+<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9a2ff4653097e416a4db99df2ec982de99">s_http_userinfo_start</a>, 
+<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9a4c947d88d61b249338e784ea133aa785">s_http_userinfo</a>, 
+<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9af64031ea5b139391042250c191de5365">s_http_host_start</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9a87bca0878961b6e719c4e6f281c4dcaa">s_http_host_v6_start</a>, 
+<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9a821611b810c4ccf3c626002a2e0a99ce">s_http_host</a>, 
+<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9a762851b93b7ab7b88a032964d83e65cc">s_http_host_v6</a>, 
+<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9a17db1429af4fc817dbf5cb58563cfb69">s_http_host_v6_end</a>, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9a273640cc7fac87e86226f20c6bf51084">s_http_host_port_start</a>, 
+<a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9a6d116c6cd5b2c0d08b75b5ca772d1f87">s_http_host_port</a>
+<br/>
+ }</td></tr>
+<tr class="separator:ae8df1d915c4ab1e80985eb2611ccbdc9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:a55b76c7f4422dba1cbb2d8af509d727f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a55b76c7f4422dba1cbb2d8af509d727f">http_message_needs_eof</a> (const <a class="el" href="structhttp__parser.html">http_parser</a> *parser)</td></tr>
+<tr class="separator:a55b76c7f4422dba1cbb2d8af509d727f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5034165465db6c488ce8b75fd0f72faf"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a5034165465db6c488ce8b75fd0f72faf">http_parser_execute</a> (<a class="el" href="structhttp__parser.html">http_parser</a> *parser, const <a class="el" href="structhttp__parser__settings.html">http_parser_settings</a> *settings, const char *data, size_t len)</td></tr>
+<tr class="separator:a5034165465db6c488ce8b75fd0f72faf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abefaa63b2505a6d38f96fc782c41d111"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#abefaa63b2505a6d38f96fc782c41d111">http_should_keep_alive</a> (const <a class="el" href="structhttp__parser.html">http_parser</a> *parser)</td></tr>
+<tr class="separator:abefaa63b2505a6d38f96fc782c41d111"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdafb72b3fddca085841586537406859"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#acdafb72b3fddca085841586537406859">http_method_str</a> (enum <a class="el" href="http__parser_8h.html#aacd5f203e33ac338ca5cb8f02a3ff3b8">http_method</a> m)</td></tr>
+<tr class="separator:acdafb72b3fddca085841586537406859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb37506e1c2601889b0c3181688960f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#afb37506e1c2601889b0c3181688960f0">http_parser_init</a> (<a class="el" href="structhttp__parser.html">http_parser</a> *parser, enum <a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7a">http_parser_type</a> t)</td></tr>
+<tr class="separator:afb37506e1c2601889b0c3181688960f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a055a4e6834f07a0898a1802230852775"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a055a4e6834f07a0898a1802230852775">http_parser_settings_init</a> (<a class="el" href="structhttp__parser__settings.html">http_parser_settings</a> *settings)</td></tr>
+<tr class="separator:a055a4e6834f07a0898a1802230852775"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a93ed79c5d48491b72945ce11f75f7f"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a8a93ed79c5d48491b72945ce11f75f7f">http_errno_name</a> (enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a> err)</td></tr>
+<tr class="separator:a8a93ed79c5d48491b72945ce11f75f7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6dde757b0dee9b791e5d525c1ff2da0d"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a6dde757b0dee9b791e5d525c1ff2da0d">http_errno_description</a> (enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a> err)</td></tr>
+<tr class="separator:a6dde757b0dee9b791e5d525c1ff2da0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb269310a348fd68fd001b30b690fc83"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#aeb269310a348fd68fd001b30b690fc83">http_parser_parse_url</a> (const char *buf, size_t buflen, int is_connect, struct <a class="el" href="structhttp__parser__url.html">http_parser_url</a> *u)</td></tr>
+<tr class="separator:aeb269310a348fd68fd001b30b690fc83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab67d625ad2fe1623825eec73e18817de"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#ab67d625ad2fe1623825eec73e18817de">http_parser_pause</a> (<a class="el" href="structhttp__parser.html">http_parser</a> *parser, int paused)</td></tr>
+<tr class="separator:ab67d625ad2fe1623825eec73e18817de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5156a631a251516a6e78b17e1faadbb2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a5156a631a251516a6e78b17e1faadbb2">http_body_is_final</a> (const struct <a class="el" href="structhttp__parser.html">http_parser</a> *parser)</td></tr>
+<tr class="separator:a5156a631a251516a6e78b17e1faadbb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2559b4d373c7f0d85c77a2a3c308a5ee"><td class="memItemLeft" align="right" valign="top">unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8c.html#a2559b4d373c7f0d85c77a2a3c308a5ee">http_parser_version</a> (void)</td></tr>
+<tr class="separator:a2559b4d373c7f0d85c77a2a3c308a5ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">宏定义说明</h2>
+<a class="anchor" id="a25f003de16c08a4888b69f619d70f427"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ARRAY_SIZE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">a</td><td>)</td>
+          <td>&#160;&#160;&#160;(sizeof(a) / sizeof((a)[0]))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9ddbf0df312c3e6827f91bb214a74504"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define BIT_AT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">a, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">i&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line">(!!((<span class="keywordtype">unsigned</span> int) (a)[(<span class="keywordtype">unsigned</span> int) (i) &gt;&gt; 3] &amp;                  \</div>
+<div class="line">   (1 &lt;&lt; ((<span class="keywordtype">unsigned</span> int) (i) &amp; 7))))</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="ac9ba0825311d1217085b8778d9db15ba"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CALLBACK_DATA</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">FOR</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="http__parser_8c.html#a8b1286a97c53328f38ddd44edadf3e41">CALLBACK_DATA_</a>(FOR, p - FOR##_mark, p - data + 1)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8b1286a97c53328f38ddd44edadf3e41"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CALLBACK_DATA_</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">FOR, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">LEN, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">ER&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                                                                 \</div>
+<div class="line">  assert(<a class="code" href="http__parser_8h.html#a356ebaa93536e6f94c2948a1416697c7">HTTP_PARSER_ERRNO</a>(parser) == HPE_OK);                       \</div>
+<div class="line">                                                                     \</div>
+<div class="line">  if (FOR##_mark) {                                                  \</div>
+<div class="line">    if (<a class="code" href="http__parser_8c.html#ab624475df2c449ae2cc9f8121d065b08">LIKELY</a>(settings-&gt;on_##FOR)) {                                \</div>
+<div class="line">      parser-&gt;state = <a class="code" href="http__parser_8c.html#a8a98c528ba187932652a95a7885b42c4">CURRENT_STATE</a>();                               \</div>
+<div class="line">      if (<a class="code" href="http__parser_8c.html#a9469bcba57388aacbc39962b86bea28b">UNLIKELY</a>(0 !=                                              \</div>
+<div class="line">                   settings-&gt;on_##FOR(parser, FOR##_mark, (LEN)))) { <a class="code" href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">\</a></div>
+<div class="line"><a class="code" href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">        SET_ERRNO</a>(HPE_CB_##FOR);                                     \</div>
+<div class="line">      }                                                              <a class="code" href="http__parser_8c.html#aa9f3ba9d0c4048dddf8cf39dcaace63c">\</a></div>
+<div class="line"><a class="code" href="http__parser_8c.html#aa9f3ba9d0c4048dddf8cf39dcaace63c">      UPDATE_STATE</a>(parser-&gt;state);                                   \</div>
+<div class="line">                                                                     \</div>
+<div class="line">      <span class="comment">/* We either errored above or got paused; get out */</span>           \</div>
+<div class="line">      if (<a class="code" href="http__parser_8c.html#a9469bcba57388aacbc39962b86bea28b">UNLIKELY</a>(<a class="code" href="http__parser_8h.html#a356ebaa93536e6f94c2948a1416697c7">HTTP_PARSER_ERRNO</a>(parser) != HPE_OK)) {           \</div>
+<div class="line">        return (ER);                                                 \</div>
+<div class="line">      }                                                              \</div>
+<div class="line">    }                                                                \</div>
+<div class="line">    FOR##_mark = NULL;                                               \</div>
+<div class="line">  }                                                                  \</div>
+<div class="line">} <span class="keywordflow">while</span> (0)</div>
+<div class="ttc" id="http__parser_8c_html_a9469bcba57388aacbc39962b86bea28b"><div class="ttname"><a href="http__parser_8c.html#a9469bcba57388aacbc39962b86bea28b">UNLIKELY</a></div><div class="ttdeci">#define UNLIKELY(X)</div><div class="ttdef"><b>Definition:</b> http_parser.c:76</div></div>
+<div class="ttc" id="http__parser_8c_html_ab624475df2c449ae2cc9f8121d065b08"><div class="ttname"><a href="http__parser_8c.html#ab624475df2c449ae2cc9f8121d065b08">LIKELY</a></div><div class="ttdeci">#define LIKELY(X)</div><div class="ttdef"><b>Definition:</b> http_parser.c:75</div></div>
+<div class="ttc" id="http__parser_8c_html_a8a98c528ba187932652a95a7885b42c4"><div class="ttname"><a href="http__parser_8c.html#a8a98c528ba187932652a95a7885b42c4">CURRENT_STATE</a></div><div class="ttdeci">#define CURRENT_STATE()</div><div class="ttdef"><b>Definition:</b> http_parser.c:60</div></div>
+<div class="ttc" id="http__parser_8c_html_aa9f3ba9d0c4048dddf8cf39dcaace63c"><div class="ttname"><a href="http__parser_8c.html#aa9f3ba9d0c4048dddf8cf39dcaace63c">UPDATE_STATE</a></div><div class="ttdeci">#define UPDATE_STATE(V)</div><div class="ttdef"><b>Definition:</b> http_parser.c:61</div></div>
+<div class="ttc" id="http__parser_8h_html_a356ebaa93536e6f94c2948a1416697c7"><div class="ttname"><a href="http__parser_8h.html#a356ebaa93536e6f94c2948a1416697c7">HTTP_PARSER_ERRNO</a></div><div class="ttdeci">#define HTTP_PARSER_ERRNO(p)</div><div class="ttdef"><b>Definition:</b> http_parser.h:203</div></div>
+<div class="ttc" id="http__parser_8c_html_a4b6bf911f0667c475832a7494fa2ac89"><div class="ttname"><a href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">SET_ERRNO</a></div><div class="ttdeci">#define SET_ERRNO(e)</div><div class="ttdef"><b>Definition:</b> http_parser.c:55</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a0e64b3b96c722bc7b1f4a817b631fb23"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CALLBACK_DATA_NOADVANCE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">FOR</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="http__parser_8c.html#a8b1286a97c53328f38ddd44edadf3e41">CALLBACK_DATA_</a>(FOR, p - FOR##_mark, p - data)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3c9632a9d6bb3127511c39488a9c8988"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CALLBACK_NOTIFY</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">FOR</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="http__parser_8c.html#a113a1652ef40761708379bdca7621b22">CALLBACK_NOTIFY_</a>(FOR, p - data + 1)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a113a1652ef40761708379bdca7621b22"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CALLBACK_NOTIFY_</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">FOR, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">ER&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                                                                 \</div>
+<div class="line">  assert(<a class="code" href="http__parser_8h.html#a356ebaa93536e6f94c2948a1416697c7">HTTP_PARSER_ERRNO</a>(parser) == HPE_OK);                       \</div>
+<div class="line">                                                                     \</div>
+<div class="line">  if (<a class="code" href="http__parser_8c.html#ab624475df2c449ae2cc9f8121d065b08">LIKELY</a>(settings-&gt;on_##FOR)) {                                  \</div>
+<div class="line">    parser-&gt;state = <a class="code" href="http__parser_8c.html#a8a98c528ba187932652a95a7885b42c4">CURRENT_STATE</a>();                                 \</div>
+<div class="line">    if (<a class="code" href="http__parser_8c.html#a9469bcba57388aacbc39962b86bea28b">UNLIKELY</a>(0 != settings-&gt;on_##FOR(parser))) {                 <a class="code" href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">\</a></div>
+<div class="line"><a class="code" href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">      SET_ERRNO</a>(HPE_CB_##FOR);                                       \</div>
+<div class="line">    }                                                                <a class="code" href="http__parser_8c.html#aa9f3ba9d0c4048dddf8cf39dcaace63c">\</a></div>
+<div class="line"><a class="code" href="http__parser_8c.html#aa9f3ba9d0c4048dddf8cf39dcaace63c">    UPDATE_STATE</a>(parser-&gt;state);                                     \</div>
+<div class="line">                                                                     \</div>
+<div class="line">    <span class="comment">/* We either errored above or got paused; get out */</span>             \</div>
+<div class="line">    if (<a class="code" href="http__parser_8c.html#a9469bcba57388aacbc39962b86bea28b">UNLIKELY</a>(<a class="code" href="http__parser_8h.html#a356ebaa93536e6f94c2948a1416697c7">HTTP_PARSER_ERRNO</a>(parser) != HPE_OK)) {             \</div>
+<div class="line">      return (ER);                                                   \</div>
+<div class="line">    }                                                                \</div>
+<div class="line">  }                                                                  \</div>
+<div class="line">} <span class="keywordflow">while</span> (0)</div>
+<div class="ttc" id="http__parser_8c_html_a9469bcba57388aacbc39962b86bea28b"><div class="ttname"><a href="http__parser_8c.html#a9469bcba57388aacbc39962b86bea28b">UNLIKELY</a></div><div class="ttdeci">#define UNLIKELY(X)</div><div class="ttdef"><b>Definition:</b> http_parser.c:76</div></div>
+<div class="ttc" id="http__parser_8c_html_ab624475df2c449ae2cc9f8121d065b08"><div class="ttname"><a href="http__parser_8c.html#ab624475df2c449ae2cc9f8121d065b08">LIKELY</a></div><div class="ttdeci">#define LIKELY(X)</div><div class="ttdef"><b>Definition:</b> http_parser.c:75</div></div>
+<div class="ttc" id="http__parser_8c_html_a8a98c528ba187932652a95a7885b42c4"><div class="ttname"><a href="http__parser_8c.html#a8a98c528ba187932652a95a7885b42c4">CURRENT_STATE</a></div><div class="ttdeci">#define CURRENT_STATE()</div><div class="ttdef"><b>Definition:</b> http_parser.c:60</div></div>
+<div class="ttc" id="http__parser_8c_html_aa9f3ba9d0c4048dddf8cf39dcaace63c"><div class="ttname"><a href="http__parser_8c.html#aa9f3ba9d0c4048dddf8cf39dcaace63c">UPDATE_STATE</a></div><div class="ttdeci">#define UPDATE_STATE(V)</div><div class="ttdef"><b>Definition:</b> http_parser.c:61</div></div>
+<div class="ttc" id="http__parser_8h_html_a356ebaa93536e6f94c2948a1416697c7"><div class="ttname"><a href="http__parser_8h.html#a356ebaa93536e6f94c2948a1416697c7">HTTP_PARSER_ERRNO</a></div><div class="ttdeci">#define HTTP_PARSER_ERRNO(p)</div><div class="ttdef"><b>Definition:</b> http_parser.h:203</div></div>
+<div class="ttc" id="http__parser_8c_html_a4b6bf911f0667c475832a7494fa2ac89"><div class="ttname"><a href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">SET_ERRNO</a></div><div class="ttdeci">#define SET_ERRNO(e)</div><div class="ttdef"><b>Definition:</b> http_parser.c:55</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="af6454f57e0dd52996e34e40d55cc5157"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CALLBACK_NOTIFY_NOADVANCE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">FOR</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="http__parser_8c.html#a113a1652ef40761708379bdca7621b22">CALLBACK_NOTIFY_</a>(FOR, p - data)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a330b228059a71c76fa8b2070e824bcab"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CHUNKED&#160;&#160;&#160;&quot;chunked&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0e29f488071372aa0530842e60b64511"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CLOSE&#160;&#160;&#160;&quot;close&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a624c91af530a96b476c8da486df55de9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CONNECTION&#160;&#160;&#160;&quot;connection&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a750427eb640fda48be359218c08748e9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CONTENT_LENGTH&#160;&#160;&#160;&quot;content-length&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac3cb09ccf931795bcf4831d73359655f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define COUNT_HEADER_SIZE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">V</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                                                                 \</div>
+<div class="line">  parser-&gt;nread += (V);                                              \</div>
+<div class="line">  if (<a class="code" href="http__parser_8c.html#a9469bcba57388aacbc39962b86bea28b">UNLIKELY</a>(parser-&gt;nread &gt; (<a class="code" href="http__parser_8h.html#a6272a7f92e0f1b66e07680f32f6f21b6">HTTP_MAX_HEADER_SIZE</a>))) {            <a class="code" href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">\</a></div>
+<div class="line"><a class="code" href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">    SET_ERRNO</a>(HPE_HEADER_OVERFLOW);                                  \</div>
+<div class="line">    goto error;                                                      \</div>
+<div class="line">  }                                                                  \</div>
+<div class="line">} <span class="keywordflow">while</span> (0)</div>
+<div class="ttc" id="http__parser_8h_html_a6272a7f92e0f1b66e07680f32f6f21b6"><div class="ttname"><a href="http__parser_8h.html#a6272a7f92e0f1b66e07680f32f6f21b6">HTTP_MAX_HEADER_SIZE</a></div><div class="ttdeci">#define HTTP_MAX_HEADER_SIZE</div><div class="ttdef"><b>Definition:</b> http_parser.h:63</div></div>
+<div class="ttc" id="http__parser_8c_html_a9469bcba57388aacbc39962b86bea28b"><div class="ttname"><a href="http__parser_8c.html#a9469bcba57388aacbc39962b86bea28b">UNLIKELY</a></div><div class="ttdeci">#define UNLIKELY(X)</div><div class="ttdef"><b>Definition:</b> http_parser.c:76</div></div>
+<div class="ttc" id="http__parser_8c_html_a4b6bf911f0667c475832a7494fa2ac89"><div class="ttname"><a href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">SET_ERRNO</a></div><div class="ttdeci">#define SET_ERRNO(e)</div><div class="ttdef"><b>Definition:</b> http_parser.c:55</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a876ce77f3c672c7162658151e648389e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CR&#160;&#160;&#160;'\r'</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8a98c528ba187932652a95a7885b42c4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define CURRENT_STATE</td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td>&#160;&#160;&#160;p_state</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa71cc7f5abe91520af0521a28631872c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ELEM_AT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">a, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">i, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">v&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;((unsigned int) (i) &lt; <a class="el" href="http__parser_8c.html#a25f003de16c08a4888b69f619d70f427">ARRAY_SIZE</a>(a) ? (a)[(i)] : (v))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3b84e0918dd0fb90c6c17c173e323aec"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_STRERROR_GEN</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">n, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">s&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;{ &quot;HPE_&quot; #n, s },</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="abce481ac236ab589430f904c74ae2eba"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IS_ALPHA</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td>&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#a1a19160085d7c4378428f490a96587cd">LOWER</a>(c) &gt;= 'a' &amp;&amp; <a class="el" href="http__parser_8c.html#a1a19160085d7c4378428f490a96587cd">LOWER</a>(c) &lt;= 'z')</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4b278ae5554f29904ca8505922aba5a3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IS_ALPHANUM</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td>&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#abce481ac236ab589430f904c74ae2eba">IS_ALPHA</a>(c) || <a class="el" href="http__parser_8c.html#a977faf512b3cce7ff1253ea51dfd7d81">IS_NUM</a>(c))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae718b3144ae576960af543a99c2c3c39"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IS_HEX</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td>&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#a977faf512b3cce7ff1253ea51dfd7d81">IS_NUM</a>(c) || (<a class="el" href="http__parser_8c.html#a1a19160085d7c4378428f490a96587cd">LOWER</a>(c) &gt;= 'a' &amp;&amp; <a class="el" href="http__parser_8c.html#a1a19160085d7c4378428f490a96587cd">LOWER</a>(c) &lt;= 'f'))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aac02b395506c6b7a488e5d636b6831b2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IS_HOST_CHAR</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td>&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#a4b278ae5554f29904ca8505922aba5a3">IS_ALPHANUM</a>(c) || (c) == '.' || (c) == '-')</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a94278a8f219a550eb9d83606a40ccf88"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IS_MARK</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line">((c) == <span class="charliteral">&#39;-&#39;</span> || (c) == <span class="charliteral">&#39;_&#39;</span> || (c) == <span class="charliteral">&#39;.&#39;</span> || \</div>
+<div class="line">  (c) == <span class="charliteral">&#39;!&#39;</span> || (c) == <span class="charliteral">&#39;~&#39;</span> || (c) == <span class="charliteral">&#39;*&#39;</span> || (c) == <span class="charliteral">&#39;\&#39;&#39;</span> || (c) == <span class="charliteral">&#39;(&#39;</span> || \</div>
+<div class="line">  (c) == <span class="charliteral">&#39;)&#39;</span>)</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a977faf512b3cce7ff1253ea51dfd7d81"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IS_NUM</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td>&#160;&#160;&#160;((c) &gt;= '0' &amp;&amp; (c) &lt;= '9')</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a778cffb599fccf026d9d33e25572f1c0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IS_URL_CHAR</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td>&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#a9ddbf0df312c3e6827f91bb214a74504">BIT_AT</a>(normal_url_char, (unsigned char)c))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae7922d0e223468c84a630f84a8109cd1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define IS_USERINFO_CHAR</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line">(<a class="code" href="http__parser_8c.html#a4b278ae5554f29904ca8505922aba5a3">IS_ALPHANUM</a>(c) || <a class="code" href="http__parser_8c.html#a94278a8f219a550eb9d83606a40ccf88">IS_MARK</a>(c) || (c) == <span class="charliteral">&#39;%&#39;</span> || \</div>
+<div class="line">  (c) == <span class="charliteral">&#39;;&#39;</span> || (c) == <span class="charliteral">&#39;:&#39;</span> || (c) == <span class="charliteral">&#39;&amp;&#39;</span> || (c) == <span class="charliteral">&#39;=&#39;</span> || (c) == <span class="charliteral">&#39;+&#39;</span> || \</div>
+<div class="line">  (c) == <span class="charliteral">&#39;$&#39;</span> || (c) == <span class="charliteral">&#39;,&#39;</span>)</div>
+<div class="ttc" id="http__parser_8c_html_a4b278ae5554f29904ca8505922aba5a3"><div class="ttname"><a href="http__parser_8c.html#a4b278ae5554f29904ca8505922aba5a3">IS_ALPHANUM</a></div><div class="ttdeci">#define IS_ALPHANUM(c)</div><div class="ttdef"><b>Definition:</b> http_parser.c:414</div></div>
+<div class="ttc" id="http__parser_8c_html_a94278a8f219a550eb9d83606a40ccf88"><div class="ttname"><a href="http__parser_8c.html#a94278a8f219a550eb9d83606a40ccf88">IS_MARK</a></div><div class="ttdeci">#define IS_MARK(c)</div><div class="ttdef"><b>Definition:</b> http_parser.c:416</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a3b3395af262c467dd971b4796d5cdd42"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define KEEP_ALIVE&#160;&#160;&#160;&quot;keep-alive&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a350c9d6cb81908d59427ee96844d1a9c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LF&#160;&#160;&#160;'\n'</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab624475df2c449ae2cc9f8121d065b08"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LIKELY</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">X</td><td>)</td>
+          <td>&#160;&#160;&#160;(X)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1a19160085d7c4378428f490a96587cd"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LOWER</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td>&#160;&#160;&#160;(unsigned char)(c | 0x20)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a284a5ef12de6ef8f0c26ae9c4edfa0b1"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MARK</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">FOR</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                                                                 \</div>
+<div class="line">  if (!FOR##_mark) {                                                 \</div>
+<div class="line">    FOR##_mark = p;                                                  \</div>
+<div class="line">  }                                                                  \</div>
+<div class="line">} <span class="keywordflow">while</span> (0)</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a3acffbd305ee72dcd4593c0d8af64a4f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MIN</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">a, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">b&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;((a) &lt; (b) ? (a) : (b))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a4184e961031ca60166ff1a39fabd992b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NEW_MESSAGE</td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td>&#160;&#160;&#160;(<a class="el" href="http__parser_8h.html#abefaa63b2505a6d38f96fc782c41d111">http_should_keep_alive</a>(parser) ? <a class="el" href="http__parser_8c.html#aeb5146ad4f730c552f8874cb48462212">start_state</a> : <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90ae928e87617dbca34f86693408ffb8b08">s_dead</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a35d16fba516e5fc0f03fe7ba728e8264"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PARSING_HEADER</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a></td><td>)</td>
+          <td>&#160;&#160;&#160;(<a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a> &lt;= <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a209e6e32f0783f5d76fad26c46013390">s_headers_done</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a81f37e03d0ef3a6a147b2cb5c3ffe2ae"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define PROXY_CONNECTION&#160;&#160;&#160;&quot;proxy-connection&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a5209a623e045903cfecc6f89bcd933b2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define REEXECUTE</td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td>&#160;&#160;&#160;goto reexecute;                                                    \</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa9148a1b0bf42911a80c9a511caaa731"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define RETURN</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">V</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                                                                 \</div>
+<div class="line">  parser-&gt;state = <a class="code" href="http__parser_8c.html#a8a98c528ba187932652a95a7885b42c4">CURRENT_STATE</a>();                                   \</div>
+<div class="line">  return (V);                                                        \</div>
+<div class="line">} <span class="keywordflow">while</span> (0);</div>
+<div class="ttc" id="http__parser_8c_html_a8a98c528ba187932652a95a7885b42c4"><div class="ttname"><a href="http__parser_8c.html#a8a98c528ba187932652a95a7885b42c4">CURRENT_STATE</a></div><div class="ttdeci">#define CURRENT_STATE()</div><div class="ttdef"><b>Definition:</b> http_parser.c:60</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a4b6bf911f0667c475832a7494fa2ac89"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SET_ERRNO</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">e</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                                                                 \</div>
+<div class="line">  parser-&gt;http_errno = (e);                                          \</div>
+<div class="line">} <span class="keywordflow">while</span>(0)</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="aeb5146ad4f730c552f8874cb48462212"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define start_state&#160;&#160;&#160;(parser-&gt;type == <a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7aa9f727b57e9e9c1651ee0df29aa1b1713">HTTP_REQUEST</a> ? <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a726ed5570859dca67883ae410c1b9f5b">s_start_req</a> : <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90a17f7885ac699f68b5179b74e264605d8">s_start_res</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a5173bfe22390d084bfbda28b4952a73d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define STRICT_CHECK</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">cond</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>值:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> {                                                                 \</div>
+<div class="line">  if (cond) {                                                        <a class="code" href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">\</a></div>
+<div class="line"><a class="code" href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">    SET_ERRNO</a>(HPE_STRICT);                                           \</div>
+<div class="line">    goto error;                                                      \</div>
+<div class="line">  }                                                                  \</div>
+<div class="line">} <span class="keywordflow">while</span> (0)</div>
+<div class="ttc" id="http__parser_8c_html_a4b6bf911f0667c475832a7494fa2ac89"><div class="ttname"><a href="http__parser_8c.html#a4b6bf911f0667c475832a7494fa2ac89">SET_ERRNO</a></div><div class="ttdeci">#define SET_ERRNO(e)</div><div class="ttdef"><b>Definition:</b> http_parser.c:55</div></div>
+</div><!-- fragment -->
+</div>
+</div>
+<a class="anchor" id="a5c01754b8d37dc3048fb0419ec92de2d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define STRICT_TOKEN</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td>&#160;&#160;&#160;(tokens[(unsigned char)c])</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad24d0de3f597ca60dd95c4bc59c2ff73"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define T</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">v</td><td>)</td>
+          <td>&#160;&#160;&#160;0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a52423cb4f1850bd6747e2fde8789c3f4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define TOKEN</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">c</td><td>)</td>
+          <td>&#160;&#160;&#160;(tokens[(unsigned char)c])</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a67faa6e8b208b0e838ce0c279c58ad59"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define TRANSFER_ENCODING&#160;&#160;&#160;&quot;transfer-encoding&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa1dd7166a75b73ad62b111ae6fc17c59"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ULLONG_MAX&#160;&#160;&#160;((uint64_t) -1) /* 2^64-1 */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9469bcba57388aacbc39962b86bea28b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define UNLIKELY</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">X</td><td>)</td>
+          <td>&#160;&#160;&#160;(X)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa9f3ba9d0c4048dddf8cf39dcaace63c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define UPDATE_STATE</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">V</td><td>)</td>
+          <td>&#160;&#160;&#160;p_state = (enum <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a>) (V);</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="abfb0312660e19551071145303c6d7f57"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define UPGRADE&#160;&#160;&#160;&quot;upgrade&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a001751e2abb71763b08651bec986b6f7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define XX</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">num, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><a class="el" href="http__parser_8c.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">string&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;#string,</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">枚举类型说明</h2>
+<a class="anchor" id="a30b263f03d96d31497fac23df89edbd9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="http__parser_8c.html#a30b263f03d96d31497fac23df89edbd9">header_states</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">枚举值</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9af908d7445959c98762f6209c82d2b444"></a>h_general</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9aa62bf09af527ca972b72a48f82991f70"></a>h_C</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a78b29dafaeb2ad15d11af409f1621b34"></a>h_CO</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a4fdf471421f86cf8aa023115a7aa8c98"></a>h_CON</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a603e806a1dd3247dd99ad664c2ec46d1"></a>h_matching_connection</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a82af9a1b681ac612613bb462a4f8ca33"></a>h_matching_proxy_connection</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9acd7d8543919d17a23df9218dfe6c78dd"></a>h_matching_content_length</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a0d568b9f13bdd4f4ca21bb776c020c48"></a>h_matching_transfer_encoding</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a5fb1d7942e84b93ef936ba99bdca3f08"></a>h_matching_upgrade</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9acea3f0b4072bc57fdfa61df765a7fbe1"></a>h_connection</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a4482b673cd398fe046d6144daad04596"></a>h_content_length</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9afcebd9d68c1375b2b3ae6d0b228f4f6f"></a>h_transfer_encoding</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a691fa7ab38a1d07e9df4f35ecd3111f7"></a>h_upgrade</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9aed57a8757f7254faf33df92acd2bf170"></a>h_matching_transfer_encoding_chunked</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a999d063db7f9fcc3253cf9f605782009"></a>h_matching_connection_token_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a99f608e97202aeb786f4125c1024c99e"></a>h_matching_connection_keep_alive</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9adf5e6456b29db97763823ad8f9fb0201"></a>h_matching_connection_close</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a2676579838d204ae1bdc89a824bccb3a"></a>h_matching_connection_upgrade</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a22e11ba7dcc055fa05c95dd02c03b726"></a>h_matching_connection_token</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9ab4f70a95992f6a9570b8279f4d279c79"></a>h_transfer_encoding_chunked</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9a8ecd8e3e699445caa915502e2e7b5db0"></a>h_connection_keep_alive</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9ad648307f5aeea55477ef6f1453ba6c9c"></a>h_connection_close</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a30b263f03d96d31497fac23df89edbd9aaa672acedf566012dd9e149ecdb3e901"></a>h_connection_upgrade</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="http__parser_8c.html#ae8df1d915c4ab1e80985eb2611ccbdc9">http_host_state</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">枚举值</th></tr><tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9a8dc5edf98d137784dd3b3579eb5b2b36"></a>s_http_host_dead</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9a2ff4653097e416a4db99df2ec982de99"></a>s_http_userinfo_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9a4c947d88d61b249338e784ea133aa785"></a>s_http_userinfo</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9af64031ea5b139391042250c191de5365"></a>s_http_host_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9a87bca0878961b6e719c4e6f281c4dcaa"></a>s_http_host_v6_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9a821611b810c4ccf3c626002a2e0a99ce"></a>s_http_host</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9a762851b93b7ab7b88a032964d83e65cc"></a>s_http_host_v6</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9a17db1429af4fc817dbf5cb58563cfb69"></a>s_http_host_v6_end</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9a273640cc7fac87e86226f20c6bf51084"></a>s_http_host_port_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ae8df1d915c4ab1e80985eb2611ccbdc9a6d116c6cd5b2c0d08b75b5ca772d1f87"></a>s_http_host_port</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="http__parser_8c.html#adc6e5733fc3c22f0a7b2914188c49c90">state</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">枚举值</th></tr><tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90ae928e87617dbca34f86693408ffb8b08"></a>s_dead</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a5a871b16732400896f13a0b4bf4d2d2e"></a>s_start_req_or_res</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90ad55e2affc1684fca9fc2d2dfa0ef02be"></a>s_res_or_resp_H</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a17f7885ac699f68b5179b74e264605d8"></a>s_start_res</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a1e52abf531e01c40b73cb9e8b3fdd9f4"></a>s_res_H</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90aef104c331e8e270e735d1aed0430d32e"></a>s_res_HT</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90aac9df6a576e6b66610d1c78e0a0fce85"></a>s_res_HTT</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a49cdf111588eeedd1593e549fdb2b4b7"></a>s_res_HTTP</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a758a72c507e51909cd1ab0f84148ac3c"></a>s_res_first_http_major</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a4581640a88dc9931031916da00dc9bc6"></a>s_res_http_major</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a2a4dde0eafd4f5bcb5284744ccafe86a"></a>s_res_first_http_minor</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a76ed9bbc2d835b88cb30299abcdd67e8"></a>s_res_http_minor</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a246c6aaa49d61e24a43dbb1e4d601b2a"></a>s_res_first_status_code</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90aefa1bc8b7519ce8b995dc7e71e551f15"></a>s_res_status_code</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90aef8541c5f33f59dfbed9e429ecd92d21"></a>s_res_status_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a3159d98e8c993680b7640db1e6eed22c"></a>s_res_status</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a94807fb310f4104dd03e2ddb1ab4ae9b"></a>s_res_line_almost_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a726ed5570859dca67883ae410c1b9f5b"></a>s_start_req</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a5dd2f6b19fd4e3cb6b428e094ab7e443"></a>s_req_method</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a48289d7f47c2a74a9b9c498e5c8070c8"></a>s_req_spaces_before_url</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a77eeb3ce03bff5e0a71d81e6689715ea"></a>s_req_schema</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90ac76a17504862a273d8cb490d612f9759"></a>s_req_schema_slash</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a80fae8bf0e824df045b912278ad0316d"></a>s_req_schema_slash_slash</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90afe0af478bf5e6e82c2d36dc6209fa72c"></a>s_req_server_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a68c1b3800638f03d6ad0e3cb6da31acf"></a>s_req_server</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a0d0a86b054a404f46184e4e7e41e0d26"></a>s_req_server_with_at</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a490988d398dd839f49be96a79f1dcffe"></a>s_req_path</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a3c7bfb6f21eb5f914d33e49bd3ca4809"></a>s_req_query_string_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a36add21fb73304295cc924d6014c11ef"></a>s_req_query_string</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90ae2c4dfd6dc9680c009c6e2554af4341d"></a>s_req_fragment_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90ac379ae76d71944b4daf9519e3b22a1a1"></a>s_req_fragment</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90aeadb7f8e79fd094e250279f8afec062f"></a>s_req_http_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a7c3dea78ecb0ee88212988ed0b90a5e7"></a>s_req_http_H</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90ae4f0cd1ac4cbbc85edd6073bc27b85b7"></a>s_req_http_HT</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90aee2b77d4458cf570e1a7bab584ba5907"></a>s_req_http_HTT</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a641d4adec0c7f121153854eae440c2c3"></a>s_req_http_HTTP</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a8a068d6a93bae075f7ba5694c46d2de6"></a>s_req_first_http_major</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90aad6b279013498df4ef81557cec965fe6"></a>s_req_http_major</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90af5876995d7ba04281d118e845db8110d"></a>s_req_first_http_minor</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a64272a20486c8d0694704832aea24872"></a>s_req_http_minor</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90abb02b342bbb8d22a763b55386db8c0fb"></a>s_req_line_almost_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a85e4e4637f2bc962302e1ba3a3f5f769"></a>s_header_field_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a3353eed9aa8e2fd854b9f82d3ac1bff1"></a>s_header_field</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90ae58f59a3755eed3117db8930dc78c6ec"></a>s_header_value_discard_ws</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a0eeafcb1a1e4409ffd8c034be9af860d"></a>s_header_value_discard_ws_almost_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a2dc9752e25cc2a00c3c89bbdf9b0f23b"></a>s_header_value_discard_lws</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90aa99f675903d976e1912fb54c5a71baa0"></a>s_header_value_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a4aa98ee464114fd4b6a00b02d5a83a69"></a>s_header_value</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90ab837338881e7c475bbaff41b146fc57d"></a>s_header_value_lws</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a484786609cb1b307e43c55b5b3078435"></a>s_header_almost_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90af9d6a67a8cad297aa880c91180699409"></a>s_chunk_size_start</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a63c8547a6c351def0a6d1d1529c90aad"></a>s_chunk_size</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a6c9131528d4f92c9b42361fcd943744a"></a>s_chunk_parameters</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a16494186a1ec7a1e140af1b4eaa09d20"></a>s_chunk_size_almost_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90abe81888b100852a3ff950be05d2650fe"></a>s_headers_almost_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a209e6e32f0783f5d76fad26c46013390"></a>s_headers_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a1dfa1c7e958daff320dcca379e1891f2"></a>s_chunk_data</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90aff85ea02669f8cf3bae62121928668c0"></a>s_chunk_data_almost_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a159666494992773deef3d091d61efa64"></a>s_chunk_data_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a08e05eb8bc0a42e6e84fa22dd75bdc95"></a>s_body_identity</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90a1ae8a6fc8117d6baa6a0812d077f5b73"></a>s_body_identity_eof</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="adc6e5733fc3c22f0a7b2914188c49c90ae830ce7380ef6c61643a332ab63f6774"></a>s_message_done</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">函数说明</h2>
+<a class="anchor" id="a5156a631a251516a6e78b17e1faadbb2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int http_body_is_final </td>
+          <td>(</td>
+          <td class="paramtype">const struct <a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6dde757b0dee9b791e5d525c1ff2da0d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* http_errno_description </td>
+          <td>(</td>
+          <td class="paramtype">enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a>&#160;</td>
+          <td class="paramname"><em>err</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8a93ed79c5d48491b72945ce11f75f7f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* http_errno_name </td>
+          <td>(</td>
+          <td class="paramtype">enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a>&#160;</td>
+          <td class="paramname"><em>err</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-1" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-1-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-1-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-1-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c_a8a93ed79c5d48491b72945ce11f75f7f_icgraph.png" border="0" usemap="#http__parser_8c_a8a93ed79c5d48491b72945ce11f75f7f_icgraph" alt=""/></div>
+<map name="http__parser_8c_a8a93ed79c5d48491b72945ce11f75f7f_icgraph" id="http__parser_8c_a8a93ed79c5d48491b72945ce11f75f7f_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="174,5,341,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a55b76c7f4422dba1cbb2d8af509d727f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int http_message_needs_eof </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-2" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-2-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-2-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-2-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c_a55b76c7f4422dba1cbb2d8af509d727f_icgraph.png" border="0" usemap="#http__parser_8c_a55b76c7f4422dba1cbb2d8af509d727f_icgraph" alt=""/></div>
+<map name="http__parser_8c_a55b76c7f4422dba1cbb2d8af509d727f_icgraph" id="http__parser_8c_a55b76c7f4422dba1cbb2d8af509d727f_icgraph">
+<area shape="rect" id="node2" href="http__parser_8h.html#a5034165465db6c488ce8b75fd0f72faf" title="http_parser_execute" alt="" coords="457,5,597,32"/><area shape="rect" id="node4" href="http__parser_8h.html#abefaa63b2505a6d38f96fc782c41d111" title="http_should_keep_alive" alt="" coords="225,60,383,87"/><area shape="rect" id="node3" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="670,35,837,61"/><area shape="rect" id="node5" href="classneb_1_1_codec_http.html#a9c3cd6d78fb52643fc325487030949da" title="neb::CodecHttp::OnHeaders\lComplete" alt="" coords="433,57,621,98"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="acdafb72b3fddca085841586537406859"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* http_method_str </td>
+          <td>(</td>
+          <td class="paramtype">enum <a class="el" href="http__parser_8h.html#aacd5f203e33ac338ca5cb8f02a3ff3b8">http_method</a>&#160;</td>
+          <td class="paramname"><em>m</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-3" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-3-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-3-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-3-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c_acdafb72b3fddca085841586537406859_icgraph.png" border="0" usemap="#http__parser_8c_acdafb72b3fddca085841586537406859_icgraph" alt=""/></div>
+<map name="http__parser_8c_acdafb72b3fddca085841586537406859_icgraph" id="http__parser_8c_acdafb72b3fddca085841586537406859_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="173,5,339,46"/><area shape="rect" id="node4" href="classneb_1_1_codec_http.html#a517a2abd84b5bdeabe429ac9c9e59a5e" title="neb::CodecHttp::Encode" alt="" coords="173,71,339,97"/><area shape="rect" id="node5" href="classneb_1_1_codec_http.html#a267f62e7bf45f5965eb9600967d48f56" title="neb::CodecHttp::ToString" alt="" coords="171,121,341,148"/><area shape="rect" id="node3" href="classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="390,5,557,46"/><area shape="rect" id="node6" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="390,121,557,148"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a5034165465db6c488ce8b75fd0f72faf"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t http_parser_execute </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structhttp__parser__settings.html">http_parser_settings</a> *&#160;</td>
+          <td class="paramname"><em>settings</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-4" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-4-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-4-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-4-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c_a5034165465db6c488ce8b75fd0f72faf_cgraph.png" border="0" usemap="#http__parser_8c_a5034165465db6c488ce8b75fd0f72faf_cgraph" alt=""/></div>
+<map name="http__parser_8c_a5034165465db6c488ce8b75fd0f72faf_cgraph" id="http__parser_8c_a5034165465db6c488ce8b75fd0f72faf_cgraph">
+<area shape="rect" id="node2" href="http__parser_8c.html#a55b76c7f4422dba1cbb2d8af509d727f" title="http_message_needs_eof" alt="" coords="195,5,365,32"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-5" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-5-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-5-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-5-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c_a5034165465db6c488ce8b75fd0f72faf_icgraph.png" border="0" usemap="#http__parser_8c_a5034165465db6c488ce8b75fd0f72faf_icgraph" alt=""/></div>
+<map name="http__parser_8c_a5034165465db6c488ce8b75fd0f72faf_icgraph" id="http__parser_8c_a5034165465db6c488ce8b75fd0f72faf_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="195,5,362,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="afb37506e1c2601889b0c3181688960f0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void http_parser_init </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">enum <a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7a">http_parser_type</a>&#160;</td>
+          <td class="paramname"><em>t</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-6" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-6-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-6-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-6-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c_afb37506e1c2601889b0c3181688960f0_icgraph.png" border="0" usemap="#http__parser_8c_afb37506e1c2601889b0c3181688960f0_icgraph" alt=""/></div>
+<map name="http__parser_8c_afb37506e1c2601889b0c3181688960f0_icgraph" id="http__parser_8c_afb37506e1c2601889b0c3181688960f0_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="166,5,333,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aeb269310a348fd68fd001b30b690fc83"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int http_parser_parse_url </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>buflen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>is_connect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct <a class="el" href="structhttp__parser__url.html">http_parser_url</a> *&#160;</td>
+          <td class="paramname"><em>u</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-7" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-7-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-7-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-7-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c_aeb269310a348fd68fd001b30b690fc83_icgraph.png" border="0" usemap="#http__parser_8c_aeb269310a348fd68fd001b30b690fc83_icgraph" alt=""/></div>
+<map name="http__parser_8c_aeb269310a348fd68fd001b30b690fc83_icgraph" id="http__parser_8c_aeb269310a348fd68fd001b30b690fc83_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_http_step.html#abd6093bfe8a9d3822aa6d39ff519fd96" title="neb::HttpStep::HttpRequest" alt="" coords="201,31,386,57"/><area shape="rect" id="node5" href="classneb_1_1_codec_http.html#a517a2abd84b5bdeabe429ac9c9e59a5e" title="neb::CodecHttp::Encode" alt="" coords="210,81,377,108"/><area shape="rect" id="node6" href="classneb_1_1_codec_http.html#ae13d20fcdb12c39eded0b592b5d0ed7f" title="neb::CodecHttp::OnUrl" alt="" coords="215,132,371,159"/><area shape="rect" id="node3" href="classneb_1_1_http_step.html#adde8b77b262af8cd09348f8d1966d55c" title="neb::HttpStep::HttpPost" alt="" coords="437,5,600,32"/><area shape="rect" id="node4" href="classneb_1_1_http_step.html#abb49ccb90a344923b856a28d42f39a9d" title="neb::HttpStep::HttpGet" alt="" coords="440,56,597,83"/><area shape="rect" id="node7" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="435,132,602,159"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="ab67d625ad2fe1623825eec73e18817de"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void http_parser_pause </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>paused</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a055a4e6834f07a0898a1802230852775"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void http_parser_settings_init </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structhttp__parser__settings.html">http_parser_settings</a> *&#160;</td>
+          <td class="paramname"><em>settings</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2559b4d373c7f0d85c77a2a3c308a5ee"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned long http_parser_version </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="abefaa63b2505a6d38f96fc782c41d111"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int http_should_keep_alive </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-8" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-8-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-8-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-8-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c_abefaa63b2505a6d38f96fc782c41d111_cgraph.png" border="0" usemap="#http__parser_8c_abefaa63b2505a6d38f96fc782c41d111_cgraph" alt=""/></div>
+<map name="http__parser_8c_abefaa63b2505a6d38f96fc782c41d111_cgraph" id="http__parser_8c_abefaa63b2505a6d38f96fc782c41d111_cgraph">
+<area shape="rect" id="node2" href="http__parser_8c.html#a55b76c7f4422dba1cbb2d8af509d727f" title="http_message_needs_eof" alt="" coords="213,5,384,32"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-9" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-9-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-9-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-9-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8c_abefaa63b2505a6d38f96fc782c41d111_icgraph.png" border="0" usemap="#http__parser_8c_abefaa63b2505a6d38f96fc782c41d111_icgraph" alt=""/></div>
+<map name="http__parser_8c_abefaa63b2505a6d38f96fc782c41d111_icgraph" id="http__parser_8c_abefaa63b2505a6d38f96fc782c41d111_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec_http.html#a9c3cd6d78fb52643fc325487030949da" title="neb::CodecHttp::OnHeaders\lComplete" alt="" coords="214,5,402,46"/><area shape="rect" id="node3" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="451,12,618,39"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<h2 class="groupheader">变量说明</h2>
+<a class="anchor" id="a68344fa88cf4e86b5079fd69a5c22d57"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* description</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8f8f80d37794cde9472343e4487ba3eb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* name</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_b7878ad5ecbf2506f4125b9d34c97e45.html">util</a></li><li class="navelem"><a class="el" href="dir_944d1df224a772b27b7716e2bcb75dbe.html">http</a></li><li class="navelem"><a class="el" href="http__parser_8c.html">http_parser.c</a></li>
+    <li class="footer">生成于 2018年 六月 9日 星期六 15:04:33 , 为 Nebula使用 
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
+</body>
+</html>

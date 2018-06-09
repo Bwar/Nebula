@@ -1,0 +1,51 @@
+<map id="MsgHead::cmd" name="MsgHead::cmd">
+<area shape="rect" id="node2" href="$classneb_1_1_cmd_beat.html#ae0993588e3dad964f6093478f97255dd" title="命令处理入口 " alt="" coords="2185,83,2375,109"/>
+<area shape="rect" id="node3" href="$classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="2207,405,2353,446"/>
+<area shape="rect" id="node4" href="$classneb_1_1_socket_channel_impl.html#aaf5625b34f30b103ec7ca68e0cbf07f3" title="neb::SocketChannelImpl\l::Recv" alt="" coords="203,449,368,490"/>
+<area shape="rect" id="node5" href="$classneb_1_1_socket_channel_impl.html#a49b5611d7d110d37ce4c3dbd1dbd4a75" title="neb::SocketChannelImpl\l::Fetch" alt="" coords="203,514,368,555"/>
+<area shape="rect" id="node6" href="$classneb_1_1_codec_http.html#a87d8e42c3441c2125c9bf91ecb5a76ec" title="字节流编码 " alt="" coords="202,580,369,607"/>
+<area shape="rect" id="node7" href="$classneb_1_1_codec_private.html#a69313ffe8d7d8be850bef1435dbc4a7b" title="字节流编码 " alt="" coords="216,631,355,673"/>
+<area shape="rect" id="node8" href="$classneb_1_1_codec_private.html#ad77c817e11fa89a4e7cbc12e636bb672" title="字节流解码 " alt="" coords="216,697,355,738"/>
+<area shape="rect" id="node9" href="$classneb_1_1_codec_proto.html#a6f2840c966ebe3cfe85edf88b9938517" title="字节流解码 " alt="" coords="199,763,372,789"/>
+<area shape="rect" id="node10" href="$classneb_1_1_codec_ws_extent_json.html#ab27bd660308c6b186e4e799f9b0c3e48" title="字节流编码 " alt="" coords="198,814,373,855"/>
+<area shape="rect" id="node11" href="$classneb_1_1_codec_ws_extent_json.html#a62ec339cb04ff94952142cba0d85264b" title="字节流解码 " alt="" coords="198,879,373,921"/>
+<area shape="rect" id="node12" href="$classneb_1_1_codec_ws_extent_pb.html#a0b49888e9090d0a6b710b147afb95549" title="字节流编码 " alt="" coords="204,945,367,986"/>
+<area shape="rect" id="node13" href="$classneb_1_1_codec_ws_extent_pb.html#a012b4074d89d70bea7a6d3ca3b42413e" title="字节流解码 " alt="" coords="204,1010,367,1051"/>
+<area shape="rect" id="node14" href="$classneb_1_1_manager.html#aed93abd4232e5f4b5089094628dc4ee3" title="neb::Manager::OnWorkerData" alt="" coords="187,1177,383,1204"/>
+<area shape="rect" id="node17" href="$classneb_1_1_manager.html#ac15a4b57ecf75db04a63c4cf2db85699" title="neb::Manager::OnDataAndTransferFd" alt="" coords="165,1076,405,1103"/>
+<area shape="rect" id="node18" href="$classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="186,1127,385,1153"/>
+<area shape="rect" id="node19" href="$classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="202,276,369,303"/>
+<area shape="rect" id="node45" href="$class_msg_head.html#a9b547e7e096f46d77b8ac55eeb275def" title="MsgHead::SerializeWithCached\lSizes" alt="" coords="181,1229,389,1270"/>
+<area shape="rect" id="node46" href="$class_msg_head.html#ae1096499bd9269787e112d6c065d2ac3" title="MsgHead::InternalSerialize\lWithCachedSizesToArray" alt="" coords="196,1294,375,1335"/>
+<area shape="rect" id="node48" href="$class_msg_head.html#a2aa367cfad9ec13ec079e50a9c9e84d4" title="MsgHead::ByteSize" alt="" coords="216,1360,355,1387"/>
+<area shape="rect" id="node50" href="$class_msg_head.html#a4852a3ae33940d58260114a60866b778" title="MsgHead::MergeFrom" alt="" coords="209,1411,361,1437"/>
+<area shape="rect" id="node15" href="$classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="462,1119,653,1161"/>
+<area shape="rect" id="node16" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="719,1127,887,1153"/>
+<area shape="rect" id="node20" href="$classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="465,185,650,226"/>
+<area shape="rect" id="node21" href="$classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="710,167,895,193"/>
+<area shape="rect" id="node22" href="$classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="945,167,1133,193"/>
+<area shape="rect" id="node23" href="$classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1182,94,1373,135"/>
+<area shape="rect" id="node29" href="$classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1182,159,1373,201"/>
+<area shape="rect" id="node24" href="$classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1431,43,1620,69"/>
+<area shape="rect" id="node25" href="$classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="1422,93,1629,120"/>
+<area shape="rect" id="node27" href="$classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="1434,144,1617,171"/>
+<area shape="rect" id="node26" href="$classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="1705,43,1855,69"/>
+<area shape="rect" id="node28" href="$classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="1695,93,1865,120"/>
+<area shape="rect" id="node30" href="$classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1433,195,1618,221"/>
+<area shape="rect" id="node31" href="$classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="1440,245,1611,272"/>
+<area shape="rect" id="node32" href="$classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="1707,347,1853,373"/>
+<area shape="rect" id="node37" href="$classneb_1_1_worker_impl.html#a13ab4cbaaf66a0dd84501674cb823975" title="neb::WorkerImpl::SendPolling" alt="" coords="1683,296,1877,323"/>
+<area shape="rect" id="node40" href="$classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="1677,195,1883,221"/>
+<area shape="rect" id="node42" href="$classneb_1_1_worker_impl.html#a666df6b0593d965a3aea9d497c947b94" title="neb::WorkerImpl::Broadcast" alt="" coords="1687,144,1873,171"/>
+<area shape="rect" id="node44" href="$classneb_1_1_worker_impl.html#a8bfc1a9e6a2af454cf6e9b8b2a5edaad" title="neb::WorkerImpl::SendTo" alt="" coords="1695,245,1865,272"/>
+<area shape="rect" id="node33" href="$classneb_1_1_actor.html#a29ec51bf9547a34ea61a3c57d48e7bd6" title="连接成功后发送 " alt="" coords="1966,347,2101,373"/>
+<area shape="rect" id="node34" href="$classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="2197,339,2363,381"/>
+<area shape="rect" id="node35" href="$classneb_1_1_http_step.html#abd6093bfe8a9d3822aa6d39ff519fd96" title="neb::HttpStep::HttpRequest" alt="" coords="2187,223,2373,249"/>
+<area shape="rect" id="node36" href="$classneb_1_1_step_connect_worker.html#abc8ae174cfb52c147ae88bd375ce2c71" title="提交，发出 " alt="" coords="2195,274,2365,315"/>
+<area shape="rect" id="node38" href="$classneb_1_1_worker.html#aa819e233fcc1bd0a398443e7ee9bf6be" title="neb::Worker::SendPolling" alt="" coords="1948,296,2119,323"/>
+<area shape="rect" id="node39" href="$classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="1931,245,2136,272"/>
+<area shape="rect" id="node41" href="$classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="1943,195,2123,221"/>
+<area shape="rect" id="node43" href="$classneb_1_1_worker.html#acd1eb16ef6ca8d3a5bc26015096a60e7" title="neb::Worker::Broadcast" alt="" coords="1953,144,2113,171"/>
+<area shape="rect" id="node47" href="$class_msg_head.html#add3ca564fbdfb49e3af775a1307627db" title="MsgHead::SerializeWithCached\lSizesToArray" alt="" coords="453,1294,661,1335"/>
+<area shape="rect" id="node49" href="$classneb_1_1_codec_proto.html#a80c44d1ebe71bbbc6e72883913ca1330" title="字节流编码 " alt="" coords="471,1360,643,1387"/>
+</map>

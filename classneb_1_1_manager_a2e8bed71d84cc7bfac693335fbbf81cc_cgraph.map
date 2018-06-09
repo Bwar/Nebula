@@ -1,0 +1,15 @@
+<map id="neb::Manager::OnIoWrite" name="neb::Manager::OnIoWrite">
+<area shape="rect" id="node2" href="$class_msg_body.html#a582009cf3fad55ea2d0327b052e3adf0" title="MsgBody::set_data" alt="" coords="249,72,383,99"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="247,123,385,149"/>
+<area shape="rect" id="node8" href="$classneb_1_1_manager.html#a491bed90774e9489361bd3f903161847" title="neb::Manager::SendTo" alt="" coords="239,289,393,316"/>
+<area shape="rect" id="node14" href="$classneb_1_1_manager.html#ae3cd78d22b41c887a514606a7cc899fc" title="neb::Manager::GetSequence" alt="" coords="222,391,410,417"/>
+<area shape="rect" id="node9" href="$classneb_1_1_manager.html#a5bfbb5b167e1be8f61240e7a9fdc2606" title="neb::Manager::RemoveIoWrite\lEvent" alt="" coords="459,209,659,250"/>
+<area shape="rect" id="node10" href="$classneb_1_1_manager.html#aa2ac3c9e55e4ae864ffa18ad7bba8f33" title="neb::Manager::AddIoWrite\lEvent" alt="" coords="471,274,646,315"/>
+<area shape="rect" id="node12" href="$classneb_1_1_manager.html#a57e8adb622005fc5fe1ab5fbfe2840e5" title="neb::Manager::DiscardSocket\lChannel" alt="" coords="461,339,656,381"/>
+<area shape="rect" id="node4" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="503,56,614,83"/>
+<area shape="rect" id="node5" href="$class_msg_body.html#a02177ab02a19889a5a90b5aea2759787" title="MsgBody::add_on" alt="" coords="495,107,622,133"/>
+<area shape="rect" id="node6" href="$class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="493,157,624,184"/>
+<area shape="rect" id="node7" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="470,5,647,32"/>
+<area shape="rect" id="node11" href="$classneb_1_1_manager.html#a676468e6f26f46f782cd296c23acca60" title="neb::Manager::IoCallback" alt="" coords="707,281,877,308"/>
+<area shape="rect" id="node13" href="$classneb_1_1_manager.html#a5fa2d8127a07de18616180ac94386b11" title="neb::Manager::DelEvents" alt="" coords="707,347,877,373"/>
+</map>

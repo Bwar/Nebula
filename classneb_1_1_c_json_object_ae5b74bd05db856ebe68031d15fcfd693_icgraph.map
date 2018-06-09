@@ -1,0 +1,51 @@
+<map id="neb::CJsonObject::Clear" name="neb::CJsonObject::Clear">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="749,8,923,50"/>
+<area shape="rect" id="node8" href="$classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="222,117,429,144"/>
+<area shape="rect" id="node12" href="$classneb_1_1_c_json_object.html#a98435b06bcf0add4f2f7af9e80ef3542" title="neb::CJsonObject::\l~CJsonObject" alt="" coords="258,566,393,607"/>
+<area shape="rect" id="node13" href="$classneb_1_1_c_json_object.html#a2836a804d5b026725d220d198bb96aa5" title="neb::CJsonObject::Parse" alt="" coords="241,514,410,541"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="2022,184,2181,210"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="987,66,1181,93"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="1232,66,1453,93"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="1502,74,1698,101"/>
+<area shape="rect" id="node7" href="$classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1757,150,1947,177"/>
+<area shape="rect" id="node9" href="$classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="492,66,673,93"/>
+<area shape="rect" id="node10" href="$classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="1250,143,1435,184"/>
+<area shape="rect" id="node11" href="$classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1511,143,1689,184"/>
+<area shape="rect" id="node14" href="$classneb_1_1_cmd_node_notice.html#a6230a8d89e762eeb41ae566d4e2f14e6" title="命令处理入口 " alt="" coords="762,758,910,799"/>
+<area shape="rect" id="node15" href="$classneb_1_1_cmd_update_node_id.html#a2e12ec27f33c6b6186a2d1b043f5db5f" title="命令处理入口 " alt="" coords="755,168,917,210"/>
+<area shape="rect" id="node16" href="$classneb_1_1_manager.html#a35e8a21b18300ec10fd05f8c1b248666" title="neb::Manager::GetConf" alt="" coords="757,234,915,261"/>
+<area shape="rect" id="node18" href="$classneb_1_1_manager.html#aed93abd4232e5f4b5089094628dc4ee3" title="neb::Manager::OnWorkerData" alt="" coords="986,554,1182,581"/>
+<area shape="rect" id="node21" href="$classneb_1_1_manager.html#ac37bc4b870eaf56ec3f52861b19b1182" title="neb::Manager::OnNodeNotify" alt="" coords="740,706,932,733"/>
+<area shape="rect" id="node22" href="$classneb_1_1_c_json_object.html#ad1643ebd9a4105aad6d199b09fc44d30" title="neb::CJsonObject::CJsonObject" alt="" coords="477,605,688,632"/>
+<area shape="rect" id="node23" href="$classneb_1_1_c_json_object.html#a3fafdebaa137c333f3ece40891265680" title="neb::CJsonObject::operator=" alt="" coords="487,656,678,682"/>
+<area shape="rect" id="node24" href="$classneb_1_1_c_json_object.html#a0e48820c581fd9069a6b2f1d5e88e9f1" title="neb::CJsonObject::Get" alt="" coords="505,474,661,501"/>
+<area shape="rect" id="node17" href="$classneb_1_1_manager.html#afca7b496e72cfecc346d1bda0c928acb" title="neb::Manager::RefreshServer" alt="" coords="987,168,1181,194"/>
+<area shape="rect" id="node19" href="$classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="1247,539,1438,580"/>
+<area shape="rect" id="node20" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="1516,546,1684,573"/>
+<area shape="rect" id="node25" href="$classneb_1_1_manager.html#a1b80e82446d03e68621e3b293bd349dd" title="neb::Manager::InitLogger" alt="" coords="753,285,919,312"/>
+<area shape="rect" id="node27" href="$classneb_1_1_manager.html#a39d78865e975116dc727921581ee8f36" title="neb::Manager::SetWorkerLoad" alt="" coords="737,554,935,581"/>
+<area shape="rect" id="node28" href="$classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="985,504,1183,530"/>
+<area shape="rect" id="node29" href="$classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="1012,336,1156,362"/>
+<area shape="rect" id="node31" href="$classneb_1_1_worker_impl.html#aad6542fa125570e8846a86efaf153511" title="neb::WorkerImpl::InitLogger" alt="" coords="745,386,927,413"/>
+<area shape="rect" id="node32" href="$classneb_1_1_worker_impl.html#ace99b22ad7900f43c4ab693ac63bf96d" title="neb::WorkerImpl::BootLoadCmd" alt="" coords="1747,605,1957,632"/>
+<area shape="rect" id="node34" href="$classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="747,438,925,479"/>
+<area shape="rect" id="node26" href="$classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="1789,269,1915,296"/>
+<area shape="rect" id="node30" href="$classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="1246,320,1439,346"/>
+<area shape="rect" id="node33" href="$classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2529,554,2679,581"/>
+<area shape="rect" id="node35" href="$classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="1001,402,1167,429"/>
+<area shape="rect" id="node36" href="$classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1250,422,1435,463"/>
+<area shape="rect" id="node37" href="$classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1507,429,1693,456"/>
+<area shape="rect" id="node38" href="$classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1758,392,1946,418"/>
+<area shape="rect" id="node39" href="$classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="2006,438,2197,479"/>
+<area shape="rect" id="node44" href="$classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="2006,372,2197,414"/>
+<area shape="rect" id="node40" href="$classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="2255,502,2444,529"/>
+<area shape="rect" id="node41" href="$classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="2246,448,2453,474"/>
+<area shape="rect" id="node42" href="$classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="2258,388,2441,414"/>
+<area shape="rect" id="node43" href="$classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="2519,388,2689,414"/>
+<area shape="rect" id="node45" href="$classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="2257,333,2442,360"/>
+<area shape="rect" id="node46" href="$classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="2264,278,2435,305"/>
+<area shape="rect" id="node47" href="$classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="2531,333,2677,360"/>
+<area shape="rect" id="node48" href="$classneb_1_1_worker_impl.html#a13ab4cbaaf66a0dd84501674cb823975" title="neb::WorkerImpl::SendPolling" alt="" coords="2507,181,2701,208"/>
+<area shape="rect" id="node49" href="$classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="2501,232,2707,258"/>
+<area shape="rect" id="node50" href="$classneb_1_1_worker_impl.html#a666df6b0593d965a3aea9d497c947b94" title="neb::WorkerImpl::Broadcast" alt="" coords="2511,282,2697,309"/>
+</map>

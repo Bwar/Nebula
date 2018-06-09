@@ -1,0 +1,16 @@
+<map id="neb::WorkerImpl::Handle" name="neb::WorkerImpl::Handle">
+<area shape="rect" id="node2" href="$class_http_msg.html#a6287289f3eb0f11713fb224733cd57e1" title="HttpMsg::type" alt="" coords="271,5,377,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#a259b24be64d803d3d3a5854f174e292a" title="HttpMsg::path" alt="" coords="271,56,377,83"/>
+<area shape="rect" id="node4" href="$class_http_msg.html#ab466622ab12ef17ceebefbe44125af9c" title="HttpMsg::set_type" alt="" coords="259,107,389,133"/>
+<area shape="rect" id="node5" href="$class_http_msg.html#ad740e8de344bea9a582a01df3d96eb5e" title="HttpMsg::set_status_code" alt="" coords="236,157,412,184"/>
+<area shape="rect" id="node6" href="$class_http_msg.html#a386b5092021d048c86c7b73e251e051c" title="HttpMsg::set_http_major" alt="" coords="241,208,407,235"/>
+<area shape="rect" id="node7" href="$class_http_msg.html#a630441004b1dd7ad98dd2ada818d6a3b" title="HttpMsg::http_major" alt="" coords="253,259,395,285"/>
+<area shape="rect" id="node8" href="$class_http_msg.html#a83532eae33643bede7eece9c8ece697e" title="HttpMsg::set_http_minor" alt="" coords="241,309,407,336"/>
+<area shape="rect" id="node9" href="$class_http_msg.html#a7c04064894b53cf1081f71bc7393e469" title="HttpMsg::http_minor" alt="" coords="253,360,395,387"/>
+<area shape="rect" id="node10" href="$classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="223,411,425,437"/>
+<area shape="rect" id="node11" href="$classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="221,461,427,488"/>
+<area shape="rect" id="node12" href="$class_http_msg.html#ac9e1dc39a940b92f67690bf0f6e2c47e" title="HttpMsg::url" alt="" coords="277,512,371,539"/>
+<area shape="rect" id="node13" href="$classneb_1_1_worker_impl.html#a2b35e33a105649052ed4d12f1f6a7563" title="neb::WorkerImpl::AddNamed\lSocketChannel" alt="" coords="229,563,419,605"/>
+<area shape="rect" id="node14" href="$classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="237,629,411,656"/>
+<area shape="rect" id="node15" href="$classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="475,629,683,656"/>
+</map>

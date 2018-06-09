@@ -1,0 +1,7 @@
+<map id="neb::WorkerImpl::AddNamedSocketChannel" name="neb::WorkerImpl::AddNamedSocketChannel">
+<area shape="rect" id="node2" href="$classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="264,5,411,46"/>
+<area shape="rect" id="node3" href="$classneb_1_1_step_tell_worker.html#ac2e7e37b4533edbcffddd19d25441170" title="步骤回调函数 " alt="" coords="267,70,408,111"/>
+<area shape="rect" id="node4" href="$classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="246,136,429,163"/>
+<area shape="rect" id="node6" href="$classneb_1_1_worker_impl.html#a7f76368a4bb684a10f0a7dfc66f635f4" title="收到完整的hhtp包后处理 " alt="" coords="254,187,421,213"/>
+<area shape="rect" id="node5" href="$classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="477,136,648,163"/>
+</map>

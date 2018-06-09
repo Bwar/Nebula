@@ -1,0 +1,12 @@
+<map id="neb::Manager::Broadcast" name="neb::Manager::Broadcast">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="239,31,412,73"/>
+<area shape="rect" id="node8" href="$classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="222,97,429,124"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1473,17,1631,44"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="477,43,672,69"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="720,43,941,69"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="990,43,1186,69"/>
+<area shape="rect" id="node7" href="$classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1235,43,1424,69"/>
+<area shape="rect" id="node9" href="$classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="484,93,665,120"/>
+<area shape="rect" id="node10" href="$classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="738,126,923,167"/>
+<area shape="rect" id="node11" href="$classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="999,115,1177,157"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="neb::WorkerFriend" name="neb::WorkerFriend">
+<area shape="rect" id="node2" href="$classneb_1_1_cmd_beat.html" title="{neb::CmdBeat\n||+ CmdBeat()\l+ ~CmdBeat()\l+ AnyMessage()\l}" alt="" coords="5,145,123,252"/>
+<area shape="rect" id="node3" href="$classneb_1_1_cmd_node_notice.html" title="节点注册 " alt="" coords="147,145,295,252"/>
+<area shape="rect" id="node4" href="$classneb_1_1_cmd_told_worker.html" title="{neb::CmdToldWorker\n||+ CmdToldWorker()\l+ ~CmdToldWorker()\l+ AnyMessage()\l}" alt="" coords="320,145,467,252"/>
+<area shape="rect" id="node5" href="$classneb_1_1_cmd_update_node_id.html" title="{neb::CmdUpdateNodeId\n||+ CmdUpdateNodeId()\l+ ~CmdUpdateNodeId()\l+ AnyMessage()\l}" alt="" coords="491,145,653,252"/>
+<area shape="rect" id="node6" href="$classneb_1_1_module_http_upgrade.html" title="{neb::ModuleHttpUpgrade\n||+ ModuleHttpUpgrade()\l+ ~ModuleHttpUpgrade()\l+ AnyMessage()\l# WebSocket()\l}" alt="" coords="678,138,844,259"/>
+<area shape="rect" id="node7" href="$classneb_1_1_step_io_timeout.html" title="IO超时回调步骤 " alt="" coords="869,131,1005,267"/>
+<area shape="rect" id="node8" href="$classneb_1_1_step_tell_worker.html" title="{neb::StepTellWorker\n||+ StepTellWorker()\l+ ~StepTellWorker()\l+ Emit()\l+ Callback()\l+ Timeout()\l}" alt="" coords="1029,131,1171,267"/>
+</map>

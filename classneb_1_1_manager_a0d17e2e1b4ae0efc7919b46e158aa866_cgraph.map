@@ -1,0 +1,13 @@
+<map id="neb::Manager::AutoSend" name="neb::Manager::AutoSend">
+<area shape="rect" id="node2" href="$process__helper_8c.html#ac424ba7557ca348995ffee17ce310f35" title="x_sock_set_block" alt="" coords="266,5,393,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a4b0ec19765cbc1244f71ec8942cee120" title="neb::Manager::CreateChannel" alt="" coords="231,56,427,83"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#a05d02bc4ebc282adef2f2c00cdce51a9" title="neb::Manager::AddIoTimeout" alt="" coords="234,107,425,133"/>
+<area shape="rect" id="node7" href="$classneb_1_1_manager.html#a3811acd4563323382ca4626cd5c244c5" title="neb::Manager::AddIoReadEvent" alt="" coords="225,157,433,184"/>
+<area shape="rect" id="node9" href="$classneb_1_1_manager.html#aa2ac3c9e55e4ae864ffa18ad7bba8f33" title="neb::Manager::AddIoWrite\lEvent" alt="" coords="242,209,417,250"/>
+<area shape="rect" id="node10" href="$classneb_1_1_manager.html#a57e8adb622005fc5fe1ab5fbfe2840e5" title="neb::Manager::DiscardSocket\lChannel" alt="" coords="232,274,427,315"/>
+<area shape="rect" id="node12" href="$classneb_1_1_manager.html#a378a3b5a4b03efd74a42ec64145b1b37" title="neb::Manager::AddNamedSocket\lChannel" alt="" coords="222,339,437,381"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#ae3cd78d22b41c887a514606a7cc899fc" title="neb::Manager::GetSequence" alt="" coords="501,56,689,83"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#af9fb147f16ff133c831e2a5146efc8bb" title="neb::Manager::IoTimeoutCallback" alt="" coords="485,107,704,133"/>
+<area shape="rect" id="node8" href="$classneb_1_1_manager.html#a676468e6f26f46f782cd296c23acca60" title="neb::Manager::IoCallback" alt="" coords="509,187,680,213"/>
+<area shape="rect" id="node11" href="$classneb_1_1_manager.html#a5fa2d8127a07de18616180ac94386b11" title="neb::Manager::DelEvents" alt="" coords="509,281,680,308"/>
+</map>

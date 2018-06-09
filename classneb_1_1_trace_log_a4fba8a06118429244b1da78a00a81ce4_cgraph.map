@@ -1,0 +1,10 @@
+<map id="neb::TraceLog::MergeFrom" name="neb::TraceLog::MergeFrom">
+<area shape="rect" id="node2" href="$classneb_1_1_trace_log.html#a494c92d6b4c2b24e1e22d837f220e020" title="neb::TraceLog::node_id" alt="" coords="233,5,391,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_trace_log.html#ab629f27d7d642ea91ecc69a1398bc02e" title="neb::TraceLog::set\l_node_id" alt="" coords="247,57,377,98"/>
+<area shape="rect" id="node4" href="$classneb_1_1_trace_log.html#a229e1144537036a6f6579d76568accf6" title="neb::TraceLog::node\l_identify" alt="" coords="241,122,383,163"/>
+<area shape="rect" id="node5" href="$classneb_1_1_trace_log.html#a6d8142ae1e8507d05f6fc2f381d82eb5" title="neb::TraceLog::code\l_file_name" alt="" coords="241,187,383,229"/>
+<area shape="rect" id="node6" href="$classneb_1_1_trace_log.html#a05a14b9c777c539a0fcbc9028789e285" title="neb::TraceLog::code\l_file_line" alt="" coords="241,253,383,294"/>
+<area shape="rect" id="node7" href="$classneb_1_1_trace_log.html#a1dcb2189627f20c3aae9d1e0980d11f1" title="neb::TraceLog::set\l_code_file_line" alt="" coords="247,318,377,359"/>
+<area shape="rect" id="node8" href="$classneb_1_1_trace_log.html#ab9f624cdac36c60fb2b8fa8ceb0c9443" title="neb::TraceLog::code\l_function" alt="" coords="241,383,383,425"/>
+<area shape="rect" id="node9" href="$classneb_1_1_trace_log.html#a85aae19f32f4a6698275a50e0a1a08f5" title="neb::TraceLog::log\l_content" alt="" coords="247,449,377,490"/>
+</map>

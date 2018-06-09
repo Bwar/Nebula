@@ -1,0 +1,5 @@
+<map id="neb::Channel" name="neb::Channel">
+<area shape="rect" id="node2" href="$classneb_1_1_redis_channel.html" title="{neb::RedisChannel\n||+ RedisChannel()\l+ ~RedisChannel()\l+ GetIdentify()\l+ SetIdentify()\l+ RedisContext()\l}" alt="" coords="5,191,139,327"/>
+<area shape="rect" id="node3" href="$classneb_1_1_socket_channel.html" title="{neb::SocketChannel\n||+ SocketChannel()\l+ ~SocketChannel()\l+ GetIdentify()\l+ GetRemoteAddr()\l+ GetClientData()\l+ SendChannelFd()\l+ RecvChannelFd()\l}" alt="" coords="163,176,303,341"/>
+<area shape="rect" id="node4" href="$classneb_1_1_socket_channel_impl.html" title="{neb::SocketChannelImpl\n||+ SocketChannelImpl()\l+ ~SocketChannelImpl()\l+ Init()\l+ GetCodecType()\l+ Send()\l+ Send()\l+ Send()\l+ Recv()\l+ Recv()\l+ Recv()\l和 32 更多...\l}" alt="" coords="328,147,493,371"/>
+</map>

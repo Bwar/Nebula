@@ -1,0 +1,27 @@
+<map id="neb::CBuffer::Capacity" name="neb::CBuffer::Capacity">
+<area shape="rect" id="node2" href="$classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="211,127,368,153"/>
+<area shape="rect" id="node7" href="$classneb_1_1_c_buffer.html#aa456a7e65f4acfa46411396161360d50" title="neb::CBuffer::EnsureWritable\lBytes" alt="" coords="417,181,610,222"/>
+<area shape="rect" id="node3" href="$classneb_1_1_socket_channel_impl.html#a8483606b2ef5d51e04bbdba60c487243" title="neb::SocketChannelImpl\l::Send" alt="" coords="431,94,596,135"/>
+<area shape="rect" id="node5" href="$classneb_1_1_socket_channel_impl.html#affbafbef916a7b1e063feb58b4da769c" title="neb::SocketChannelImpl\l::Abort" alt="" coords="431,18,596,59"/>
+<area shape="rect" id="node4" href="$classneb_1_1_socket_channel_impl.html#acdfff0a5710239c7dbea1fcd33238699" title="neb::SocketChannelImpl\l::Send" alt="" coords="659,71,824,113"/>
+<area shape="rect" id="node6" href="$classneb_1_1_socket_channel_impl.html#a980cc1e92b361bd3392c271de58a47a6" title="neb::SocketChannelImpl\l::~SocketChannelImpl" alt="" coords="659,6,824,47"/>
+<area shape="rect" id="node8" href="$classneb_1_1_c_buffer.html#a7b5eff63263e4aed8d6029a23236b176" title="neb::CBuffer::VPrintf" alt="" coords="669,239,813,265"/>
+<area shape="rect" id="node11" href="$classneb_1_1_c_buffer.html#aa60c466afa7a364382554838569fabdc" title="neb::CBuffer::Reserve" alt="" coords="665,289,818,316"/>
+<area shape="rect" id="node12" href="$classneb_1_1_c_buffer.html#ab8b67f5c5eaf8ab843541f10599f3c58" title="neb::CBuffer::Write" alt="" coords="674,460,809,487"/>
+<area shape="rect" id="node25" href="$classneb_1_1_c_buffer.html#a33dcddb7fc1b2db78feec839b509ec7d" title="neb::CBuffer::Copyout" alt="" coords="665,137,818,164"/>
+<area shape="rect" id="node26" href="$classneb_1_1_c_buffer.html#a877e84d3d4ef7640e49ea491ca618196" title="neb::CBuffer::CBuffer" alt="" coords="667,188,816,215"/>
+<area shape="rect" id="node9" href="$classneb_1_1_c_buffer.html#a2168d70a67ea375f938bf319c14b7a06" title="neb::CBuffer::Printf" alt="" coords="893,117,1027,144"/>
+<area shape="rect" id="node10" href="$classneb_1_1_codec_http.html#a517a2abd84b5bdeabe429ac9c9e59a5e" title="neb::CodecHttp::Encode" alt="" coords="1097,168,1263,195"/>
+<area shape="rect" id="node13" href="$classneb_1_1_codec_private.html#a69313ffe8d7d8be850bef1435dbc4a7b" title="字节流编码 " alt="" coords="891,270,1029,311"/>
+<area shape="rect" id="node14" href="$classneb_1_1_codec_proto.html#a80c44d1ebe71bbbc6e72883913ca1330" title="字节流编码 " alt="" coords="874,336,1046,363"/>
+<area shape="rect" id="node15" href="$classneb_1_1_codec_ws_extent_json.html#ab27bd660308c6b186e4e799f9b0c3e48" title="字节流编码 " alt="" coords="873,387,1047,429"/>
+<area shape="rect" id="node16" href="$classneb_1_1_codec_ws_extent_pb.html#a0b49888e9090d0a6b710b147afb95549" title="字节流编码 " alt="" coords="879,453,1041,494"/>
+<area shape="rect" id="node17" href="$classneb_1_1_c_buffer.html#a9e30405bfb0f027fe8e3164dc1b123b7" title="neb::CBuffer::ReadFD" alt="" coords="883,620,1037,647"/>
+<area shape="rect" id="node19" href="$classneb_1_1_c_buffer.html#a20bcdfef74d3ee0e76b97376567c0ed3" title="neb::CBuffer::Write" alt="" coords="893,569,1027,596"/>
+<area shape="rect" id="node20" href="$classneb_1_1_c_buffer.html#a291cae92e5ad5175569c4a5c4888aacc" title="neb::CBuffer::WriteByte" alt="" coords="879,168,1041,195"/>
+<area shape="rect" id="node21" href="$classneb_1_1_c_buffer.html#a9c34720b2036c10e61eaeb90853d8660" title="neb::CBuffer::Read" alt="" coords="893,671,1027,697"/>
+<area shape="rect" id="node22" href="$classneb_1_1_c_tlv.html#a8b4796cbcfed0a01aadc1d8fefce89d5" title="neb::CTlv::CTlv" alt="" coords="903,721,1017,748"/>
+<area shape="rect" id="node23" href="$classneb_1_1_c_tlv.html#a78195ffdc7072f26fa27838058ee704f" title="neb::CTlv::Encode" alt="" coords="895,772,1025,799"/>
+<area shape="rect" id="node24" href="$classneb_1_1_c_tlv.html#ab209e15b148e4f83074c4fccb706fd27" title="neb::CTlv::Decode" alt="" coords="894,219,1026,245"/>
+<area shape="rect" id="node18" href="$classneb_1_1_socket_channel_impl.html#aaf5625b34f30b103ec7ca68e0cbf07f3" title="neb::SocketChannelImpl\l::Recv" alt="" coords="1097,613,1263,654"/>
+</map>

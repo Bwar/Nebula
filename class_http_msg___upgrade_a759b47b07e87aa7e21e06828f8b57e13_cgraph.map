@@ -1,0 +1,5 @@
+<map id="HttpMsg_Upgrade::MergeFrom" name="HttpMsg_Upgrade::MergeFrom">
+<area shape="rect" id="node2" href="$class_http_msg___upgrade.html#a8aac831f3b3fbc70c06d48af0f249a4c" title="HttpMsg_Upgrade::is\l_upgrade" alt="" coords="275,5,421,46"/>
+<area shape="rect" id="node3" href="$class_http_msg___upgrade.html#a2be103a5f111ee3811d14359f39b2f76" title="HttpMsg_Upgrade::set\l_is_upgrade" alt="" coords="271,70,425,111"/>
+<area shape="rect" id="node4" href="$class_http_msg___upgrade.html#a222e0a98be9392c40fdf53cccfec9b2c" title="HttpMsg_Upgrade::protocol" alt="" coords="257,136,439,163"/>
+</map>

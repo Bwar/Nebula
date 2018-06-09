@@ -1,0 +1,5 @@
+<map id="neb::CodecHttp::OnBody" name="neb::CodecHttp::OnBody">
+<area shape="rect" id="node2" href="$class_http_msg.html#ad458ff4134ed34b25c1eed6b8e3f0f36" title="HttpMsg::body" alt="" coords="251,5,359,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#a7997f5d2cc03badb91eca75a01f061f9" title="HttpMsg::mutable_body" alt="" coords="225,56,386,83"/>
+<area shape="rect" id="node4" href="$class_http_msg.html#a40ad6377a791cdd34ae787b47ecae095" title="HttpMsg::set_body" alt="" coords="239,107,372,133"/>
+</map>

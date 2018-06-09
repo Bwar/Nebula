@@ -1,0 +1,5 @@
+<map id="HttpMsg_Header::SerializeWithCachedSizesToArray" name="HttpMsg_Header::SerializeWithCachedSizesToArray">
+<area shape="rect" id="node2" href="$class_http_msg___header.html#a2565d9e7fd2a342a1bf7775547861d7f" title="HttpMsg_Header::Internal\lSerializeWithCachedSizesToArray" alt="" coords="233,27,455,69"/>
+<area shape="rect" id="node3" href="$class_http_msg___header.html#a23b91f6bf1f0d9909c45f7db4d82540f" title="HttpMsg_Header::header_name" alt="" coords="505,5,711,32"/>
+<area shape="rect" id="node4" href="$class_http_msg___header.html#ae32042607d046d8c09070b20abd5c4ab" title="HttpMsg_Header::header\l_value" alt="" coords="524,57,692,98"/>
+</map>

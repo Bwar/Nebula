@@ -1,0 +1,14 @@
+<map id="neb::CodecHttp::ToString" name="neb::CodecHttp::ToString">
+<area shape="rect" id="node2" href="$class_http_msg.html#a630441004b1dd7ad98dd2ada818d6a3b" title="HttpMsg::http_major" alt="" coords="257,5,399,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#a7c04064894b53cf1081f71bc7393e469" title="HttpMsg::http_minor" alt="" coords="257,56,399,83"/>
+<area shape="rect" id="node4" href="$class_http_msg.html#a6287289f3eb0f11713fb224733cd57e1" title="HttpMsg::type" alt="" coords="275,107,381,133"/>
+<area shape="rect" id="node5" href="$http__parser_8c.html#acdafb72b3fddca085841586537406859" title="http_method_str" alt="" coords="270,157,386,184"/>
+<area shape="rect" id="node6" href="$class_http_msg.html#a2bda70c8514dab9df26df4c32b2d61fb" title="HttpMsg::method" alt="" coords="267,208,389,235"/>
+<area shape="rect" id="node7" href="$class_http_msg.html#ac9e1dc39a940b92f67690bf0f6e2c47e" title="HttpMsg::url" alt="" coords="281,259,375,285"/>
+<area shape="rect" id="node8" href="$class_http_msg.html#adc7b6752150d5dcf6748431d7f153ddf" title="HttpMsg::status_code" alt="" coords="253,309,403,336"/>
+<area shape="rect" id="node9" href="$class_http_msg.html#a29fd49b181f09e297e311459c1d109f5" title="HttpMsg::headers_size" alt="" coords="249,360,407,387"/>
+<area shape="rect" id="node10" href="$class_http_msg.html#a281eea2ff34e758d36cec40bb8d1215b" title="HttpMsg::headers" alt="" coords="265,411,391,437"/>
+<area shape="rect" id="node11" href="$class_http_msg___header.html#a23b91f6bf1f0d9909c45f7db4d82540f" title="HttpMsg_Header::header_name" alt="" coords="225,461,431,488"/>
+<area shape="rect" id="node12" href="$class_http_msg___header.html#ae32042607d046d8c09070b20abd5c4ab" title="HttpMsg_Header::header\l_value" alt="" coords="244,513,412,554"/>
+<area shape="rect" id="node13" href="$class_http_msg.html#ad458ff4134ed34b25c1eed6b8e3f0f36" title="HttpMsg::body" alt="" coords="274,579,382,605"/>
+</map>

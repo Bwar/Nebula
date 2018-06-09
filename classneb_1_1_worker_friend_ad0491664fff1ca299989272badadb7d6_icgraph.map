@@ -1,0 +1,10 @@
+<map id="neb::WorkerFriend::GetWorkerImpl" name="neb::WorkerFriend::GetWorkerImpl">
+<area shape="rect" id="node2" href="$classneb_1_1_cmd_node_notice.html#a6230a8d89e762eeb41ae566d4e2f14e6" title="命令处理入口 " alt="" coords="202,5,350,46"/>
+<area shape="rect" id="node3" href="$classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="203,70,349,111"/>
+<area shape="rect" id="node4" href="$classneb_1_1_cmd_update_node_id.html#a2e12ec27f33c6b6186a2d1b043f5db5f" title="命令处理入口 " alt="" coords="195,135,357,177"/>
+<area shape="rect" id="node5" href="$classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="193,201,359,242"/>
+<area shape="rect" id="node7" href="$classneb_1_1_step_io_timeout.html#aab7588726c8a15834212e0021d5c0d68" title="步骤回调函数 " alt="" coords="208,266,344,307"/>
+<area shape="rect" id="node8" href="$classneb_1_1_step_io_timeout.html#a391796fab2a32cfe00cffa8fd7717e68" title="步骤超时回调 " alt="" coords="208,331,344,373"/>
+<area shape="rect" id="node9" href="$classneb_1_1_step_tell_worker.html#ac2e7e37b4533edbcffddd19d25441170" title="步骤回调函数 " alt="" coords="205,397,347,438"/>
+<area shape="rect" id="node6" href="$classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="409,201,575,242"/>
+</map>

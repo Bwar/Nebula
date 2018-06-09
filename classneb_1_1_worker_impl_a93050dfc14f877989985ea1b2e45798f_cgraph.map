@@ -1,0 +1,18 @@
+<map id="neb::WorkerImpl::DiscardSocketChannel" name="neb::WorkerImpl::DiscardSocketChannel">
+<area shape="rect" id="node2" href="$classneb_1_1_worker_impl.html#a6683263c1d0c5eef4f2a390da02b788a" title="neb::WorkerImpl::Channel\lNotice" alt="" coords="225,255,399,297"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="473,5,629,46"/>
+<area shape="rect" id="node6" href="$class_msg_body___request.html#a9039c904cfec45b6447ddcdcdbcb602a" title="MsgBody_Request::set\l_route_id" alt="" coords="471,70,630,111"/>
+<area shape="rect" id="node7" href="$class_msg_body.html#a582009cf3fad55ea2d0327b052e3adf0" title="MsgBody::set_data" alt="" coords="483,136,618,163"/>
+<area shape="rect" id="node8" href="$class_msg_body.html#a94f10bc2169d84f372018895934565fd" title="MsgBody::set_add_on" alt="" coords="475,187,627,213"/>
+<area shape="rect" id="node9" href="$class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="483,237,619,264"/>
+<area shape="rect" id="node10" href="$class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="485,288,617,315"/>
+<area shape="rect" id="node11" href="$classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="448,339,653,365"/>
+<area shape="rect" id="node12" href="$class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="487,389,615,416"/>
+<area shape="rect" id="node13" href="$class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="481,440,620,467"/>
+<area shape="rect" id="node17" href="$classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="449,491,652,517"/>
+<area shape="rect" id="node4" href="$class_msg_body.html#a86b0aefb20f53830ab52253f12bfa168" title="MsgBody::has_req_target" alt="" coords="701,151,872,177"/>
+<area shape="rect" id="node5" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="921,321,1098,348"/>
+<area shape="rect" id="node14" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="731,339,842,365"/>
+<area shape="rect" id="node15" href="$class_msg_body.html#a02177ab02a19889a5a90b5aea2759787" title="MsgBody::add_on" alt="" coords="723,389,850,416"/>
+<area shape="rect" id="node16" href="$class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="721,440,852,467"/>
+</map>

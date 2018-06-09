@@ -1,0 +1,5 @@
+<map id="neb::Manager::SetWorkerLoad" name="neb::Manager::SetWorkerLoad">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#aed93abd4232e5f4b5089094628dc4ee3" title="neb::Manager::OnWorkerData" alt="" coords="254,12,450,39"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="499,5,690,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="739,12,907,39"/>
+</map>

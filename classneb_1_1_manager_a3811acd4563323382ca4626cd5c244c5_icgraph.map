@@ -1,0 +1,12 @@
+<map id="neb::Manager::AddIoReadEvent" name="neb::Manager::AddIoReadEvent">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a95ce1f7539a73754369ebce15ec9a2ad" title="neb::Manager::AcceptServerConn" alt="" coords="261,5,480,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#a0d17e2e1b4ae0efc7919b46e158aa866" title="neb::Manager::AutoSend" alt="" coords="287,56,454,83"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1043,157,1232,184"/>
+<area shape="rect" id="node8" href="$classneb_1_1_manager.html#a5a48117a6e444ae430cccf0f245e2d61" title="neb::Manager::CreateWorker" alt="" coords="801,208,991,235"/>
+<area shape="rect" id="node9" href="$classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="273,107,468,133"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="555,5,723,32"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#abd766e1daf2f97a59b3c797cf003008c" title="neb::Manager::SendTo" alt="" coords="561,56,716,83"/>
+<area shape="rect" id="node7" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1281,183,1439,209"/>
+<area shape="rect" id="node10" href="$classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="528,107,749,133"/>
+<area shape="rect" id="node11" href="$classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="798,107,994,133"/>
+</map>

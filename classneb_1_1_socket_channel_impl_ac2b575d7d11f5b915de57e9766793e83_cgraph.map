@@ -1,0 +1,6 @@
+<map id="neb::SocketChannelImpl::Fetch" name="neb::SocketChannelImpl::Fetch">
+<area shape="rect" id="node2" href="$classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="219,5,405,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_codec.html#a399e3f59c1e13efee59b8fb9e2b6d64d" title="字节流解码 " alt="" coords="241,56,383,83"/>
+<area shape="rect" id="node4" href="$class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="259,107,365,133"/>
+<area shape="rect" id="node5" href="$class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="257,157,367,184"/>
+</map>

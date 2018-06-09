@@ -1,0 +1,11 @@
+<map id="neb::WorkerImpl::DelNamedRedisChannel" name="neb::WorkerImpl::DelNamedRedisChannel">
+<area shape="rect" id="node2" href="$classneb_1_1_worker_impl.html#af03f082b931ad427a984a8302eaa195e" title="neb::WorkerImpl::OnRedis\lConnected" alt="" coords="707,70,885,111"/>
+<area shape="rect" id="node6" href="$classneb_1_1_worker_impl.html#ae7bc8b25a057936ab51f518439e31ad9" title="neb::WorkerImpl::OnRedis\lDisconnected" alt="" coords="475,7,653,49"/>
+<area shape="rect" id="node8" href="$classneb_1_1_worker_impl.html#a5114b64df8a02ac39d39bb71d1518cb7" title="neb::WorkerImpl::OnRedis\lCmdResult" alt="" coords="243,127,421,169"/>
+<area shape="rect" id="node3" href="$classneb_1_1_worker_impl.html#a9a77924f4b4d49f5b8bca5261489ef2f" title="neb::WorkerImpl::RedisConnect\lCallback" alt="" coords="942,70,1151,111"/>
+<area shape="rect" id="node4" href="$classneb_1_1_worker_impl.html#afdd64a11a46cdc1130d4a85e52389ab9" title="neb::WorkerImpl::AutoRedisCmd" alt="" coords="1209,45,1423,72"/>
+<area shape="rect" id="node5" href="$classneb_1_1_worker_impl.html#a8bfc1a9e6a2af454cf6e9b8b2a5edaad" title="neb::WorkerImpl::SendTo" alt="" coords="1472,45,1643,72"/>
+<area shape="rect" id="node7" href="$classneb_1_1_worker_impl.html#a37cdebf9fd9756587ca48db3d862cb7b" title="neb::WorkerImpl::RedisDisconnect\lCallback" alt="" coords="933,5,1160,46"/>
+<area shape="rect" id="node9" href="$classneb_1_1_worker_impl.html#acc2cbad768d9cd89f1b7edf5d6885d95" title="neb::WorkerImpl::RedisCmd\lCallback" alt="" coords="470,127,658,169"/>
+<area shape="rect" id="node10" href="$classneb_1_1_worker_impl.html#a5914f444819dd21206fe963b66268410" title="neb::WorkerImpl::SendTo" alt="" coords="711,136,881,163"/>
+</map>

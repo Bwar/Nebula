@@ -1,0 +1,7 @@
+<map id="neb::Manager::AddNamedSocketChannel" name="neb::Manager::AddNamedSocketChannel">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a0d17e2e1b4ae0efc7919b46e158aa866" title="neb::Manager::AutoSend" alt="" coords="286,8,453,35"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="270,60,469,87"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#abd766e1daf2f97a59b3c797cf003008c" title="neb::Manager::SendTo" alt="" coords="536,5,691,32"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="518,57,709,98"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="757,64,925,91"/>
+</map>

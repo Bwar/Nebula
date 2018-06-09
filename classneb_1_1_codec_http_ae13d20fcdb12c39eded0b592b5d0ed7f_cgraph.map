@@ -1,0 +1,5 @@
+<map id="neb::CodecHttp::OnUrl" name="neb::CodecHttp::OnUrl">
+<area shape="rect" id="node2" href="$class_http_msg.html#af4d09bf1da9bc32a4b9a07b5b952d7db" title="HttpMsg::set_url" alt="" coords="225,5,343,32"/>
+<area shape="rect" id="node3" href="$http__parser_8c.html#aeb269310a348fd68fd001b30b690fc83" title="http_parser_parse_url" alt="" coords="211,56,357,83"/>
+<area shape="rect" id="node4" href="$class_http_msg.html#a87cd61f0acb762f74bd2b31750beca9f" title="HttpMsg::set_path" alt="" coords="219,107,349,133"/>
+</map>

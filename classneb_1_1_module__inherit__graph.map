@@ -1,0 +1,5 @@
+<map id="neb::Module" name="neb::Module">
+<area shape="rect" id="node5" href="$classneb_1_1_module_http_upgrade.html" title="{neb::ModuleHttpUpgrade\n||+ ModuleHttpUpgrade()\l+ ~ModuleHttpUpgrade()\l+ AnyMessage()\l# WebSocket()\l}" alt="" coords="5,963,171,1085"/>
+<area shape="rect" id="node2" href="$classneb_1_1_module_model.html" title="{neb::ModuleModel\n||+ ModuleModel()\l+ ModuleModel()\l+ operator=()\l+ ~ModuleModel()\l+ Init()\l+ AnyMessage()\l# GetModulePath()\l}" alt="" coords="23,477,153,643"/>
+<area shape="rect" id="node3" href="$classneb_1_1_actor.html" title="{neb::Actor\n||+ Actor()\l+ Actor()\l+ operator=()\l+ ~Actor()\l# GetSequence()\l# GetNodeId()\l# GetWorkerIndex()\l# GetDefaultTimeout()\l# GetNodeType()\l# GetWorkPath()\l# GetNodeIdentify()\l# GetNowTime()\l# GetCustomConf()\l# GetSession()\l和 13 更多...\l}" alt="" coords="13,147,163,429"/>
+</map>

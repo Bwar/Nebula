@@ -1,0 +1,8 @@
+<map id="HttpMsg::headers" name="HttpMsg::headers">
+<area shape="rect" id="node2" href="$classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="183,5,350,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_codec_http.html#ace229dbc77fbcde0a7e4831445c8218c" title="字节流解码 " alt="" coords="183,71,350,97"/>
+<area shape="rect" id="node5" href="$classneb_1_1_codec_http.html#a517a2abd84b5bdeabe429ac9c9e59a5e" title="neb::CodecHttp::Encode" alt="" coords="183,121,350,148"/>
+<area shape="rect" id="node6" href="$classneb_1_1_codec_http.html#a267f62e7bf45f5965eb9600967d48f56" title="neb::CodecHttp::ToString" alt="" coords="181,172,352,199"/>
+<area shape="rect" id="node3" href="$classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="401,5,567,46"/>
+<area shape="rect" id="node7" href="$classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="401,172,567,199"/>
+</map>

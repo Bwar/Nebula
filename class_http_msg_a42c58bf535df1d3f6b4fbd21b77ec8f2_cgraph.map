@@ -1,0 +1,10 @@
+<map id="HttpMsg::MergePartialFromCodedStream" name="HttpMsg::MergePartialFromCodedStream">
+<area shape="rect" id="node2" href="$class_http_msg.html#ab50b13bfe19d41014bfa3549e0b2281b" title="HttpMsg::mutable_url" alt="" coords="253,5,400,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#ac9e1dc39a940b92f67690bf0f6e2c47e" title="HttpMsg::url" alt="" coords="279,56,374,83"/>
+<area shape="rect" id="node4" href="$class_http_msg.html#afc3b4c0b52130e00ac71d8645daf1b10" title="HttpMsg::add_headers" alt="" coords="249,107,404,133"/>
+<area shape="rect" id="node5" href="$class_http_msg.html#a7997f5d2cc03badb91eca75a01f061f9" title="HttpMsg::mutable_body" alt="" coords="246,157,407,184"/>
+<area shape="rect" id="node6" href="$class_http_msg.html#aad6b95022854a3802bafa9859ef057ff" title="HttpMsg::add_params" alt="" coords="251,208,402,235"/>
+<area shape="rect" id="node7" href="$class_http_msg.html#a48057a1a6acdf2e67af311617234f1e6" title="HttpMsg::mutable_upgrade" alt="" coords="237,259,416,285"/>
+<area shape="rect" id="node8" href="$class_http_msg.html#afa71db58c32854156e41c2cc58b0ebc5" title="HttpMsg::mutable_path" alt="" coords="247,309,406,336"/>
+<area shape="rect" id="node9" href="$class_http_msg.html#a259b24be64d803d3d3a5854f174e292a" title="HttpMsg::path" alt="" coords="274,360,379,387"/>
+</map>

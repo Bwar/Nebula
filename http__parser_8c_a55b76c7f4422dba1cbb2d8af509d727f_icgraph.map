@@ -1,0 +1,6 @@
+<map id="http_message_needs_eof" name="http_message_needs_eof">
+<area shape="rect" id="node2" href="$http__parser_8h.html#a5034165465db6c488ce8b75fd0f72faf" title="http_parser_execute" alt="" coords="457,5,597,32"/>
+<area shape="rect" id="node4" href="$http__parser_8h.html#abefaa63b2505a6d38f96fc782c41d111" title="http_should_keep_alive" alt="" coords="225,60,383,87"/>
+<area shape="rect" id="node3" href="$classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="670,35,837,61"/>
+<area shape="rect" id="node5" href="$classneb_1_1_codec_http.html#a9c3cd6d78fb52643fc325487030949da" title="neb::CodecHttp::OnHeaders\lComplete" alt="" coords="433,57,621,98"/>
+</map>

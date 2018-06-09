@@ -1,0 +1,17 @@
+<map id="src/channel/SocketChannel.hpp" name="src/channel/SocketChannel.hpp">
+<area shape="rect" id="node2" href="$_socket_channel_impl_8hpp.html" title="SocketChannelImpl.hpp" alt="" coords="1354,80,1515,107"/>
+<area shape="rect" id="node5" href="$_c_buffer_8hpp.html" title="util/CBuffer.hpp" alt="" coords="765,229,877,256"/>
+<area shape="rect" id="node16" href="$_stream_codec_8hpp.html" title="util/StreamCodec.hpp" alt="" coords="1594,155,1741,181"/>
+<area shape="rect" id="node17" href="$_c_json_object_8hpp.html" title="util/json/CJsonObject.hpp" alt="" coords="3314,229,3485,256"/>
+<area shape="rect" id="node28" href="$_codec_8hpp.html" title="codec/Codec.hpp" alt="" coords="1273,155,1396,181"/>
+<area shape="rect" id="node46" href="$_channel_8hpp.html" title="Channel.hpp" alt="" coords="1766,155,1860,181"/>
+<area shape="rect" id="node41" href="$_definition_8hpp.html" title="Definition.hpp" alt="" coords="2039,229,2141,256"/>
+<area shape="rect" id="node43" href="$_net_logger_8hpp.html" title="util/logger/NetLogger.hpp" alt="" coords="159,229,325,256"/>
+<area shape="rect" id="node27" href="$c_j_s_o_n_8h.html" title="cJSON.h" alt="" coords="3654,312,3729,339"/>
+<area shape="rect" id="node29" href="$_c_w_8hpp.html" title="actor/cmd/CW.hpp" alt="" coords="1883,229,2015,256"/>
+<area shape="rect" id="node30" href="$msg_8pb_8h.html" title="pb/msg.pb.h" alt="" coords="1765,229,1859,256"/>
+<area shape="rect" id="node40" href="$_error_8hpp.html" title="Error.hpp" alt="" coords="1236,229,1311,256"/>
+<area shape="rect" id="node42" href="$_codec_define_8hpp.html" title="CodecDefine.hpp" alt="" coords="1335,229,1457,256"/>
+<area shape="rect" id="node44" href="$_file_logger_8hpp.html" title="FileLogger.hpp" alt="" coords="99,312,205,339"/>
+<area shape="rect" id="node45" href="$_logger_8hpp.html" title="Logger.hpp" alt="" coords="154,395,240,421"/>
+</map>

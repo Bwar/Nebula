@@ -1,0 +1,10 @@
+<map id="neb::Manager::SetWorkerLoad" name="neb::Manager::SetWorkerLoad">
+<area shape="rect" id="node2" href="$classneb_1_1_c_json_object.html#a0e48820c581fd9069a6b2f1d5e88e9f1" title="neb::CJsonObject::Get" alt="" coords="254,56,410,83"/>
+<area shape="rect" id="node3" href="$c_j_s_o_n_8c.html#aba766c9d2c20996e323522cbf2ba46c6" title="cJSON_GetObjectItem" alt="" coords="465,5,623,32"/>
+<area shape="rect" id="node4" href="$c_j_s_o_n_8c.html#aea4f15b04dba4dff2edc2bb1d387b555" title="cJSON_Print" alt="" coords="495,56,593,83"/>
+<area shape="rect" id="node5" href="$classneb_1_1_c_json_object.html#a2836a804d5b026725d220d198bb96aa5" title="neb::CJsonObject::Parse" alt="" coords="459,107,629,133"/>
+<area shape="rect" id="node6" href="$classneb_1_1_c_json_object.html#ae5b74bd05db856ebe68031d15fcfd693" title="neb::CJsonObject::Clear" alt="" coords="678,56,845,83"/>
+<area shape="rect" id="node8" href="$c_j_s_o_n_8c.html#ad3df5f943457d4befebe4109d48e4a50" title="cJSON_Parse" alt="" coords="708,107,815,133"/>
+<area shape="rect" id="node9" href="$c_j_s_o_n_8c.html#a176d66e0a0e090ce57633ac53a4379fa" title="cJSON_GetErrorPtr" alt="" coords="692,157,831,184"/>
+<area shape="rect" id="node7" href="$c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="894,81,1005,108"/>
+</map>

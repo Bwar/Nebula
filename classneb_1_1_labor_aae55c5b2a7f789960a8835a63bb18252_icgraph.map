@@ -1,0 +1,7 @@
+<map id="neb::Labor::GetNowTime" name="neb::Labor::GetNowTime">
+<area shape="rect" id="node2" href="$classneb_1_1_socket_channel_impl.html#a15d47dae9816b043bdeeabce029f88c0" title="neb::SocketChannelImpl\l::Init" alt="" coords="221,5,387,46"/>
+<area shape="rect" id="node3" href="$classneb_1_1_socket_channel_impl.html#a8483606b2ef5d51e04bbdba60c487243" title="neb::SocketChannelImpl\l::Send" alt="" coords="221,70,387,111"/>
+<area shape="rect" id="node5" href="$classneb_1_1_socket_channel_impl.html#aaf5625b34f30b103ec7ca68e0cbf07f3" title="neb::SocketChannelImpl\l::Recv" alt="" coords="221,135,387,177"/>
+<area shape="rect" id="node6" href="$classneb_1_1_socket_channel_impl.html#a323644dc0242dc5083ca03435bb401b5" title="neb::SocketChannelImpl\l::SwitchCodec" alt="" coords="221,201,387,242"/>
+<area shape="rect" id="node4" href="$classneb_1_1_socket_channel_impl.html#acdfff0a5710239c7dbea1fcd33238699" title="neb::SocketChannelImpl\l::Send" alt="" coords="435,70,600,111"/>
+</map>

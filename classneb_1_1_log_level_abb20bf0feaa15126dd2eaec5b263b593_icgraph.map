@@ -1,0 +1,8 @@
+<map id="neb::LogLevel::set_log_level" name="neb::LogLevel::set_log_level">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#afca7b496e72cfecc346d1bda0c928acb" title="neb::Manager::RefreshServer" alt="" coords="185,12,378,39"/>
+<area shape="rect" id="node7" href="$classneb_1_1_log_level.html#a3b94a559d555083c6ea91c6d67f8d38b" title="neb::LogLevel::MergeFrom" alt="" coords="193,63,370,89"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="427,5,613,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="661,5,840,46"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="888,12,1077,39"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1126,12,1285,39"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="ngx_setproctitle" name="ngx_setproctitle">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="203,5,362,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a4f11e03653a3fc256f3234dfc786082c" title="neb::Manager::SetProcessName" alt="" coords="177,56,389,83"/>
+<area shape="rect" id="node4" href="$classneb_1_1_worker_impl.html#a8dda2af4669c9a2c69bf98edf38bbd89" title="neb::WorkerImpl::SetProcessName" alt="" coords="168,107,397,133"/>
+<area shape="rect" id="node5" href="$classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="211,157,355,184"/>
+<area shape="rect" id="node6" href="$classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="446,157,639,184"/>
+</map>

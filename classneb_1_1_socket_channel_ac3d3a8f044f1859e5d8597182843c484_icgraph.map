@@ -1,0 +1,6 @@
+<map id="neb::SocketChannel::SendChannelFd" name="neb::SocketChannel::SendChannelFd">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#ade4084dc378090b6aeed77bd3707aa97" title="neb::Manager::FdTransfer" alt="" coords="493,5,665,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#ac15a4b57ecf75db04a63c4cf2db85699" title="neb::Manager::OnDataAndTransferFd" alt="" coords="195,60,435,87"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="723,35,891,61"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="483,57,674,98"/>
+</map>

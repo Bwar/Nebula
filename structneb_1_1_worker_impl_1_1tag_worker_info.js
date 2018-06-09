@@ -1,0 +1,25 @@
+var structneb_1_1_worker_impl_1_1tag_worker_info =
+[
+    [ "tagWorkerInfo", "structneb_1_1_worker_impl_1_1tag_worker_info.html#aae75f9be7cc27c44fe5b5aa17fff9e40", null ],
+    [ "bIsAccess", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a49e2c806d5566666a7d688ec0bfb9471", null ],
+    [ "dIoTimeout", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a8c5e07183e506519a22f83bc1c487166", null ],
+    [ "dMsgStatInterval", "structneb_1_1_worker_impl_1_1tag_worker_info.html#ad8cbaa39bb243e9f99eacb0062d4ea43", null ],
+    [ "dStepTimeout", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a2fb72f4283b1f1f1765763bc3d25966f", null ],
+    [ "iClientNum", "structneb_1_1_worker_impl_1_1tag_worker_info.html#ac3e7fd5e0d67bf16f4c3dcdc9e13ba9f", null ],
+    [ "iConnectionNum", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a173eaf9e0a7d48021480129649279330", null ],
+    [ "iManagerControlFd", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a339dab1a69b18179128b0c9ecbdd913d", null ],
+    [ "iManagerDataFd", "structneb_1_1_worker_impl_1_1tag_worker_info.html#ae7042f92da11be82fbe63ac3ef61b8af", null ],
+    [ "iMsgPermitNum", "structneb_1_1_worker_impl_1_1tag_worker_info.html#aee0de86cac28f0cb32d1837c047ed9bf", null ],
+    [ "iPortForServer", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a64a1237d462ae726d6e2039255fab2f1", null ],
+    [ "iRecvByte", "structneb_1_1_worker_impl_1_1tag_worker_info.html#af7bd211087393fdd8f45687c40555d8b", null ],
+    [ "iRecvNum", "structneb_1_1_worker_impl_1_1tag_worker_info.html#afcc3ece8b235f3abc170554e69fb54be", null ],
+    [ "iSendByte", "structneb_1_1_worker_impl_1_1tag_worker_info.html#ab322fd4ca694d7da16c7bddc0dcb0a0b", null ],
+    [ "iSendNum", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a8a863e0851303bc7314f689348654070", null ],
+    [ "iWorkerIndex", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a3b1d9de4db28fea1b923ff4fdc098bc9", null ],
+    [ "iWorkerPid", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a64bc02debacea89303bfba816691a6ed", null ],
+    [ "strHostForServer", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a72e1455c2c0f1d3b7b7d8e043d08c61c", null ],
+    [ "strNodeType", "structneb_1_1_worker_impl_1_1tag_worker_info.html#ad0f6f7d86b819e6fe9ce1f4ae310338c", null ],
+    [ "strWorkerIdentify", "structneb_1_1_worker_impl_1_1tag_worker_info.html#abc385b179be16d09f0836143a8b0aa37", null ],
+    [ "strWorkPath", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a4deabad680eaa6d1ea01e901ffb0e03d", null ],
+    [ "uiNodeId", "structneb_1_1_worker_impl_1_1tag_worker_info.html#a1ded880e19fab4d6c4f412c94be9ca15", null ]
+];

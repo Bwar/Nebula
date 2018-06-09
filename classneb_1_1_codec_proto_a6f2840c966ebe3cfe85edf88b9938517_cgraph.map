@@ -1,0 +1,16 @@
+<map id="neb::CodecProto::Decode" name="neb::CodecProto::Decode">
+<area shape="rect" id="node2" href="$classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="227,5,421,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_c_buffer.html#aebc9052bf69266eed086a1532be52b2f" title="neb::CBuffer::GetReadIndex" alt="" coords="230,56,418,83"/>
+<area shape="rect" id="node5" href="$classneb_1_1_c_buffer.html#aed6c49e78796234c1bbdcbce84e482b6" title="neb::CBuffer::GetRawRead\lBuffer" alt="" coords="233,107,415,149"/>
+<area shape="rect" id="node6" href="$class_msg_head.html#a936c898be60508f1da1f7f747c531898" title="MsgHead::len" alt="" coords="273,173,375,200"/>
+<area shape="rect" id="node7" href="$classneb_1_1_c_buffer.html#ab6a0a7b71f08afda937ed8767a314806" title="neb::CBuffer::SkipBytes" alt="" coords="242,224,406,251"/>
+<area shape="rect" id="node9" href="$class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="255,275,393,301"/>
+<area shape="rect" id="node14" href="$class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="269,325,379,352"/>
+<area shape="rect" id="node15" href="$class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="271,376,377,403"/>
+<area shape="rect" id="node3" href="$classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="483,5,642,32"/>
+<area shape="rect" id="node8" href="$classneb_1_1_c_buffer.html#aa502014c8733d78e6875414e55a1f8e3" title="neb::CBuffer::AdvanceRead\lIndex" alt="" coords="469,158,656,199"/>
+<area shape="rect" id="node10" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="507,224,618,251"/>
+<area shape="rect" id="node11" href="$class_msg_body.html#a02177ab02a19889a5a90b5aea2759787" title="MsgBody::add_on" alt="" coords="499,275,626,301"/>
+<area shape="rect" id="node12" href="$class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="497,325,628,352"/>
+<area shape="rect" id="node13" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="474,376,651,403"/>
+</map>

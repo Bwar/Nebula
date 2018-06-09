@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>Nebula: src/util/proctitle_helper.c 文件参考</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">Nebula
+   </div>
+   <div id="projectbrief">Nebula</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.8.5 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>首页</span></a></li>
+      <li><a href="pages.html"><span>相关页面</span></a></li>
+      <li><a href="namespaces.html"><span>命名空间</span></a></li>
+      <li><a href="annotated.html"><span>类</span></a></li>
+      <li class="current"><a href="files.html"><span>文件</span></a></li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>文件列表</span></a></li>
+      <li><a href="globals.html"><span>文件成员</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('proctitle__helper_8c.html','');});
+</script>
+<div id="doc-content">
+<div class="header">
+  <div class="summary">
+<a href="#define-members">宏定义</a> &#124;
+<a href="#func-members">函数</a> &#124;
+<a href="#var-members">变量</a>  </div>
+  <div class="headertitle">
+<div class="title">proctitle_helper.c 文件参考</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> proctitle_helper.c 的引用(Include)关系图:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="proctitle__helper_8c__incl.png" border="0" usemap="#src_2util_2proctitle__helper_8c" alt=""/></div>
+<map name="src_2util_2proctitle__helper_8c" id="src_2util_2proctitle__helper_8c">
+<area shape="rect" id="node10" href="proctitle__helper_8h.html" title="proctitle_helper.h" alt="" coords="750,96,871,123"/></map>
+</div>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+宏定义</h2></td></tr>
+<tr class="memitem:a13ecc328f8ea2d224243859d659b75c2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="proctitle__helper_8c.html#a13ecc328f8ea2d224243859d659b75c2">NGX_SETPROCTITLE_USES_ENV</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:a13ecc328f8ea2d224243859d659b75c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d50c12baa975d3d3fbfd4142d200b10"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="proctitle__helper_8c.html#a1d50c12baa975d3d3fbfd4142d200b10">NGX_SETPROCTITLE_PAD</a>&#160;&#160;&#160;'\0'</td></tr>
+<tr class="separator:a1d50c12baa975d3d3fbfd4142d200b10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:add4e0b2f2a5757f8f2d3922a7089997d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="proctitle__helper_8c.html#add4e0b2f2a5757f8f2d3922a7089997d">ngx_init_setproctitle</a> (int argc, char **argv)</td></tr>
+<tr class="separator:add4e0b2f2a5757f8f2d3922a7089997d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c23793f5560b6cd00ac175e2efe62a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="proctitle__helper_8c.html#a0c23793f5560b6cd00ac175e2efe62a6">ngx_setproctitle</a> (const char *title)</td></tr>
+<tr class="separator:a0c23793f5560b6cd00ac175e2efe62a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e577f0bcc01d61be3052f25d698903b"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="proctitle__helper_8c.html#a9e577f0bcc01d61be3052f25d698903b">getproctitle</a> ()</td></tr>
+<tr class="separator:a9e577f0bcc01d61be3052f25d698903b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+变量</h2></td></tr>
+<tr class="memitem:aa006daaf11f1e2e45a6ababaf463212b"><td class="memItemLeft" align="right" valign="top">char **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="proctitle__helper_8c.html#aa006daaf11f1e2e45a6ababaf463212b">environ</a></td></tr>
+<tr class="separator:aa006daaf11f1e2e45a6ababaf463212b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">宏定义说明</h2>
+<a class="anchor" id="a1d50c12baa975d3d3fbfd4142d200b10"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NGX_SETPROCTITLE_PAD&#160;&#160;&#160;'\0'</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a13ecc328f8ea2d224243859d659b75c2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NGX_SETPROCTITLE_USES_ENV&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">函数说明</h2>
+<a class="anchor" id="a9e577f0bcc01d61be3052f25d698903b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* getproctitle </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-1" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-1-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-1-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-1-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="proctitle__helper_8c_a9e577f0bcc01d61be3052f25d698903b_icgraph.png" border="0" usemap="#proctitle__helper_8c_a9e577f0bcc01d61be3052f25d698903b_icgraph" alt=""/></div>
+<map name="proctitle__helper_8c_a9e577f0bcc01d61be3052f25d698903b_icgraph" id="proctitle__helper_8c_a9e577f0bcc01d61be3052f25d698903b_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_manager.html#a1b80e82446d03e68621e3b293bd349dd" title="neb::Manager::InitLogger" alt="" coords="150,5,317,32"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#aad6542fa125570e8846a86efaf153511" title="neb::WorkerImpl::InitLogger" alt="" coords="142,56,325,83"/><area shape="rect" id="node3" href="classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="382,5,509,32"/><area shape="rect" id="node4" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="583,5,742,32"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="373,56,517,83"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="566,56,759,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="add4e0b2f2a5757f8f2d3922a7089997d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int ngx_init_setproctitle </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>argc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char **&#160;</td>
+          <td class="paramname"><em>argv</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0c23793f5560b6cd00ac175e2efe62a6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ngx_setproctitle </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>title</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-2" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-2-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-2-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-2-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="proctitle__helper_8c_a0c23793f5560b6cd00ac175e2efe62a6_icgraph.png" border="0" usemap="#proctitle__helper_8c_a0c23793f5560b6cd00ac175e2efe62a6_icgraph" alt=""/></div>
+<map name="proctitle__helper_8c_a0c23793f5560b6cd00ac175e2efe62a6_icgraph" id="proctitle__helper_8c_a0c23793f5560b6cd00ac175e2efe62a6_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="203,5,362,32"/><area shape="rect" id="node3" href="classneb_1_1_manager.html#a4f11e03653a3fc256f3234dfc786082c" title="neb::Manager::SetProcessName" alt="" coords="177,56,389,83"/><area shape="rect" id="node4" href="classneb_1_1_worker_impl.html#a8dda2af4669c9a2c69bf98edf38bbd89" title="neb::WorkerImpl::SetProcessName" alt="" coords="168,107,397,133"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="211,157,355,184"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="446,157,639,184"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<h2 class="groupheader">变量说明</h2>
+<a class="anchor" id="aa006daaf11f1e2e45a6ababaf463212b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char** environ</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_b7878ad5ecbf2506f4125b9d34c97e45.html">util</a></li><li class="navelem"><a class="el" href="proctitle__helper_8c.html">proctitle_helper.c</a></li>
+    <li class="footer">生成于 2018年 六月 9日 星期六 15:04:33 , 为 Nebula使用 
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
+</body>
+</html>

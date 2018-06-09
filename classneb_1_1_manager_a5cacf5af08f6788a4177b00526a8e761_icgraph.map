@@ -1,0 +1,7 @@
+<map id="neb::Manager::RegisterToBeacon" name="neb::Manager::RegisterToBeacon">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1222,17,1381,44"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="227,43,421,69"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="469,43,691,69"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="739,43,935,69"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="984,43,1173,69"/>
+</map>

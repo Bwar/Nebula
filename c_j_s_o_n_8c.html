@@ -1,0 +1,1315 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>Nebula: src/util/json/cJSON.c 文件参考</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">Nebula
+   </div>
+   <div id="projectbrief">Nebula</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.8.5 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>首页</span></a></li>
+      <li><a href="pages.html"><span>相关页面</span></a></li>
+      <li><a href="namespaces.html"><span>命名空间</span></a></li>
+      <li><a href="annotated.html"><span>类</span></a></li>
+      <li class="current"><a href="files.html"><span>文件</span></a></li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>文件列表</span></a></li>
+      <li><a href="globals.html"><span>文件成员</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('c_j_s_o_n_8c.html','');});
+</script>
+<div id="doc-content">
+<div class="header">
+  <div class="summary">
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle">
+<div class="title">cJSON.c 文件参考</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> cJSON.c 的引用(Include)关系图:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c__incl.png" border="0" usemap="#src_2util_2json_2c_j_s_o_n_8c" alt=""/></div>
+<map name="src_2util_2json_2c_j_s_o_n_8c" id="src_2util_2json_2c_j_s_o_n_8c">
+<area shape="rect" id="node9" href="c_j_s_o_n_8h.html" title="cJSON.h" alt="" coords="617,80,692,107"/></map>
+</div>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:a176d66e0a0e090ce57633ac53a4379fa"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a176d66e0a0e090ce57633ac53a4379fa">cJSON_GetErrorPtr</a> ()</td></tr>
+<tr class="separator:a176d66e0a0e090ce57633ac53a4379fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20837ed285a3c2abf578330f2bd97ad4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a20837ed285a3c2abf578330f2bd97ad4">cJSON_InitHooks</a> (<a class="el" href="structc_j_s_o_n___hooks.html">cJSON_Hooks</a> *hooks)</td></tr>
+<tr class="separator:a20837ed285a3c2abf578330f2bd97ad4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab18060251de70a2b55a18dec694f8f8a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a">cJSON_Delete</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *c)</td></tr>
+<tr class="separator:ab18060251de70a2b55a18dec694f8f8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3df5f943457d4befebe4109d48e4a50"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#ad3df5f943457d4befebe4109d48e4a50">cJSON_Parse</a> (const char *value)</td></tr>
+<tr class="separator:ad3df5f943457d4befebe4109d48e4a50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea4f15b04dba4dff2edc2bb1d387b555"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#aea4f15b04dba4dff2edc2bb1d387b555">cJSON_Print</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *item)</td></tr>
+<tr class="separator:aea4f15b04dba4dff2edc2bb1d387b555"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5539c9504a8e65390a94852707f105d4"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a5539c9504a8e65390a94852707f105d4">cJSON_PrintUnformatted</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *item)</td></tr>
+<tr class="separator:a5539c9504a8e65390a94852707f105d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb5c049d3211599c90cd5a3d5e68d854"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#adb5c049d3211599c90cd5a3d5e68d854">cJSON_GetArraySize</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *array)</td></tr>
+<tr class="separator:adb5c049d3211599c90cd5a3d5e68d854"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac48335f22f743aff913991d809e0d620"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#ac48335f22f743aff913991d809e0d620">cJSON_GetArrayItem</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *array, int item)</td></tr>
+<tr class="separator:ac48335f22f743aff913991d809e0d620"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba766c9d2c20996e323522cbf2ba46c6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#aba766c9d2c20996e323522cbf2ba46c6">cJSON_GetObjectItem</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *object, const char *string)</td></tr>
+<tr class="separator:aba766c9d2c20996e323522cbf2ba46c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a164dcefd36af8654942116c444bd0b6a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a164dcefd36af8654942116c444bd0b6a">cJSON_AddItemToArray</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *array, <a class="el" href="structc_j_s_o_n.html">cJSON</a> *item)</td></tr>
+<tr class="separator:a164dcefd36af8654942116c444bd0b6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a45cfd8667695ee336a8fbc9b565109c3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a45cfd8667695ee336a8fbc9b565109c3">cJSON_AddItemToArrayHead</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *array, <a class="el" href="structc_j_s_o_n.html">cJSON</a> *item)</td></tr>
+<tr class="separator:a45cfd8667695ee336a8fbc9b565109c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a096004811663311569e95aa77518959c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a096004811663311569e95aa77518959c">cJSON_AddItemToObject</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *object, const char *string, <a class="el" href="structc_j_s_o_n.html">cJSON</a> *item)</td></tr>
+<tr class="separator:a096004811663311569e95aa77518959c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a076941e875d547f20959c66de97beee5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a076941e875d547f20959c66de97beee5">cJSON_AddItemReferenceToArray</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *array, <a class="el" href="structc_j_s_o_n.html">cJSON</a> *item)</td></tr>
+<tr class="separator:a076941e875d547f20959c66de97beee5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a001634f84d255810784155f4c8e4e288"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a001634f84d255810784155f4c8e4e288">cJSON_AddItemReferenceToObject</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *object, const char *string, <a class="el" href="structc_j_s_o_n.html">cJSON</a> *item)</td></tr>
+<tr class="separator:a001634f84d255810784155f4c8e4e288"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68b9e0b2d984f1d873fb571425a98b9b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a68b9e0b2d984f1d873fb571425a98b9b">cJSON_DetachItemFromArray</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *array, int which)</td></tr>
+<tr class="separator:a68b9e0b2d984f1d873fb571425a98b9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b08ee3d172cb94e9abea1e4031a366f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a2b08ee3d172cb94e9abea1e4031a366f">cJSON_DeleteItemFromArray</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *array, int which)</td></tr>
+<tr class="separator:a2b08ee3d172cb94e9abea1e4031a366f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7010822d267256f274e0adf22be2b202"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a7010822d267256f274e0adf22be2b202">cJSON_DetachItemFromObject</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *object, const char *string)</td></tr>
+<tr class="separator:a7010822d267256f274e0adf22be2b202"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a148a56617a2a97921d9b9dfbe5dc85bf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a148a56617a2a97921d9b9dfbe5dc85bf">cJSON_DeleteItemFromObject</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *object, const char *string)</td></tr>
+<tr class="separator:a148a56617a2a97921d9b9dfbe5dc85bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a567d357a7a0c3c0c9c896d98aae3dcec"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a567d357a7a0c3c0c9c896d98aae3dcec">cJSON_ReplaceItemInArray</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *array, int which, <a class="el" href="structc_j_s_o_n.html">cJSON</a> *newitem)</td></tr>
+<tr class="separator:a567d357a7a0c3c0c9c896d98aae3dcec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a31202ffebc9e4f86c3db12f9793b6800"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a31202ffebc9e4f86c3db12f9793b6800">cJSON_ReplaceItemInObject</a> (<a class="el" href="structc_j_s_o_n.html">cJSON</a> *object, const char *string, <a class="el" href="structc_j_s_o_n.html">cJSON</a> *newitem)</td></tr>
+<tr class="separator:a31202ffebc9e4f86c3db12f9793b6800"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3078341e0fbf1970cdc83656614269e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a3078341e0fbf1970cdc83656614269e9">cJSON_CreateNull</a> ()</td></tr>
+<tr class="separator:a3078341e0fbf1970cdc83656614269e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0010944999faa803d32d95cfaea8fbf9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a0010944999faa803d32d95cfaea8fbf9">cJSON_CreateTrue</a> ()</td></tr>
+<tr class="separator:a0010944999faa803d32d95cfaea8fbf9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2617ce9524da7c1fc8bf16148592637b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a2617ce9524da7c1fc8bf16148592637b">cJSON_CreateFalse</a> ()</td></tr>
+<tr class="separator:a2617ce9524da7c1fc8bf16148592637b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06b0c43427994498d770e65b0089f8a8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a06b0c43427994498d770e65b0089f8a8">cJSON_CreateBool</a> (int b)</td></tr>
+<tr class="separator:a06b0c43427994498d770e65b0089f8a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedd3b9570e581b46061413490ad66961"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#aedd3b9570e581b46061413490ad66961">cJSON_CreateDouble</a> (double num, int sign)</td></tr>
+<tr class="separator:aedd3b9570e581b46061413490ad66961"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0692c282238e1c92158155d31af8027e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a0692c282238e1c92158155d31af8027e">cJSON_CreateInt</a> (<a class="el" href="_definition_8hpp.html#a2834615d491c11fba337095447f25886">uint64</a> num, int sign)</td></tr>
+<tr class="separator:a0692c282238e1c92158155d31af8027e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5987bbc1c94d9f602d719a4015ff0e6c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a5987bbc1c94d9f602d719a4015ff0e6c">cJSON_CreateString</a> (const char *string)</td></tr>
+<tr class="separator:a5987bbc1c94d9f602d719a4015ff0e6c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35111de61e3e76681ce47d39cd4b470e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a35111de61e3e76681ce47d39cd4b470e">cJSON_CreateArray</a> ()</td></tr>
+<tr class="separator:a35111de61e3e76681ce47d39cd4b470e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56ef70cf5025d81e125030f397a372fc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a56ef70cf5025d81e125030f397a372fc">cJSON_CreateObject</a> ()</td></tr>
+<tr class="separator:a56ef70cf5025d81e125030f397a372fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4087a9d0309e4037ecf2e56353c627a8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a4087a9d0309e4037ecf2e56353c627a8">cJSON_CreateIntArray</a> (int *numbers, int sign, int count)</td></tr>
+<tr class="separator:a4087a9d0309e4037ecf2e56353c627a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13d8059ba0d64b59907b20816d50289d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a13d8059ba0d64b59907b20816d50289d">cJSON_CreateFloatArray</a> (float *numbers, int count)</td></tr>
+<tr class="separator:a13d8059ba0d64b59907b20816d50289d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a857c1545e5673cb8085d3f0336f045c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#a857c1545e5673cb8085d3f0336f045c7">cJSON_CreateDoubleArray</a> (double *numbers, int count)</td></tr>
+<tr class="separator:a857c1545e5673cb8085d3f0336f045c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abeecb344ac9a0318cd42ac32b6e22289"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="c_j_s_o_n_8c.html#abeecb344ac9a0318cd42ac32b6e22289">cJSON_CreateStringArray</a> (const char **strings, int count)</td></tr>
+<tr class="separator:abeecb344ac9a0318cd42ac32b6e22289"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">函数说明</h2>
+<a class="anchor" id="a076941e875d547f20959c66de97beee5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_AddItemReferenceToArray </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>item</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-1" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-1-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-1-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-1-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a076941e875d547f20959c66de97beee5_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a076941e875d547f20959c66de97beee5_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a076941e875d547f20959c66de97beee5_cgraph" id="c_j_s_o_n_8c_a076941e875d547f20959c66de97beee5_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#a164dcefd36af8654942116c444bd0b6a" title="cJSON_AddItemToArray" alt="" coords="251,12,418,39"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a001634f84d255810784155f4c8e4e288"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_AddItemReferenceToObject </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>object</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>string</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>item</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-2" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-2-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-2-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-2-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a001634f84d255810784155f4c8e4e288_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a001634f84d255810784155f4c8e4e288_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a001634f84d255810784155f4c8e4e288_cgraph" id="c_j_s_o_n_8c_a001634f84d255810784155f4c8e4e288_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#a096004811663311569e95aa77518959c" title="cJSON_AddItemToObject" alt="" coords="251,12,426,39"/><area shape="rect" id="node3" href="c_j_s_o_n_8c.html#a164dcefd36af8654942116c444bd0b6a" title="cJSON_AddItemToArray" alt="" coords="475,12,642,39"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a164dcefd36af8654942116c444bd0b6a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_AddItemToArray </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>item</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-3" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-3-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-3-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-3-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a164dcefd36af8654942116c444bd0b6a_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a164dcefd36af8654942116c444bd0b6a_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a164dcefd36af8654942116c444bd0b6a_icgraph" id="c_j_s_o_n_8c_a164dcefd36af8654942116c444bd0b6a_icgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8h.html#a096004811663311569e95aa77518959c" title="cJSON_AddItemToObject" alt="" coords="233,109,407,136"/><area shape="rect" id="node23" href="c_j_s_o_n_8h.html#a076941e875d547f20959c66de97beee5" title="cJSON_AddItemReferenceTo\lArray" alt="" coords="222,161,418,202"/><area shape="rect" id="node24" href="classneb_1_1_c_json_object.html#acbdf47ba53458eb53566cfd9795e15c4" title="neb::CJsonObject::Add" alt="" coords="241,227,399,253"/><area shape="rect" id="node3" href="c_j_s_o_n_8h.html#a001634f84d255810784155f4c8e4e288" title="cJSON_AddItemReferenceTo\lObject" alt="" coords="467,5,663,46"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#ae337b983b677e3c35b5e657838ca10b6" title="neb::CJsonObject::AddEmpty\lSubObject" alt="" coords="467,70,663,111"/><area shape="rect" id="node5" href="classneb_1_1_c_json_object.html#a2e84bad222829bc522a7dd4aaf9f268f" title="neb::CJsonObject::AddEmpty\lSubArray" alt="" coords="467,135,663,177"/><area shape="rect" id="node6" href="classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="486,201,645,228"/><area shape="rect" id="node7" href="classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="729,114,903,155"/><area shape="rect" id="node13" href="classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="713,201,919,228"/><area shape="rect" id="node17" href="classneb_1_1_worker_impl.html#a7cdd50cc4c95059b409c003ae3d8e261" title="neb::WorkerImpl::CheckParent" alt="" coords="715,273,917,300"/><area shape="rect" id="node8" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1979,96,2138,123"/><area shape="rect" id="node9" href="classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="971,121,1165,148"/><area shape="rect" id="node10" href="classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="1216,121,1437,148"/><area shape="rect" id="node11" href="classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="1491,121,1687,148"/><area shape="rect" id="node12" href="classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1741,121,1931,148"/><area shape="rect" id="node14" href="classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="977,172,1159,199"/><area shape="rect" id="node15" href="classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="1234,205,1419,246"/><area shape="rect" id="node16" href="classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1500,194,1679,235"/><area shape="rect" id="node18" href="classneb_1_1_worker_impl.html#ad9bc6fa755422e33421ee681c1bd06c3" title="neb::WorkerImpl::IdleCallback" alt="" coords="969,273,1167,300"/><area shape="rect" id="node19" href="classneb_1_1_worker_impl.html#af22fbb0148e94666e984c9850de721c0" title="neb::WorkerImpl::Periodic\lTaskCallback" alt="" coords="981,325,1155,366"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#a9d4c397f171ff74ac5976b81ab026954" title="neb::WorkerImpl::AddPeriodic\lTaskEvent" alt="" coords="1229,325,1425,366"/><area shape="rect" id="node21" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="1486,332,1693,359"/><area shape="rect" id="node22" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="1761,332,1911,359"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a45cfd8667695ee336a8fbc9b565109c3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_AddItemToArrayHead </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>item</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-4" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-4-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-4-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-4-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a45cfd8667695ee336a8fbc9b565109c3_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a45cfd8667695ee336a8fbc9b565109c3_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a45cfd8667695ee336a8fbc9b565109c3_icgraph" id="c_j_s_o_n_8c_a45cfd8667695ee336a8fbc9b565109c3_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a9045bfc7a84dea336679ed81c9a99256" title="neb::CJsonObject::AddAsFirst" alt="" coords="253,5,453,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a096004811663311569e95aa77518959c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_AddItemToObject </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>object</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>string</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>item</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-5" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-5-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-5-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-5-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a096004811663311569e95aa77518959c_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a096004811663311569e95aa77518959c_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a096004811663311569e95aa77518959c_cgraph" id="c_j_s_o_n_8c_a096004811663311569e95aa77518959c_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#a164dcefd36af8654942116c444bd0b6a" title="cJSON_AddItemToArray" alt="" coords="230,5,397,32"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-6" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-6-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-6-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-6-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a096004811663311569e95aa77518959c_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a096004811663311569e95aa77518959c_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a096004811663311569e95aa77518959c_icgraph" id="c_j_s_o_n_8c_a096004811663311569e95aa77518959c_icgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8h.html#a001634f84d255810784155f4c8e4e288" title="cJSON_AddItemReferenceTo\lObject" alt="" coords="230,5,426,46"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#ae337b983b677e3c35b5e657838ca10b6" title="neb::CJsonObject::AddEmpty\lSubObject" alt="" coords="230,70,426,111"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#a2e84bad222829bc522a7dd4aaf9f268f" title="neb::CJsonObject::AddEmpty\lSubArray" alt="" coords="230,135,426,177"/><area shape="rect" id="node5" href="classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="249,201,407,228"/><area shape="rect" id="node6" href="classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="492,114,665,155"/><area shape="rect" id="node12" href="classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="475,201,682,228"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a7cdd50cc4c95059b409c003ae3d8e261" title="neb::WorkerImpl::CheckParent" alt="" coords="477,273,680,300"/><area shape="rect" id="node7" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1742,96,1901,123"/><area shape="rect" id="node8" href="classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="733,121,928,148"/><area shape="rect" id="node9" href="classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="979,121,1200,148"/><area shape="rect" id="node10" href="classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="1254,121,1450,148"/><area shape="rect" id="node11" href="classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1504,121,1693,148"/><area shape="rect" id="node13" href="classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="740,172,921,199"/><area shape="rect" id="node14" href="classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="997,205,1182,246"/><area shape="rect" id="node15" href="classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1263,194,1441,235"/><area shape="rect" id="node17" href="classneb_1_1_worker_impl.html#ad9bc6fa755422e33421ee681c1bd06c3" title="neb::WorkerImpl::IdleCallback" alt="" coords="731,273,930,300"/><area shape="rect" id="node18" href="classneb_1_1_worker_impl.html#af22fbb0148e94666e984c9850de721c0" title="neb::WorkerImpl::Periodic\lTaskCallback" alt="" coords="744,325,917,366"/><area shape="rect" id="node19" href="classneb_1_1_worker_impl.html#a9d4c397f171ff74ac5976b81ab026954" title="neb::WorkerImpl::AddPeriodic\lTaskEvent" alt="" coords="991,325,1187,366"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="1249,332,1455,359"/><area shape="rect" id="node21" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="1523,332,1674,359"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a35111de61e3e76681ce47d39cd4b470e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateArray </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-7" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-7-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-7-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-7-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a35111de61e3e76681ce47d39cd4b470e_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a35111de61e3e76681ce47d39cd4b470e_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a35111de61e3e76681ce47d39cd4b470e_icgraph" id="c_j_s_o_n_8c_a35111de61e3e76681ce47d39cd4b470e_icgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8h.html#a4087a9d0309e4037ecf2e56353c627a8" title="cJSON_CreateIntArray" alt="" coords="219,5,376,32"/><area shape="rect" id="node3" href="c_j_s_o_n_8h.html#a13d8059ba0d64b59907b20816d50289d" title="cJSON_CreateFloatArray" alt="" coords="212,56,383,83"/><area shape="rect" id="node4" href="c_j_s_o_n_8h.html#a857c1545e5673cb8085d3f0336f045c7" title="cJSON_CreateDoubleArray" alt="" coords="206,107,389,133"/><area shape="rect" id="node5" href="c_j_s_o_n_8h.html#abeecb344ac9a0318cd42ac32b6e22289" title="cJSON_CreateStringArray" alt="" coords="209,157,385,184"/><area shape="rect" id="node6" href="classneb_1_1_c_json_object.html#a2e84bad222829bc522a7dd4aaf9f268f" title="neb::CJsonObject::AddEmpty\lSubArray" alt="" coords="199,209,395,250"/><area shape="rect" id="node7" href="classneb_1_1_c_json_object.html#acbdf47ba53458eb53566cfd9795e15c4" title="neb::CJsonObject::Add" alt="" coords="218,275,377,301"/><area shape="rect" id="node8" href="classneb_1_1_c_json_object.html#a9045bfc7a84dea336679ed81c9a99256" title="neb::CJsonObject::AddAsFirst" alt="" coords="197,325,397,352"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a06b0c43427994498d770e65b0089f8a8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateBool </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>b</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-8" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-8-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-8-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-8-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a06b0c43427994498d770e65b0089f8a8_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a06b0c43427994498d770e65b0089f8a8_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a06b0c43427994498d770e65b0089f8a8_icgraph" id="c_j_s_o_n_8c_a06b0c43427994498d770e65b0089f8a8_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a1335a82197f134332ee13e975ec7f2b4" title="neb::CJsonObject::Add" alt="" coords="213,5,371,32"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#a235497ce9ea2044cb904810f23984bc0" title="neb::CJsonObject::Replace" alt="" coords="201,56,383,83"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#a990bb0e25d03fb7b50e4fe5cca8d7e43" title="neb::CJsonObject::AddAsFirst" alt="" coords="192,107,392,133"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aedd3b9570e581b46061413490ad66961"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateDouble </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sign</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-9" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-9-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-9-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-9-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_aedd3b9570e581b46061413490ad66961_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_aedd3b9570e581b46061413490ad66961_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_aedd3b9570e581b46061413490ad66961_icgraph" id="c_j_s_o_n_8c_aedd3b9570e581b46061413490ad66961_icgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8h.html#a4087a9d0309e4037ecf2e56353c627a8" title="cJSON_CreateIntArray" alt="" coords="227,5,384,32"/><area shape="rect" id="node3" href="c_j_s_o_n_8h.html#a13d8059ba0d64b59907b20816d50289d" title="cJSON_CreateFloatArray" alt="" coords="220,56,391,83"/><area shape="rect" id="node4" href="c_j_s_o_n_8h.html#a857c1545e5673cb8085d3f0336f045c7" title="cJSON_CreateDoubleArray" alt="" coords="214,107,397,133"/><area shape="rect" id="node5" href="classneb_1_1_c_json_object.html#a52f1819ab518f9cdb42dca2ed9ed9a62" title="neb::CJsonObject::Add" alt="" coords="226,157,385,184"/><area shape="rect" id="node6" href="classneb_1_1_c_json_object.html#ae941774b85d5cc330f46bcaffd7e19a3" title="neb::CJsonObject::Replace" alt="" coords="214,208,397,235"/><area shape="rect" id="node7" href="classneb_1_1_c_json_object.html#acb15a7ef31d1b34c865cf088f903d60a" title="neb::CJsonObject::AddAsFirst" alt="" coords="205,259,405,285"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a857c1545e5673cb8085d3f0336f045c7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateDoubleArray </td>
+          <td>(</td>
+          <td class="paramtype">double *&#160;</td>
+          <td class="paramname"><em>numbers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-10" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-10-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-10-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-10-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a857c1545e5673cb8085d3f0336f045c7_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a857c1545e5673cb8085d3f0336f045c7_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a857c1545e5673cb8085d3f0336f045c7_cgraph" id="c_j_s_o_n_8c_a857c1545e5673cb8085d3f0336f045c7_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#a35111de61e3e76681ce47d39cd4b470e" title="cJSON_CreateArray" alt="" coords="242,5,385,32"/><area shape="rect" id="node3" href="c_j_s_o_n_8c.html#aedd3b9570e581b46061413490ad66961" title="cJSON_CreateDouble" alt="" coords="237,56,389,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a2617ce9524da7c1fc8bf16148592637b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateFalse </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a13d8059ba0d64b59907b20816d50289d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateFloatArray </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>numbers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-11" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-11-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-11-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-11-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a13d8059ba0d64b59907b20816d50289d_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a13d8059ba0d64b59907b20816d50289d_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a13d8059ba0d64b59907b20816d50289d_cgraph" id="c_j_s_o_n_8c_a13d8059ba0d64b59907b20816d50289d_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#a35111de61e3e76681ce47d39cd4b470e" title="cJSON_CreateArray" alt="" coords="229,5,371,32"/><area shape="rect" id="node3" href="c_j_s_o_n_8c.html#aedd3b9570e581b46061413490ad66961" title="cJSON_CreateDouble" alt="" coords="224,56,376,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a0692c282238e1c92158155d31af8027e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateInt </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a2834615d491c11fba337095447f25886">uint64</a>&#160;</td>
+          <td class="paramname"><em>num</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sign</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-12" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-12-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-12-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-12-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a0692c282238e1c92158155d31af8027e_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a0692c282238e1c92158155d31af8027e_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a0692c282238e1c92158155d31af8027e_icgraph" id="c_j_s_o_n_8c_a0692c282238e1c92158155d31af8027e_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a88de88fdadb48303f3dd8315d92f58fb" title="neb::CJsonObject::Add" alt="" coords="202,5,361,32"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#ab3f00c80b1f6e70dcd42ebf4f3b898b2" title="neb::CJsonObject::Replace" alt="" coords="190,56,373,83"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#a9e7c95f14c82bfbdafd7b193a54b5c21" title="neb::CJsonObject::AddAsFirst" alt="" coords="181,107,381,133"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a4087a9d0309e4037ecf2e56353c627a8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateIntArray </td>
+          <td>(</td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>numbers</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>sign</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-13" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-13-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-13-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-13-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a4087a9d0309e4037ecf2e56353c627a8_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a4087a9d0309e4037ecf2e56353c627a8_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a4087a9d0309e4037ecf2e56353c627a8_cgraph" id="c_j_s_o_n_8c_a4087a9d0309e4037ecf2e56353c627a8_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#a35111de61e3e76681ce47d39cd4b470e" title="cJSON_CreateArray" alt="" coords="215,5,358,32"/><area shape="rect" id="node3" href="c_j_s_o_n_8c.html#aedd3b9570e581b46061413490ad66961" title="cJSON_CreateDouble" alt="" coords="211,56,363,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a3078341e0fbf1970cdc83656614269e9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateNull </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a56ef70cf5025d81e125030f397a372fc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateObject </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-14" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-14-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-14-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-14-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a56ef70cf5025d81e125030f397a372fc_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a56ef70cf5025d81e125030f397a372fc_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a56ef70cf5025d81e125030f397a372fc_icgraph" id="c_j_s_o_n_8c_a56ef70cf5025d81e125030f397a372fc_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#ae337b983b677e3c35b5e657838ca10b6" title="neb::CJsonObject::AddEmpty\lSubObject" alt="" coords="203,5,399,46"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#a2e84bad222829bc522a7dd4aaf9f268f" title="neb::CJsonObject::AddEmpty\lSubArray" alt="" coords="203,70,399,111"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="222,136,381,163"/><area shape="rect" id="node5" href="classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="465,49,639,90"/><area shape="rect" id="node11" href="classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="449,136,655,163"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a7cdd50cc4c95059b409c003ae3d8e261" title="neb::WorkerImpl::CheckParent" alt="" coords="451,208,653,235"/><area shape="rect" id="node6" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1715,31,1874,57"/><area shape="rect" id="node7" href="classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="707,56,901,83"/><area shape="rect" id="node8" href="classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="952,56,1173,83"/><area shape="rect" id="node9" href="classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="1227,56,1423,83"/><area shape="rect" id="node10" href="classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1477,56,1667,83"/><area shape="rect" id="node12" href="classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="713,107,895,133"/><area shape="rect" id="node13" href="classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="970,139,1155,181"/><area shape="rect" id="node14" href="classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1236,129,1415,170"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#ad9bc6fa755422e33421ee681c1bd06c3" title="neb::WorkerImpl::IdleCallback" alt="" coords="705,208,903,235"/><area shape="rect" id="node17" href="classneb_1_1_worker_impl.html#af22fbb0148e94666e984c9850de721c0" title="neb::WorkerImpl::Periodic\lTaskCallback" alt="" coords="717,259,891,301"/><area shape="rect" id="node18" href="classneb_1_1_worker_impl.html#a9d4c397f171ff74ac5976b81ab026954" title="neb::WorkerImpl::AddPeriodic\lTaskEvent" alt="" coords="965,259,1161,301"/><area shape="rect" id="node19" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="1222,267,1429,293"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="1497,267,1647,293"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a5987bbc1c94d9f602d719a4015ff0e6c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateString </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>string</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-15" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-15-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-15-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-15-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a5987bbc1c94d9f602d719a4015ff0e6c_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a5987bbc1c94d9f602d719a4015ff0e6c_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a5987bbc1c94d9f602d719a4015ff0e6c_icgraph" id="c_j_s_o_n_8c_a5987bbc1c94d9f602d719a4015ff0e6c_icgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8h.html#abeecb344ac9a0318cd42ac32b6e22289" title="cJSON_CreateStringArray" alt="" coords="212,5,388,32"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#a5107df62bca810e2371df268e160f4a1" title="neb::CJsonObject::Add" alt="" coords="221,56,379,83"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#a3804ba0eb26b3ac2965de81ce9991df4" title="neb::CJsonObject::Replace" alt="" coords="209,107,391,133"/><area shape="rect" id="node5" href="classneb_1_1_c_json_object.html#abe8c07e48c1441517819b653c0d6f9c3" title="neb::CJsonObject::AddAsFirst" alt="" coords="200,157,400,184"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="abeecb344ac9a0318cd42ac32b6e22289"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateStringArray </td>
+          <td>(</td>
+          <td class="paramtype">const char **&#160;</td>
+          <td class="paramname"><em>strings</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>count</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-16" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-16-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-16-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-16-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_abeecb344ac9a0318cd42ac32b6e22289_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_abeecb344ac9a0318cd42ac32b6e22289_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_abeecb344ac9a0318cd42ac32b6e22289_cgraph" id="c_j_s_o_n_8c_abeecb344ac9a0318cd42ac32b6e22289_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#a35111de61e3e76681ce47d39cd4b470e" title="cJSON_CreateArray" alt="" coords="231,5,374,32"/><area shape="rect" id="node3" href="c_j_s_o_n_8c.html#a5987bbc1c94d9f602d719a4015ff0e6c" title="cJSON_CreateString" alt="" coords="230,56,375,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a0010944999faa803d32d95cfaea8fbf9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_CreateTrue </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab18060251de70a2b55a18dec694f8f8a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_Delete </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>c</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-17" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-17-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-17-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-17-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_ab18060251de70a2b55a18dec694f8f8a_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_ab18060251de70a2b55a18dec694f8f8a_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_ab18060251de70a2b55a18dec694f8f8a_cgraph" id="c_j_s_o_n_8c_ab18060251de70a2b55a18dec694f8f8a_cgraph">
+</map>
+</div>
+</p>
+
+<p><div id="dynsection-18" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-18-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-18-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-18-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_ab18060251de70a2b55a18dec694f8f8a_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_ab18060251de70a2b55a18dec694f8f8a_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_ab18060251de70a2b55a18dec694f8f8a_icgraph" id="c_j_s_o_n_8c_ab18060251de70a2b55a18dec694f8f8a_icgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8h.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="166,559,277,585"/><area shape="rect" id="node3" href="c_j_s_o_n_8h.html#ad3df5f943457d4befebe4109d48e4a50" title="cJSON_Parse" alt="" coords="375,571,481,597"/><area shape="rect" id="node42" href="c_j_s_o_n_8h.html#a2b08ee3d172cb94e9abea1e4031a366f" title="cJSON_DeleteItemFromArray" alt="" coords="329,433,527,460"/><area shape="rect" id="node44" href="c_j_s_o_n_8h.html#a148a56617a2a97921d9b9dfbe5dc85bf" title="cJSON_DeleteItemFromObject" alt="" coords="326,711,530,737"/><area shape="rect" id="node46" href="c_j_s_o_n_8h.html#a567d357a7a0c3c0c9c896d98aae3dcec" title="cJSON_ReplaceItemInArray" alt="" coords="334,484,522,511"/><area shape="rect" id="node49" href="classneb_1_1_c_json_object.html#ae5b74bd05db856ebe68031d15fcfd693" title="neb::CJsonObject::Clear" alt="" coords="345,660,511,687"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#a2836a804d5b026725d220d198bb96aa5" title="neb::CJsonObject::Parse" alt="" coords="594,584,763,611"/><area shape="rect" id="node30" href="classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="599,635,758,661"/><area shape="rect" id="node40" href="classneb_1_1_c_json_object.html#ac6f23b48bd7d8b32d23c047cf3a766bf" title="neb::CJsonObject::Replace" alt="" coords="841,255,1023,281"/><area shape="rect" id="node41" href="classneb_1_1_c_json_object.html#a9045bfc7a84dea336679ed81c9a99256" title="neb::CJsonObject::AddAsFirst" alt="" coords="579,533,779,560"/><area shape="rect" id="node5" href="classneb_1_1_cmd_node_notice.html#a6230a8d89e762eeb41ae566d4e2f14e6" title="命令处理入口 " alt="" coords="1117,610,1265,651"/><area shape="rect" id="node6" href="classneb_1_1_cmd_update_node_id.html#a2e12ec27f33c6b6186a2d1b043f5db5f" title="命令处理入口 " alt="" coords="1109,122,1272,163"/><area shape="rect" id="node7" href="classneb_1_1_manager.html#a35e8a21b18300ec10fd05f8c1b248666" title="neb::Manager::GetConf" alt="" coords="1111,727,1270,753"/><area shape="rect" id="node12" href="classneb_1_1_manager.html#aed93abd4232e5f4b5089094628dc4ee3" title="neb::Manager::OnWorkerData" alt="" coords="1357,508,1553,535"/><area shape="rect" id="node15" href="classneb_1_1_manager.html#ac37bc4b870eaf56ec3f52861b19b1182" title="neb::Manager::OnNodeNotify" alt="" coords="1095,188,1287,215"/><area shape="rect" id="node16" href="classneb_1_1_c_json_object.html#ad1643ebd9a4105aad6d199b09fc44d30" title="neb::CJsonObject::CJsonObject" alt="" coords="827,635,1037,661"/><area shape="rect" id="node17" href="classneb_1_1_c_json_object.html#a3fafdebaa137c333f3ece40891265680" title="neb::CJsonObject::operator=" alt="" coords="837,685,1027,712"/><area shape="rect" id="node18" href="classneb_1_1_c_json_object.html#a0e48820c581fd9069a6b2f1d5e88e9f1" title="neb::CJsonObject::Get" alt="" coords="854,457,1010,484"/><area shape="rect" id="node8" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1631,727,1790,753"/><area shape="rect" id="node9" href="classneb_1_1_manager.html#afca7b496e72cfecc346d1bda0c928acb" title="neb::Manager::RefreshServer" alt="" coords="1358,828,1551,855"/><area shape="rect" id="node10" href="classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="1618,871,1803,913"/><area shape="rect" id="node11" href="classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1856,871,2035,913"/><area shape="rect" id="node13" href="classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="1615,475,1806,517"/><area shape="rect" id="node14" href="classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="1861,483,2029,509"/><area shape="rect" id="node19" href="classneb_1_1_manager.html#a1b80e82446d03e68621e3b293bd349dd" title="neb::Manager::InitLogger" alt="" coords="1107,559,1274,585"/><area shape="rect" id="node21" href="classneb_1_1_manager.html#a39d78865e975116dc727921581ee8f36" title="neb::Manager::SetWorkerLoad" alt="" coords="1091,508,1290,535"/><area shape="rect" id="node22" href="classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="1355,457,1554,484"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="1383,264,1527,291"/><area shape="rect" id="node25" href="classneb_1_1_worker_impl.html#aad6542fa125570e8846a86efaf153511" title="neb::WorkerImpl::InitLogger" alt="" coords="1099,289,1282,316"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#ace99b22ad7900f43c4ab693ac63bf96d" title="neb::WorkerImpl::BootLoadCmd" alt="" coords="1086,407,1295,433"/><area shape="rect" id="node28" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="1101,341,1280,382"/><area shape="rect" id="node20" href="classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="1391,617,1518,644"/><area shape="rect" id="node24" href="classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="1614,264,1807,291"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="1379,403,1530,429"/><area shape="rect" id="node29" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="1371,348,1538,375"/><area shape="rect" id="node31" href="classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="845,787,1019,829"/><area shape="rect" id="node34" href="classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="829,871,1035,897"/><area shape="rect" id="node36" href="classneb_1_1_worker_impl.html#a7cdd50cc4c95059b409c003ae3d8e261" title="neb::WorkerImpl::CheckParent" alt="" coords="831,305,1033,332"/><area shape="rect" id="node32" href="classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="1093,828,1288,855"/><area shape="rect" id="node33" href="classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="1344,879,1565,905"/><area shape="rect" id="node35" href="classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="1100,879,1281,905"/><area shape="rect" id="node37" href="classneb_1_1_worker_impl.html#ad9bc6fa755422e33421ee681c1bd06c3" title="neb::WorkerImpl::IdleCallback" alt="" coords="1091,5,1290,32"/><area shape="rect" id="node38" href="classneb_1_1_worker_impl.html#af22fbb0148e94666e984c9850de721c0" title="neb::WorkerImpl::Periodic\lTaskCallback" alt="" coords="1104,57,1277,98"/><area shape="rect" id="node39" href="classneb_1_1_worker_impl.html#a9d4c397f171ff74ac5976b81ab026954" title="neb::WorkerImpl::AddPeriodic\lTaskEvent" alt="" coords="1357,57,1553,98"/><area shape="rect" id="node43" href="classneb_1_1_c_json_object.html#a6cdd4b62c7190b203acefe5c0ab3ebb8" title="neb::CJsonObject::Delete" alt="" coords="592,331,765,357"/><area shape="rect" id="node45" href="classneb_1_1_c_json_object.html#a132157003b58b0553e3b9c8e7a2a4544" title="neb::CJsonObject::Delete" alt="" coords="592,853,765,880"/><area shape="rect" id="node47" href="c_j_s_o_n_8h.html#a31202ffebc9e4f86c3db12f9793b6800" title="cJSON_ReplaceItemInObject" alt="" coords="581,432,776,459"/><area shape="rect" id="node48" href="classneb_1_1_c_json_object.html#a68070a5f90f5cf417ef76b6994a6e03a" title="neb::CJsonObject::Replace" alt="" coords="587,381,770,408"/><area shape="rect" id="node50" href="classneb_1_1_c_json_object.html#a98435b06bcf0add4f2f7af9e80ef3542" title="neb::CJsonObject::\l~CJsonObject" alt="" coords="611,737,746,778"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a2b08ee3d172cb94e9abea1e4031a366f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_DeleteItemFromArray </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>which</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-19" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-19-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-19-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-19-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a2b08ee3d172cb94e9abea1e4031a366f_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a2b08ee3d172cb94e9abea1e4031a366f_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a2b08ee3d172cb94e9abea1e4031a366f_cgraph" id="c_j_s_o_n_8c_a2b08ee3d172cb94e9abea1e4031a366f_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="297,29,407,56"/><area shape="rect" id="node3" href="c_j_s_o_n_8c.html#a68b9e0b2d984f1d873fb571425a98b9b" title="cJSON_DetachItemFromArray" alt="" coords="251,80,453,107"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-20" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-20-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-20-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-20-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a2b08ee3d172cb94e9abea1e4031a366f_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a2b08ee3d172cb94e9abea1e4031a366f_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a2b08ee3d172cb94e9abea1e4031a366f_icgraph" id="c_j_s_o_n_8c_a2b08ee3d172cb94e9abea1e4031a366f_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a6cdd4b62c7190b203acefe5c0ab3ebb8" title="neb::CJsonObject::Delete" alt="" coords="251,5,424,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a148a56617a2a97921d9b9dfbe5dc85bf"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_DeleteItemFromObject </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>object</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>string</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-21" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-21-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-21-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-21-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a148a56617a2a97921d9b9dfbe5dc85bf_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a148a56617a2a97921d9b9dfbe5dc85bf_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a148a56617a2a97921d9b9dfbe5dc85bf_cgraph" id="c_j_s_o_n_8c_a148a56617a2a97921d9b9dfbe5dc85bf_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="307,29,418,56"/><area shape="rect" id="node3" href="c_j_s_o_n_8c.html#a7010822d267256f274e0adf22be2b202" title="cJSON_DetachItemFromObject" alt="" coords="259,80,467,107"/><area shape="rect" id="node4" href="c_j_s_o_n_8c.html#a68b9e0b2d984f1d873fb571425a98b9b" title="cJSON_DetachItemFromArray" alt="" coords="515,80,717,107"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-22" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-22-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-22-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-22-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a148a56617a2a97921d9b9dfbe5dc85bf_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a148a56617a2a97921d9b9dfbe5dc85bf_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a148a56617a2a97921d9b9dfbe5dc85bf_icgraph" id="c_j_s_o_n_8c_a148a56617a2a97921d9b9dfbe5dc85bf_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a132157003b58b0553e3b9c8e7a2a4544" title="neb::CJsonObject::Delete" alt="" coords="259,5,432,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a68b9e0b2d984f1d873fb571425a98b9b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_DetachItemFromArray </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>which</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-23" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-23-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-23-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-23-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a68b9e0b2d984f1d873fb571425a98b9b_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a68b9e0b2d984f1d873fb571425a98b9b_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a68b9e0b2d984f1d873fb571425a98b9b_icgraph" id="c_j_s_o_n_8c_a68b9e0b2d984f1d873fb571425a98b9b_icgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8h.html#a2b08ee3d172cb94e9abea1e4031a366f" title="cJSON_DeleteItemFromArray" alt="" coords="261,5,459,32"/><area shape="rect" id="node4" href="c_j_s_o_n_8h.html#a7010822d267256f274e0adf22be2b202" title="cJSON_DetachItemFromObject" alt="" coords="256,56,464,83"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#a6cdd4b62c7190b203acefe5c0ab3ebb8" title="neb::CJsonObject::Delete" alt="" coords="528,5,701,32"/><area shape="rect" id="node5" href="c_j_s_o_n_8h.html#a148a56617a2a97921d9b9dfbe5dc85bf" title="cJSON_DeleteItemFromObject" alt="" coords="513,56,717,83"/><area shape="rect" id="node6" href="classneb_1_1_c_json_object.html#a132157003b58b0553e3b9c8e7a2a4544" title="neb::CJsonObject::Delete" alt="" coords="765,56,939,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a7010822d267256f274e0adf22be2b202"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_DetachItemFromObject </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>object</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>string</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-24" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-24-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-24-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-24-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a7010822d267256f274e0adf22be2b202_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a7010822d267256f274e0adf22be2b202_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a7010822d267256f274e0adf22be2b202_cgraph" id="c_j_s_o_n_8c_a7010822d267256f274e0adf22be2b202_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#a68b9e0b2d984f1d873fb571425a98b9b" title="cJSON_DetachItemFromArray" alt="" coords="262,5,463,32"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-25" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-25-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-25-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-25-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a7010822d267256f274e0adf22be2b202_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a7010822d267256f274e0adf22be2b202_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a7010822d267256f274e0adf22be2b202_icgraph" id="c_j_s_o_n_8c_a7010822d267256f274e0adf22be2b202_icgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8h.html#a148a56617a2a97921d9b9dfbe5dc85bf" title="cJSON_DeleteItemFromObject" alt="" coords="262,5,466,32"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#a132157003b58b0553e3b9c8e7a2a4544" title="neb::CJsonObject::Delete" alt="" coords="515,5,688,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="ac48335f22f743aff913991d809e0d620"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_GetArrayItem </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>item</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-26" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-26-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-26-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-26-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_ac48335f22f743aff913991d809e0d620_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_ac48335f22f743aff913991d809e0d620_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_ac48335f22f743aff913991d809e0d620_icgraph" id="c_j_s_o_n_8c_ac48335f22f743aff913991d809e0d620_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a2c2ee22cfdfcffbf49b785ff459c8430" title="neb::CJsonObject::operator[]" alt="" coords="206,5,397,32"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#a21251711b3c785a2b6501a8cfaf29f45" title="neb::CJsonObject::operator()" alt="" coords="206,56,397,83"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#aa6abd701e07e89689485fd4bdb158b21" title="neb::CJsonObject::Get" alt="" coords="223,107,379,133"/><area shape="rect" id="node5" href="classneb_1_1_c_json_object.html#a68070a5f90f5cf417ef76b6994a6e03a" title="neb::CJsonObject::Replace" alt="" coords="210,157,393,184"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="adb5c049d3211599c90cd5a3d5e68d854"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int cJSON_GetArraySize </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>array</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-27" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-27-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-27-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-27-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_adb5c049d3211599c90cd5a3d5e68d854_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_adb5c049d3211599c90cd5a3d5e68d854_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_adb5c049d3211599c90cd5a3d5e68d854_icgraph" id="c_j_s_o_n_8c_adb5c049d3211599c90cd5a3d5e68d854_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a72b2cb0e775e8b1e6ec6f802c4168d71" title="neb::CJsonObject::GetArraySize" alt="" coords="205,121,419,148"/><area shape="rect" id="node45" href="classneb_1_1_c_json_object.html#acbdf47ba53458eb53566cfd9795e15c4" title="neb::CJsonObject::Add" alt="" coords="233,172,391,199"/><area shape="rect" id="node46" href="classneb_1_1_c_json_object.html#a9045bfc7a84dea336679ed81c9a99256" title="neb::CJsonObject::AddAsFirst" alt="" coords="212,223,412,249"/><area shape="rect" id="node3" href="classneb_1_1_cmd_node_notice.html#a6230a8d89e762eeb41ae566d4e2f14e6" title="命令处理入口 " alt="" coords="489,5,637,46"/><area shape="rect" id="node4" href="classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="499,71,626,97"/><area shape="rect" id="node6" href="classneb_1_1_manager.html#ac37bc4b870eaf56ec3f52861b19b1182" title="neb::Manager::OnNodeNotify" alt="" coords="467,121,659,148"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#ace99b22ad7900f43c4ab693ac63bf96d" title="neb::WorkerImpl::BootLoadCmd" alt="" coords="923,172,1133,199"/><area shape="rect" id="node9" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="473,223,652,265"/><area shape="rect" id="node5" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="711,71,870,97"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2177,223,2327,249"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="707,336,874,363"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="935,329,1121,370"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1182,336,1367,363"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1417,361,1605,388"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1654,325,1845,366"/><area shape="rect" id="node19" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1654,442,1845,483"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1903,273,2092,300"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="1894,324,2101,351"/><area shape="rect" id="node17" href="classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="1906,375,2089,401"/><area shape="rect" id="node18" href="classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="2167,365,2337,392"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1905,437,2090,464"/><area shape="rect" id="node21" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="1912,508,2083,535"/><area shape="rect" id="node22" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="2179,664,2325,691"/><area shape="rect" id="node35" href="classneb_1_1_worker_impl.html#a13ab4cbaaf66a0dd84501674cb823975" title="neb::WorkerImpl::SendPolling" alt="" coords="2155,416,2349,443"/><area shape="rect" id="node39" href="classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="2149,467,2355,493"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a666df6b0593d965a3aea9d497c947b94" title="neb::WorkerImpl::Broadcast" alt="" coords="2159,517,2345,544"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a8bfc1a9e6a2af454cf6e9b8b2a5edaad" title="neb::WorkerImpl::SendTo" alt="" coords="2167,568,2337,595"/><area shape="rect" id="node23" href="classneb_1_1_actor.html#a29ec51bf9547a34ea61a3c57d48e7bd6" title="连接成功后发送 " alt="" coords="2438,683,2573,709"/><area shape="rect" id="node24" href="classneb_1_1_cmd_beat.html#ae0993588e3dad964f6093478f97255dd" title="命令处理入口 " alt="" coords="2657,624,2847,651"/><area shape="rect" id="node25" href="classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="2679,675,2825,717"/><area shape="rect" id="node26" href="classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="2669,741,2835,782"/><area shape="rect" id="node28" href="classneb_1_1_http_step.html#abd6093bfe8a9d3822aa6d39ff519fd96" title="neb::HttpStep::HttpRequest" alt="" coords="2659,807,2845,833"/><area shape="rect" id="node31" href="classneb_1_1_step_connect_worker.html#abc8ae174cfb52c147ae88bd375ce2c71" title="提交，发出 " alt="" coords="2667,858,2837,899"/><area shape="rect" id="node32" href="classneb_1_1_step_io_timeout.html#ac0b3929a97df553ee45c91ec5330e12b" title="提交，发出 " alt="" coords="2684,923,2820,965"/><area shape="rect" id="node33" href="classneb_1_1_step_tell_worker.html#afc69572c70301d4858a6e3ef074efe32" title="提交，发出 " alt="" coords="2681,493,2823,534"/><area shape="rect" id="node34" href="classneb_1_1_step_tell_worker.html#ac2e7e37b4533edbcffddd19d25441170" title="步骤回调函数 " alt="" coords="2681,558,2823,599"/><area shape="rect" id="node27" href="classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="2897,741,3063,782"/><area shape="rect" id="node29" href="classneb_1_1_http_step.html#adde8b77b262af8cd09348f8d1966d55c" title="neb::HttpStep::HttpPost" alt="" coords="2899,807,3061,833"/><area shape="rect" id="node30" href="classneb_1_1_http_step.html#abb49ccb90a344923b856a28d42f39a9d" title="neb::HttpStep::HttpGet" alt="" coords="2901,857,3059,884"/><area shape="rect" id="node36" href="classneb_1_1_worker.html#aa819e233fcc1bd0a398443e7ee9bf6be" title="neb::Worker::SendPolling" alt="" coords="2420,365,2591,392"/><area shape="rect" id="node38" href="classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="2403,416,2608,443"/><area shape="rect" id="node37" href="classneb_1_1_actor.html#a382f968bcd528fdf548f7dfc5efda39d" title="发送到下一个同一类型的节点 " alt="" coords="2673,365,2831,392"/><area shape="rect" id="node40" href="classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="2415,467,2595,493"/><area shape="rect" id="node41" href="classneb_1_1_actor.html#a9b33f919bba50ff5aef2b172129f6021" title="以取模方式选择发送到同一类型节点 " alt="" coords="2667,441,2837,468"/><area shape="rect" id="node43" href="classneb_1_1_worker.html#acd1eb16ef6ca8d3a5bc26015096a60e7" title="neb::Worker::Broadcast" alt="" coords="2425,517,2585,544"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a176d66e0a0e090ce57633ac53a4379fa"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* cJSON_GetErrorPtr </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-28" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-28-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-28-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-28-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a176d66e0a0e090ce57633ac53a4379fa_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a176d66e0a0e090ce57633ac53a4379fa_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a176d66e0a0e090ce57633ac53a4379fa_icgraph" id="c_j_s_o_n_8c_a176d66e0a0e090ce57633ac53a4379fa_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a2836a804d5b026725d220d198bb96aa5" title="neb::CJsonObject::Parse" alt="" coords="207,492,377,519"/><area shape="rect" id="node38" href="classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="466,169,625,196"/><area shape="rect" id="node49" href="classneb_1_1_c_json_object.html#ac6f23b48bd7d8b32d23c047cf3a766bf" title="neb::CJsonObject::Replace" alt="" coords="201,543,383,569"/><area shape="rect" id="node50" href="classneb_1_1_c_json_object.html#a9045bfc7a84dea336679ed81c9a99256" title="neb::CJsonObject::AddAsFirst" alt="" coords="192,593,392,620"/><area shape="rect" id="node3" href="classneb_1_1_cmd_node_notice.html#a6230a8d89e762eeb41ae566d4e2f14e6" title="命令处理入口 " alt="" coords="729,363,877,405"/><area shape="rect" id="node4" href="classneb_1_1_cmd_update_node_id.html#a2e12ec27f33c6b6186a2d1b043f5db5f" title="命令处理入口 " alt="" coords="721,429,884,470"/><area shape="rect" id="node5" href="classneb_1_1_manager.html#a35e8a21b18300ec10fd05f8c1b248666" title="neb::Manager::GetConf" alt="" coords="723,312,882,339"/><area shape="rect" id="node11" href="classneb_1_1_manager.html#aed93abd4232e5f4b5089094628dc4ee3" title="neb::Manager::OnWorkerData" alt="" coords="957,825,1153,852"/><area shape="rect" id="node14" href="classneb_1_1_manager.html#ac37bc4b870eaf56ec3f52861b19b1182" title="neb::Manager::OnNodeNotify" alt="" coords="707,865,899,892"/><area shape="rect" id="node15" href="classneb_1_1_c_json_object.html#ad1643ebd9a4105aad6d199b09fc44d30" title="neb::CJsonObject::CJsonObject" alt="" coords="440,967,651,993"/><area shape="rect" id="node16" href="classneb_1_1_c_json_object.html#a3fafdebaa137c333f3ece40891265680" title="neb::CJsonObject::operator=" alt="" coords="450,492,641,519"/><area shape="rect" id="node17" href="classneb_1_1_c_json_object.html#a0e48820c581fd9069a6b2f1d5e88e9f1" title="neb::CJsonObject::Get" alt="" coords="467,575,623,601"/><area shape="rect" id="node6" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1989,249,2147,276"/><area shape="rect" id="node7" href="classneb_1_1_manager.html#afca7b496e72cfecc346d1bda0c928acb" title="neb::Manager::RefreshServer" alt="" coords="958,312,1151,339"/><area shape="rect" id="node8" href="classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="1221,177,1406,218"/><area shape="rect" id="node9" href="classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1481,177,1660,218"/><area shape="rect" id="node10" href="classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1721,184,1911,211"/><area shape="rect" id="node12" href="classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="1218,797,1409,838"/><area shape="rect" id="node13" href="classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="1487,804,1655,831"/><area shape="rect" id="node18" href="classneb_1_1_manager.html#a1b80e82446d03e68621e3b293bd349dd" title="neb::Manager::InitLogger" alt="" coords="719,495,886,521"/><area shape="rect" id="node20" href="classneb_1_1_manager.html#a39d78865e975116dc727921581ee8f36" title="neb::Manager::SetWorkerLoad" alt="" coords="703,815,902,841"/><area shape="rect" id="node21" href="classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="955,775,1154,801"/><area shape="rect" id="node22" href="classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="983,724,1127,751"/><area shape="rect" id="node24" href="classneb_1_1_worker_impl.html#aad6542fa125570e8846a86efaf153511" title="neb::WorkerImpl::InitLogger" alt="" coords="711,713,894,740"/><area shape="rect" id="node25" href="classneb_1_1_worker_impl.html#ace99b22ad7900f43c4ab693ac63bf96d" title="neb::WorkerImpl::BootLoadCmd" alt="" coords="1963,367,2173,393"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="713,597,892,638"/><area shape="rect" id="node19" href="classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="1753,484,1879,511"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="1217,724,1410,751"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2478,528,2629,555"/><area shape="rect" id="node28" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="971,604,1138,631"/><area shape="rect" id="node29" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1221,597,1406,638"/><area shape="rect" id="node30" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1478,604,1663,631"/><area shape="rect" id="node31" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1722,596,1910,623"/><area shape="rect" id="node32" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1973,585,2163,626"/><area shape="rect" id="node36" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1973,519,2163,561"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="2231,645,2420,672"/><area shape="rect" id="node34" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="2222,528,2429,555"/><area shape="rect" id="node35" href="classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="2234,589,2417,616"/><area shape="rect" id="node37" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="2233,472,2418,499"/><area shape="rect" id="node39" href="classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="716,35,889,77"/><area shape="rect" id="node43" href="classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="699,144,906,171"/><area shape="rect" id="node45" href="classneb_1_1_worker_impl.html#a7cdd50cc4c95059b409c003ae3d8e261" title="neb::WorkerImpl::CheckParent" alt="" coords="701,195,904,221"/><area shape="rect" id="node40" href="classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="957,43,1152,69"/><area shape="rect" id="node41" href="classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="1203,43,1424,69"/><area shape="rect" id="node42" href="classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="1473,84,1669,111"/><area shape="rect" id="node44" href="classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="964,93,1145,120"/><area shape="rect" id="node46" href="classneb_1_1_worker_impl.html#ad9bc6fa755422e33421ee681c1bd06c3" title="neb::WorkerImpl::IdleCallback" alt="" coords="955,195,1154,221"/><area shape="rect" id="node47" href="classneb_1_1_worker_impl.html#af22fbb0148e94666e984c9850de721c0" title="neb::WorkerImpl::Periodic\lTaskCallback" alt="" coords="968,246,1141,287"/><area shape="rect" id="node48" href="classneb_1_1_worker_impl.html#a9d4c397f171ff74ac5976b81ab026954" title="neb::WorkerImpl::AddPeriodic\lTaskEvent" alt="" coords="1718,414,1914,455"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aba766c9d2c20996e323522cbf2ba46c6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_GetObjectItem </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>object</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>string</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-29" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-29-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-29-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-29-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_aba766c9d2c20996e323522cbf2ba46c6_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_aba766c9d2c20996e323522cbf2ba46c6_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_aba766c9d2c20996e323522cbf2ba46c6_icgraph" id="c_j_s_o_n_8c_aba766c9d2c20996e323522cbf2ba46c6_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a58db929c84c51f3f0548d79571c20912" title="neb::CJsonObject::operator[]" alt="" coords="211,280,402,307"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#a846e1fb7a67d4cd617762be9427b8869" title="neb::CJsonObject::operator()" alt="" coords="211,331,402,357"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#a0e48820c581fd9069a6b2f1d5e88e9f1" title="neb::CJsonObject::Get" alt="" coords="229,381,385,408"/><area shape="rect" id="node39" href="classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="227,505,386,532"/><area shape="rect" id="node50" href="classneb_1_1_c_json_object.html#ac6f23b48bd7d8b32d23c047cf3a766bf" title="neb::CJsonObject::Replace" alt="" coords="215,556,398,583"/><area shape="rect" id="node5" href="classneb_1_1_cmd_node_notice.html#a6230a8d89e762eeb41ae566d4e2f14e6" title="命令处理入口 " alt="" coords="481,374,629,415"/><area shape="rect" id="node6" href="classneb_1_1_cmd_update_node_id.html#a2e12ec27f33c6b6186a2d1b043f5db5f" title="命令处理入口 " alt="" coords="473,439,636,481"/><area shape="rect" id="node7" href="classneb_1_1_manager.html#a1b80e82446d03e68621e3b293bd349dd" title="neb::Manager::InitLogger" alt="" coords="471,171,638,197"/><area shape="rect" id="node10" href="classneb_1_1_manager.html#a35e8a21b18300ec10fd05f8c1b248666" title="neb::Manager::GetConf" alt="" coords="475,657,634,684"/><area shape="rect" id="node15" href="classneb_1_1_manager.html#a39d78865e975116dc727921581ee8f36" title="neb::Manager::SetWorkerLoad" alt="" coords="455,607,654,633"/><area shape="rect" id="node19" href="classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="707,556,906,583"/><area shape="rect" id="node20" href="classneb_1_1_manager.html#ac37bc4b870eaf56ec3f52861b19b1182" title="neb::Manager::OnNodeNotify" alt="" coords="459,272,651,299"/><area shape="rect" id="node21" href="classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="735,323,879,349"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#aad6542fa125570e8846a86efaf153511" title="neb::WorkerImpl::InitLogger" alt="" coords="463,323,646,349"/><area shape="rect" id="node24" href="classneb_1_1_worker_impl.html#ace99b22ad7900f43c4ab693ac63bf96d" title="neb::WorkerImpl::BootLoadCmd" alt="" coords="1715,5,1925,32"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="465,101,644,142"/><area shape="rect" id="node8" href="classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="1505,392,1631,419"/><area shape="rect" id="node9" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1741,708,1899,735"/><area shape="rect" id="node11" href="classneb_1_1_manager.html#afca7b496e72cfecc346d1bda0c928acb" title="neb::Manager::RefreshServer" alt="" coords="710,708,903,735"/><area shape="rect" id="node12" href="classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="973,719,1158,761"/><area shape="rect" id="node13" href="classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1233,719,1412,761"/><area shape="rect" id="node14" href="classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1473,727,1663,753"/><area shape="rect" id="node16" href="classneb_1_1_manager.html#aed93abd4232e5f4b5089094628dc4ee3" title="neb::Manager::OnWorkerData" alt="" coords="709,607,905,633"/><area shape="rect" id="node17" href="classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="970,570,1161,611"/><area shape="rect" id="node18" href="classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="1239,577,1407,604"/><area shape="rect" id="node22" href="classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="969,323,1162,349"/><area shape="rect" id="node25" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2239,56,2390,83"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="723,108,890,135"/><area shape="rect" id="node28" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="973,181,1158,222"/><area shape="rect" id="node29" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1230,221,1415,248"/><area shape="rect" id="node30" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1474,223,1662,249"/><area shape="rect" id="node31" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1725,275,1915,317"/><area shape="rect" id="node36" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1725,158,1915,199"/><area shape="rect" id="node32" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1983,283,2172,309"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="1974,333,2181,360"/><area shape="rect" id="node34" href="classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="1986,228,2169,255"/><area shape="rect" id="node35" href="classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="2229,228,2400,255"/><area shape="rect" id="node37" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1985,169,2170,196"/><area shape="rect" id="node38" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="1992,112,2163,139"/><area shape="rect" id="node40" href="classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="468,853,641,894"/><area shape="rect" id="node44" href="classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="451,759,658,785"/><area shape="rect" id="node46" href="classneb_1_1_worker_impl.html#a7cdd50cc4c95059b409c003ae3d8e261" title="neb::WorkerImpl::CheckParent" alt="" coords="453,505,656,532"/><area shape="rect" id="node41" href="classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="709,860,904,887"/><area shape="rect" id="node42" href="classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="955,817,1176,844"/><area shape="rect" id="node43" href="classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="1225,807,1421,833"/><area shape="rect" id="node45" href="classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="716,759,897,785"/><area shape="rect" id="node47" href="classneb_1_1_worker_impl.html#ad9bc6fa755422e33421ee681c1bd06c3" title="neb::WorkerImpl::IdleCallback" alt="" coords="707,505,906,532"/><area shape="rect" id="node48" href="classneb_1_1_worker_impl.html#af22fbb0148e94666e984c9850de721c0" title="neb::WorkerImpl::Periodic\lTaskCallback" alt="" coords="720,439,893,481"/><area shape="rect" id="node49" href="classneb_1_1_worker_impl.html#a9d4c397f171ff74ac5976b81ab026954" title="neb::WorkerImpl::AddPeriodic\lTaskEvent" alt="" coords="1470,443,1666,485"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a20837ed285a3c2abf578330f2bd97ad4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_InitHooks </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n___hooks.html">cJSON_Hooks</a> *&#160;</td>
+          <td class="paramname"><em>hooks</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad3df5f943457d4befebe4109d48e4a50"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structc_j_s_o_n.html">cJSON</a>* cJSON_Parse </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-30" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-30-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-30-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-30-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_ad3df5f943457d4befebe4109d48e4a50_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_ad3df5f943457d4befebe4109d48e4a50_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_ad3df5f943457d4befebe4109d48e4a50_cgraph" id="c_j_s_o_n_8c_ad3df5f943457d4befebe4109d48e4a50_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="161,29,271,56"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-31" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-31-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-31-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-31-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_ad3df5f943457d4befebe4109d48e4a50_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_ad3df5f943457d4befebe4109d48e4a50_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_ad3df5f943457d4befebe4109d48e4a50_icgraph" id="c_j_s_o_n_8c_ad3df5f943457d4befebe4109d48e4a50_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a2836a804d5b026725d220d198bb96aa5" title="neb::CJsonObject::Parse" alt="" coords="175,492,345,519"/><area shape="rect" id="node38" href="classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="434,169,593,196"/><area shape="rect" id="node49" href="classneb_1_1_c_json_object.html#ac6f23b48bd7d8b32d23c047cf3a766bf" title="neb::CJsonObject::Replace" alt="" coords="169,543,351,569"/><area shape="rect" id="node50" href="classneb_1_1_c_json_object.html#a9045bfc7a84dea336679ed81c9a99256" title="neb::CJsonObject::AddAsFirst" alt="" coords="160,593,360,620"/><area shape="rect" id="node3" href="classneb_1_1_cmd_node_notice.html#a6230a8d89e762eeb41ae566d4e2f14e6" title="命令处理入口 " alt="" coords="697,363,845,405"/><area shape="rect" id="node4" href="classneb_1_1_cmd_update_node_id.html#a2e12ec27f33c6b6186a2d1b043f5db5f" title="命令处理入口 " alt="" coords="689,429,852,470"/><area shape="rect" id="node5" href="classneb_1_1_manager.html#a35e8a21b18300ec10fd05f8c1b248666" title="neb::Manager::GetConf" alt="" coords="691,312,850,339"/><area shape="rect" id="node11" href="classneb_1_1_manager.html#aed93abd4232e5f4b5089094628dc4ee3" title="neb::Manager::OnWorkerData" alt="" coords="925,825,1121,852"/><area shape="rect" id="node14" href="classneb_1_1_manager.html#ac37bc4b870eaf56ec3f52861b19b1182" title="neb::Manager::OnNodeNotify" alt="" coords="675,865,867,892"/><area shape="rect" id="node15" href="classneb_1_1_c_json_object.html#ad1643ebd9a4105aad6d199b09fc44d30" title="neb::CJsonObject::CJsonObject" alt="" coords="408,967,619,993"/><area shape="rect" id="node16" href="classneb_1_1_c_json_object.html#a3fafdebaa137c333f3ece40891265680" title="neb::CJsonObject::operator=" alt="" coords="418,492,609,519"/><area shape="rect" id="node17" href="classneb_1_1_c_json_object.html#a0e48820c581fd9069a6b2f1d5e88e9f1" title="neb::CJsonObject::Get" alt="" coords="435,575,591,601"/><area shape="rect" id="node6" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1957,249,2115,276"/><area shape="rect" id="node7" href="classneb_1_1_manager.html#afca7b496e72cfecc346d1bda0c928acb" title="neb::Manager::RefreshServer" alt="" coords="926,312,1119,339"/><area shape="rect" id="node8" href="classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="1189,177,1374,218"/><area shape="rect" id="node9" href="classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1449,177,1628,218"/><area shape="rect" id="node10" href="classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1689,184,1879,211"/><area shape="rect" id="node12" href="classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="1186,797,1377,838"/><area shape="rect" id="node13" href="classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="1455,804,1623,831"/><area shape="rect" id="node18" href="classneb_1_1_manager.html#a1b80e82446d03e68621e3b293bd349dd" title="neb::Manager::InitLogger" alt="" coords="687,495,854,521"/><area shape="rect" id="node20" href="classneb_1_1_manager.html#a39d78865e975116dc727921581ee8f36" title="neb::Manager::SetWorkerLoad" alt="" coords="671,815,870,841"/><area shape="rect" id="node21" href="classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="923,775,1122,801"/><area shape="rect" id="node22" href="classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="951,724,1095,751"/><area shape="rect" id="node24" href="classneb_1_1_worker_impl.html#aad6542fa125570e8846a86efaf153511" title="neb::WorkerImpl::InitLogger" alt="" coords="679,713,862,740"/><area shape="rect" id="node25" href="classneb_1_1_worker_impl.html#ace99b22ad7900f43c4ab693ac63bf96d" title="neb::WorkerImpl::BootLoadCmd" alt="" coords="1931,367,2141,393"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="681,597,860,638"/><area shape="rect" id="node19" href="classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="1721,484,1847,511"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="1185,724,1378,751"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2446,528,2597,555"/><area shape="rect" id="node28" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="939,604,1106,631"/><area shape="rect" id="node29" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1189,597,1374,638"/><area shape="rect" id="node30" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1446,604,1631,631"/><area shape="rect" id="node31" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1690,596,1878,623"/><area shape="rect" id="node32" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1941,585,2131,626"/><area shape="rect" id="node36" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1941,519,2131,561"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="2199,645,2388,672"/><area shape="rect" id="node34" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="2190,528,2397,555"/><area shape="rect" id="node35" href="classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="2202,589,2385,616"/><area shape="rect" id="node37" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="2201,472,2386,499"/><area shape="rect" id="node39" href="classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="684,35,857,77"/><area shape="rect" id="node43" href="classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="667,144,874,171"/><area shape="rect" id="node45" href="classneb_1_1_worker_impl.html#a7cdd50cc4c95059b409c003ae3d8e261" title="neb::WorkerImpl::CheckParent" alt="" coords="669,195,872,221"/><area shape="rect" id="node40" href="classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="925,43,1120,69"/><area shape="rect" id="node41" href="classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="1171,43,1392,69"/><area shape="rect" id="node42" href="classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="1441,84,1637,111"/><area shape="rect" id="node44" href="classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="932,93,1113,120"/><area shape="rect" id="node46" href="classneb_1_1_worker_impl.html#ad9bc6fa755422e33421ee681c1bd06c3" title="neb::WorkerImpl::IdleCallback" alt="" coords="923,195,1122,221"/><area shape="rect" id="node47" href="classneb_1_1_worker_impl.html#af22fbb0148e94666e984c9850de721c0" title="neb::WorkerImpl::Periodic\lTaskCallback" alt="" coords="936,246,1109,287"/><area shape="rect" id="node48" href="classneb_1_1_worker_impl.html#a9d4c397f171ff74ac5976b81ab026954" title="neb::WorkerImpl::AddPeriodic\lTaskEvent" alt="" coords="1686,414,1882,455"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aea4f15b04dba4dff2edc2bb1d387b555"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* cJSON_Print </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>item</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-32" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-32-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-32-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-32-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_aea4f15b04dba4dff2edc2bb1d387b555_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_aea4f15b04dba4dff2edc2bb1d387b555_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_aea4f15b04dba4dff2edc2bb1d387b555_icgraph" id="c_j_s_o_n_8c_aea4f15b04dba4dff2edc2bb1d387b555_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a9f76a69c3653122136f44fdfa0fac0c1" title="neb::CJsonObject::ToFormatted\lString" alt="" coords="153,222,362,263"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#a0e48820c581fd9069a6b2f1d5e88e9f1" title="neb::CJsonObject::Get" alt="" coords="179,288,335,315"/><area shape="rect" id="node4" href="classneb_1_1_cmd_node_notice.html#a6230a8d89e762eeb41ae566d4e2f14e6" title="命令处理入口 " alt="" coords="437,5,585,46"/><area shape="rect" id="node5" href="classneb_1_1_cmd_update_node_id.html#a2e12ec27f33c6b6186a2d1b043f5db5f" title="命令处理入口 " alt="" coords="429,70,592,111"/><area shape="rect" id="node6" href="classneb_1_1_manager.html#a1b80e82446d03e68621e3b293bd349dd" title="neb::Manager::InitLogger" alt="" coords="427,136,594,163"/><area shape="rect" id="node9" href="classneb_1_1_manager.html#a35e8a21b18300ec10fd05f8c1b248666" title="neb::Manager::GetConf" alt="" coords="431,187,590,213"/><area shape="rect" id="node14" href="classneb_1_1_manager.html#a39d78865e975116dc727921581ee8f36" title="neb::Manager::SetWorkerLoad" alt="" coords="411,237,610,264"/><area shape="rect" id="node18" href="classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="659,288,858,315"/><area shape="rect" id="node19" href="classneb_1_1_manager.html#ac37bc4b870eaf56ec3f52861b19b1182" title="neb::Manager::OnNodeNotify" alt="" coords="415,339,607,365"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="687,389,831,416"/><area shape="rect" id="node22" href="classneb_1_1_worker_impl.html#aad6542fa125570e8846a86efaf153511" title="neb::WorkerImpl::InitLogger" alt="" coords="419,440,602,467"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#ace99b22ad7900f43c4ab693ac63bf96d" title="neb::WorkerImpl::BootLoadCmd" alt="" coords="1150,695,1359,721"/><area shape="rect" id="node25" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="421,491,600,533"/><area shape="rect" id="node7" href="classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="1439,73,1566,100"/><area shape="rect" id="node8" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1662,128,1821,155"/><area shape="rect" id="node10" href="classneb_1_1_manager.html#afca7b496e72cfecc346d1bda0c928acb" title="neb::Manager::RefreshServer" alt="" coords="662,132,855,159"/><area shape="rect" id="node11" href="classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="911,121,1097,162"/><area shape="rect" id="node12" href="classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1165,121,1344,162"/><area shape="rect" id="node13" href="classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1408,128,1597,155"/><area shape="rect" id="node15" href="classneb_1_1_manager.html#aed93abd4232e5f4b5089094628dc4ee3" title="neb::Manager::OnWorkerData" alt="" coords="661,237,857,264"/><area shape="rect" id="node16" href="classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="909,239,1099,281"/><area shape="rect" id="node17" href="classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="1171,247,1339,273"/><area shape="rect" id="node21" href="classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="907,308,1101,335"/><area shape="rect" id="node24" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2169,644,2319,671"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="675,485,842,512"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="911,478,1097,519"/><area shape="rect" id="node28" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1162,485,1347,512"/><area shape="rect" id="node29" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1409,483,1597,509"/><area shape="rect" id="node30" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1646,527,1837,569"/><area shape="rect" id="node35" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1646,410,1837,451"/><area shape="rect" id="node31" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1895,593,2084,620"/><area shape="rect" id="node32" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="1886,543,2093,569"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="1898,492,2081,519"/><area shape="rect" id="node34" href="classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="2159,501,2329,528"/><area shape="rect" id="node36" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1897,429,2082,456"/><area shape="rect" id="node37" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="1904,359,2075,385"/><area shape="rect" id="node38" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="2171,451,2317,477"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a13ab4cbaaf66a0dd84501674cb823975" title="neb::WorkerImpl::SendPolling" alt="" coords="2147,248,2341,275"/><area shape="rect" id="node46" href="classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="2141,299,2347,325"/><area shape="rect" id="node48" href="classneb_1_1_worker_impl.html#a666df6b0593d965a3aea9d497c947b94" title="neb::WorkerImpl::Broadcast" alt="" coords="2151,349,2337,376"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#a8bfc1a9e6a2af454cf6e9b8b2a5edaad" title="neb::WorkerImpl::SendTo" alt="" coords="2159,400,2329,427"/><area shape="rect" id="node39" href="classneb_1_1_actor.html#a29ec51bf9547a34ea61a3c57d48e7bd6" title="连接成功后发送 " alt="" coords="2430,451,2565,477"/><area shape="rect" id="node40" href="classneb_1_1_cmd_beat.html#ae0993588e3dad964f6093478f97255dd" title="命令处理入口 " alt="" coords="2649,392,2839,419"/><area shape="rect" id="node41" href="classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="2671,443,2817,485"/><area shape="rect" id="node42" href="classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="2661,509,2827,550"/><area shape="rect" id="node44" href="classneb_1_1_worker.html#aa819e233fcc1bd0a398443e7ee9bf6be" title="neb::Worker::SendPolling" alt="" coords="2412,197,2583,224"/><area shape="rect" id="node45" href="classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="2395,248,2600,275"/><area shape="rect" id="node47" href="classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="2407,299,2587,325"/><area shape="rect" id="node49" href="classneb_1_1_worker.html#acd1eb16ef6ca8d3a5bc26015096a60e7" title="neb::Worker::Broadcast" alt="" coords="2417,349,2577,376"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a5539c9504a8e65390a94852707f105d4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* cJSON_PrintUnformatted </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>item</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-33" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-33-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-33-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-33-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a5539c9504a8e65390a94852707f105d4_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a5539c9504a8e65390a94852707f105d4_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a5539c9504a8e65390a94852707f105d4_icgraph" id="c_j_s_o_n_8c_a5539c9504a8e65390a94852707f105d4_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#a4f2ffa80a1dbdb80fe1a0e0f00758630" title="neb::CJsonObject::ToString" alt="" coords="224,287,408,313"/><area shape="rect" id="node3" href="classneb_1_1_manager.html#a35e8a21b18300ec10fd05f8c1b248666" title="neb::Manager::GetConf" alt="" coords="482,51,641,77"/><area shape="rect" id="node9" href="classneb_1_1_manager.html#a5cacf5af08f6788a4177b00526a8e761" title="neb::Manager::RegisterTo\lBeacon" alt="" coords="732,178,905,219"/><area shape="rect" id="node13" href="classneb_1_1_manager.html#ae09f69cb2056998628de4b7dcd07552d" title="上报节点状态信息 " alt="" coords="715,109,922,136"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a7cdd50cc4c95059b409c003ae3d8e261" title="neb::WorkerImpl::CheckParent" alt="" coords="717,261,920,288"/><area shape="rect" id="node21" href="classneb_1_1_c_json_object.html#aa9b94740af3769a625b1f4b5cb274562" title="neb::CJsonObject::CJsonObject" alt="" coords="456,312,667,339"/><area shape="rect" id="node22" href="classneb_1_1_c_json_object.html#a3fafdebaa137c333f3ece40891265680" title="neb::CJsonObject::operator=" alt="" coords="466,363,657,389"/><area shape="rect" id="node23" href="classneb_1_1_c_json_object.html#aecda2166ba2cfd6e20122f706c2a4c5d" title="neb::CJsonObject::operator==" alt="" coords="462,413,661,440"/><area shape="rect" id="node24" href="classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="482,160,641,187"/><area shape="rect" id="node25" href="classneb_1_1_c_json_object.html#ac6f23b48bd7d8b32d23c047cf3a766bf" title="neb::CJsonObject::Replace" alt="" coords="470,464,653,491"/><area shape="rect" id="node26" href="classneb_1_1_c_json_object.html#a9045bfc7a84dea336679ed81c9a99256" title="neb::CJsonObject::AddAsFirst" alt="" coords="461,515,661,541"/><area shape="rect" id="node4" href="classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1982,116,2141,143"/><area shape="rect" id="node5" href="classneb_1_1_manager.html#afca7b496e72cfecc346d1bda0c928acb" title="neb::Manager::RefreshServer" alt="" coords="722,51,915,77"/><area shape="rect" id="node6" href="classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="978,43,1163,85"/><area shape="rect" id="node7" href="classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="1503,73,1681,114"/><area shape="rect" id="node8" href="classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="1744,116,1933,143"/><area shape="rect" id="node10" href="classneb_1_1_manager.html#ac900ec985a921c6fa95b11baccb7b9f7" title="neb::Manager::RestartWorker" alt="" coords="973,160,1168,187"/><area shape="rect" id="node11" href="classneb_1_1_manager.html#ace2d0e5691884e75c86b373e0fc7d429" title="neb::Manager::OnChildTerminated" alt="" coords="1219,157,1440,184"/><area shape="rect" id="node12" href="classneb_1_1_manager.html#a772d0b23453e3ddd29cf1b8676e0c198" title="neb::Manager::SignalCallback" alt="" coords="1494,151,1690,177"/><area shape="rect" id="node14" href="classneb_1_1_manager.html#acfcd796f28bd10e9499865c093d35959" title="neb::Manager::IdleCallback" alt="" coords="980,109,1161,136"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#ad9bc6fa755422e33421ee681c1bd06c3" title="neb::WorkerImpl::IdleCallback" alt="" coords="971,261,1170,288"/><area shape="rect" id="node17" href="classneb_1_1_worker_impl.html#af22fbb0148e94666e984c9850de721c0" title="neb::WorkerImpl::Periodic\lTaskCallback" alt="" coords="984,313,1157,354"/><area shape="rect" id="node18" href="classneb_1_1_worker_impl.html#a9d4c397f171ff74ac5976b81ab026954" title="neb::WorkerImpl::AddPeriodic\lTaskEvent" alt="" coords="1231,313,1427,354"/><area shape="rect" id="node19" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="1489,320,1695,347"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="1763,320,1914,347"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a567d357a7a0c3c0c9c896d98aae3dcec"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_ReplaceItemInArray </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>array</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>which</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>newitem</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-34" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-34-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-34-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-34-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a567d357a7a0c3c0c9c896d98aae3dcec_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a567d357a7a0c3c0c9c896d98aae3dcec_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a567d357a7a0c3c0c9c896d98aae3dcec_cgraph" id="c_j_s_o_n_8c_a567d357a7a0c3c0c9c896d98aae3dcec_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="243,29,354,56"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-35" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-35-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-35-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-35-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a567d357a7a0c3c0c9c896d98aae3dcec_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a567d357a7a0c3c0c9c896d98aae3dcec_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a567d357a7a0c3c0c9c896d98aae3dcec_icgraph" id="c_j_s_o_n_8c_a567d357a7a0c3c0c9c896d98aae3dcec_icgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8h.html#a31202ffebc9e4f86c3db12f9793b6800" title="cJSON_ReplaceItemInObject" alt="" coords="243,5,437,32"/><area shape="rect" id="node4" href="classneb_1_1_c_json_object.html#a68070a5f90f5cf417ef76b6994a6e03a" title="neb::CJsonObject::Replace" alt="" coords="249,56,431,83"/><area shape="rect" id="node3" href="classneb_1_1_c_json_object.html#ac6f23b48bd7d8b32d23c047cf3a766bf" title="neb::CJsonObject::Replace" alt="" coords="486,5,669,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a31202ffebc9e4f86c3db12f9793b6800"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void cJSON_ReplaceItemInObject </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>object</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>string</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structc_j_s_o_n.html">cJSON</a> *&#160;</td>
+          <td class="paramname"><em>newitem</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-36" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-36-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-36-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-36-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a31202ffebc9e4f86c3db12f9793b6800_cgraph.png" border="0" usemap="#c_j_s_o_n_8c_a31202ffebc9e4f86c3db12f9793b6800_cgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a31202ffebc9e4f86c3db12f9793b6800_cgraph" id="c_j_s_o_n_8c_a31202ffebc9e4f86c3db12f9793b6800_cgraph">
+<area shape="rect" id="node2" href="c_j_s_o_n_8c.html#a567d357a7a0c3c0c9c896d98aae3dcec" title="cJSON_ReplaceItemInArray" alt="" coords="249,29,437,56"/><area shape="rect" id="node3" href="c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="486,29,597,56"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-37" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-37-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-37-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-37-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="c_j_s_o_n_8c_a31202ffebc9e4f86c3db12f9793b6800_icgraph.png" border="0" usemap="#c_j_s_o_n_8c_a31202ffebc9e4f86c3db12f9793b6800_icgraph" alt=""/></div>
+<map name="c_j_s_o_n_8c_a31202ffebc9e4f86c3db12f9793b6800_icgraph" id="c_j_s_o_n_8c_a31202ffebc9e4f86c3db12f9793b6800_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_json_object.html#ac6f23b48bd7d8b32d23c047cf3a766bf" title="neb::CJsonObject::Replace" alt="" coords="249,5,431,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_b7878ad5ecbf2506f4125b9d34c97e45.html">util</a></li><li class="navelem"><a class="el" href="dir_9e760812765645a3a04526d0045541ff.html">json</a></li><li class="navelem"><a class="el" href="c_j_s_o_n_8c.html">cJSON.c</a></li>
+    <li class="footer">生成于 2018年 六月 9日 星期六 15:04:33 , 为 Nebula使用 
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
+</body>
+</html>

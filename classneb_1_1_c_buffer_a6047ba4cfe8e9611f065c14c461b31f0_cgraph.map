@@ -1,0 +1,7 @@
+<map id="neb::CBuffer::Compact" name="neb::CBuffer::Compact">
+<area shape="rect" id="node2" href="$classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="211,5,405,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="211,56,405,83"/>
+<area shape="rect" id="node6" href="$classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="230,107,386,133"/>
+<area shape="rect" id="node3" href="$classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="454,5,613,32"/>
+<area shape="rect" id="node5" href="$classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="454,56,613,83"/>
+</map>

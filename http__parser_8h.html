@@ -1,0 +1,862 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>Nebula: src/util/http/http_parser.h 文件参考</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">Nebula
+   </div>
+   <div id="projectbrief">Nebula</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.8.5 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>首页</span></a></li>
+      <li><a href="pages.html"><span>相关页面</span></a></li>
+      <li><a href="namespaces.html"><span>命名空间</span></a></li>
+      <li><a href="annotated.html"><span>类</span></a></li>
+      <li class="current"><a href="files.html"><span>文件</span></a></li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>文件列表</span></a></li>
+      <li><a href="globals.html"><span>文件成员</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('http__parser_8h.html','');});
+</script>
+<div id="doc-content">
+<div class="header">
+  <div class="summary">
+<a href="#nested-classes">类</a> &#124;
+<a href="#define-members">宏定义</a> &#124;
+<a href="#typedef-members">类型定义</a> &#124;
+<a href="#enum-members">枚举</a> &#124;
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle">
+<div class="title">http_parser.h 文件参考</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> http_parser.h 的引用(Include)关系图:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h__incl.png" border="0" usemap="#src_2util_2http_2http__parser_8h" alt=""/></div>
+<map name="src_2util_2http_2http__parser_8h" id="src_2util_2http_2http__parser_8h">
+</map>
+</div>
+</div><div class="textblock"><div id="dynsection-1" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-1-trigger" src="closed.png" alt="+"/> 此图展示该文件直接或间接的被哪些文件引用了:</div>
+<div id="dynsection-1-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-1-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h__dep__incl.png" border="0" usemap="#src_2util_2http_2http__parser_8hdep" alt=""/></div>
+<map name="src_2util_2http_2http__parser_8hdep" id="src_2util_2http_2http__parser_8hdep">
+<area shape="rect" id="node2" href="_http_step_8hpp.html" title="src/actor/step/HttpStep.hpp" alt="" coords="134,104,316,131"/><area shape="rect" id="node5" href="_codec_http_8hpp.html" title="src/codec/CodecHttp.hpp" alt="" coords="404,104,575,131"/><area shape="rect" id="node11" href="http__parser_8c.html" title="src/util/http/http\l_parser.c" alt="" coords="599,97,712,138"/><area shape="rect" id="node3" href="_http_step_8cpp.html" title="src/actor/step/HttpStep.cpp" alt="" coords="5,195,187,221"/><area shape="rect" id="node4" href="_worker_impl_8cpp.html" title="src/labor/WorkerImpl.cpp" alt="" coords="141,285,309,312"/><area shape="rect" id="node6" href="_module_8hpp.html" title="src/actor/cmd/Module.hpp" alt="" coords="263,195,436,221"/><area shape="rect" id="node9" href="_socket_channel_impl_8cpp.html" title="src/channel/SocketChannel\lImpl.cpp" alt="" coords="461,187,643,229"/><area shape="rect" id="node10" href="_codec_http_8cpp.html" title="src/codec/CodecHttp.cpp" alt="" coords="668,195,839,221"/><area shape="rect" id="node7" href="_module_http_upgrade_8hpp.html" title="src/actor/cmd/sys_cmd\l/ModuleHttpUpgrade.hpp" alt="" coords="334,278,500,319"/><area shape="rect" id="node8" href="_module_http_upgrade_8cpp.html" title="src/actor/cmd/sys_cmd\l/ModuleHttpUpgrade.cpp" alt="" coords="334,369,500,410"/></map>
+</div>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+类</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhttp__parser.html">http_parser</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhttp__parser__settings.html">http_parser_settings</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhttp__parser__url.html">http_parser_url</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+宏定义</h2></td></tr>
+<tr class="memitem:abfeef6f3e39791acc311791feda09d27"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#abfeef6f3e39791acc311791feda09d27">HTTP_PARSER_VERSION_MAJOR</a>&#160;&#160;&#160;2</td></tr>
+<tr class="separator:abfeef6f3e39791acc311791feda09d27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab8479153443ca4fe95b3de5adb0224de"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#ab8479153443ca4fe95b3de5adb0224de">HTTP_PARSER_VERSION_MINOR</a>&#160;&#160;&#160;5</td></tr>
+<tr class="separator:ab8479153443ca4fe95b3de5adb0224de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb999672cce2ebd7f952bd3f28d8f5e5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#afb999672cce2ebd7f952bd3f28d8f5e5">HTTP_PARSER_VERSION_PATCH</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:afb999672cce2ebd7f952bd3f28d8f5e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7daf883828d97fafe5726998f0e05146"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a7daf883828d97fafe5726998f0e05146">HTTP_PARSER_STRICT</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:a7daf883828d97fafe5726998f0e05146"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6272a7f92e0f1b66e07680f32f6f21b6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a6272a7f92e0f1b66e07680f32f6f21b6">HTTP_MAX_HEADER_SIZE</a>&#160;&#160;&#160;(80*1024)</td></tr>
+<tr class="separator:a6272a7f92e0f1b66e07680f32f6f21b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a062873fd30d66c26468d4f1bd73e2976"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a062873fd30d66c26468d4f1bd73e2976">HTTP_METHOD_MAP</a>(<a class="el" href="http__parser_8h.html#a001751e2abb71763b08651bec986b6f7">XX</a>)</td></tr>
+<tr class="separator:a062873fd30d66c26468d4f1bd73e2976"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a001751e2abb71763b08651bec986b6f7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a001751e2abb71763b08651bec986b6f7">XX</a>(num, <a class="el" href="http__parser_8c.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, string)&#160;&#160;&#160;HTTP_##<a class="el" href="http__parser_8c.html#a8f8f80d37794cde9472343e4487ba3eb">name</a> = num,</td></tr>
+<tr class="separator:a001751e2abb71763b08651bec986b6f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50da2aea232a876bcafc5ea85b465912"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a50da2aea232a876bcafc5ea85b465912">HTTP_ERRNO_MAP</a>(<a class="el" href="http__parser_8h.html#a001751e2abb71763b08651bec986b6f7">XX</a>)</td></tr>
+<tr class="separator:a50da2aea232a876bcafc5ea85b465912"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a686e9a27372975330d034ecb3ead862c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a686e9a27372975330d034ecb3ead862c">HTTP_ERRNO_GEN</a>(n, s)&#160;&#160;&#160;HPE_##n,</td></tr>
+<tr class="separator:a686e9a27372975330d034ecb3ead862c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a356ebaa93536e6f94c2948a1416697c7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a356ebaa93536e6f94c2948a1416697c7">HTTP_PARSER_ERRNO</a>(p)&#160;&#160;&#160;((enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a>) (p)-&gt;<a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a>)</td></tr>
+<tr class="separator:a356ebaa93536e6f94c2948a1416697c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+类型定义</h2></td></tr>
+<tr class="memitem:a402f99e6fefc59341c050462c844f9cb"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structhttp__parser.html">http_parser</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a402f99e6fefc59341c050462c844f9cb">http_parser</a></td></tr>
+<tr class="separator:a402f99e6fefc59341c050462c844f9cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5e078ef0f2f2bfa5d132469a58a5674"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structhttp__parser__settings.html">http_parser_settings</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#ac5e078ef0f2f2bfa5d132469a58a5674">http_parser_settings</a></td></tr>
+<tr class="separator:ac5e078ef0f2f2bfa5d132469a58a5674"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a055ecd54750d71f2b3eda6294dd4b782"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a055ecd54750d71f2b3eda6294dd4b782">http_data_cb</a> )(<a class="el" href="structhttp__parser.html">http_parser</a> *, const char *at, size_t length)</td></tr>
+<tr class="separator:a055ecd54750d71f2b3eda6294dd4b782"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d8e134ed157e38ce183e8db8b9e8c35"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a4d8e134ed157e38ce183e8db8b9e8c35">http_cb</a> )(<a class="el" href="structhttp__parser.html">http_parser</a> *)</td></tr>
+<tr class="separator:a4d8e134ed157e38ce183e8db8b9e8c35"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
+枚举</h2></td></tr>
+<tr class="memitem:aacd5f203e33ac338ca5cb8f02a3ff3b8"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#aacd5f203e33ac338ca5cb8f02a3ff3b8">http_method</a> </td></tr>
+<tr class="separator:aacd5f203e33ac338ca5cb8f02a3ff3b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9d6d304f8c255158175951b434cfa7a"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7a">http_parser_type</a> { <a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7aa9f727b57e9e9c1651ee0df29aa1b1713">HTTP_REQUEST</a>, 
+<a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7aa132597b93208763e8e81c4a4a0e8a642">HTTP_RESPONSE</a>, 
+<a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7aadac18fbd072752213fd5308bb5fc8684">HTTP_BOTH</a>
+ }</td></tr>
+<tr class="separator:af9d6d304f8c255158175951b434cfa7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab6b306ef981f5e21bb41ea2c2dbe8cd9"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#ab6b306ef981f5e21bb41ea2c2dbe8cd9">flags</a> { <br/>
+&#160;&#160;<a class="el" href="http__parser_8h.html#ab6b306ef981f5e21bb41ea2c2dbe8cd9a092619f8f7babc8fc3fa7533e78c3c29">F_CHUNKED</a> = 1 &lt;&lt; 0, 
+<a class="el" href="http__parser_8h.html#ab6b306ef981f5e21bb41ea2c2dbe8cd9a5c5e8921e5747d1128ad9611a6d4a782">F_CONNECTION_KEEP_ALIVE</a> = 1 &lt;&lt; 1, 
+<a class="el" href="http__parser_8h.html#ab6b306ef981f5e21bb41ea2c2dbe8cd9a133e98dc07339e6c1605f32fc4fd6c78">F_CONNECTION_CLOSE</a> = 1 &lt;&lt; 2, 
+<a class="el" href="http__parser_8h.html#ab6b306ef981f5e21bb41ea2c2dbe8cd9af0eea4f6920c6ff5c68cdd1f2e27d044">F_CONNECTION_UPGRADE</a> = 1 &lt;&lt; 3, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8h.html#ab6b306ef981f5e21bb41ea2c2dbe8cd9aa75b5b1dcec2decaa7386264d4e1dc29">F_TRAILING</a> = 1 &lt;&lt; 4, 
+<a class="el" href="http__parser_8h.html#ab6b306ef981f5e21bb41ea2c2dbe8cd9a600ff486c803dcf2ec13453bdaf1100c">F_UPGRADE</a> = 1 &lt;&lt; 5, 
+<a class="el" href="http__parser_8h.html#ab6b306ef981f5e21bb41ea2c2dbe8cd9ae71592851a69f477b80b1947399c1740">F_SKIPBODY</a> = 1 &lt;&lt; 6
+<br/>
+ }</td></tr>
+<tr class="separator:ab6b306ef981f5e21bb41ea2c2dbe8cd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a14687aec2341ce0e62db2e543dd1da64"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a> </td></tr>
+<tr class="separator:a14687aec2341ce0e62db2e543dd1da64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ca1f91c2958091e2ac9e9b2f903d4eb"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4eb">http_parser_url_fields</a> { <br/>
+&#160;&#160;<a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4ebab2b8b31b30d6bc897dde653f6cc9f06c">UF_SCHEMA</a> = 0, 
+<a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4ebaf2aeb0b896645bd8100ca0f1e263a12f">UF_HOST</a> = 1, 
+<a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4eba357b6dc1326ed55be377b0d839e8ca0f">UF_PORT</a> = 2, 
+<a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4eba86b9abfa220db7b834490d8b36e915af">UF_PATH</a> = 3, 
+<br/>
+&#160;&#160;<a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4ebabc8500a49ccad1cd91d66d1eefb503cc">UF_QUERY</a> = 4, 
+<a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4eba32fb35461b96b6872f1427b2d51d1c30">UF_FRAGMENT</a> = 5, 
+<a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4ebacb4a85c6a7d6cd0b64ec6e91e7ba8689">UF_USERINFO</a> = 6, 
+<a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4eba4b40c88291e4fa018de04553e7e1adfd">UF_MAX</a> = 7
+<br/>
+ }</td></tr>
+<tr class="separator:a9ca1f91c2958091e2ac9e9b2f903d4eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:a2559b4d373c7f0d85c77a2a3c308a5ee"><td class="memItemLeft" align="right" valign="top">unsigned long&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a2559b4d373c7f0d85c77a2a3c308a5ee">http_parser_version</a> (void)</td></tr>
+<tr class="separator:a2559b4d373c7f0d85c77a2a3c308a5ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a089b18502c937358df2adcea83db22bb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a089b18502c937358df2adcea83db22bb">http_parser_init</a> (<a class="el" href="structhttp__parser.html">http_parser</a> *parser, enum <a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7a">http_parser_type</a> type)</td></tr>
+<tr class="separator:a089b18502c937358df2adcea83db22bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a055a4e6834f07a0898a1802230852775"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a055a4e6834f07a0898a1802230852775">http_parser_settings_init</a> (<a class="el" href="structhttp__parser__settings.html">http_parser_settings</a> *settings)</td></tr>
+<tr class="separator:a055a4e6834f07a0898a1802230852775"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5034165465db6c488ce8b75fd0f72faf"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a5034165465db6c488ce8b75fd0f72faf">http_parser_execute</a> (<a class="el" href="structhttp__parser.html">http_parser</a> *parser, const <a class="el" href="structhttp__parser__settings.html">http_parser_settings</a> *settings, const char *data, size_t len)</td></tr>
+<tr class="separator:a5034165465db6c488ce8b75fd0f72faf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abefaa63b2505a6d38f96fc782c41d111"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#abefaa63b2505a6d38f96fc782c41d111">http_should_keep_alive</a> (const <a class="el" href="structhttp__parser.html">http_parser</a> *parser)</td></tr>
+<tr class="separator:abefaa63b2505a6d38f96fc782c41d111"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdafb72b3fddca085841586537406859"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#acdafb72b3fddca085841586537406859">http_method_str</a> (enum <a class="el" href="http__parser_8h.html#aacd5f203e33ac338ca5cb8f02a3ff3b8">http_method</a> m)</td></tr>
+<tr class="separator:acdafb72b3fddca085841586537406859"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a93ed79c5d48491b72945ce11f75f7f"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a8a93ed79c5d48491b72945ce11f75f7f">http_errno_name</a> (enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a> err)</td></tr>
+<tr class="separator:a8a93ed79c5d48491b72945ce11f75f7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6dde757b0dee9b791e5d525c1ff2da0d"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#a6dde757b0dee9b791e5d525c1ff2da0d">http_errno_description</a> (enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a> err)</td></tr>
+<tr class="separator:a6dde757b0dee9b791e5d525c1ff2da0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb269310a348fd68fd001b30b690fc83"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#aeb269310a348fd68fd001b30b690fc83">http_parser_parse_url</a> (const char *buf, size_t buflen, int is_connect, struct <a class="el" href="structhttp__parser__url.html">http_parser_url</a> *u)</td></tr>
+<tr class="separator:aeb269310a348fd68fd001b30b690fc83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab67d625ad2fe1623825eec73e18817de"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#ab67d625ad2fe1623825eec73e18817de">http_parser_pause</a> (<a class="el" href="structhttp__parser.html">http_parser</a> *parser, int paused)</td></tr>
+<tr class="separator:ab67d625ad2fe1623825eec73e18817de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af013473c413da1c0680fe8a9590f0047"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="http__parser_8h.html#af013473c413da1c0680fe8a9590f0047">http_body_is_final</a> (const <a class="el" href="structhttp__parser.html">http_parser</a> *parser)</td></tr>
+<tr class="separator:af013473c413da1c0680fe8a9590f0047"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">宏定义说明</h2>
+<a class="anchor" id="a686e9a27372975330d034ecb3ead862c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_ERRNO_GEN</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">n, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">s&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;HPE_##n,</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a50da2aea232a876bcafc5ea85b465912"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_ERRNO_MAP</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><a class="el" href="http__parser_8h.html#a001751e2abb71763b08651bec986b6f7">XX</a></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6272a7f92e0f1b66e07680f32f6f21b6"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_MAX_HEADER_SIZE&#160;&#160;&#160;(80*1024)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a062873fd30d66c26468d4f1bd73e2976"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_METHOD_MAP</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><a class="el" href="http__parser_8h.html#a001751e2abb71763b08651bec986b6f7">XX</a></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a356ebaa93536e6f94c2948a1416697c7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_PARSER_ERRNO</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">p</td><td>)</td>
+          <td>&#160;&#160;&#160;((enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a>) (p)-&gt;<a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7daf883828d97fafe5726998f0e05146"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_PARSER_STRICT&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="abfeef6f3e39791acc311791feda09d27"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_PARSER_VERSION_MAJOR&#160;&#160;&#160;2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab8479153443ca4fe95b3de5adb0224de"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_PARSER_VERSION_MINOR&#160;&#160;&#160;5</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afb999672cce2ebd7f952bd3f28d8f5e5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define HTTP_PARSER_VERSION_PATCH&#160;&#160;&#160;0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a001751e2abb71763b08651bec986b6f7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define XX</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">num, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><a class="el" href="http__parser_8c.html#a8f8f80d37794cde9472343e4487ba3eb">name</a>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">string&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;HTTP_##<a class="el" href="http__parser_8c.html#a8f8f80d37794cde9472343e4487ba3eb">name</a> = num,</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">类型定义说明</h2>
+<a class="anchor" id="a4d8e134ed157e38ce183e8db8b9e8c35"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef int(* http_cb)(<a class="el" href="structhttp__parser.html">http_parser</a> *)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a055ecd54750d71f2b3eda6294dd4b782"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef int(* http_data_cb)(<a class="el" href="structhttp__parser.html">http_parser</a> *, const char *at, size_t length)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a402f99e6fefc59341c050462c844f9cb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="structhttp__parser.html">http_parser</a> <a class="el" href="structhttp__parser.html">http_parser</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac5e078ef0f2f2bfa5d132469a58a5674"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="structhttp__parser__settings.html">http_parser_settings</a> <a class="el" href="structhttp__parser__settings.html">http_parser_settings</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">枚举类型说明</h2>
+<a class="anchor" id="ab6b306ef981f5e21bb41ea2c2dbe8cd9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="http__parser_8h.html#ab6b306ef981f5e21bb41ea2c2dbe8cd9">flags</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">枚举值</th></tr><tr><td class="fieldname"><em><a class="anchor" id="ab6b306ef981f5e21bb41ea2c2dbe8cd9a092619f8f7babc8fc3fa7533e78c3c29"></a>F_CHUNKED</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ab6b306ef981f5e21bb41ea2c2dbe8cd9a5c5e8921e5747d1128ad9611a6d4a782"></a>F_CONNECTION_KEEP_ALIVE</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ab6b306ef981f5e21bb41ea2c2dbe8cd9a133e98dc07339e6c1605f32fc4fd6c78"></a>F_CONNECTION_CLOSE</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ab6b306ef981f5e21bb41ea2c2dbe8cd9af0eea4f6920c6ff5c68cdd1f2e27d044"></a>F_CONNECTION_UPGRADE</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ab6b306ef981f5e21bb41ea2c2dbe8cd9aa75b5b1dcec2decaa7386264d4e1dc29"></a>F_TRAILING</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ab6b306ef981f5e21bb41ea2c2dbe8cd9a600ff486c803dcf2ec13453bdaf1100c"></a>F_UPGRADE</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="ab6b306ef981f5e21bb41ea2c2dbe8cd9ae71592851a69f477b80b1947399c1740"></a>F_SKIPBODY</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="a14687aec2341ce0e62db2e543dd1da64"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aacd5f203e33ac338ca5cb8f02a3ff3b8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="http__parser_8h.html#aacd5f203e33ac338ca5cb8f02a3ff3b8">http_method</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af9d6d304f8c255158175951b434cfa7a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7a">http_parser_type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">枚举值</th></tr><tr><td class="fieldname"><em><a class="anchor" id="af9d6d304f8c255158175951b434cfa7aa9f727b57e9e9c1651ee0df29aa1b1713"></a>HTTP_REQUEST</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="af9d6d304f8c255158175951b434cfa7aa132597b93208763e8e81c4a4a0e8a642"></a>HTTP_RESPONSE</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="af9d6d304f8c255158175951b434cfa7aadac18fbd072752213fd5308bb5fc8684"></a>HTTP_BOTH</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<a class="anchor" id="a9ca1f91c2958091e2ac9e9b2f903d4eb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="http__parser_8h.html#a9ca1f91c2958091e2ac9e9b2f903d4eb">http_parser_url_fields</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">枚举值</th></tr><tr><td class="fieldname"><em><a class="anchor" id="a9ca1f91c2958091e2ac9e9b2f903d4ebab2b8b31b30d6bc897dde653f6cc9f06c"></a>UF_SCHEMA</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a9ca1f91c2958091e2ac9e9b2f903d4ebaf2aeb0b896645bd8100ca0f1e263a12f"></a>UF_HOST</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a9ca1f91c2958091e2ac9e9b2f903d4eba357b6dc1326ed55be377b0d839e8ca0f"></a>UF_PORT</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a9ca1f91c2958091e2ac9e9b2f903d4eba86b9abfa220db7b834490d8b36e915af"></a>UF_PATH</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a9ca1f91c2958091e2ac9e9b2f903d4ebabc8500a49ccad1cd91d66d1eefb503cc"></a>UF_QUERY</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a9ca1f91c2958091e2ac9e9b2f903d4eba32fb35461b96b6872f1427b2d51d1c30"></a>UF_FRAGMENT</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a9ca1f91c2958091e2ac9e9b2f903d4ebacb4a85c6a7d6cd0b64ec6e91e7ba8689"></a>UF_USERINFO</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="a9ca1f91c2958091e2ac9e9b2f903d4eba4b40c88291e4fa018de04553e7e1adfd"></a>UF_MAX</em>&nbsp;</td><td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">函数说明</h2>
+<a class="anchor" id="af013473c413da1c0680fe8a9590f0047"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int http_body_is_final </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6dde757b0dee9b791e5d525c1ff2da0d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* http_errno_description </td>
+          <td>(</td>
+          <td class="paramtype">enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a>&#160;</td>
+          <td class="paramname"><em>err</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8a93ed79c5d48491b72945ce11f75f7f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* http_errno_name </td>
+          <td>(</td>
+          <td class="paramtype">enum <a class="el" href="http__parser_8h.html#a14687aec2341ce0e62db2e543dd1da64">http_errno</a>&#160;</td>
+          <td class="paramname"><em>err</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-2" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-2-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-2-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-2-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h_a8a93ed79c5d48491b72945ce11f75f7f_icgraph.png" border="0" usemap="#http__parser_8h_a8a93ed79c5d48491b72945ce11f75f7f_icgraph" alt=""/></div>
+<map name="http__parser_8h_a8a93ed79c5d48491b72945ce11f75f7f_icgraph" id="http__parser_8h_a8a93ed79c5d48491b72945ce11f75f7f_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="174,5,341,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="acdafb72b3fddca085841586537406859"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* http_method_str </td>
+          <td>(</td>
+          <td class="paramtype">enum <a class="el" href="http__parser_8h.html#aacd5f203e33ac338ca5cb8f02a3ff3b8">http_method</a>&#160;</td>
+          <td class="paramname"><em>m</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-3" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-3-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-3-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-3-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h_acdafb72b3fddca085841586537406859_icgraph.png" border="0" usemap="#http__parser_8h_acdafb72b3fddca085841586537406859_icgraph" alt=""/></div>
+<map name="http__parser_8h_acdafb72b3fddca085841586537406859_icgraph" id="http__parser_8h_acdafb72b3fddca085841586537406859_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="173,5,339,46"/><area shape="rect" id="node4" href="classneb_1_1_codec_http.html#a517a2abd84b5bdeabe429ac9c9e59a5e" title="neb::CodecHttp::Encode" alt="" coords="173,71,339,97"/><area shape="rect" id="node5" href="classneb_1_1_codec_http.html#a267f62e7bf45f5965eb9600967d48f56" title="neb::CodecHttp::ToString" alt="" coords="171,121,341,148"/><area shape="rect" id="node3" href="classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="390,5,557,46"/><area shape="rect" id="node6" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="390,121,557,148"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a5034165465db6c488ce8b75fd0f72faf"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t http_parser_execute </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="structhttp__parser__settings.html">http_parser_settings</a> *&#160;</td>
+          <td class="paramname"><em>settings</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>len</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-4" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-4-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-4-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-4-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h_a5034165465db6c488ce8b75fd0f72faf_cgraph.png" border="0" usemap="#http__parser_8h_a5034165465db6c488ce8b75fd0f72faf_cgraph" alt=""/></div>
+<map name="http__parser_8h_a5034165465db6c488ce8b75fd0f72faf_cgraph" id="http__parser_8h_a5034165465db6c488ce8b75fd0f72faf_cgraph">
+<area shape="rect" id="node2" href="http__parser_8c.html#a55b76c7f4422dba1cbb2d8af509d727f" title="http_message_needs_eof" alt="" coords="195,5,365,32"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-5" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-5-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-5-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-5-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h_a5034165465db6c488ce8b75fd0f72faf_icgraph.png" border="0" usemap="#http__parser_8h_a5034165465db6c488ce8b75fd0f72faf_icgraph" alt=""/></div>
+<map name="http__parser_8h_a5034165465db6c488ce8b75fd0f72faf_icgraph" id="http__parser_8h_a5034165465db6c488ce8b75fd0f72faf_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="195,5,362,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a089b18502c937358df2adcea83db22bb"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void http_parser_init </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">enum <a class="el" href="http__parser_8h.html#af9d6d304f8c255158175951b434cfa7a">http_parser_type</a>&#160;</td>
+          <td class="paramname"><em>type</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-6" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-6-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-6-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-6-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h_a089b18502c937358df2adcea83db22bb_icgraph.png" border="0" usemap="#http__parser_8h_a089b18502c937358df2adcea83db22bb_icgraph" alt=""/></div>
+<map name="http__parser_8h_a089b18502c937358df2adcea83db22bb_icgraph" id="http__parser_8h_a089b18502c937358df2adcea83db22bb_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="166,5,333,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aeb269310a348fd68fd001b30b690fc83"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int http_parser_parse_url </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>buf</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>buflen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>is_connect</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct <a class="el" href="structhttp__parser__url.html">http_parser_url</a> *&#160;</td>
+          <td class="paramname"><em>u</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-7" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-7-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-7-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-7-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h_aeb269310a348fd68fd001b30b690fc83_icgraph.png" border="0" usemap="#http__parser_8h_aeb269310a348fd68fd001b30b690fc83_icgraph" alt=""/></div>
+<map name="http__parser_8h_aeb269310a348fd68fd001b30b690fc83_icgraph" id="http__parser_8h_aeb269310a348fd68fd001b30b690fc83_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_http_step.html#abd6093bfe8a9d3822aa6d39ff519fd96" title="neb::HttpStep::HttpRequest" alt="" coords="201,31,386,57"/><area shape="rect" id="node5" href="classneb_1_1_codec_http.html#a517a2abd84b5bdeabe429ac9c9e59a5e" title="neb::CodecHttp::Encode" alt="" coords="210,81,377,108"/><area shape="rect" id="node6" href="classneb_1_1_codec_http.html#ae13d20fcdb12c39eded0b592b5d0ed7f" title="neb::CodecHttp::OnUrl" alt="" coords="215,132,371,159"/><area shape="rect" id="node3" href="classneb_1_1_http_step.html#adde8b77b262af8cd09348f8d1966d55c" title="neb::HttpStep::HttpPost" alt="" coords="437,5,600,32"/><area shape="rect" id="node4" href="classneb_1_1_http_step.html#abb49ccb90a344923b856a28d42f39a9d" title="neb::HttpStep::HttpGet" alt="" coords="440,56,597,83"/><area shape="rect" id="node7" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="435,132,602,159"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="ab67d625ad2fe1623825eec73e18817de"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void http_parser_pause </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>paused</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a055a4e6834f07a0898a1802230852775"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void http_parser_settings_init </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structhttp__parser__settings.html">http_parser_settings</a> *&#160;</td>
+          <td class="paramname"><em>settings</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a2559b4d373c7f0d85c77a2a3c308a5ee"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned long http_parser_version </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="abefaa63b2505a6d38f96fc782c41d111"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int http_should_keep_alive </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structhttp__parser.html">http_parser</a> *&#160;</td>
+          <td class="paramname"><em>parser</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-8" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-8-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-8-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-8-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h_abefaa63b2505a6d38f96fc782c41d111_cgraph.png" border="0" usemap="#http__parser_8h_abefaa63b2505a6d38f96fc782c41d111_cgraph" alt=""/></div>
+<map name="http__parser_8h_abefaa63b2505a6d38f96fc782c41d111_cgraph" id="http__parser_8h_abefaa63b2505a6d38f96fc782c41d111_cgraph">
+<area shape="rect" id="node2" href="http__parser_8c.html#a55b76c7f4422dba1cbb2d8af509d727f" title="http_message_needs_eof" alt="" coords="213,5,384,32"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-9" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-9-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-9-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-9-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="http__parser_8h_abefaa63b2505a6d38f96fc782c41d111_icgraph.png" border="0" usemap="#http__parser_8h_abefaa63b2505a6d38f96fc782c41d111_icgraph" alt=""/></div>
+<map name="http__parser_8h_abefaa63b2505a6d38f96fc782c41d111_icgraph" id="http__parser_8h_abefaa63b2505a6d38f96fc782c41d111_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec_http.html#a9c3cd6d78fb52643fc325487030949da" title="neb::CodecHttp::OnHeaders\lComplete" alt="" coords="214,5,402,46"/><area shape="rect" id="node3" href="classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="451,12,618,39"/></map>
+</div>
+</p>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_b7878ad5ecbf2506f4125b9d34c97e45.html">util</a></li><li class="navelem"><a class="el" href="dir_944d1df224a772b27b7716e2bcb75dbe.html">http</a></li><li class="navelem"><a class="el" href="http__parser_8h.html">http_parser.h</a></li>
+    <li class="footer">生成于 2018年 六月 9日 星期六 15:04:33 , 为 Nebula使用 
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
+</body>
+</html>

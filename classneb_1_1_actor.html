@@ -1,0 +1,1551 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>Nebula: neb::Actor类 参考</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">Nebula
+   </div>
+   <div id="projectbrief">Nebula</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.8.5 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>首页</span></a></li>
+      <li><a href="pages.html"><span>相关页面</span></a></li>
+      <li><a href="namespaces.html"><span>命名空间</span></a></li>
+      <li class="current"><a href="annotated.html"><span>类</span></a></li>
+      <li><a href="files.html"><span>文件</span></a></li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="annotated.html"><span>类列表</span></a></li>
+      <li><a href="classes.html"><span>类索引</span></a></li>
+      <li><a href="inherits.html"><span>类继承关系</span></a></li>
+      <li><a href="functions.html"><span>类成员</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('classneb_1_1_actor.html','');});
+</script>
+<div id="doc-content">
+<div class="header">
+  <div class="summary">
+<a href="#pub-types">Public 类型</a> &#124;
+<a href="#pub-methods">Public 成员函数</a> &#124;
+<a href="#pro-methods">Protected 成员函数</a> &#124;
+<a href="#friends">友元</a> &#124;
+<a href="classneb_1_1_actor-members.html">所有成员列表</a>  </div>
+  <div class="headertitle">
+<div class="title">neb::Actor类 参考</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> 类 neb::Actor 继承关系图:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor__inherit__graph.png" border="0" usemap="#neb_1_1_actor_inherit__map" alt="Inheritance graph"/></div>
+<map name="neb_1_1_actor_inherit__map" id="neb_1_1_actor_inherit__map">
+<area shape="rect" id="node3" href="classneb_1_1_cmd_model.html" title="{neb::CmdModel\n||+ CmdModel()\l+ CmdModel()\l+ operator=()\l+ ~CmdModel()\l+ Init()\l+ AnyMessage()\l# GetCmd()\l}" alt="" coords="446,485,564,651"/><area shape="rect" id="node9" href="classneb_1_1_module_model.html" title="{neb::ModuleModel\n||+ ModuleModel()\l+ ModuleModel()\l+ operator=()\l+ ~ModuleModel()\l+ Init()\l+ AnyMessage()\l# GetModulePath()\l}" alt="" coords="701,485,832,651"/><area shape="rect" id="node12" href="classneb_1_1_session_model.html" title="{neb::SessionModel\n||+ SessionModel()\l+ SessionModel()\l+ SessionModel()\l+ operator=()\l+ ~SessionModel()\l+ Timeout()\l+ GetSessionId()\l+ GetSessionClass()\l}" alt="" coords="868,478,1012,658"/><area shape="rect" id="node14" href="classneb_1_1_step_model.html" title="{neb::StepModel\n||+ StepModel()\l+ StepModel()\l+ operator=()\l+ ~StepModel()\l+ Emit()\l+ Timeout()\l}" alt="" coords="1058,493,1171,643"/><area shape="rect" id="node4" href="classneb_1_1_cmd.html" title="{neb::Cmd\n||+ Cmd()\l+ Cmd()\l+ operator=()\l+ ~Cmd()\l+ Init()\l+ AnyMessage()\l# Logger()\l# MakeSharedStep()\l# MakeSharedSession()\l# MakeSharedCmd()\l# MakeSharedModule()\l}" alt="" coords="313,707,473,931"/><area shape="rect" id="node5" href="classneb_1_1_cmd_beat.html" title="{neb::CmdBeat\n||+ CmdBeat()\l+ ~CmdBeat()\l+ AnyMessage()\l}" alt="" coords="5,1052,123,1159"/><area shape="rect" id="node6" href="classneb_1_1_cmd_node_notice.html" title="节点注册 " alt="" coords="147,1052,295,1159"/><area shape="rect" id="node7" href="classneb_1_1_cmd_told_worker.html" title="{neb::CmdToldWorker\n||+ CmdToldWorker()\l+ ~CmdToldWorker()\l+ AnyMessage()\l}" alt="" coords="320,1052,467,1159"/><area shape="rect" id="node8" href="classneb_1_1_cmd_update_node_id.html" title="{neb::CmdUpdateNodeId\n||+ CmdUpdateNodeId()\l+ ~CmdUpdateNodeId()\l+ AnyMessage()\l}" alt="" coords="491,1052,653,1159"/><area shape="rect" id="node10" href="classneb_1_1_module.html" title="{neb::Module\n||+ Module()\l+ Module()\l+ operator=()\l+ ~Module()\l+ Init()\l+ AnyMessage()\l# Logger()\l# MakeSharedStep()\l# MakeSharedSession()\l# MakeSharedCmd()\l# MakeSharedModule()\l}" alt="" coords="681,707,841,931"/><area shape="rect" id="node11" href="classneb_1_1_module_http_upgrade.html" title="{neb::ModuleHttpUpgrade\n||+ ModuleHttpUpgrade()\l+ ~ModuleHttpUpgrade()\l+ AnyMessage()\l# WebSocket()\l}" alt="" coords="678,1045,844,1166"/><area shape="rect" id="node13" href="classneb_1_1_session.html" title="{neb::Session\n||+ Session()\l+ Session()\l+ Session()\l+ operator=()\l+ ~Session()\l+ Timeout()\l# Logger()\l# MakeSharedStep()\l# MakeSharedSession()\l# MakeSharedCmd()\l# MakeSharedModule()\l}" alt="" coords="866,707,1027,931"/><area shape="rect" id="node15" href="classneb_1_1_step.html" title="{neb::Step\n||+ Step()\l+ Step()\l+ operator=()\l+ ~Step()\l+ Emit()\l+ Timeout()\l# Logger()\l# MakeSharedStep()\l# MakeSharedSession()\l# MakeSharedCmd()\l# MakeSharedModule()\l}" alt="" coords="1054,707,1215,931"/><area shape="rect" id="node16" href="classneb_1_1_http_step.html" title="{neb::HttpStep\n|# m_pUpstreamChannel\l|+ HttpStep()\l+ HttpStep()\l+ HttpStep()\l+ operator=()\l+ ~HttpStep()\l+ Callback()\l+ HttpPost()\l+ HttpGet()\l# HttpRequest()\l}" alt="" coords="869,1008,1032,1203"/><area shape="rect" id="node17" href="classneb_1_1_pb_step.html" title="{neb::PbStep\n|# m_pUpstreamChannel\l# m_oReqMsgHead\l# m_oReqMsgBody\l|+ PbStep()\l+ PbStep()\l+ PbStep()\l+ operator=()\l+ ~PbStep()\l+ Callback()\l}" alt="" coords="1056,1015,1219,1195"/><area shape="rect" id="node21" href="classneb_1_1_redis_step.html" title="StepRedis在回调后一定会被删除 " alt="" coords="1243,979,1397,1232"/><area shape="rect" id="node18" href="classneb_1_1_step_connect_worker.html" title="{neb::StepConnectWorker\n||+ StepConnectWorker()\l+ ~StepConnectWorker()\l+ Emit()\l+ Callback()\l+ Timeout()\l}" alt="" coords="875,1280,1044,1416"/><area shape="rect" id="node19" href="classneb_1_1_step_io_timeout.html" title="IO超时回调步骤 " alt="" coords="1069,1280,1205,1416"/><area shape="rect" id="node20" href="classneb_1_1_step_tell_worker.html" title="{neb::StepTellWorker\n||+ StepTellWorker()\l+ ~StepTellWorker()\l+ Emit()\l+ Callback()\l+ Timeout()\l}" alt="" coords="1229,1280,1371,1416"/></map>
+</div>
+<div id="dynsection-1" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-1-trigger" src="closed.png" alt="+"/> neb::Actor 的协作图:</div>
+<div id="dynsection-1-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-1-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor__coll__graph.png" border="0" usemap="#neb_1_1_actor_coll__map" alt="Collaboration graph"/></div>
+<map name="neb_1_1_actor_coll__map" id="neb_1_1_actor_coll__map">
+</map>
+</div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public 类型</h2></td></tr>
+<tr class="memitem:acdea04e43c80c18e268d7fae579626c2"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2">ACTOR_TYPE</a> { <br/>
+&#160;&#160;<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2a469f9e2fa9f423233940f9a41da8c25d">ACT_UNDEFINE</a> = 0, 
+<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2ab4d70e28170a40b1b2fb83dbcacffb31">ACT_CMD</a> = 1, 
+<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2a2f15103b9d191d79ad9c4bb6d209bb5b">ACT_MODULE</a> = 2, 
+<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2a2be82379a418c691de5f877b501b85e0">ACT_SESSION</a> = 3, 
+<br/>
+&#160;&#160;<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2a4d4f6e9b04a3a18e0152dcbdc94d5cae">ACT_TIMER</a> = 4, 
+<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2a6a8824642f6bdfaa6f8fdb0862116b16">ACT_PB_STEP</a> = 5, 
+<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2a3ae0ff36ba5bcfaaf4c0714f196bfde3">ACT_HTTP_STEP</a> = 6, 
+<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2a4d527d855b8cfc94fb8e6c31d63e3233">ACT_REDIS_STEP</a> = 7
+<br/>
+ }</td></tr>
+<tr class="separator:acdea04e43c80c18e268d7fae579626c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public 成员函数</h2></td></tr>
+<tr class="memitem:a2c9e745025f96447de17bd9edb8a01df"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a2c9e745025f96447de17bd9edb8a01df">Actor</a> (<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2">ACTOR_TYPE</a> eActorType=<a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2a469f9e2fa9f423233940f9a41da8c25d">ACT_UNDEFINE</a>, <a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> dTimeout=0.0)</td></tr>
+<tr class="separator:a2c9e745025f96447de17bd9edb8a01df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac7aed12e5b7675b6c63b5b3f99853752"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#ac7aed12e5b7675b6c63b5b3f99853752">Actor</a> (const <a class="el" href="classneb_1_1_actor.html">Actor</a> &amp;)=delete</td></tr>
+<tr class="separator:ac7aed12e5b7675b6c63b5b3f99853752"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a948ebd2c81a00033c05d1ef17933b6b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneb_1_1_actor.html">Actor</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a948ebd2c81a00033c05d1ef17933b6b5">operator=</a> (const <a class="el" href="classneb_1_1_actor.html">Actor</a> &amp;)=delete</td></tr>
+<tr class="separator:a948ebd2c81a00033c05d1ef17933b6b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ce03b1ad22ef2e891489564aeda332e"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a7ce03b1ad22ef2e891489564aeda332e">~Actor</a> ()</td></tr>
+<tr class="separator:a7ce03b1ad22ef2e891489564aeda332e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected 成员函数</h2></td></tr>
+<tr class="memitem:a3296cb31c3d0306000527b9c35607e88"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88">GetSequence</a> ()</td></tr>
+<tr class="separator:a3296cb31c3d0306000527b9c35607e88"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abca0267235b412e1564b93a19f5f50a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#abca0267235b412e1564b93a19f5f50a5">GetNodeId</a> () const </td></tr>
+<tr class="separator:abca0267235b412e1564b93a19f5f50a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70da598d8556666eaca05a0ee70691d3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a70da598d8556666eaca05a0ee70691d3">GetWorkerIndex</a> () const </td></tr>
+<tr class="separator:a70da598d8556666eaca05a0ee70691d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b9e76c49d27eedf1493a26dcf3048b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a5b9e76c49d27eedf1493a26dcf3048b9">GetDefaultTimeout</a> () const </td></tr>
+<tr class="separator:a5b9e76c49d27eedf1493a26dcf3048b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8bdcde9d49b93dd3c8509f4d6bfbf97"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#af8bdcde9d49b93dd3c8509f4d6bfbf97">GetNodeType</a> () const </td></tr>
+<tr class="separator:af8bdcde9d49b93dd3c8509f4d6bfbf97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abeb4384ba7ba375941b70732fc0484ca"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#abeb4384ba7ba375941b70732fc0484ca">GetWorkPath</a> () const </td></tr>
+<tr class="separator:abeb4384ba7ba375941b70732fc0484ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74d5ffe170c1a2d721b450fe31a81040"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a74d5ffe170c1a2d721b450fe31a81040">GetNodeIdentify</a> () const </td></tr>
+<tr class="separator:a74d5ffe170c1a2d721b450fe31a81040"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2d768963c0347ba683f8d8f2aa82311"><td class="memItemLeft" align="right" valign="top">time_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#ae2d768963c0347ba683f8d8f2aa82311">GetNowTime</a> () const </td></tr>
+<tr class="separator:ae2d768963c0347ba683f8d8f2aa82311"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d36bd7631c3e981a6dd11ba7f8c0120"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="classneb_1_1_c_json_object.html">CJsonObject</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a1d36bd7631c3e981a6dd11ba7f8c0120">GetCustomConf</a> () const </td></tr>
+<tr class="memdesc:a1d36bd7631c3e981a6dd11ba7f8c0120"><td class="mdescLeft">&#160;</td><td class="mdescRight">获取Server自定义配置  <a href="#a1d36bd7631c3e981a6dd11ba7f8c0120">更多...</a><br/></td></tr>
+<tr class="separator:a1d36bd7631c3e981a6dd11ba7f8c0120"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5ff826b44309d75986da0a257a63807"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classneb_1_1_session.html">Session</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#ad5ff826b44309d75986da0a257a63807">GetSession</a> (<a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> uiSessionId, const std::string &amp;strSessionClass=&quot;oss::Session&quot;)</td></tr>
+<tr class="separator:ad5ff826b44309d75986da0a257a63807"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2baf04e3688719a416410b1d713c9914"><td class="memItemLeft" align="right" valign="top">std::shared_ptr&lt; <a class="el" href="classneb_1_1_session.html">Session</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a2baf04e3688719a416410b1d713c9914">GetSession</a> (const std::string &amp;strSessionId, const std::string &amp;strSessionClass=&quot;oss::Session&quot;)</td></tr>
+<tr class="separator:a2baf04e3688719a416410b1d713c9914"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29ec51bf9547a34ea61a3c57d48e7bd6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a29ec51bf9547a34ea61a3c57d48e7bd6">SendTo</a> (std::shared_ptr&lt; <a class="el" href="classneb_1_1_socket_channel.html">SocketChannel</a> &gt; pChannel)</td></tr>
+<tr class="memdesc:a29ec51bf9547a34ea61a3c57d48e7bd6"><td class="mdescLeft">&#160;</td><td class="mdescRight">连接成功后发送  <a href="#a29ec51bf9547a34ea61a3c57d48e7bd6">更多...</a><br/></td></tr>
+<tr class="separator:a29ec51bf9547a34ea61a3c57d48e7bd6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad595327360070ee67347db301d23b39b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#ad595327360070ee67347db301d23b39b">SendTo</a> (std::shared_ptr&lt; <a class="el" href="classneb_1_1_socket_channel.html">SocketChannel</a> &gt; pChannel, <a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a> iCmd, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> uiSeq, const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody)</td></tr>
+<tr class="memdesc:ad595327360070ee67347db301d23b39b"><td class="mdescLeft">&#160;</td><td class="mdescRight">发送数据  <a href="#ad595327360070ee67347db301d23b39b">更多...</a><br/></td></tr>
+<tr class="separator:ad595327360070ee67347db301d23b39b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab818abaeb85c3c496baab955b2cd4ab4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#ab818abaeb85c3c496baab955b2cd4ab4">SendTo</a> (std::shared_ptr&lt; <a class="el" href="classneb_1_1_socket_channel.html">SocketChannel</a> &gt; pChannel, const <a class="el" href="class_http_msg.html">HttpMsg</a> &amp;oHttpMsg)</td></tr>
+<tr class="memdesc:ab818abaeb85c3c496baab955b2cd4ab4"><td class="mdescLeft">&#160;</td><td class="mdescRight">发送数据  <a href="#ab818abaeb85c3c496baab955b2cd4ab4">更多...</a><br/></td></tr>
+<tr class="separator:ab818abaeb85c3c496baab955b2cd4ab4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fa1c957725c96912c170ba1f0da2455"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a0fa1c957725c96912c170ba1f0da2455">SendTo</a> (const std::string &amp;strIdentify, <a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a> iCmd, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> uiSeq, const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody)</td></tr>
+<tr class="memdesc:a0fa1c957725c96912c170ba1f0da2455"><td class="mdescLeft">&#160;</td><td class="mdescRight">发送数据  <a href="#a0fa1c957725c96912c170ba1f0da2455">更多...</a><br/></td></tr>
+<tr class="separator:a0fa1c957725c96912c170ba1f0da2455"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3572f6a5091388011fe5fe90c93a7ae"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#ae3572f6a5091388011fe5fe90c93a7ae">SendTo</a> (const std::string &amp;strHost, int iPort, const std::string &amp;strUrlPath, const <a class="el" href="class_http_msg.html">HttpMsg</a> &amp;oHttpMsg)</td></tr>
+<tr class="memdesc:ae3572f6a5091388011fe5fe90c93a7ae"><td class="mdescLeft">&#160;</td><td class="mdescRight">发送数据  <a href="#ae3572f6a5091388011fe5fe90c93a7ae">更多...</a><br/></td></tr>
+<tr class="separator:ae3572f6a5091388011fe5fe90c93a7ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a382f968bcd528fdf548f7dfc5efda39d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a382f968bcd528fdf548f7dfc5efda39d">SendPolling</a> (const std::string &amp;strNodeType, <a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a> iCmd, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> uiSeq, const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody)</td></tr>
+<tr class="memdesc:a382f968bcd528fdf548f7dfc5efda39d"><td class="mdescLeft">&#160;</td><td class="mdescRight">发送到下一个同一类型的节点  <a href="#a382f968bcd528fdf548f7dfc5efda39d">更多...</a><br/></td></tr>
+<tr class="separator:a382f968bcd528fdf548f7dfc5efda39d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b33f919bba50ff5aef2b172129f6021"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a9b33f919bba50ff5aef2b172129f6021">SendOriented</a> (const std::string &amp;strNodeType, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> uiFactor, <a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a> iCmd, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> uiSeq, const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody)</td></tr>
+<tr class="memdesc:a9b33f919bba50ff5aef2b172129f6021"><td class="mdescLeft">&#160;</td><td class="mdescRight">以取模方式选择发送到同一类型节点  <a href="#a9b33f919bba50ff5aef2b172129f6021">更多...</a><br/></td></tr>
+<tr class="separator:a9b33f919bba50ff5aef2b172129f6021"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a921c222b81e6cd37d34706b6b45ab050"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a921c222b81e6cd37d34706b6b45ab050">SendOriented</a> (const std::string &amp;strNodeType, <a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a> iCmd, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> uiSeq, const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody)</td></tr>
+<tr class="separator:a921c222b81e6cd37d34706b6b45ab050"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d2cbef00a629a5f6102946b636ea866"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866">SetActiveTime</a> (<a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> dActiveTime)</td></tr>
+<tr class="separator:a3d2cbef00a629a5f6102946b636ea866"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac10dd30d691d824fcaa517931ed722cf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf">GetActiveTime</a> () const </td></tr>
+<tr class="separator:ac10dd30d691d824fcaa517931ed722cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49e019171beaa062308e29326d6c703d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d">GetTimeout</a> () const </td></tr>
+<tr class="separator:a49e019171beaa062308e29326d6c703d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a841effb962639a1e0aa0ab859680ef3d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2">ACTOR_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a841effb962639a1e0aa0ab859680ef3d">GetActorType</a> () const </td></tr>
+<tr class="separator:a841effb962639a1e0aa0ab859680ef3d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+友元</h2></td></tr>
+<tr class="memitem:ad938f8b51cafc7aff2d7333e58166dd8"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#ad938f8b51cafc7aff2d7333e58166dd8">WorkerImpl</a></td></tr>
+<tr class="separator:ad938f8b51cafc7aff2d7333e58166dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac4748b4d12fe000245b4c0b50f33ad16"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#ac4748b4d12fe000245b4c0b50f33ad16">WorkerFriend</a></td></tr>
+<tr class="separator:ac4748b4d12fe000245b4c0b50f33ad16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71095113e90ffd2aa61eee2447dd57ba"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a71095113e90ffd2aa61eee2447dd57ba">Cmd</a></td></tr>
+<tr class="separator:a71095113e90ffd2aa61eee2447dd57ba"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21f639900c480510650969df9c74d17d"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#a21f639900c480510650969df9c74d17d">Module</a></td></tr>
+<tr class="separator:a21f639900c480510650969df9c74d17d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed9d20cb4d54ec0ad5e845ec7c2246cf"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#aed9d20cb4d54ec0ad5e845ec7c2246cf">Step</a></td></tr>
+<tr class="separator:aed9d20cb4d54ec0ad5e845ec7c2246cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbdd63a566878ce30072e785ca7e7740"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_actor.html#afbdd63a566878ce30072e785ca7e7740">Session</a></td></tr>
+<tr class="separator:afbdd63a566878ce30072e785ca7e7740"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">成员枚举类型说明</h2>
+<a class="anchor" id="acdea04e43c80c18e268d7fae579626c2"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2">neb::Actor::ACTOR_TYPE</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">枚举值</th></tr><tr><td class="fieldname"><em><a class="anchor" id="acdea04e43c80c18e268d7fae579626c2a469f9e2fa9f423233940f9a41da8c25d"></a>ACT_UNDEFINE</em>&nbsp;</td><td class="fielddoc">
+<p>未定义 </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="acdea04e43c80c18e268d7fae579626c2ab4d70e28170a40b1b2fb83dbcacffb31"></a>ACT_CMD</em>&nbsp;</td><td class="fielddoc">
+<p>Cmd对象，处理带命令字的pb请求 </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="acdea04e43c80c18e268d7fae579626c2a2f15103b9d191d79ad9c4bb6d209bb5b"></a>ACT_MODULE</em>&nbsp;</td><td class="fielddoc">
+<p>Module对象，处理带url path的http请求 </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="acdea04e43c80c18e268d7fae579626c2a2be82379a418c691de5f877b501b85e0"></a>ACT_SESSION</em>&nbsp;</td><td class="fielddoc">
+<p>Session会话对象 </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="acdea04e43c80c18e268d7fae579626c2a4d4f6e9b04a3a18e0152dcbdc94d5cae"></a>ACT_TIMER</em>&nbsp;</td><td class="fielddoc">
+<p>定时器对象 </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="acdea04e43c80c18e268d7fae579626c2a6a8824642f6bdfaa6f8fdb0862116b16"></a>ACT_PB_STEP</em>&nbsp;</td><td class="fielddoc">
+<p>Step步骤对象，处理pb请求或响应 </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="acdea04e43c80c18e268d7fae579626c2a3ae0ff36ba5bcfaaf4c0714f196bfde3"></a>ACT_HTTP_STEP</em>&nbsp;</td><td class="fielddoc">
+<p>Step步骤对象，处理http请求或响应 </p>
+</td></tr>
+<tr><td class="fieldname"><em><a class="anchor" id="acdea04e43c80c18e268d7fae579626c2a4d527d855b8cfc94fb8e6c31d63e3233"></a>ACT_REDIS_STEP</em>&nbsp;</td><td class="fielddoc">
+<p>Step步骤对象，处理redis请求或响应 </p>
+</td></tr>
+</table>
+
+</div>
+</div>
+<h2 class="groupheader">构造及析构函数说明</h2>
+<a class="anchor" id="a2c9e745025f96447de17bd9edb8a01df"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">neb::Actor::Actor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2">ACTOR_TYPE</a>&#160;</td>
+          <td class="paramname"><em>eActorType</em> = <code><a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2a469f9e2fa9f423233940f9a41da8c25d">ACT_UNDEFINE</a></code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td>
+          <td class="paramname"><em>dTimeout</em> = <code>0.0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac7aed12e5b7675b6c63b5b3f99853752"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">neb::Actor::Actor </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classneb_1_1_actor.html">Actor</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7ce03b1ad22ef2e891489564aeda332e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">neb::Actor::~Actor </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">成员函数说明</h2>
+<a class="anchor" id="ac10dd30d691d824fcaa517931ed722cf"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> neb::Actor::GetActiveTime </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-2" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-2-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-2-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-2-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_ac10dd30d691d824fcaa517931ed722cf_icgraph.png" border="0" usemap="#classneb_1_1_actor_ac10dd30d691d824fcaa517931ed722cf_icgraph" alt=""/></div>
+<map name="classneb_1_1_actor_ac10dd30d691d824fcaa517931ed722cf_icgraph" id="classneb_1_1_actor_ac10dd30d691d824fcaa517931ed722cf_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="232,563,459,589"/><area shape="rect" id="node45" href="classneb_1_1_worker_impl.html#a783e3b2855858c24e2bc3b32715902f9" title="neb::WorkerImpl::MakeShared\lSession" alt="" coords="246,682,445,723"/><area shape="rect" id="node3" href="classneb_1_1_worker.html#a736bd7e7be0146b1ffc56a31596b9047" title="neb::Worker::MakeSharedStep" alt="" coords="517,487,718,513"/><area shape="rect" id="node4" href="classneb_1_1_worker.html#a8d379d4de577ef5baeec11ac5a0daf72" title="neb::Worker::MakeSharedCmd" alt="" coords="516,537,719,564"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1264,480,1453,507"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="2225,528,2410,555"/><area shape="rect" id="node41" href="classneb_1_1_worker_impl.html#a4952fc4d6bceda6a3bec2a4854a3c489" title="neb::WorkerImpl::OnIoTimeout" alt="" coords="517,428,718,455"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1502,480,1687,507"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1737,480,1925,507"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1974,397,2165,438"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1974,462,2165,503"/><area shape="rect" id="node9" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="2214,396,2421,423"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="2226,345,2409,372"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2497,241,2647,268"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="2487,191,2657,217"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="2232,447,2403,473"/><area shape="rect" id="node16" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="2499,343,2645,369"/><area shape="rect" id="node29" href="classneb_1_1_worker_impl.html#a13ab4cbaaf66a0dd84501674cb823975" title="neb::WorkerImpl::SendPolling" alt="" coords="2475,393,2669,420"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="2469,444,2675,471"/><area shape="rect" id="node36" href="classneb_1_1_worker_impl.html#a666df6b0593d965a3aea9d497c947b94" title="neb::WorkerImpl::Broadcast" alt="" coords="2479,292,2665,319"/><area shape="rect" id="node38" href="classneb_1_1_worker_impl.html#a8bfc1a9e6a2af454cf6e9b8b2a5edaad" title="neb::WorkerImpl::SendTo" alt="" coords="2487,495,2657,521"/><area shape="rect" id="node39" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="2489,545,2655,572"/><area shape="rect" id="node17" href="classneb_1_1_actor.html#a29ec51bf9547a34ea61a3c57d48e7bd6" title="连接成功后发送 " alt="" coords="2758,295,2893,321"/><area shape="rect" id="node18" href="classneb_1_1_cmd_beat.html#ae0993588e3dad964f6093478f97255dd" title="命令处理入口 " alt="" coords="2977,385,3167,412"/><area shape="rect" id="node19" href="classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="2999,437,3145,478"/><area shape="rect" id="node20" href="classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="2989,6,3155,47"/><area shape="rect" id="node22" href="classneb_1_1_http_step.html#abd6093bfe8a9d3822aa6d39ff519fd96" title="neb::HttpStep::HttpRequest" alt="" coords="2979,72,3165,99"/><area shape="rect" id="node25" href="classneb_1_1_step_connect_worker.html#abc8ae174cfb52c147ae88bd375ce2c71" title="提交，发出 " alt="" coords="2987,123,3157,165"/><area shape="rect" id="node26" href="classneb_1_1_step_io_timeout.html#ac0b3929a97df553ee45c91ec5330e12b" title="提交，发出 " alt="" coords="3004,189,3140,230"/><area shape="rect" id="node27" href="classneb_1_1_step_tell_worker.html#afc69572c70301d4858a6e3ef074efe32" title="提交，发出 " alt="" coords="3001,254,3143,295"/><area shape="rect" id="node28" href="classneb_1_1_step_tell_worker.html#ac2e7e37b4533edbcffddd19d25441170" title="步骤回调函数 " alt="" coords="3001,319,3143,361"/><area shape="rect" id="node21" href="classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="3217,6,3383,47"/><area shape="rect" id="node23" href="classneb_1_1_http_step.html#adde8b77b262af8cd09348f8d1966d55c" title="neb::HttpStep::HttpPost" alt="" coords="3219,123,3381,149"/><area shape="rect" id="node24" href="classneb_1_1_http_step.html#abb49ccb90a344923b856a28d42f39a9d" title="neb::HttpStep::HttpGet" alt="" coords="3221,72,3379,99"/><area shape="rect" id="node30" href="classneb_1_1_worker.html#aa819e233fcc1bd0a398443e7ee9bf6be" title="neb::Worker::SendPolling" alt="" coords="2740,393,2911,420"/><area shape="rect" id="node32" href="classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="2723,444,2928,471"/><area shape="rect" id="node31" href="classneb_1_1_actor.html#a382f968bcd528fdf548f7dfc5efda39d" title="发送到下一个同一类型的节点 " alt="" coords="2993,503,3151,529"/><area shape="rect" id="node34" href="classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="2735,505,2915,532"/><area shape="rect" id="node35" href="classneb_1_1_actor.html#a9b33f919bba50ff5aef2b172129f6021" title="以取模方式选择发送到同一类型节点 " alt="" coords="2987,553,3157,580"/><area shape="rect" id="node37" href="classneb_1_1_worker.html#acd1eb16ef6ca8d3a5bc26015096a60e7" title="neb::Worker::Broadcast" alt="" coords="2745,244,2905,271"/><area shape="rect" id="node40" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="2733,567,2918,609"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="776,417,960,458"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1009,423,1215,449"/><area shape="rect" id="node44" href="classneb_1_1_step_io_timeout.html#aab7588726c8a15834212e0021d5c0d68" title="步骤回调函数 " alt="" coords="1291,414,1427,455"/><area shape="rect" id="node46" href="classneb_1_1_worker.html#a18b44410718a3771bbe2b207b01af030" title="neb::Worker::MakeSharedSession" alt="" coords="507,740,728,767"/><area shape="rect" id="node47" href="classneb_1_1_worker.html#a0bb2cf25fabc013e9bb9ac597f8ae9ce" title="neb::Worker::MakeSharedModule" alt="" coords="509,689,725,716"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a841effb962639a1e0aa0ab859680ef3d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classneb_1_1_actor.html#acdea04e43c80c18e268d7fae579626c2">ACTOR_TYPE</a> neb::Actor::GetActorType </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1d36bd7631c3e981a6dd11ba7f8c0120"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="classneb_1_1_c_json_object.html">CJsonObject</a> &amp; neb::Actor::GetCustomConf </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>获取Server自定义配置 </p>
+<dl class="section return"><dt>返回</dt><dd>Server自定义配置 </dd></dl>
+
+<p><div id="dynsection-3" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-3-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-3-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-3-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a1d36bd7631c3e981a6dd11ba7f8c0120_cgraph.png" border="0" usemap="#classneb_1_1_actor_a1d36bd7631c3e981a6dd11ba7f8c0120_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a1d36bd7631c3e981a6dd11ba7f8c0120_cgraph" id="classneb_1_1_actor_a1d36bd7631c3e981a6dd11ba7f8c0120_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a407b01f0e608fd179b93e7d4ba942052" title="neb::Worker::GetCustomConf" alt="" coords="241,5,437,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#ab573ef471d6940d95c3697bf9f9cc854" title="neb::WorkerImpl::GetCustomConf" alt="" coords="485,5,707,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a5b9e76c49d27eedf1493a26dcf3048b9"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> neb::Actor::GetDefaultTimeout </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-4" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-4-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-4-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-4-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a5b9e76c49d27eedf1493a26dcf3048b9_cgraph.png" border="0" usemap="#classneb_1_1_actor_a5b9e76c49d27eedf1493a26dcf3048b9_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a5b9e76c49d27eedf1493a26dcf3048b9_cgraph" id="classneb_1_1_actor_a5b9e76c49d27eedf1493a26dcf3048b9_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a23a83fd491b6124de9c3b38b2fa5d361" title="neb::Worker::GetDefaultTimeout" alt="" coords="253,5,464,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#a21abd524b863fb94fda4d5ae5774fa3f" title="neb::WorkerImpl::GetWorkerInfo" alt="" coords="512,5,723,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="abca0267235b412e1564b93a19f5f50a5"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> neb::Actor::GetNodeId </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-5" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-5-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-5-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-5-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_abca0267235b412e1564b93a19f5f50a5_cgraph.png" border="0" usemap="#classneb_1_1_actor_abca0267235b412e1564b93a19f5f50a5_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_abca0267235b412e1564b93a19f5f50a5_cgraph" id="classneb_1_1_actor_abca0267235b412e1564b93a19f5f50a5_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a613d0d13ba6a41ba1ca6535d1c592774" title="neb::Worker::GetNodeId" alt="" coords="209,5,373,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#a21abd524b863fb94fda4d5ae5774fa3f" title="neb::WorkerImpl::GetWorkerInfo" alt="" coords="421,5,632,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a74d5ffe170c1a2d721b450fe31a81040"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string &amp; neb::Actor::GetNodeIdentify </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-6" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-6-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-6-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-6-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a74d5ffe170c1a2d721b450fe31a81040_cgraph.png" border="0" usemap="#classneb_1_1_actor_a74d5ffe170c1a2d721b450fe31a81040_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a74d5ffe170c1a2d721b450fe31a81040_cgraph" id="classneb_1_1_actor_a74d5ffe170c1a2d721b450fe31a81040_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a6fab55577d7fe0e40e377b4224f89fe4" title="neb::Worker::GetNodeIdentify" alt="" coords="241,5,437,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#a21abd524b863fb94fda4d5ae5774fa3f" title="neb::WorkerImpl::GetWorkerInfo" alt="" coords="485,5,696,32"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-7" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-7-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-7-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-7-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a74d5ffe170c1a2d721b450fe31a81040_icgraph.png" border="0" usemap="#classneb_1_1_actor_a74d5ffe170c1a2d721b450fe31a81040_icgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a74d5ffe170c1a2d721b450fe31a81040_icgraph" id="classneb_1_1_actor_a74d5ffe170c1a2d721b450fe31a81040_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="240,5,387,46"/><area shape="rect" id="node3" href="classneb_1_1_step_tell_worker.html#afc69572c70301d4858a6e3ef074efe32" title="提交，发出 " alt="" coords="243,70,384,111"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="af8bdcde9d49b93dd3c8509f4d6bfbf97"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string &amp; neb::Actor::GetNodeType </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-8" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-8-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-8-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-8-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_af8bdcde9d49b93dd3c8509f4d6bfbf97_cgraph.png" border="0" usemap="#classneb_1_1_actor_af8bdcde9d49b93dd3c8509f4d6bfbf97_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_af8bdcde9d49b93dd3c8509f4d6bfbf97_cgraph" id="classneb_1_1_actor_af8bdcde9d49b93dd3c8509f4d6bfbf97_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#ac5a56e743cbb0333a0eb8bd94d637a40" title="neb::Worker::GetNodeType" alt="" coords="225,5,407,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#a21abd524b863fb94fda4d5ae5774fa3f" title="neb::WorkerImpl::GetWorkerInfo" alt="" coords="456,5,667,32"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-9" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-9-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-9-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-9-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_af8bdcde9d49b93dd3c8509f4d6bfbf97_icgraph.png" border="0" usemap="#classneb_1_1_actor_af8bdcde9d49b93dd3c8509f4d6bfbf97_icgraph" alt=""/></div>
+<map name="classneb_1_1_actor_af8bdcde9d49b93dd3c8509f4d6bfbf97_icgraph" id="classneb_1_1_actor_af8bdcde9d49b93dd3c8509f4d6bfbf97_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="224,5,371,46"/><area shape="rect" id="node3" href="classneb_1_1_step_tell_worker.html#afc69572c70301d4858a6e3ef074efe32" title="提交，发出 " alt="" coords="227,70,368,111"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="ae2d768963c0347ba683f8d8f2aa82311"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">time_t neb::Actor::GetNowTime </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-10" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-10-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-10-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-10-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_ae2d768963c0347ba683f8d8f2aa82311_cgraph.png" border="0" usemap="#classneb_1_1_actor_ae2d768963c0347ba683f8d8f2aa82311_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_ae2d768963c0347ba683f8d8f2aa82311_cgraph" id="classneb_1_1_actor_ae2d768963c0347ba683f8d8f2aa82311_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a59036cb98ccf157622c348b560868c06" title="neb::Worker::GetNowTime" alt="" coords="221,5,400,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="448,5,651,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a3296cb31c3d0306000527b9c35607e88"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> neb::Actor::GetSequence </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-11" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-11-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-11-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-11-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a3296cb31c3d0306000527b9c35607e88_cgraph.png" border="0" usemap="#classneb_1_1_actor_a3296cb31c3d0306000527b9c35607e88_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a3296cb31c3d0306000527b9c35607e88_cgraph" id="classneb_1_1_actor_a3296cb31c3d0306000527b9c35607e88_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="225,5,405,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="453,5,659,32"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-12" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-12-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-12-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-12-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a3296cb31c3d0306000527b9c35607e88_icgraph.png" border="0" usemap="#classneb_1_1_actor_a3296cb31c3d0306000527b9c35607e88_icgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a3296cb31c3d0306000527b9c35607e88_icgraph" id="classneb_1_1_actor_a3296cb31c3d0306000527b9c35607e88_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_step_model.html#a168a6881389bb6d822008ef9d291d290" title="neb::StepModel::StepModel" alt="" coords="246,5,429,32"/><area shape="rect" id="node3" href="classneb_1_1_step_connect_worker.html#abc8ae174cfb52c147ae88bd375ce2c71" title="提交，发出 " alt="" coords="2979,34,3149,75"/><area shape="rect" id="node4" href="classneb_1_1_step_io_timeout.html#ac0b3929a97df553ee45c91ec5330e12b" title="提交，发出 " alt="" coords="2996,99,3132,141"/><area shape="rect" id="node5" href="classneb_1_1_step_tell_worker.html#afc69572c70301d4858a6e3ef074efe32" title="提交，发出 " alt="" coords="2993,165,3135,206"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="224,336,451,363"/><area shape="rect" id="node46" href="classneb_1_1_worker_impl.html#a783e3b2855858c24e2bc3b32715902f9" title="neb::WorkerImpl::MakeShared\lSession" alt="" coords="238,649,437,690"/><area shape="rect" id="node7" href="classneb_1_1_worker.html#a736bd7e7be0146b1ffc56a31596b9047" title="neb::Worker::MakeSharedStep" alt="" coords="509,260,710,287"/><area shape="rect" id="node8" href="classneb_1_1_worker.html#a8d379d4de577ef5baeec11ac5a0daf72" title="neb::Worker::MakeSharedCmd" alt="" coords="508,311,711,337"/><area shape="rect" id="node9" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1256,416,1445,443"/><area shape="rect" id="node18" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="2217,481,2402,508"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a4952fc4d6bceda6a3bec2a4854a3c489" title="neb::WorkerImpl::OnIoTimeout" alt="" coords="509,361,710,388"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1494,423,1679,449"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1729,423,1917,449"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1966,350,2157,391"/><area shape="rect" id="node17" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1966,415,2157,457"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="2206,356,2413,383"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="2218,303,2401,329"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2489,259,2639,285"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="2479,208,2649,235"/><area shape="rect" id="node19" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="2224,423,2395,449"/><area shape="rect" id="node20" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="2491,411,2637,437"/><area shape="rect" id="node30" href="classneb_1_1_worker_impl.html#a13ab4cbaaf66a0dd84501674cb823975" title="neb::WorkerImpl::SendPolling" alt="" coords="2467,512,2661,539"/><area shape="rect" id="node34" href="classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="2461,461,2667,488"/><area shape="rect" id="node37" href="classneb_1_1_worker_impl.html#a666df6b0593d965a3aea9d497c947b94" title="neb::WorkerImpl::Broadcast" alt="" coords="2471,309,2657,336"/><area shape="rect" id="node39" href="classneb_1_1_worker_impl.html#a8bfc1a9e6a2af454cf6e9b8b2a5edaad" title="neb::WorkerImpl::SendTo" alt="" coords="2479,360,2649,387"/><area shape="rect" id="node40" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="2481,563,2647,589"/><area shape="rect" id="node21" href="classneb_1_1_actor.html#a29ec51bf9547a34ea61a3c57d48e7bd6" title="连接成功后发送 " alt="" coords="2750,323,2885,349"/><area shape="rect" id="node22" href="classneb_1_1_cmd_beat.html#ae0993588e3dad964f6093478f97255dd" title="命令处理入口 " alt="" coords="2969,231,3159,257"/><area shape="rect" id="node23" href="classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="2991,282,3137,323"/><area shape="rect" id="node24" href="classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="2981,347,3147,389"/><area shape="rect" id="node26" href="classneb_1_1_http_step.html#abd6093bfe8a9d3822aa6d39ff519fd96" title="neb::HttpStep::HttpRequest" alt="" coords="2971,413,3157,440"/><area shape="rect" id="node29" href="classneb_1_1_step_tell_worker.html#ac2e7e37b4533edbcffddd19d25441170" title="步骤回调函数 " alt="" coords="2993,465,3135,506"/><area shape="rect" id="node25" href="classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="3209,347,3375,389"/><area shape="rect" id="node27" href="classneb_1_1_http_step.html#adde8b77b262af8cd09348f8d1966d55c" title="neb::HttpStep::HttpPost" alt="" coords="3211,413,3373,440"/><area shape="rect" id="node28" href="classneb_1_1_http_step.html#abb49ccb90a344923b856a28d42f39a9d" title="neb::HttpStep::HttpGet" alt="" coords="3213,464,3371,491"/><area shape="rect" id="node31" href="classneb_1_1_worker.html#aa819e233fcc1bd0a398443e7ee9bf6be" title="neb::Worker::SendPolling" alt="" coords="2732,559,2903,585"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="2715,508,2920,535"/><area shape="rect" id="node32" href="classneb_1_1_actor.html#a382f968bcd528fdf548f7dfc5efda39d" title="发送到下一个同一类型的节点 " alt="" coords="2985,581,3143,608"/><area shape="rect" id="node35" href="classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="2727,457,2907,484"/><area shape="rect" id="node36" href="classneb_1_1_actor.html#a9b33f919bba50ff5aef2b172129f6021" title="以取模方式选择发送到同一类型节点 " alt="" coords="2979,531,3149,557"/><area shape="rect" id="node38" href="classneb_1_1_worker.html#acd1eb16ef6ca8d3a5bc26015096a60e7" title="neb::Worker::Broadcast" alt="" coords="2737,272,2897,299"/><area shape="rect" id="node41" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="2725,610,2910,651"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="768,350,952,391"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1001,357,1207,384"/><area shape="rect" id="node45" href="classneb_1_1_step_io_timeout.html#aab7588726c8a15834212e0021d5c0d68" title="步骤回调函数 " alt="" coords="1283,350,1419,391"/><area shape="rect" id="node47" href="classneb_1_1_worker.html#a18b44410718a3771bbe2b207b01af030" title="neb::Worker::MakeSharedSession" alt="" coords="499,656,720,683"/><area shape="rect" id="node48" href="classneb_1_1_worker.html#a0bb2cf25fabc013e9bb9ac597f8ae9ce" title="neb::Worker::MakeSharedModule" alt="" coords="501,707,717,733"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="ad5ff826b44309d75986da0a257a63807"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt; <a class="el" href="classneb_1_1_session.html">Session</a> &gt; neb::Actor::GetSession </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>uiSessionId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strSessionClass</em> = <code>&quot;oss::Session&quot;</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-13" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-13-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-13-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-13-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_ad5ff826b44309d75986da0a257a63807_cgraph.png" border="0" usemap="#classneb_1_1_actor_ad5ff826b44309d75986da0a257a63807_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_ad5ff826b44309d75986da0a257a63807_cgraph" id="classneb_1_1_actor_ad5ff826b44309d75986da0a257a63807_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#ab56b63f74358a7ec23e07674de1eb8e3" title="neb::Worker::GetSession" alt="" coords="214,5,383,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#ab786baa796a0e64e36e270fcd80cce36" title="neb::WorkerImpl::GetSession" alt="" coords="432,5,627,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a2baf04e3688719a416410b1d713c9914"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::shared_ptr&lt; <a class="el" href="classneb_1_1_session.html">Session</a> &gt; neb::Actor::GetSession </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strSessionId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strSessionClass</em> = <code>&quot;oss::Session&quot;</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-14" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-14-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-14-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-14-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a2baf04e3688719a416410b1d713c9914_cgraph.png" border="0" usemap="#classneb_1_1_actor_a2baf04e3688719a416410b1d713c9914_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a2baf04e3688719a416410b1d713c9914_cgraph" id="classneb_1_1_actor_a2baf04e3688719a416410b1d713c9914_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#ab56b63f74358a7ec23e07674de1eb8e3" title="neb::Worker::GetSession" alt="" coords="214,5,383,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#ab786baa796a0e64e36e270fcd80cce36" title="neb::WorkerImpl::GetSession" alt="" coords="432,5,627,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a49e019171beaa062308e29326d6c703d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> neb::Actor::GetTimeout </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-15" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-15-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-15-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-15-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a49e019171beaa062308e29326d6c703d_icgraph.png" border="0" usemap="#classneb_1_1_actor_a49e019171beaa062308e29326d6c703d_icgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a49e019171beaa062308e29326d6c703d_icgraph" id="classneb_1_1_actor_a49e019171beaa062308e29326d6c703d_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="213,563,440,589"/><area shape="rect" id="node45" href="classneb_1_1_worker_impl.html#a783e3b2855858c24e2bc3b32715902f9" title="neb::WorkerImpl::MakeShared\lSession" alt="" coords="227,682,426,723"/><area shape="rect" id="node3" href="classneb_1_1_worker.html#a736bd7e7be0146b1ffc56a31596b9047" title="neb::Worker::MakeSharedStep" alt="" coords="498,487,699,513"/><area shape="rect" id="node4" href="classneb_1_1_worker.html#a8d379d4de577ef5baeec11ac5a0daf72" title="neb::Worker::MakeSharedCmd" alt="" coords="497,537,700,564"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1245,480,1435,507"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="2206,528,2391,555"/><area shape="rect" id="node41" href="classneb_1_1_worker_impl.html#a4952fc4d6bceda6a3bec2a4854a3c489" title="neb::WorkerImpl::OnIoTimeout" alt="" coords="498,428,699,455"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1483,480,1669,507"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1718,480,1906,507"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1955,397,2146,438"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1955,462,2146,503"/><area shape="rect" id="node9" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="2195,396,2402,423"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="2207,345,2390,372"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2478,241,2629,268"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="2468,191,2639,217"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="2213,447,2384,473"/><area shape="rect" id="node16" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="2480,343,2627,369"/><area shape="rect" id="node29" href="classneb_1_1_worker_impl.html#a13ab4cbaaf66a0dd84501674cb823975" title="neb::WorkerImpl::SendPolling" alt="" coords="2456,393,2651,420"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="2451,444,2656,471"/><area shape="rect" id="node36" href="classneb_1_1_worker_impl.html#a666df6b0593d965a3aea9d497c947b94" title="neb::WorkerImpl::Broadcast" alt="" coords="2461,292,2646,319"/><area shape="rect" id="node38" href="classneb_1_1_worker_impl.html#a8bfc1a9e6a2af454cf6e9b8b2a5edaad" title="neb::WorkerImpl::SendTo" alt="" coords="2468,495,2639,521"/><area shape="rect" id="node39" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="2470,545,2637,572"/><area shape="rect" id="node17" href="classneb_1_1_actor.html#a29ec51bf9547a34ea61a3c57d48e7bd6" title="连接成功后发送 " alt="" coords="2739,295,2874,321"/><area shape="rect" id="node18" href="classneb_1_1_cmd_beat.html#ae0993588e3dad964f6093478f97255dd" title="命令处理入口 " alt="" coords="2958,385,3149,412"/><area shape="rect" id="node19" href="classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="2980,437,3127,478"/><area shape="rect" id="node20" href="classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="2970,6,3137,47"/><area shape="rect" id="node22" href="classneb_1_1_http_step.html#abd6093bfe8a9d3822aa6d39ff519fd96" title="neb::HttpStep::HttpRequest" alt="" coords="2961,72,3146,99"/><area shape="rect" id="node25" href="classneb_1_1_step_connect_worker.html#abc8ae174cfb52c147ae88bd375ce2c71" title="提交，发出 " alt="" coords="2969,123,3138,165"/><area shape="rect" id="node26" href="classneb_1_1_step_io_timeout.html#ac0b3929a97df553ee45c91ec5330e12b" title="提交，发出 " alt="" coords="2985,189,3121,230"/><area shape="rect" id="node27" href="classneb_1_1_step_tell_worker.html#afc69572c70301d4858a6e3ef074efe32" title="提交，发出 " alt="" coords="2983,254,3124,295"/><area shape="rect" id="node28" href="classneb_1_1_step_tell_worker.html#ac2e7e37b4533edbcffddd19d25441170" title="步骤回调函数 " alt="" coords="2983,319,3124,361"/><area shape="rect" id="node21" href="classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="3198,6,3365,47"/><area shape="rect" id="node23" href="classneb_1_1_http_step.html#adde8b77b262af8cd09348f8d1966d55c" title="neb::HttpStep::HttpPost" alt="" coords="3200,123,3363,149"/><area shape="rect" id="node24" href="classneb_1_1_http_step.html#abb49ccb90a344923b856a28d42f39a9d" title="neb::HttpStep::HttpGet" alt="" coords="3203,72,3360,99"/><area shape="rect" id="node30" href="classneb_1_1_worker.html#aa819e233fcc1bd0a398443e7ee9bf6be" title="neb::Worker::SendPolling" alt="" coords="2721,393,2892,420"/><area shape="rect" id="node32" href="classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="2704,444,2909,471"/><area shape="rect" id="node31" href="classneb_1_1_actor.html#a382f968bcd528fdf548f7dfc5efda39d" title="发送到下一个同一类型的节点 " alt="" coords="2974,503,3133,529"/><area shape="rect" id="node34" href="classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="2717,505,2897,532"/><area shape="rect" id="node35" href="classneb_1_1_actor.html#a9b33f919bba50ff5aef2b172129f6021" title="以取模方式选择发送到同一类型节点 " alt="" coords="2969,553,3138,580"/><area shape="rect" id="node37" href="classneb_1_1_worker.html#acd1eb16ef6ca8d3a5bc26015096a60e7" title="neb::Worker::Broadcast" alt="" coords="2727,244,2887,271"/><area shape="rect" id="node40" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="2714,567,2899,609"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="757,417,941,458"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="990,423,1197,449"/><area shape="rect" id="node44" href="classneb_1_1_step_io_timeout.html#aab7588726c8a15834212e0021d5c0d68" title="步骤回调函数 " alt="" coords="1272,414,1408,455"/><area shape="rect" id="node46" href="classneb_1_1_worker.html#a18b44410718a3771bbe2b207b01af030" title="neb::Worker::MakeSharedSession" alt="" coords="488,740,709,767"/><area shape="rect" id="node47" href="classneb_1_1_worker.html#a0bb2cf25fabc013e9bb9ac597f8ae9ce" title="neb::Worker::MakeSharedModule" alt="" coords="491,689,707,716"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a70da598d8556666eaca05a0ee70691d3"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> neb::Actor::GetWorkerIndex </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-16" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-16-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-16-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-16-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a70da598d8556666eaca05a0ee70691d3_cgraph.png" border="0" usemap="#classneb_1_1_actor_a70da598d8556666eaca05a0ee70691d3_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a70da598d8556666eaca05a0ee70691d3_cgraph" id="classneb_1_1_actor_a70da598d8556666eaca05a0ee70691d3_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a0728e76600babc5eda8e7a0be56fc682" title="neb::Worker::GetWorkerIndex" alt="" coords="241,5,437,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#a21abd524b863fb94fda4d5ae5774fa3f" title="neb::WorkerImpl::GetWorkerInfo" alt="" coords="485,5,696,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="abeb4384ba7ba375941b70732fc0484ca"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string &amp; neb::Actor::GetWorkPath </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-17" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-17-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-17-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-17-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_abeb4384ba7ba375941b70732fc0484ca_cgraph.png" border="0" usemap="#classneb_1_1_actor_abeb4384ba7ba375941b70732fc0484ca_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_abeb4384ba7ba375941b70732fc0484ca_cgraph" id="classneb_1_1_actor_abeb4384ba7ba375941b70732fc0484ca_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a868ef99b7cba7d325b6b33b917611a27" title="neb::Worker::GetWorkPath" alt="" coords="225,5,405,32"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#a21abd524b863fb94fda4d5ae5774fa3f" title="neb::WorkerImpl::GetWorkerInfo" alt="" coords="453,5,664,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a948ebd2c81a00033c05d1ef17933b6b5"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classneb_1_1_actor.html">Actor</a>&amp; neb::Actor::operator= </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classneb_1_1_actor.html">Actor</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">delete</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9b33f919bba50ff5aef2b172129f6021"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::Actor::SendOriented </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strNodeType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>uiFactor</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a>&#160;</td>
+          <td class="paramname"><em>iCmd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>uiSeq</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>以取模方式选择发送到同一类型节点 </p>
+<dl class="section note"><dt>注解</dt><dd>以取模方式选择发送到同一类型节点，实现简单有要求的负载均衡。 </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">strNodeType</td><td>节点类型 </td></tr>
+    <tr><td class="paramname">uiFactor</td><td>定向发送因子 </td></tr>
+    <tr><td class="paramname">iCmd</td><td>发送的命令字 </td></tr>
+    <tr><td class="paramname">uiSeq</td><td>发送的数据包seq </td></tr>
+    <tr><td class="paramname">oMsgBody</td><td>数据包体 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>是否发送成功 </dd></dl>
+
+<p><div id="dynsection-18" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-18-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-18-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-18-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a9b33f919bba50ff5aef2b172129f6021_cgraph.png" border="0" usemap="#classneb_1_1_actor_a9b33f919bba50ff5aef2b172129f6021_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a9b33f919bba50ff5aef2b172129f6021_cgraph" id="classneb_1_1_actor_a9b33f919bba50ff5aef2b172129f6021_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="225,639,405,666"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="453,639,659,666"/><area shape="rect" id="node4" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="707,639,877,666"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#ad2ecb429cc7f4d62b56d0a40a99e433d" title="neb::WorkerImpl::RemoveIo\lWriteEvent" alt="" coords="1639,444,1825,485"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="926,632,1117,673"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1166,719,1354,746"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1403,801,1589,827"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1403,586,1589,613"/><area shape="rect" id="node9" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1637,699,1827,726"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1639,889,1825,931"/><area shape="rect" id="node10" href="classneb_1_1_socket_channel.html#a392a1c9e00eee9ba9bb77cf3310510db" title="neb::SocketChannel\l::RecvChannelFd" alt="" coords="1918,663,2058,704"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#a05176ed6613b983ec6324e20c522e6ca" title="neb::WorkerImpl::Destroy" alt="" coords="1902,729,2074,755"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#aae678691b0b376c50ad31d26f9b22079" title="neb::WorkerImpl::CreateSocket\lChannel" alt="" coords="1885,117,2091,159"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1893,831,2083,872"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1885,779,2091,806"/><area shape="rect" id="node17" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="1875,322,2101,349"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="2652,321,2857,347"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="2157,772,2341,813"/><area shape="rect" id="node18" href="classneb_1_1_actor_factory.html#a770921bb50076afd68288edae2076769" title="neb::ActorFactory::\lInstance" alt="" coords="2182,373,2317,415"/><area shape="rect" id="node19" href="classneb_1_1_actor_factory.html#a96edfbe3057f8f4915368140d16a821d" title="neb::ActorFactory::\lCreate" alt="" coords="2182,37,2317,79"/><area shape="rect" id="node20" href="classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866" title="neb::Actor::SetActiveTime" alt="" coords="2161,103,2337,130"/><area shape="rect" id="node21" href="classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="2399,503,2601,530"/><area shape="rect" id="node22" href="classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88" title="neb::Actor::GetSequence" alt="" coords="2165,271,2334,298"/><area shape="rect" id="node24" href="classneb_1_1_worker_impl.html#a2b87671d82b98bb21cc7e407a31afbf6" title="neb::WorkerImpl::StepTimeout\lCallback" alt="" coords="2149,155,2349,196"/><area shape="rect" id="node25" href="classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf" title="neb::Actor::GetActiveTime" alt="" coords="2161,221,2338,247"/><area shape="rect" id="node26" href="classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d" title="neb::Actor::GetTimeout" alt="" coords="2170,322,2329,349"/><area shape="rect" id="node23" href="classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="2410,270,2590,297"/><area shape="rect" id="node28" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="2166,954,2333,981"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a93050dfc14f877989985ea1b2e45798f" title="neb::WorkerImpl::Discard\lSocketChannel" alt="" coords="1903,545,2073,587"/><area shape="rect" id="node48" href="class_msg_head.html#a7ba67cf394b9fd5ada2db7d21bff8b54" title="MsgHead::Clear" alt="" coords="1929,998,2047,1025"/><area shape="rect" id="node49" href="class_msg_body.html#aaae43dd60f6f2356ccf42f710edcd617" title="MsgBody::Clear" alt="" coords="1930,897,2046,923"/><area shape="rect" id="node29" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="2445,1061,2555,1087"/><area shape="rect" id="node30" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="2447,1111,2553,1138"/><area shape="rect" id="node31" href="class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="2689,934,2820,961"/><area shape="rect" id="node32" href="class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="2699,1094,2810,1121"/><area shape="rect" id="node33" href="classneb_1_1_log_level.html#a49e5c5e85f9f5fe5b6c92a36b815df33" title="neb::LogLevel::log\l_level" alt="" coords="2436,1163,2564,1204"/><area shape="rect" id="node34" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="2411,1280,2589,1321"/><area shape="rect" id="node35" href="class_msg_body.html#a3f48a1b0732cb722baaf1a4b219b47c8" title="MsgBody::mutable_rsp\l_result" alt="" coords="2422,1345,2578,1387"/><area shape="rect" id="node36" href="class_msg_body___response.html#a49ebf3d7e87e494d73a1c0bbd41ed18e" title="MsgBody_Response::set_code" alt="" coords="2398,858,2602,885"/><area shape="rect" id="node37" href="class_msg_body___response.html#a070e2c4bf994004a014be64ae3b28527" title="MsgBody_Response::set_msg" alt="" coords="2399,1010,2601,1037"/><area shape="rect" id="node38" href="class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="2432,655,2568,682"/><area shape="rect" id="node39" href="class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="2434,706,2566,733"/><area shape="rect" id="node40" href="class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="2436,605,2564,631"/><area shape="rect" id="node41" href="class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="2431,959,2569,986"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="2413,807,2587,834"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="2651,807,2859,834"/><area shape="rect" id="node45" href="classneb_1_1_worker_impl.html#a6683263c1d0c5eef4f2a390da02b788a" title="neb::WorkerImpl::Channel\lNotice" alt="" coords="2162,545,2337,587"/><area shape="rect" id="node46" href="class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="2422,372,2578,413"/><area shape="rect" id="node47" href="class_msg_body___request.html#a9039c904cfec45b6447ddcdcdbcb602a" title="MsgBody_Request::set\l_route_id" alt="" coords="2421,437,2579,479"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a921c222b81e6cd37d34706b6b45ab050"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::Actor::SendOriented </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strNodeType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a>&#160;</td>
+          <td class="paramname"><em>iCmd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>uiSeq</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-19" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-19-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-19-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-19-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a921c222b81e6cd37d34706b6b45ab050_cgraph.png" border="0" usemap="#classneb_1_1_actor_a921c222b81e6cd37d34706b6b45ab050_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a921c222b81e6cd37d34706b6b45ab050_cgraph" id="classneb_1_1_actor_a921c222b81e6cd37d34706b6b45ab050_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="225,639,405,666"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="453,639,659,666"/><area shape="rect" id="node4" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="707,639,877,666"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#ad2ecb429cc7f4d62b56d0a40a99e433d" title="neb::WorkerImpl::RemoveIo\lWriteEvent" alt="" coords="1639,444,1825,485"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="926,632,1117,673"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1166,719,1354,746"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1403,801,1589,827"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1403,586,1589,613"/><area shape="rect" id="node9" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1637,699,1827,726"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1639,889,1825,931"/><area shape="rect" id="node10" href="classneb_1_1_socket_channel.html#a392a1c9e00eee9ba9bb77cf3310510db" title="neb::SocketChannel\l::RecvChannelFd" alt="" coords="1918,663,2058,704"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#a05176ed6613b983ec6324e20c522e6ca" title="neb::WorkerImpl::Destroy" alt="" coords="1902,729,2074,755"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#aae678691b0b376c50ad31d26f9b22079" title="neb::WorkerImpl::CreateSocket\lChannel" alt="" coords="1885,117,2091,159"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1893,831,2083,872"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1885,779,2091,806"/><area shape="rect" id="node17" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="1875,322,2101,349"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="2652,321,2857,347"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="2157,772,2341,813"/><area shape="rect" id="node18" href="classneb_1_1_actor_factory.html#a770921bb50076afd68288edae2076769" title="neb::ActorFactory::\lInstance" alt="" coords="2182,373,2317,415"/><area shape="rect" id="node19" href="classneb_1_1_actor_factory.html#a96edfbe3057f8f4915368140d16a821d" title="neb::ActorFactory::\lCreate" alt="" coords="2182,37,2317,79"/><area shape="rect" id="node20" href="classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866" title="neb::Actor::SetActiveTime" alt="" coords="2161,103,2337,130"/><area shape="rect" id="node21" href="classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="2399,503,2601,530"/><area shape="rect" id="node22" href="classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88" title="neb::Actor::GetSequence" alt="" coords="2165,271,2334,298"/><area shape="rect" id="node24" href="classneb_1_1_worker_impl.html#a2b87671d82b98bb21cc7e407a31afbf6" title="neb::WorkerImpl::StepTimeout\lCallback" alt="" coords="2149,155,2349,196"/><area shape="rect" id="node25" href="classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf" title="neb::Actor::GetActiveTime" alt="" coords="2161,221,2338,247"/><area shape="rect" id="node26" href="classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d" title="neb::Actor::GetTimeout" alt="" coords="2170,322,2329,349"/><area shape="rect" id="node23" href="classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="2410,270,2590,297"/><area shape="rect" id="node28" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="2166,954,2333,981"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a93050dfc14f877989985ea1b2e45798f" title="neb::WorkerImpl::Discard\lSocketChannel" alt="" coords="1903,545,2073,587"/><area shape="rect" id="node48" href="class_msg_head.html#a7ba67cf394b9fd5ada2db7d21bff8b54" title="MsgHead::Clear" alt="" coords="1929,998,2047,1025"/><area shape="rect" id="node49" href="class_msg_body.html#aaae43dd60f6f2356ccf42f710edcd617" title="MsgBody::Clear" alt="" coords="1930,897,2046,923"/><area shape="rect" id="node29" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="2445,1061,2555,1087"/><area shape="rect" id="node30" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="2447,1111,2553,1138"/><area shape="rect" id="node31" href="class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="2689,934,2820,961"/><area shape="rect" id="node32" href="class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="2699,1094,2810,1121"/><area shape="rect" id="node33" href="classneb_1_1_log_level.html#a49e5c5e85f9f5fe5b6c92a36b815df33" title="neb::LogLevel::log\l_level" alt="" coords="2436,1163,2564,1204"/><area shape="rect" id="node34" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="2411,1280,2589,1321"/><area shape="rect" id="node35" href="class_msg_body.html#a3f48a1b0732cb722baaf1a4b219b47c8" title="MsgBody::mutable_rsp\l_result" alt="" coords="2422,1345,2578,1387"/><area shape="rect" id="node36" href="class_msg_body___response.html#a49ebf3d7e87e494d73a1c0bbd41ed18e" title="MsgBody_Response::set_code" alt="" coords="2398,858,2602,885"/><area shape="rect" id="node37" href="class_msg_body___response.html#a070e2c4bf994004a014be64ae3b28527" title="MsgBody_Response::set_msg" alt="" coords="2399,1010,2601,1037"/><area shape="rect" id="node38" href="class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="2432,655,2568,682"/><area shape="rect" id="node39" href="class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="2434,706,2566,733"/><area shape="rect" id="node40" href="class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="2436,605,2564,631"/><area shape="rect" id="node41" href="class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="2431,959,2569,986"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="2413,807,2587,834"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="2651,807,2859,834"/><area shape="rect" id="node45" href="classneb_1_1_worker_impl.html#a6683263c1d0c5eef4f2a390da02b788a" title="neb::WorkerImpl::Channel\lNotice" alt="" coords="2162,545,2337,587"/><area shape="rect" id="node46" href="class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="2422,372,2578,413"/><area shape="rect" id="node47" href="class_msg_body___request.html#a9039c904cfec45b6447ddcdcdbcb602a" title="MsgBody_Request::set\l_route_id" alt="" coords="2421,437,2579,479"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a382f968bcd528fdf548f7dfc5efda39d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::Actor::SendPolling </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strNodeType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a>&#160;</td>
+          <td class="paramname"><em>iCmd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>uiSeq</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>发送到下一个同一类型的节点 </p>
+<dl class="section note"><dt>注解</dt><dd>发送到下一个同一类型的节点，适用于对同一类型节点做轮询方式发送以达到简单的负载均衡。 </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">strNodeType</td><td>节点类型 </td></tr>
+    <tr><td class="paramname">iCmd</td><td>发送的命令字 </td></tr>
+    <tr><td class="paramname">uiSeq</td><td>发送的数据包seq </td></tr>
+    <tr><td class="paramname">oMsgBody</td><td>数据包体 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>是否发送成功 </dd></dl>
+
+<p><div id="dynsection-20" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-20-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-20-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-20-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a382f968bcd528fdf548f7dfc5efda39d_cgraph.png" border="0" usemap="#classneb_1_1_actor_a382f968bcd528fdf548f7dfc5efda39d_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a382f968bcd528fdf548f7dfc5efda39d_cgraph" id="classneb_1_1_actor_a382f968bcd528fdf548f7dfc5efda39d_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#aa819e233fcc1bd0a398443e7ee9bf6be" title="neb::Worker::SendPolling" alt="" coords="213,639,384,666"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#a13ab4cbaaf66a0dd84501674cb823975" title="neb::WorkerImpl::SendPolling" alt="" coords="432,639,627,666"/><area shape="rect" id="node4" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="675,639,845,666"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#ad2ecb429cc7f4d62b56d0a40a99e433d" title="neb::WorkerImpl::RemoveIo\lWriteEvent" alt="" coords="1607,444,1793,485"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="894,632,1085,673"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1134,719,1322,746"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1371,801,1557,827"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1371,586,1557,613"/><area shape="rect" id="node9" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1605,699,1795,726"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1607,889,1793,931"/><area shape="rect" id="node10" href="classneb_1_1_socket_channel.html#a392a1c9e00eee9ba9bb77cf3310510db" title="neb::SocketChannel\l::RecvChannelFd" alt="" coords="1886,663,2026,704"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#a05176ed6613b983ec6324e20c522e6ca" title="neb::WorkerImpl::Destroy" alt="" coords="1870,729,2042,755"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#aae678691b0b376c50ad31d26f9b22079" title="neb::WorkerImpl::CreateSocket\lChannel" alt="" coords="1853,117,2059,159"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1861,831,2051,872"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1853,779,2059,806"/><area shape="rect" id="node17" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="1843,322,2069,349"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="2620,321,2825,347"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="2125,772,2309,813"/><area shape="rect" id="node18" href="classneb_1_1_actor_factory.html#a770921bb50076afd68288edae2076769" title="neb::ActorFactory::\lInstance" alt="" coords="2150,373,2285,415"/><area shape="rect" id="node19" href="classneb_1_1_actor_factory.html#a96edfbe3057f8f4915368140d16a821d" title="neb::ActorFactory::\lCreate" alt="" coords="2150,37,2285,79"/><area shape="rect" id="node20" href="classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866" title="neb::Actor::SetActiveTime" alt="" coords="2129,103,2305,130"/><area shape="rect" id="node21" href="classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="2367,503,2569,530"/><area shape="rect" id="node22" href="classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88" title="neb::Actor::GetSequence" alt="" coords="2133,271,2302,298"/><area shape="rect" id="node24" href="classneb_1_1_worker_impl.html#a2b87671d82b98bb21cc7e407a31afbf6" title="neb::WorkerImpl::StepTimeout\lCallback" alt="" coords="2117,155,2317,196"/><area shape="rect" id="node25" href="classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf" title="neb::Actor::GetActiveTime" alt="" coords="2129,221,2306,247"/><area shape="rect" id="node26" href="classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d" title="neb::Actor::GetTimeout" alt="" coords="2138,322,2297,349"/><area shape="rect" id="node23" href="classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="2378,270,2558,297"/><area shape="rect" id="node28" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="2134,954,2301,981"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a93050dfc14f877989985ea1b2e45798f" title="neb::WorkerImpl::Discard\lSocketChannel" alt="" coords="1871,545,2041,587"/><area shape="rect" id="node48" href="class_msg_head.html#a7ba67cf394b9fd5ada2db7d21bff8b54" title="MsgHead::Clear" alt="" coords="1897,998,2015,1025"/><area shape="rect" id="node49" href="class_msg_body.html#aaae43dd60f6f2356ccf42f710edcd617" title="MsgBody::Clear" alt="" coords="1898,897,2014,923"/><area shape="rect" id="node29" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="2413,1061,2523,1087"/><area shape="rect" id="node30" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="2415,1111,2521,1138"/><area shape="rect" id="node31" href="class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="2657,934,2788,961"/><area shape="rect" id="node32" href="class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="2667,1094,2778,1121"/><area shape="rect" id="node33" href="classneb_1_1_log_level.html#a49e5c5e85f9f5fe5b6c92a36b815df33" title="neb::LogLevel::log\l_level" alt="" coords="2404,1163,2532,1204"/><area shape="rect" id="node34" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="2379,1280,2557,1321"/><area shape="rect" id="node35" href="class_msg_body.html#a3f48a1b0732cb722baaf1a4b219b47c8" title="MsgBody::mutable_rsp\l_result" alt="" coords="2390,1345,2546,1387"/><area shape="rect" id="node36" href="class_msg_body___response.html#a49ebf3d7e87e494d73a1c0bbd41ed18e" title="MsgBody_Response::set_code" alt="" coords="2366,858,2570,885"/><area shape="rect" id="node37" href="class_msg_body___response.html#a070e2c4bf994004a014be64ae3b28527" title="MsgBody_Response::set_msg" alt="" coords="2367,1010,2569,1037"/><area shape="rect" id="node38" href="class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="2400,655,2536,682"/><area shape="rect" id="node39" href="class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="2402,706,2534,733"/><area shape="rect" id="node40" href="class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="2404,605,2532,631"/><area shape="rect" id="node41" href="class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="2399,959,2537,986"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="2381,807,2555,834"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="2619,807,2827,834"/><area shape="rect" id="node45" href="classneb_1_1_worker_impl.html#a6683263c1d0c5eef4f2a390da02b788a" title="neb::WorkerImpl::Channel\lNotice" alt="" coords="2130,545,2305,587"/><area shape="rect" id="node46" href="class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="2390,372,2546,413"/><area shape="rect" id="node47" href="class_msg_body___request.html#a9039c904cfec45b6447ddcdcdbcb602a" title="MsgBody_Request::set\l_route_id" alt="" coords="2389,437,2547,479"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a29ec51bf9547a34ea61a3c57d48e7bd6"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::Actor::SendTo </td>
+          <td>(</td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classneb_1_1_socket_channel.html">SocketChannel</a> &gt;&#160;</td>
+          <td class="paramname"><em>pChannel</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>连接成功后发送 </p>
+<dl class="section note"><dt>注解</dt><dd>当前Server往另一个Server发送数据而两Server之间没有可用连接时，框架层向对端发起连接（发起连接 的过程是异步非阻塞的，connect()函数返回的时候并不知道连接是否成功），并将待发送数据存放于应用层待发 送缓冲区。当连接成功时将待发送数据从应用层待发送缓冲区拷贝到应用层发送缓冲区并发送。此函数由框架层自 动调用，业务逻辑层无须关注。 </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stCtx</td><td>消息通道上下文 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>是否发送成功 </dd></dl>
+
+<p><div id="dynsection-21" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-21-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-21-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-21-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a29ec51bf9547a34ea61a3c57d48e7bd6_cgraph.png" border="0" usemap="#classneb_1_1_actor_a29ec51bf9547a34ea61a3c57d48e7bd6_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a29ec51bf9547a34ea61a3c57d48e7bd6_cgraph" id="classneb_1_1_actor_a29ec51bf9547a34ea61a3c57d48e7bd6_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="189,421,336,448"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="384,421,555,448"/><area shape="rect" id="node4" href="classneb_1_1_worker_impl.html#ad2ecb429cc7f4d62b56d0a40a99e433d" title="neb::WorkerImpl::RemoveIo\lWriteEvent" alt="" coords="1316,5,1503,46"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="603,414,794,455"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="843,443,1031,469"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1081,600,1266,627"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1081,355,1266,381"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1315,600,1504,627"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1317,790,1502,831"/><area shape="rect" id="node9" href="classneb_1_1_socket_channel.html#a392a1c9e00eee9ba9bb77cf3310510db" title="neb::SocketChannel\l::RecvChannelFd" alt="" coords="1595,681,1735,722"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#a05176ed6613b983ec6324e20c522e6ca" title="neb::WorkerImpl::Destroy" alt="" coords="1579,629,1751,656"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#aae678691b0b376c50ad31d26f9b22079" title="neb::WorkerImpl::CreateSocket\lChannel" alt="" coords="1562,563,1769,605"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1570,433,1761,474"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1562,747,1769,773"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="1552,363,1779,389"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="2329,539,2535,565"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="1835,742,2019,783"/><area shape="rect" id="node17" href="classneb_1_1_actor_factory.html#a770921bb50076afd68288edae2076769" title="neb::ActorFactory::\lInstance" alt="" coords="1859,290,1994,331"/><area shape="rect" id="node18" href="classneb_1_1_actor_factory.html#a96edfbe3057f8f4915368140d16a821d" title="neb::ActorFactory::\lCreate" alt="" coords="1859,355,1994,397"/><area shape="rect" id="node19" href="classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866" title="neb::Actor::SetActiveTime" alt="" coords="1839,421,2015,448"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="2076,589,2279,616"/><area shape="rect" id="node21" href="classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88" title="neb::Actor::GetSequence" alt="" coords="1842,523,2011,549"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#a2b87671d82b98bb21cc7e407a31afbf6" title="neb::WorkerImpl::StepTimeout\lCallback" alt="" coords="1827,173,2027,214"/><area shape="rect" id="node24" href="classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf" title="neb::Actor::GetActiveTime" alt="" coords="1838,239,2015,265"/><area shape="rect" id="node25" href="classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d" title="neb::Actor::GetTimeout" alt="" coords="1847,472,2006,499"/><area shape="rect" id="node22" href="classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="2087,304,2267,331"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="1843,945,2010,972"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a93050dfc14f877989985ea1b2e45798f" title="neb::WorkerImpl::Discard\lSocketChannel" alt="" coords="1580,498,1751,539"/><area shape="rect" id="node48" href="class_msg_head.html#a7ba67cf394b9fd5ada2db7d21bff8b54" title="MsgHead::Clear" alt="" coords="1607,797,1724,824"/><area shape="rect" id="node49" href="class_msg_body.html#aaae43dd60f6f2356ccf42f710edcd617" title="MsgBody::Clear" alt="" coords="1607,848,1723,875"/><area shape="rect" id="node28" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="2122,1163,2233,1189"/><area shape="rect" id="node29" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="2124,1213,2231,1240"/><area shape="rect" id="node30" href="class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="2367,919,2497,945"/><area shape="rect" id="node31" href="class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="2377,1137,2487,1164"/><area shape="rect" id="node32" href="classneb_1_1_log_level.html#a49e5c5e85f9f5fe5b6c92a36b815df33" title="neb::LogLevel::log\l_level" alt="" coords="2113,1265,2241,1306"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="2088,1382,2267,1423"/><area shape="rect" id="node34" href="class_msg_body.html#a3f48a1b0732cb722baaf1a4b219b47c8" title="MsgBody::mutable_rsp\l_result" alt="" coords="2099,995,2255,1037"/><area shape="rect" id="node35" href="class_msg_body___response.html#a49ebf3d7e87e494d73a1c0bbd41ed18e" title="MsgBody_Response::set_code" alt="" coords="2075,1061,2279,1088"/><area shape="rect" id="node36" href="class_msg_body___response.html#a070e2c4bf994004a014be64ae3b28527" title="MsgBody_Response::set_msg" alt="" coords="2077,1112,2278,1139"/><area shape="rect" id="node37" href="class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="2109,792,2245,819"/><area shape="rect" id="node38" href="class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="2111,640,2243,667"/><area shape="rect" id="node39" href="class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="2113,741,2241,768"/><area shape="rect" id="node40" href="class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="2108,944,2247,971"/><area shape="rect" id="node41" href="classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="2090,71,2265,97"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="2328,71,2536,97"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a6683263c1d0c5eef4f2a390da02b788a" title="neb::WorkerImpl::Channel\lNotice" alt="" coords="1839,625,2014,666"/><area shape="rect" id="node45" href="class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="2099,473,2255,514"/><area shape="rect" id="node46" href="class_msg_body___request.html#a9039c904cfec45b6447ddcdcdbcb602a" title="MsgBody_Request::set\l_route_id" alt="" coords="2098,355,2257,397"/><area shape="rect" id="node47" href="class_msg_body.html#a582009cf3fad55ea2d0327b052e3adf0" title="MsgBody::set_data" alt="" coords="2110,421,2245,448"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-22" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-22-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-22-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-22-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a29ec51bf9547a34ea61a3c57d48e7bd6_icgraph.png" border="0" usemap="#classneb_1_1_actor_a29ec51bf9547a34ea61a3c57d48e7bd6_icgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a29ec51bf9547a34ea61a3c57d48e7bd6_icgraph" id="classneb_1_1_actor_a29ec51bf9547a34ea61a3c57d48e7bd6_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_cmd_beat.html#ae0993588e3dad964f6093478f97255dd" title="命令处理入口 " alt="" coords="190,5,381,32"/><area shape="rect" id="node3" href="classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="212,57,359,98"/><area shape="rect" id="node4" href="classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="202,122,369,163"/><area shape="rect" id="node6" href="classneb_1_1_http_step.html#abd6093bfe8a9d3822aa6d39ff519fd96" title="neb::HttpStep::HttpRequest" alt="" coords="193,188,378,215"/><area shape="rect" id="node9" href="classneb_1_1_step_connect_worker.html#abc8ae174cfb52c147ae88bd375ce2c71" title="提交，发出 " alt="" coords="201,239,370,281"/><area shape="rect" id="node10" href="classneb_1_1_step_io_timeout.html#ac0b3929a97df553ee45c91ec5330e12b" title="提交，发出 " alt="" coords="217,305,353,346"/><area shape="rect" id="node11" href="classneb_1_1_step_tell_worker.html#afc69572c70301d4858a6e3ef074efe32" title="提交，发出 " alt="" coords="215,370,356,411"/><area shape="rect" id="node12" href="classneb_1_1_step_tell_worker.html#ac2e7e37b4533edbcffddd19d25441170" title="步骤回调函数 " alt="" coords="215,435,356,477"/><area shape="rect" id="node5" href="classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="430,122,597,163"/><area shape="rect" id="node7" href="classneb_1_1_http_step.html#adde8b77b262af8cd09348f8d1966d55c" title="neb::HttpStep::HttpPost" alt="" coords="432,188,595,215"/><area shape="rect" id="node8" href="classneb_1_1_http_step.html#abb49ccb90a344923b856a28d42f39a9d" title="neb::HttpStep::HttpGet" alt="" coords="435,239,592,265"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="ad595327360070ee67347db301d23b39b"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::Actor::SendTo </td>
+          <td>(</td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classneb_1_1_socket_channel.html">SocketChannel</a> &gt;&#160;</td>
+          <td class="paramname"><em>pChannel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a>&#160;</td>
+          <td class="paramname"><em>iCmd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>uiSeq</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>发送数据 </p>
+<dl class="section note"><dt>注解</dt><dd>使用指定连接将数据发送。如果能直接得知stCtx（比如刚从该连接接收到数据，欲回确认包），就 应调用此函数发送。此函数是SendTo()函数中最高效的一个。 </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stCtx</td><td>消息通道上下文 </td></tr>
+    <tr><td class="paramname">iCmd</td><td>发送的命令字 </td></tr>
+    <tr><td class="paramname">uiSeq</td><td>发送的数据包seq </td></tr>
+    <tr><td class="paramname">oMsgBody</td><td>数据包体 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>是否发送成功 </dd></dl>
+
+<p><div id="dynsection-23" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-23-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-23-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-23-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_ad595327360070ee67347db301d23b39b_cgraph.png" border="0" usemap="#classneb_1_1_actor_ad595327360070ee67347db301d23b39b_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_ad595327360070ee67347db301d23b39b_cgraph" id="classneb_1_1_actor_ad595327360070ee67347db301d23b39b_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="189,421,336,448"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="384,421,555,448"/><area shape="rect" id="node4" href="classneb_1_1_worker_impl.html#ad2ecb429cc7f4d62b56d0a40a99e433d" title="neb::WorkerImpl::RemoveIo\lWriteEvent" alt="" coords="1316,5,1503,46"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="603,414,794,455"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="843,443,1031,469"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1081,600,1266,627"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1081,355,1266,381"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1315,600,1504,627"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1317,790,1502,831"/><area shape="rect" id="node9" href="classneb_1_1_socket_channel.html#a392a1c9e00eee9ba9bb77cf3310510db" title="neb::SocketChannel\l::RecvChannelFd" alt="" coords="1595,681,1735,722"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#a05176ed6613b983ec6324e20c522e6ca" title="neb::WorkerImpl::Destroy" alt="" coords="1579,629,1751,656"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#aae678691b0b376c50ad31d26f9b22079" title="neb::WorkerImpl::CreateSocket\lChannel" alt="" coords="1562,563,1769,605"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1570,433,1761,474"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1562,747,1769,773"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="1552,363,1779,389"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="2329,539,2535,565"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="1835,742,2019,783"/><area shape="rect" id="node17" href="classneb_1_1_actor_factory.html#a770921bb50076afd68288edae2076769" title="neb::ActorFactory::\lInstance" alt="" coords="1859,290,1994,331"/><area shape="rect" id="node18" href="classneb_1_1_actor_factory.html#a96edfbe3057f8f4915368140d16a821d" title="neb::ActorFactory::\lCreate" alt="" coords="1859,355,1994,397"/><area shape="rect" id="node19" href="classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866" title="neb::Actor::SetActiveTime" alt="" coords="1839,421,2015,448"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="2076,589,2279,616"/><area shape="rect" id="node21" href="classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88" title="neb::Actor::GetSequence" alt="" coords="1842,523,2011,549"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#a2b87671d82b98bb21cc7e407a31afbf6" title="neb::WorkerImpl::StepTimeout\lCallback" alt="" coords="1827,173,2027,214"/><area shape="rect" id="node24" href="classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf" title="neb::Actor::GetActiveTime" alt="" coords="1838,239,2015,265"/><area shape="rect" id="node25" href="classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d" title="neb::Actor::GetTimeout" alt="" coords="1847,472,2006,499"/><area shape="rect" id="node22" href="classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="2087,304,2267,331"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="1843,945,2010,972"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a93050dfc14f877989985ea1b2e45798f" title="neb::WorkerImpl::Discard\lSocketChannel" alt="" coords="1580,498,1751,539"/><area shape="rect" id="node48" href="class_msg_head.html#a7ba67cf394b9fd5ada2db7d21bff8b54" title="MsgHead::Clear" alt="" coords="1607,797,1724,824"/><area shape="rect" id="node49" href="class_msg_body.html#aaae43dd60f6f2356ccf42f710edcd617" title="MsgBody::Clear" alt="" coords="1607,848,1723,875"/><area shape="rect" id="node28" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="2122,1163,2233,1189"/><area shape="rect" id="node29" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="2124,1213,2231,1240"/><area shape="rect" id="node30" href="class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="2367,919,2497,945"/><area shape="rect" id="node31" href="class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="2377,1137,2487,1164"/><area shape="rect" id="node32" href="classneb_1_1_log_level.html#a49e5c5e85f9f5fe5b6c92a36b815df33" title="neb::LogLevel::log\l_level" alt="" coords="2113,1265,2241,1306"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="2088,1382,2267,1423"/><area shape="rect" id="node34" href="class_msg_body.html#a3f48a1b0732cb722baaf1a4b219b47c8" title="MsgBody::mutable_rsp\l_result" alt="" coords="2099,995,2255,1037"/><area shape="rect" id="node35" href="class_msg_body___response.html#a49ebf3d7e87e494d73a1c0bbd41ed18e" title="MsgBody_Response::set_code" alt="" coords="2075,1061,2279,1088"/><area shape="rect" id="node36" href="class_msg_body___response.html#a070e2c4bf994004a014be64ae3b28527" title="MsgBody_Response::set_msg" alt="" coords="2077,1112,2278,1139"/><area shape="rect" id="node37" href="class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="2109,792,2245,819"/><area shape="rect" id="node38" href="class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="2111,640,2243,667"/><area shape="rect" id="node39" href="class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="2113,741,2241,768"/><area shape="rect" id="node40" href="class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="2108,944,2247,971"/><area shape="rect" id="node41" href="classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="2090,71,2265,97"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="2328,71,2536,97"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a6683263c1d0c5eef4f2a390da02b788a" title="neb::WorkerImpl::Channel\lNotice" alt="" coords="1839,625,2014,666"/><area shape="rect" id="node45" href="class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="2099,473,2255,514"/><area shape="rect" id="node46" href="class_msg_body___request.html#a9039c904cfec45b6447ddcdcdbcb602a" title="MsgBody_Request::set\l_route_id" alt="" coords="2098,355,2257,397"/><area shape="rect" id="node47" href="class_msg_body.html#a582009cf3fad55ea2d0327b052e3adf0" title="MsgBody::set_data" alt="" coords="2110,421,2245,448"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="ab818abaeb85c3c496baab955b2cd4ab4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::Actor::SendTo </td>
+          <td>(</td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classneb_1_1_socket_channel.html">SocketChannel</a> &gt;&#160;</td>
+          <td class="paramname"><em>pChannel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_http_msg.html">HttpMsg</a> &amp;&#160;</td>
+          <td class="paramname"><em>oHttpMsg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>发送数据 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">stCtx</td><td>消息通道上下文 </td></tr>
+    <tr><td class="paramname">oHttpMsg</td><td>http消息 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>是否发送成功 </dd></dl>
+
+<p><div id="dynsection-24" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-24-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-24-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-24-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_ab818abaeb85c3c496baab955b2cd4ab4_cgraph.png" border="0" usemap="#classneb_1_1_actor_ab818abaeb85c3c496baab955b2cd4ab4_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_ab818abaeb85c3c496baab955b2cd4ab4_cgraph" id="classneb_1_1_actor_ab818abaeb85c3c496baab955b2cd4ab4_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="189,421,336,448"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="384,421,555,448"/><area shape="rect" id="node4" href="classneb_1_1_worker_impl.html#ad2ecb429cc7f4d62b56d0a40a99e433d" title="neb::WorkerImpl::RemoveIo\lWriteEvent" alt="" coords="1316,5,1503,46"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="603,414,794,455"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="843,443,1031,469"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1081,600,1266,627"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1081,355,1266,381"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1315,600,1504,627"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1317,790,1502,831"/><area shape="rect" id="node9" href="classneb_1_1_socket_channel.html#a392a1c9e00eee9ba9bb77cf3310510db" title="neb::SocketChannel\l::RecvChannelFd" alt="" coords="1595,681,1735,722"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#a05176ed6613b983ec6324e20c522e6ca" title="neb::WorkerImpl::Destroy" alt="" coords="1579,629,1751,656"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#aae678691b0b376c50ad31d26f9b22079" title="neb::WorkerImpl::CreateSocket\lChannel" alt="" coords="1562,563,1769,605"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1570,433,1761,474"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1562,747,1769,773"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="1552,363,1779,389"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="2329,539,2535,565"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="1835,742,2019,783"/><area shape="rect" id="node17" href="classneb_1_1_actor_factory.html#a770921bb50076afd68288edae2076769" title="neb::ActorFactory::\lInstance" alt="" coords="1859,290,1994,331"/><area shape="rect" id="node18" href="classneb_1_1_actor_factory.html#a96edfbe3057f8f4915368140d16a821d" title="neb::ActorFactory::\lCreate" alt="" coords="1859,355,1994,397"/><area shape="rect" id="node19" href="classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866" title="neb::Actor::SetActiveTime" alt="" coords="1839,421,2015,448"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="2076,589,2279,616"/><area shape="rect" id="node21" href="classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88" title="neb::Actor::GetSequence" alt="" coords="1842,523,2011,549"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#a2b87671d82b98bb21cc7e407a31afbf6" title="neb::WorkerImpl::StepTimeout\lCallback" alt="" coords="1827,173,2027,214"/><area shape="rect" id="node24" href="classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf" title="neb::Actor::GetActiveTime" alt="" coords="1838,239,2015,265"/><area shape="rect" id="node25" href="classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d" title="neb::Actor::GetTimeout" alt="" coords="1847,472,2006,499"/><area shape="rect" id="node22" href="classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="2087,304,2267,331"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="1843,945,2010,972"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a93050dfc14f877989985ea1b2e45798f" title="neb::WorkerImpl::Discard\lSocketChannel" alt="" coords="1580,498,1751,539"/><area shape="rect" id="node48" href="class_msg_head.html#a7ba67cf394b9fd5ada2db7d21bff8b54" title="MsgHead::Clear" alt="" coords="1607,797,1724,824"/><area shape="rect" id="node49" href="class_msg_body.html#aaae43dd60f6f2356ccf42f710edcd617" title="MsgBody::Clear" alt="" coords="1607,848,1723,875"/><area shape="rect" id="node28" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="2122,1163,2233,1189"/><area shape="rect" id="node29" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="2124,1213,2231,1240"/><area shape="rect" id="node30" href="class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="2367,919,2497,945"/><area shape="rect" id="node31" href="class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="2377,1137,2487,1164"/><area shape="rect" id="node32" href="classneb_1_1_log_level.html#a49e5c5e85f9f5fe5b6c92a36b815df33" title="neb::LogLevel::log\l_level" alt="" coords="2113,1265,2241,1306"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="2088,1382,2267,1423"/><area shape="rect" id="node34" href="class_msg_body.html#a3f48a1b0732cb722baaf1a4b219b47c8" title="MsgBody::mutable_rsp\l_result" alt="" coords="2099,995,2255,1037"/><area shape="rect" id="node35" href="class_msg_body___response.html#a49ebf3d7e87e494d73a1c0bbd41ed18e" title="MsgBody_Response::set_code" alt="" coords="2075,1061,2279,1088"/><area shape="rect" id="node36" href="class_msg_body___response.html#a070e2c4bf994004a014be64ae3b28527" title="MsgBody_Response::set_msg" alt="" coords="2077,1112,2278,1139"/><area shape="rect" id="node37" href="class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="2109,792,2245,819"/><area shape="rect" id="node38" href="class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="2111,640,2243,667"/><area shape="rect" id="node39" href="class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="2113,741,2241,768"/><area shape="rect" id="node40" href="class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="2108,944,2247,971"/><area shape="rect" id="node41" href="classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="2090,71,2265,97"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="2328,71,2536,97"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a6683263c1d0c5eef4f2a390da02b788a" title="neb::WorkerImpl::Channel\lNotice" alt="" coords="1839,625,2014,666"/><area shape="rect" id="node45" href="class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="2099,473,2255,514"/><area shape="rect" id="node46" href="class_msg_body___request.html#a9039c904cfec45b6447ddcdcdbcb602a" title="MsgBody_Request::set\l_route_id" alt="" coords="2098,355,2257,397"/><area shape="rect" id="node47" href="class_msg_body.html#a582009cf3fad55ea2d0327b052e3adf0" title="MsgBody::set_data" alt="" coords="2110,421,2245,448"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a0fa1c957725c96912c170ba1f0da2455"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::Actor::SendTo </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strIdentify</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a>&#160;</td>
+          <td class="paramname"><em>iCmd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>uiSeq</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>发送数据 </p>
+<dl class="section note"><dt>注解</dt><dd>指定连接标识符将数据发送。此函数先查找与strIdentify匹配的stMsgShell，如果找到就调用 SendTo(const tagMsgShell&amp; stMsgShell, int32 iCmd, uint32 uiSeq, const MsgBody&amp; oMsgBody) 发送，如果未找到则调用SendToWithAutoConnect(const std::string&amp; strIdentify, uint32 iCmd, uint32 uiSeq, const <a class="el" href="class_msg_body.html">MsgBody</a>&amp; oMsgBody)连接后再发送。 </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">strIdentify</td><td>连接标识符(IP:port.worker_index, e.g 192.168.11.12:3001.1) </td></tr>
+    <tr><td class="paramname">iCmd</td><td>发送的命令字 </td></tr>
+    <tr><td class="paramname">uiSeq</td><td>发送的数据包seq </td></tr>
+    <tr><td class="paramname">oMsgBody</td><td>数据包体 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>是否发送成功 </dd></dl>
+
+<p><div id="dynsection-25" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-25-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-25-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-25-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a0fa1c957725c96912c170ba1f0da2455_cgraph.png" border="0" usemap="#classneb_1_1_actor_a0fa1c957725c96912c170ba1f0da2455_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a0fa1c957725c96912c170ba1f0da2455_cgraph" id="classneb_1_1_actor_a0fa1c957725c96912c170ba1f0da2455_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="189,421,336,448"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="384,421,555,448"/><area shape="rect" id="node4" href="classneb_1_1_worker_impl.html#ad2ecb429cc7f4d62b56d0a40a99e433d" title="neb::WorkerImpl::RemoveIo\lWriteEvent" alt="" coords="1316,5,1503,46"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="603,414,794,455"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="843,443,1031,469"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1081,600,1266,627"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1081,355,1266,381"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1315,600,1504,627"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1317,790,1502,831"/><area shape="rect" id="node9" href="classneb_1_1_socket_channel.html#a392a1c9e00eee9ba9bb77cf3310510db" title="neb::SocketChannel\l::RecvChannelFd" alt="" coords="1595,681,1735,722"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#a05176ed6613b983ec6324e20c522e6ca" title="neb::WorkerImpl::Destroy" alt="" coords="1579,629,1751,656"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#aae678691b0b376c50ad31d26f9b22079" title="neb::WorkerImpl::CreateSocket\lChannel" alt="" coords="1562,563,1769,605"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1570,433,1761,474"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1562,747,1769,773"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="1552,363,1779,389"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="2329,539,2535,565"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="1835,742,2019,783"/><area shape="rect" id="node17" href="classneb_1_1_actor_factory.html#a770921bb50076afd68288edae2076769" title="neb::ActorFactory::\lInstance" alt="" coords="1859,290,1994,331"/><area shape="rect" id="node18" href="classneb_1_1_actor_factory.html#a96edfbe3057f8f4915368140d16a821d" title="neb::ActorFactory::\lCreate" alt="" coords="1859,355,1994,397"/><area shape="rect" id="node19" href="classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866" title="neb::Actor::SetActiveTime" alt="" coords="1839,421,2015,448"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="2076,589,2279,616"/><area shape="rect" id="node21" href="classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88" title="neb::Actor::GetSequence" alt="" coords="1842,523,2011,549"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#a2b87671d82b98bb21cc7e407a31afbf6" title="neb::WorkerImpl::StepTimeout\lCallback" alt="" coords="1827,173,2027,214"/><area shape="rect" id="node24" href="classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf" title="neb::Actor::GetActiveTime" alt="" coords="1838,239,2015,265"/><area shape="rect" id="node25" href="classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d" title="neb::Actor::GetTimeout" alt="" coords="1847,472,2006,499"/><area shape="rect" id="node22" href="classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="2087,304,2267,331"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="1843,945,2010,972"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a93050dfc14f877989985ea1b2e45798f" title="neb::WorkerImpl::Discard\lSocketChannel" alt="" coords="1580,498,1751,539"/><area shape="rect" id="node48" href="class_msg_head.html#a7ba67cf394b9fd5ada2db7d21bff8b54" title="MsgHead::Clear" alt="" coords="1607,797,1724,824"/><area shape="rect" id="node49" href="class_msg_body.html#aaae43dd60f6f2356ccf42f710edcd617" title="MsgBody::Clear" alt="" coords="1607,848,1723,875"/><area shape="rect" id="node28" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="2122,1163,2233,1189"/><area shape="rect" id="node29" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="2124,1213,2231,1240"/><area shape="rect" id="node30" href="class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="2367,919,2497,945"/><area shape="rect" id="node31" href="class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="2377,1137,2487,1164"/><area shape="rect" id="node32" href="classneb_1_1_log_level.html#a49e5c5e85f9f5fe5b6c92a36b815df33" title="neb::LogLevel::log\l_level" alt="" coords="2113,1265,2241,1306"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="2088,1382,2267,1423"/><area shape="rect" id="node34" href="class_msg_body.html#a3f48a1b0732cb722baaf1a4b219b47c8" title="MsgBody::mutable_rsp\l_result" alt="" coords="2099,995,2255,1037"/><area shape="rect" id="node35" href="class_msg_body___response.html#a49ebf3d7e87e494d73a1c0bbd41ed18e" title="MsgBody_Response::set_code" alt="" coords="2075,1061,2279,1088"/><area shape="rect" id="node36" href="class_msg_body___response.html#a070e2c4bf994004a014be64ae3b28527" title="MsgBody_Response::set_msg" alt="" coords="2077,1112,2278,1139"/><area shape="rect" id="node37" href="class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="2109,792,2245,819"/><area shape="rect" id="node38" href="class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="2111,640,2243,667"/><area shape="rect" id="node39" href="class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="2113,741,2241,768"/><area shape="rect" id="node40" href="class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="2108,944,2247,971"/><area shape="rect" id="node41" href="classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="2090,71,2265,97"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="2328,71,2536,97"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a6683263c1d0c5eef4f2a390da02b788a" title="neb::WorkerImpl::Channel\lNotice" alt="" coords="1839,625,2014,666"/><area shape="rect" id="node45" href="class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="2099,473,2255,514"/><area shape="rect" id="node46" href="class_msg_body___request.html#a9039c904cfec45b6447ddcdcdbcb602a" title="MsgBody_Request::set\l_route_id" alt="" coords="2098,355,2257,397"/><area shape="rect" id="node47" href="class_msg_body.html#a582009cf3fad55ea2d0327b052e3adf0" title="MsgBody::set_data" alt="" coords="2110,421,2245,448"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="ae3572f6a5091388011fe5fe90c93a7ae"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::Actor::SendTo </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strHost</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>iPort</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strUrlPath</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_http_msg.html">HttpMsg</a> &amp;&#160;</td>
+          <td class="paramname"><em>oHttpMsg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>发送数据 </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">strHost</td><td>IP地址 </td></tr>
+    <tr><td class="paramname">iPort</td><td>端口 </td></tr>
+    <tr><td class="paramname">strUrlPath</td><td>路径 </td></tr>
+    <tr><td class="paramname">oHttpMsg</td><td>http消息 </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>是否发送成功 </dd></dl>
+
+<p><div id="dynsection-26" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-26-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-26-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-26-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_ae3572f6a5091388011fe5fe90c93a7ae_cgraph.png" border="0" usemap="#classneb_1_1_actor_ae3572f6a5091388011fe5fe90c93a7ae_cgraph" alt=""/></div>
+<map name="classneb_1_1_actor_ae3572f6a5091388011fe5fe90c93a7ae_cgraph" id="classneb_1_1_actor_ae3572f6a5091388011fe5fe90c93a7ae_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="189,421,336,448"/><area shape="rect" id="node3" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="384,421,555,448"/><area shape="rect" id="node4" href="classneb_1_1_worker_impl.html#ad2ecb429cc7f4d62b56d0a40a99e433d" title="neb::WorkerImpl::RemoveIo\lWriteEvent" alt="" coords="1316,5,1503,46"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="603,414,794,455"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="843,443,1031,469"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1081,600,1266,627"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="1081,355,1266,381"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1315,600,1504,627"/><area shape="rect" id="node26" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="1317,790,1502,831"/><area shape="rect" id="node9" href="classneb_1_1_socket_channel.html#a392a1c9e00eee9ba9bb77cf3310510db" title="neb::SocketChannel\l::RecvChannelFd" alt="" coords="1595,681,1735,722"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#a05176ed6613b983ec6324e20c522e6ca" title="neb::WorkerImpl::Destroy" alt="" coords="1579,629,1751,656"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#aae678691b0b376c50ad31d26f9b22079" title="neb::WorkerImpl::CreateSocket\lChannel" alt="" coords="1562,563,1769,605"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1570,433,1761,474"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1562,747,1769,773"/><area shape="rect" id="node16" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="1552,363,1779,389"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="2329,539,2535,565"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="1835,742,2019,783"/><area shape="rect" id="node17" href="classneb_1_1_actor_factory.html#a770921bb50076afd68288edae2076769" title="neb::ActorFactory::\lInstance" alt="" coords="1859,290,1994,331"/><area shape="rect" id="node18" href="classneb_1_1_actor_factory.html#a96edfbe3057f8f4915368140d16a821d" title="neb::ActorFactory::\lCreate" alt="" coords="1859,355,1994,397"/><area shape="rect" id="node19" href="classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866" title="neb::Actor::SetActiveTime" alt="" coords="1839,421,2015,448"/><area shape="rect" id="node20" href="classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="2076,589,2279,616"/><area shape="rect" id="node21" href="classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88" title="neb::Actor::GetSequence" alt="" coords="1842,523,2011,549"/><area shape="rect" id="node23" href="classneb_1_1_worker_impl.html#a2b87671d82b98bb21cc7e407a31afbf6" title="neb::WorkerImpl::StepTimeout\lCallback" alt="" coords="1827,173,2027,214"/><area shape="rect" id="node24" href="classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf" title="neb::Actor::GetActiveTime" alt="" coords="1838,239,2015,265"/><area shape="rect" id="node25" href="classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d" title="neb::Actor::GetTimeout" alt="" coords="1847,472,2006,499"/><area shape="rect" id="node22" href="classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="2087,304,2267,331"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="1843,945,2010,972"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a93050dfc14f877989985ea1b2e45798f" title="neb::WorkerImpl::Discard\lSocketChannel" alt="" coords="1580,498,1751,539"/><area shape="rect" id="node48" href="class_msg_head.html#a7ba67cf394b9fd5ada2db7d21bff8b54" title="MsgHead::Clear" alt="" coords="1607,797,1724,824"/><area shape="rect" id="node49" href="class_msg_body.html#aaae43dd60f6f2356ccf42f710edcd617" title="MsgBody::Clear" alt="" coords="1607,848,1723,875"/><area shape="rect" id="node28" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="2122,1163,2233,1189"/><area shape="rect" id="node29" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="2124,1213,2231,1240"/><area shape="rect" id="node30" href="class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="2367,919,2497,945"/><area shape="rect" id="node31" href="class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="2377,1137,2487,1164"/><area shape="rect" id="node32" href="classneb_1_1_log_level.html#a49e5c5e85f9f5fe5b6c92a36b815df33" title="neb::LogLevel::log\l_level" alt="" coords="2113,1265,2241,1306"/><area shape="rect" id="node33" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="2088,1382,2267,1423"/><area shape="rect" id="node34" href="class_msg_body.html#a3f48a1b0732cb722baaf1a4b219b47c8" title="MsgBody::mutable_rsp\l_result" alt="" coords="2099,995,2255,1037"/><area shape="rect" id="node35" href="class_msg_body___response.html#a49ebf3d7e87e494d73a1c0bbd41ed18e" title="MsgBody_Response::set_code" alt="" coords="2075,1061,2279,1088"/><area shape="rect" id="node36" href="class_msg_body___response.html#a070e2c4bf994004a014be64ae3b28527" title="MsgBody_Response::set_msg" alt="" coords="2077,1112,2278,1139"/><area shape="rect" id="node37" href="class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="2109,792,2245,819"/><area shape="rect" id="node38" href="class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="2111,640,2243,667"/><area shape="rect" id="node39" href="class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="2113,741,2241,768"/><area shape="rect" id="node40" href="class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="2108,944,2247,971"/><area shape="rect" id="node41" href="classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="2090,71,2265,97"/><area shape="rect" id="node42" href="classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="2328,71,2536,97"/><area shape="rect" id="node44" href="classneb_1_1_worker_impl.html#a6683263c1d0c5eef4f2a390da02b788a" title="neb::WorkerImpl::Channel\lNotice" alt="" coords="1839,625,2014,666"/><area shape="rect" id="node45" href="class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="2099,473,2255,514"/><area shape="rect" id="node46" href="class_msg_body___request.html#a9039c904cfec45b6447ddcdcdbcb602a" title="MsgBody_Request::set\l_route_id" alt="" coords="2098,355,2257,397"/><area shape="rect" id="node47" href="class_msg_body.html#a582009cf3fad55ea2d0327b052e3adf0" title="MsgBody::set_data" alt="" coords="2110,421,2245,448"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a3d2cbef00a629a5f6102946b636ea866"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void neb::Actor::SetActiveTime </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td>
+          <td class="paramname"><em>dActiveTime</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-27" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-27-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-27-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-27-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_actor_a3d2cbef00a629a5f6102946b636ea866_icgraph.png" border="0" usemap="#classneb_1_1_actor_a3d2cbef00a629a5f6102946b636ea866_icgraph" alt=""/></div>
+<map name="classneb_1_1_actor_a3d2cbef00a629a5f6102946b636ea866_icgraph" id="classneb_1_1_actor_a3d2cbef00a629a5f6102946b636ea866_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_worker_impl.html#a15fef8ad4d0f8b6319c131824d7b7198" title="neb::WorkerImpl::MakeSharedStep" alt="" coords="229,312,456,339"/><area shape="rect" id="node43" href="classneb_1_1_worker_impl.html#a783e3b2855858c24e2bc3b32715902f9" title="neb::WorkerImpl::MakeShared\lSession" alt="" coords="243,474,442,515"/><area shape="rect" id="node46" href="classneb_1_1_worker_impl.html#a02bae803c779767727069d38fd698902" title="neb::WorkerImpl::MakeSharedCmd" alt="" coords="1971,595,2197,621"/><area shape="rect" id="node50" href="classneb_1_1_worker_impl.html#a344443e8944c397de388debe9b382d21" title="neb::WorkerImpl::MakeShared\lModule" alt="" coords="1985,529,2183,570"/><area shape="rect" id="node3" href="classneb_1_1_worker.html#a736bd7e7be0146b1ffc56a31596b9047" title="neb::Worker::MakeSharedStep" alt="" coords="514,388,715,415"/><area shape="rect" id="node4" href="classneb_1_1_worker.html#a8d379d4de577ef5baeec11ac5a0daf72" title="neb::Worker::MakeSharedCmd" alt="" coords="513,141,716,168"/><area shape="rect" id="node5" href="classneb_1_1_worker_impl.html#a76b82c3cdfde54a9abdf08bcc117b9de" title="neb::WorkerImpl::FdTransfer" alt="" coords="1261,356,1451,383"/><area shape="rect" id="node14" href="classneb_1_1_worker_impl.html#aebc0fe9ef9f4f7593118a6e6989303c7" title="neb::WorkerImpl::OnIoWrite" alt="" coords="2258,200,2443,227"/><area shape="rect" id="node39" href="classneb_1_1_worker_impl.html#a4952fc4d6bceda6a3bec2a4854a3c489" title="neb::WorkerImpl::OnIoTimeout" alt="" coords="514,337,715,364"/><area shape="rect" id="node6" href="classneb_1_1_worker_impl.html#a1b72011ec0fdf437c06ce6bfc4e4f8b5" title="neb::WorkerImpl::OnIoRead" alt="" coords="1499,356,1685,383"/><area shape="rect" id="node7" href="classneb_1_1_worker_impl.html#aa8d2e1ddf4c9c6ef62d96f96733552cb" title="neb::WorkerImpl::IoCallback" alt="" coords="1734,305,1922,332"/><area shape="rect" id="node8" href="classneb_1_1_worker_impl.html#a5c714e2ac53f226b822bdaaeaa228d00" title="neb::WorkerImpl::AddIoRead\lEvent" alt="" coords="1989,411,2179,453"/><area shape="rect" id="node13" href="classneb_1_1_worker_impl.html#aebf4ed82a3e25c1a638eab542568964b" title="neb::WorkerImpl::AddIoWrite\lEvent" alt="" coords="1989,294,2179,335"/><area shape="rect" id="node9" href="classneb_1_1_worker_impl.html#afce0ecaee85137a0db61a07f4d9248fb" title="neb::WorkerImpl::CreateEvents" alt="" coords="2247,465,2454,492"/><area shape="rect" id="node11" href="classneb_1_1_worker_impl.html#a98bcad1f19fcf119b251c9b3c55444ec" title="neb::WorkerImpl::AutoSend" alt="" coords="2259,415,2442,441"/><area shape="rect" id="node10" href="classneb_1_1_worker_impl.html#ae51f24d26a029f5ebda915527f6292f6" title="neb::WorkerImpl::Run" alt="" coords="2531,553,2682,580"/><area shape="rect" id="node12" href="classneb_1_1_worker_impl.html#a038ac0c24589368be8047140966ddba2" title="neb::WorkerImpl::SendTo" alt="" coords="2521,415,2692,441"/><area shape="rect" id="node15" href="classneb_1_1_worker_impl.html#adf0d34fb756e0827273efc5bb7dd3704" title="neb::WorkerImpl::SendTo" alt="" coords="2265,251,2436,277"/><area shape="rect" id="node16" href="classneb_1_1_worker.html#a6862842e65912666cbbbbb05bf7477bb" title="neb::Worker::SendTo" alt="" coords="2533,259,2680,285"/><area shape="rect" id="node27" href="classneb_1_1_worker_impl.html#a13ab4cbaaf66a0dd84501674cb823975" title="neb::WorkerImpl::SendPolling" alt="" coords="2509,157,2704,184"/><area shape="rect" id="node31" href="classneb_1_1_worker_impl.html#aa31a6464a4a92e0c023923502d14948f" title="neb::WorkerImpl::SendOriented" alt="" coords="2504,107,2709,133"/><area shape="rect" id="node34" href="classneb_1_1_worker_impl.html#a666df6b0593d965a3aea9d497c947b94" title="neb::WorkerImpl::Broadcast" alt="" coords="2514,31,2699,57"/><area shape="rect" id="node36" href="classneb_1_1_worker_impl.html#a8bfc1a9e6a2af454cf6e9b8b2a5edaad" title="neb::WorkerImpl::SendTo" alt="" coords="2521,208,2692,235"/><area shape="rect" id="node37" href="classneb_1_1_worker_impl.html#a7af32fb7c008e5938a7a34208445bfe7" title="收到完整数据包后处理 " alt="" coords="2523,309,2690,336"/><area shape="rect" id="node17" href="classneb_1_1_actor.html#a29ec51bf9547a34ea61a3c57d48e7bd6" title="连接成功后发送 " alt="" coords="2793,301,2927,328"/><area shape="rect" id="node18" href="classneb_1_1_cmd_beat.html#ae0993588e3dad964f6093478f97255dd" title="命令处理入口 " alt="" coords="3011,200,3202,227"/><area shape="rect" id="node19" href="classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="3033,251,3180,293"/><area shape="rect" id="node20" href="classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="3023,317,3190,358"/><area shape="rect" id="node22" href="classneb_1_1_http_step.html#abd6093bfe8a9d3822aa6d39ff519fd96" title="neb::HttpStep::HttpRequest" alt="" coords="3014,383,3199,409"/><area shape="rect" id="node23" href="classneb_1_1_step_connect_worker.html#abc8ae174cfb52c147ae88bd375ce2c71" title="提交，发出 " alt="" coords="3022,434,3191,475"/><area shape="rect" id="node24" href="classneb_1_1_step_io_timeout.html#ac0b3929a97df553ee45c91ec5330e12b" title="提交，发出 " alt="" coords="3039,499,3175,541"/><area shape="rect" id="node25" href="classneb_1_1_step_tell_worker.html#afc69572c70301d4858a6e3ef074efe32" title="提交，发出 " alt="" coords="3036,565,3177,606"/><area shape="rect" id="node26" href="classneb_1_1_step_tell_worker.html#ac2e7e37b4533edbcffddd19d25441170" title="步骤回调函数 " alt="" coords="3036,134,3177,175"/><area shape="rect" id="node21" href="classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="3251,317,3418,358"/><area shape="rect" id="node28" href="classneb_1_1_worker.html#aa819e233fcc1bd0a398443e7ee9bf6be" title="neb::Worker::SendPolling" alt="" coords="2775,157,2945,184"/><area shape="rect" id="node30" href="classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="2757,107,2963,133"/><area shape="rect" id="node29" href="classneb_1_1_actor.html#a382f968bcd528fdf548f7dfc5efda39d" title="发送到下一个同一类型的节点 " alt="" coords="3027,83,3186,109"/><area shape="rect" id="node32" href="classneb_1_1_worker.html#a01634f1000fa6d9fe6f38c0133a97fa9" title="neb::Worker::SendOriented" alt="" coords="2770,56,2950,83"/><area shape="rect" id="node33" href="classneb_1_1_actor.html#a9b33f919bba50ff5aef2b172129f6021" title="以取模方式选择发送到同一类型节点 " alt="" coords="3022,32,3191,59"/><area shape="rect" id="node35" href="classneb_1_1_worker.html#acd1eb16ef6ca8d3a5bc26015096a60e7" title="neb::Worker::Broadcast" alt="" coords="2780,5,2940,32"/><area shape="rect" id="node38" href="classneb_1_1_worker_impl.html#abf3a043185b681c7001b1df327540f7f" title="neb::WorkerImpl::RecvData\lAndHandle" alt="" coords="2767,353,2953,394"/><area shape="rect" id="node40" href="classneb_1_1_worker_impl.html#a58bf8205c810fd5fb75ae59bfe372bd3" title="neb::WorkerImpl::IoTimeout\lCallback" alt="" coords="773,345,957,386"/><area shape="rect" id="node41" href="classneb_1_1_worker_impl.html#a6b6f6c51ae4be077e67f784b73108932" title="neb::WorkerImpl::AddIoTimeout" alt="" coords="1006,385,1213,412"/><area shape="rect" id="node42" href="classneb_1_1_step_io_timeout.html#aab7588726c8a15834212e0021d5c0d68" title="步骤回调函数 " alt="" coords="1288,407,1424,449"/><area shape="rect" id="node44" href="classneb_1_1_worker.html#a18b44410718a3771bbe2b207b01af030" title="neb::Worker::MakeSharedSession" alt="" coords="504,489,725,516"/><area shape="rect" id="node45" href="classneb_1_1_worker.html#a0bb2cf25fabc013e9bb9ac597f8ae9ce" title="neb::Worker::MakeSharedModule" alt="" coords="507,439,723,465"/><area shape="rect" id="node47" href="classneb_1_1_worker_impl.html#a35c779ba0c8a521472239479b4fb9d69" title="neb::WorkerImpl::LoadSysCmd" alt="" coords="2248,633,2453,660"/><area shape="rect" id="node48" href="classneb_1_1_worker_impl.html#ace99b22ad7900f43c4ab693ac63bf96d" title="neb::WorkerImpl::BootLoadCmd" alt="" coords="2246,583,2455,609"/><area shape="rect" id="node49" href="classneb_1_1_worker_impl.html#a04781c22efec3218dbf02c43082365eb" title="neb::WorkerImpl::Dynamic\lLoadCmd" alt="" coords="2261,517,2440,558"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<h2 class="groupheader">友元及相关函数文档</h2>
+<a class="anchor" id="a71095113e90ffd2aa61eee2447dd57ba"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classneb_1_1_cmd.html">Cmd</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a21f639900c480510650969df9c74d17d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classneb_1_1_module.html">Module</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="afbdd63a566878ce30072e785ca7e7740"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classneb_1_1_session.html">Session</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aed9d20cb4d54ec0ad5e845ec7c2246cf"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classneb_1_1_step.html">Step</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac4748b4d12fe000245b4c0b50f33ad16"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classneb_1_1_worker_friend.html">WorkerFriend</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad938f8b51cafc7aff2d7333e58166dd8"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classneb_1_1_worker_impl.html">WorkerImpl</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="namespaceneb.html">neb</a></li><li class="navelem"><a class="el" href="classneb_1_1_actor.html">Actor</a></li>
+    <li class="footer">生成于 2018年 六月 9日 星期六 15:04:33 , 为 Nebula使用 
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
+</body>
+</html>

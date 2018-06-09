@@ -1,0 +1,6 @@
+<map id="MsgBody::ByteSize" name="MsgBody::ByteSize">
+<area shape="rect" id="node2" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="226,5,337,32"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#a02177ab02a19889a5a90b5aea2759787" title="MsgBody::add_on" alt="" coords="218,56,345,83"/>
+<area shape="rect" id="node4" href="$class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="216,107,347,133"/>
+<area shape="rect" id="node5" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="193,157,370,184"/>
+</map>

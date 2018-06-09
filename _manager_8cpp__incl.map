@@ -1,0 +1,19 @@
+<map id="src/labor/Manager.cpp" name="src/labor/Manager.cpp">
+<area shape="rect" id="node2" href="$proctitle__helper_8h.html" title="util/proctitle_helper.h" alt="" coords="511,80,653,107"/>
+<area shape="rect" id="node3" href="$process__helper_8h.html" title="util/process_helper.h" alt="" coords="509,304,651,331"/>
+<area shape="rect" id="node16" href="$_manager_8hpp.html" title="Manager.hpp" alt="" coords="1853,80,1949,107"/>
+<area shape="rect" id="node48" href="$_worker_8hpp.html" title="labor/Worker.hpp" alt="" coords="2599,229,2720,256"/>
+<area shape="rect" id="node32" href="$_c_json_object_8hpp.html" title="util/json/CJsonObject.hpp" alt="" coords="2949,304,3120,331"/>
+<area shape="rect" id="node39" href="$_c_buffer_8hpp.html" title="util/CBuffer.hpp" alt="" coords="1914,387,2027,413"/>
+<area shape="rect" id="node40" href="$msg_8pb_8h.html" title="pb/msg.pb.h" alt="" coords="3505,469,3599,496"/>
+<area shape="rect" id="node41" href="$neb__sys_8pb_8h.html" title="pb/neb_sys.pb.h" alt="" coords="3659,387,3777,413"/>
+<area shape="rect" id="node42" href="$_error_8hpp.html" title="Error.hpp" alt="" coords="2428,155,2503,181"/>
+<area shape="rect" id="node43" href="$_definition_8hpp.html" title="Definition.hpp" alt="" coords="2821,469,2923,496"/>
+<area shape="rect" id="node44" href="$_net_logger_8hpp.html" title="util/logger/NetLogger.hpp" alt="" coords="2103,387,2269,413"/>
+<area shape="rect" id="node45" href="$_labor_8hpp.html" title="Labor.hpp" alt="" coords="3505,387,3583,413"/>
+<area shape="rect" id="node46" href="$_channel_8hpp.html" title="channel/Channel.hpp" alt="" coords="2527,155,2671,181"/>
+<area shape="rect" id="node47" href="$_cmd_8hpp.html" title="actor/cmd/Cmd.hpp" alt="" coords="1965,155,2101,181"/>
+<area shape="rect" id="node50" href="$_session_node_8hpp.html" title="actor/session/sys_session\l/SessionNode.hpp" alt="" coords="2294,379,2471,421"/>
+<area shape="rect" id="node38" href="$c_j_s_o_n_8h.html" title="cJSON.h" alt="" coords="3258,387,3333,413"/>
+<area shape="rect" id="node49" href="$_worker_impl_8hpp.html" title="WorkerImpl.hpp" alt="" coords="1629,304,1744,331"/>
+</map>

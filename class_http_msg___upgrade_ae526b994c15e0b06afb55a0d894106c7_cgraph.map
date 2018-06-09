@@ -1,0 +1,4 @@
+<map id="HttpMsg_Upgrade::CopyFrom" name="HttpMsg_Upgrade::CopyFrom">
+<area shape="rect" id="node2" href="$class_http_msg___upgrade.html#a8a8c5a8ab5712243df755819446ad8fe" title="HttpMsg_Upgrade::Clear" alt="" coords="269,5,435,32"/>
+<area shape="rect" id="node3" href="$class_http_msg___upgrade.html#af413944ad6e902fa0629a8d97c6f98eb" title="HttpMsg_Upgrade::MergeFrom" alt="" coords="251,56,453,83"/>
+</map>

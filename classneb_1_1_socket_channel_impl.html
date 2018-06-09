@@ -1,0 +1,1460 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>Nebula: neb::SocketChannelImpl类 参考</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">Nebula
+   </div>
+   <div id="projectbrief">Nebula</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.8.5 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>首页</span></a></li>
+      <li><a href="pages.html"><span>相关页面</span></a></li>
+      <li><a href="namespaces.html"><span>命名空间</span></a></li>
+      <li class="current"><a href="annotated.html"><span>类</span></a></li>
+      <li><a href="files.html"><span>文件</span></a></li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="annotated.html"><span>类列表</span></a></li>
+      <li><a href="classes.html"><span>类索引</span></a></li>
+      <li><a href="inherits.html"><span>类继承关系</span></a></li>
+      <li><a href="functions.html"><span>类成员</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('classneb_1_1_socket_channel_impl.html','');});
+</script>
+<div id="doc-content">
+<div class="header">
+  <div class="summary">
+<a href="#pub-methods">Public 成员函数</a> &#124;
+<a href="#friends">友元</a> &#124;
+<a href="classneb_1_1_socket_channel_impl-members.html">所有成员列表</a>  </div>
+  <div class="headertitle">
+<div class="title">neb::SocketChannelImpl类 参考</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> 类 neb::SocketChannelImpl 继承关系图:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl__inherit__graph.png" border="0" usemap="#neb_1_1_socket_channel_impl_inherit__map" alt="Inheritance graph"/></div>
+<map name="neb_1_1_socket_channel_impl_inherit__map" id="neb_1_1_socket_channel_impl_inherit__map">
+<area shape="rect" id="node2" href="classneb_1_1_channel.html" title="{neb::Channel\n||+ Channel()\l+ ~Channel()\l}" alt="" coords="39,6,137,98"/></map>
+</div>
+<div id="dynsection-1" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-1-trigger" src="closed.png" alt="+"/> neb::SocketChannelImpl 的协作图:</div>
+<div id="dynsection-1-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-1-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl__coll__graph.png" border="0" usemap="#neb_1_1_socket_channel_impl_coll__map" alt="Collaboration graph"/></div>
+<map name="neb_1_1_socket_channel_impl_coll__map" id="neb_1_1_socket_channel_impl_coll__map">
+<area shape="rect" id="node2" href="classneb_1_1_channel.html" title="{neb::Channel\n||+ Channel()\l+ ~Channel()\l}" alt="" coords="39,6,137,98"/></map>
+</div>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
+Public 成员函数</h2></td></tr>
+<tr class="memitem:af5c1404f6f062be9bc628f1fbde8db06"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#af5c1404f6f062be9bc628f1fbde8db06">SocketChannelImpl</a> (<a class="el" href="classneb_1_1_socket_channel.html">SocketChannel</a> *pSocketChannel, std::shared_ptr&lt; <a class="el" href="classneb_1_1_net_logger.html">NetLogger</a> &gt; pLogger, int iFd, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> ulSeq, <a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> dKeepAlive=0.0)</td></tr>
+<tr class="separator:af5c1404f6f062be9bc628f1fbde8db06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a980cc1e92b361bd3392c271de58a47a6"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a980cc1e92b361bd3392c271de58a47a6">~SocketChannelImpl</a> ()</td></tr>
+<tr class="separator:a980cc1e92b361bd3392c271de58a47a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15d47dae9816b043bdeeabce029f88c0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a15d47dae9816b043bdeeabce029f88c0">Init</a> (<a class="el" href="namespaceneb.html#a8d06a2cfea4b21e40b5a0d50047fd3e7">E_CODEC_TYPE</a> eCodecType, const std::string &amp;strKey=&quot;That's a lizard.&quot;)</td></tr>
+<tr class="separator:a15d47dae9816b043bdeeabce029f88c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a52645f36c0e60b09cd9250bad93d43da"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#a8d06a2cfea4b21e40b5a0d50047fd3e7">E_CODEC_TYPE</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a52645f36c0e60b09cd9250bad93d43da">GetCodecType</a> () const </td></tr>
+<tr class="separator:a52645f36c0e60b09cd9250bad93d43da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8483606b2ef5d51e04bbdba60c487243"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a8483606b2ef5d51e04bbdba60c487243">Send</a> ()</td></tr>
+<tr class="separator:a8483606b2ef5d51e04bbdba60c487243"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acdfff0a5710239c7dbea1fcd33238699"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#acdfff0a5710239c7dbea1fcd33238699">Send</a> (<a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a> iCmd, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> uiSeq, const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody)</td></tr>
+<tr class="separator:acdfff0a5710239c7dbea1fcd33238699"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a081ebc66d0752a54ef62b92372c78308"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a081ebc66d0752a54ef62b92372c78308">Send</a> (const <a class="el" href="class_http_msg.html">HttpMsg</a> &amp;oHttpMsg, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> ulStepSeq)</td></tr>
+<tr class="separator:a081ebc66d0752a54ef62b92372c78308"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf5625b34f30b103ec7ca68e0cbf07f3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#aaf5625b34f30b103ec7ca68e0cbf07f3">Recv</a> (<a class="el" href="class_msg_head.html">MsgHead</a> &amp;oMsgHead, <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody)</td></tr>
+<tr class="separator:aaf5625b34f30b103ec7ca68e0cbf07f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8120910a3badd824703871f0854843fa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a8120910a3badd824703871f0854843fa">Recv</a> (<a class="el" href="class_http_msg.html">HttpMsg</a> &amp;oHttpMsg)</td></tr>
+<tr class="separator:a8120910a3badd824703871f0854843fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2140cce9eb159f6267d48fc61c1aa28"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#af2140cce9eb159f6267d48fc61c1aa28">Recv</a> (<a class="el" href="class_msg_head.html">MsgHead</a> &amp;oMsgHead, <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody, <a class="el" href="class_http_msg.html">HttpMsg</a> &amp;oHttpMsg)</td></tr>
+<tr class="separator:af2140cce9eb159f6267d48fc61c1aa28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a49b5611d7d110d37ce4c3dbd1dbd4a75"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a49b5611d7d110d37ce4c3dbd1dbd4a75">Fetch</a> (<a class="el" href="class_msg_head.html">MsgHead</a> &amp;oMsgHead, <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody)</td></tr>
+<tr class="separator:a49b5611d7d110d37ce4c3dbd1dbd4a75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac0628d803eb446d66a81a9f6f4a70ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#aac0628d803eb446d66a81a9f6f4a70ef">Fetch</a> (<a class="el" href="class_http_msg.html">HttpMsg</a> &amp;oHttpMsg)</td></tr>
+<tr class="separator:aac0628d803eb446d66a81a9f6f4a70ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac2b575d7d11f5b915de57e9766793e83"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#ac2b575d7d11f5b915de57e9766793e83">Fetch</a> (<a class="el" href="class_msg_head.html">MsgHead</a> &amp;oMsgHead, <a class="el" href="class_msg_body.html">MsgBody</a> &amp;oMsgBody, <a class="el" href="class_http_msg.html">HttpMsg</a> &amp;oHttpMsg)</td></tr>
+<tr class="separator:ac2b575d7d11f5b915de57e9766793e83"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a366122a8cee48026fb85bb1015c2b9bc"><td class="memTemplParams" colspan="2">template&lt;typename... Targs&gt; </td></tr>
+<tr class="memitem:a366122a8cee48026fb85bb1015c2b9bc"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a366122a8cee48026fb85bb1015c2b9bc">Logger</a> (int iLogLevel, const char *szFileName, unsigned int uiFileLine, const char *szFunction, Targs...args)</td></tr>
+<tr class="separator:a366122a8cee48026fb85bb1015c2b9bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a392430dd8b44597faa81eb596f708170"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a392430dd8b44597faa81eb596f708170">GetFd</a> () const </td></tr>
+<tr class="separator:a392430dd8b44597faa81eb596f708170"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7bb09f5962a8b2292b23984df4cd4c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#aa7bb09f5962a8b2292b23984df4cd4c7">GetSequence</a> () const </td></tr>
+<tr class="separator:aa7bb09f5962a8b2292b23984df4cd4c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a561adaaa739a16b2acf47337fd0fcfce"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a561adaaa739a16b2acf47337fd0fcfce">GetStepSeq</a> () const </td></tr>
+<tr class="separator:a561adaaa739a16b2acf47337fd0fcfce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3a87f7c38d9839f37d1bfc134d30d3f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#aa3a87f7c38d9839f37d1bfc134d30d3f">GetActiveTime</a> () const </td></tr>
+<tr class="separator:aa3a87f7c38d9839f37d1bfc134d30d3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d9a01ff35ba205491bb34bb4a422bb5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a8d9a01ff35ba205491bb34bb4a422bb5">GetKeepAlive</a> ()</td></tr>
+<tr class="separator:a8d9a01ff35ba205491bb34bb4a422bb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9231fe128fb8ac0a8780768f625c0f9d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a9231fe128fb8ac0a8780768f625c0f9d">GetChannelStatus</a> () const </td></tr>
+<tr class="separator:a9231fe128fb8ac0a8780768f625c0f9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d22a472de0d433732ba23a6dd2b48a8"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a5d22a472de0d433732ba23a6dd2b48a8">GetIdentify</a> () const </td></tr>
+<tr class="separator:a5d22a472de0d433732ba23a6dd2b48a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59fe705d78c5e6a4bdbd142a13dbd531"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a59fe705d78c5e6a4bdbd142a13dbd531">GetRemoteAddr</a> () const </td></tr>
+<tr class="separator:a59fe705d78c5e6a4bdbd142a13dbd531"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7b4860ff234d37a5cf64e8741b7bc54b"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a7b4860ff234d37a5cf64e8741b7bc54b">GetClientData</a> () const </td></tr>
+<tr class="separator:a7b4860ff234d37a5cf64e8741b7bc54b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa68a7d6b3a2c37d1b17a91b36c084340"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#aa68a7d6b3a2c37d1b17a91b36c084340">IsChannelVerify</a> () const </td></tr>
+<tr class="separator:aa68a7d6b3a2c37d1b17a91b36c084340"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b09316168b5072134f1c59735cf7678"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a3b09316168b5072134f1c59735cf7678">NeedAliveCheck</a> () const </td></tr>
+<tr class="separator:a3b09316168b5072134f1c59735cf7678"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd0bc2f68b4c5942aacf635d9e8f3ff2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#afd0bc2f68b4c5942aacf635d9e8f3ff2">GetMsgNum</a> () const </td></tr>
+<tr class="separator:afd0bc2f68b4c5942aacf635d9e8f3ff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a733d8d6eb83ee70843001e875fc5702a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a733d8d6eb83ee70843001e875fc5702a">GetUnitTimeMsgNum</a> () const </td></tr>
+<tr class="separator:a733d8d6eb83ee70843001e875fc5702a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60328f49813053dacba1744a6737f668"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a60328f49813053dacba1744a6737f668">GetErrno</a> () const </td></tr>
+<tr class="separator:a60328f49813053dacba1744a6737f668"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c69b5fd5d7fca512e56c9ac531c2700"><td class="memItemLeft" align="right" valign="top">const std::string &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a9c69b5fd5d7fca512e56c9ac531c2700">GetErrMsg</a> () const </td></tr>
+<tr class="separator:a9c69b5fd5d7fca512e56c9ac531c2700"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae76db32eb9dee0998b203e8d5bc16bf7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#ae76db32eb9dee0998b203e8d5bc16bf7">SetLabor</a> (<a class="el" href="classneb_1_1_labor.html">Labor</a> *pLabor)</td></tr>
+<tr class="separator:ae76db32eb9dee0998b203e8d5bc16bf7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a474238e51183bcd93864c69ab968838e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a474238e51183bcd93864c69ab968838e">SetKeepAlive</a> (<a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> dTime)</td></tr>
+<tr class="separator:a474238e51183bcd93864c69ab968838e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abdc44cf933393b5a5f543b0da21b4d25"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#abdc44cf933393b5a5f543b0da21b4d25">SetChannelStatus</a> (<a class="el" href="namespaceneb.html#a93917d365712f5e07445bcf0e1bbc55e">E_CHANNEL_STATUS</a> eStatus)</td></tr>
+<tr class="separator:abdc44cf933393b5a5f543b0da21b4d25"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fe91baabb4b12eefc43b84262b025ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a9fe91baabb4b12eefc43b84262b025ac">SetChannelStatus</a> (<a class="el" href="namespaceneb.html#a93917d365712f5e07445bcf0e1bbc55e">E_CHANNEL_STATUS</a> eStatus, <a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> ulStepSeq)</td></tr>
+<tr class="separator:a9fe91baabb4b12eefc43b84262b025ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51ff5ac3768876702219f55dda2fcf67"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a51ff5ac3768876702219f55dda2fcf67">SetClientData</a> (const std::string &amp;strClientData)</td></tr>
+<tr class="separator:a51ff5ac3768876702219f55dda2fcf67"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a933abf19a5f18edfb7a1b053e2da1709"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a933abf19a5f18edfb7a1b053e2da1709">SetIdentify</a> (const std::string &amp;strIdentify)</td></tr>
+<tr class="separator:a933abf19a5f18edfb7a1b053e2da1709"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02d25b5d18e5573fd043baf48b8cbe76"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a02d25b5d18e5573fd043baf48b8cbe76">SetRemoteAddr</a> (const std::string &amp;strRemoteAddr)</td></tr>
+<tr class="separator:a02d25b5d18e5573fd043baf48b8cbe76"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a323644dc0242dc5083ca03435bb401b5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a323644dc0242dc5083ca03435bb401b5">SwitchCodec</a> (<a class="el" href="namespaceneb.html#a8d06a2cfea4b21e40b5a0d50047fd3e7">E_CODEC_TYPE</a> eCodecType, <a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> dKeepAlive)</td></tr>
+<tr class="separator:a323644dc0242dc5083ca03435bb401b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63ad9c5df2910a6f064da0e33cf46c7f"><td class="memItemLeft" align="right" valign="top">ev_io *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a63ad9c5df2910a6f064da0e33cf46c7f">AddIoWatcher</a> ()</td></tr>
+<tr class="separator:a63ad9c5df2910a6f064da0e33cf46c7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07bf8c9acd4fb90f2f48a55b4ea6f6e1"><td class="memItemLeft" align="right" valign="top">ev_io *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a07bf8c9acd4fb90f2f48a55b4ea6f6e1">MutableIoWatcher</a> ()</td></tr>
+<tr class="separator:a07bf8c9acd4fb90f2f48a55b4ea6f6e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2f069998a10f020f3a928dd266169e8"><td class="memItemLeft" align="right" valign="top">ev_timer *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#af2f069998a10f020f3a928dd266169e8">AddTimerWatcher</a> ()</td></tr>
+<tr class="separator:af2f069998a10f020f3a928dd266169e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f661ffe36f00f97f01ffd72ae446426"><td class="memItemLeft" align="right" valign="top">ev_timer *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#a7f661ffe36f00f97f01ffd72ae446426">MutableTimerWatcher</a> ()</td></tr>
+<tr class="separator:a7f661ffe36f00f97f01ffd72ae446426"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affbafbef916a7b1e063feb58b4da769c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#affbafbef916a7b1e063feb58b4da769c">Abort</a> ()</td></tr>
+<tr class="separator:affbafbef916a7b1e063feb58b4da769c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classneb_1_1_channel"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classneb_1_1_channel')"><img src="closed.png" alt="-"/>&#160;Public 成员函数 继承自 <a class="el" href="classneb_1_1_channel.html">neb::Channel</a></td></tr>
+<tr class="memitem:aeb949bdee88b06e7c392755b99b68a5a inherit pub_methods_classneb_1_1_channel"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_channel.html#aeb949bdee88b06e7c392755b99b68a5a">Channel</a> ()</td></tr>
+<tr class="separator:aeb949bdee88b06e7c392755b99b68a5a inherit pub_methods_classneb_1_1_channel"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88ba250a7cc9e700a1eb1f173a75360a inherit pub_methods_classneb_1_1_channel"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_channel.html#a88ba250a7cc9e700a1eb1f173a75360a">~Channel</a> ()</td></tr>
+<tr class="separator:a88ba250a7cc9e700a1eb1f173a75360a inherit pub_methods_classneb_1_1_channel"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
+友元</h2></td></tr>
+<tr class="memitem:ad938f8b51cafc7aff2d7333e58166dd8"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#ad938f8b51cafc7aff2d7333e58166dd8">WorkerImpl</a></td></tr>
+<tr class="separator:ad938f8b51cafc7aff2d7333e58166dd8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adddd5c43ff870a047aa66db4edf82a7e"><td class="memItemLeft" align="right" valign="top">class&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classneb_1_1_socket_channel_impl.html#adddd5c43ff870a047aa66db4edf82a7e">Manager</a></td></tr>
+<tr class="separator:adddd5c43ff870a047aa66db4edf82a7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">构造及析构函数说明</h2>
+<a class="anchor" id="af5c1404f6f062be9bc628f1fbde8db06"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">neb::SocketChannelImpl::SocketChannelImpl </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classneb_1_1_socket_channel.html">SocketChannel</a> *&#160;</td>
+          <td class="paramname"><em>pSocketChannel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::shared_ptr&lt; <a class="el" href="classneb_1_1_net_logger.html">NetLogger</a> &gt;&#160;</td>
+          <td class="paramname"><em>pLogger</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>iFd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>ulSeq</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td>
+          <td class="paramname"><em>dKeepAlive</em> = <code>0.0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a980cc1e92b361bd3392c271de58a47a6"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">neb::SocketChannelImpl::~SocketChannelImpl </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-2" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-2-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-2-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-2-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a980cc1e92b361bd3392c271de58a47a6_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a980cc1e92b361bd3392c271de58a47a6_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a980cc1e92b361bd3392c271de58a47a6_cgraph" id="classneb_1_1_socket_channel_impl_a980cc1e92b361bd3392c271de58a47a6_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_socket_channel_impl.html#affbafbef916a7b1e063feb58b4da769c" title="neb::SocketChannelImpl\l::Abort" alt="" coords="219,49,384,90"/><area shape="rect" id="node3" href="classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="432,56,589,83"/><area shape="rect" id="node4" href="classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="638,5,831,32"/><area shape="rect" id="node6" href="classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="638,56,831,83"/><area shape="rect" id="node8" href="classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="657,107,813,133"/><area shape="rect" id="node5" href="classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="881,5,1039,32"/><area shape="rect" id="node7" href="classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="881,56,1039,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<h2 class="groupheader">成员函数说明</h2>
+<a class="anchor" id="affbafbef916a7b1e063feb58b4da769c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void neb::SocketChannelImpl::Abort </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-3" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-3-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-3-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-3-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_affbafbef916a7b1e063feb58b4da769c_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_affbafbef916a7b1e063feb58b4da769c_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_affbafbef916a7b1e063feb58b4da769c_cgraph" id="classneb_1_1_socket_channel_impl_affbafbef916a7b1e063feb58b4da769c_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="219,56,376,83"/><area shape="rect" id="node3" href="classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="425,5,618,32"/><area shape="rect" id="node5" href="classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="425,56,618,83"/><area shape="rect" id="node7" href="classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="443,107,599,133"/><area shape="rect" id="node4" href="classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="667,5,826,32"/><area shape="rect" id="node6" href="classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="667,56,826,83"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-4" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-4-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-4-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-4-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_affbafbef916a7b1e063feb58b4da769c_icgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_affbafbef916a7b1e063feb58b4da769c_icgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_affbafbef916a7b1e063feb58b4da769c_icgraph" id="classneb_1_1_socket_channel_impl_affbafbef916a7b1e063feb58b4da769c_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_socket_channel_impl.html#a980cc1e92b361bd3392c271de58a47a6" title="neb::SocketChannelImpl\l::~SocketChannelImpl" alt="" coords="219,5,384,46"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a63ad9c5df2910a6f064da0e33cf46c7f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ev_io * neb::SocketChannelImpl::AddIoWatcher </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-5" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-5-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-5-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-5-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a63ad9c5df2910a6f064da0e33cf46c7f_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a63ad9c5df2910a6f064da0e33cf46c7f_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a63ad9c5df2910a6f064da0e33cf46c7f_cgraph" id="classneb_1_1_socket_channel_impl_a63ad9c5df2910a6f064da0e33cf46c7f_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_socket_channel_impl.html#a392430dd8b44597faa81eb596f708170" title="neb::SocketChannelImpl\l::GetFd" alt="" coords="219,5,384,46"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="af2f069998a10f020f3a928dd266169e8"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">ev_timer * neb::SocketChannelImpl::AddTimerWatcher </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a49b5611d7d110d37ce4c3dbd1dbd4a75"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a> neb::SocketChannelImpl::Fetch </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_msg_head.html">MsgHead</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgHead</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-6" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-6-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-6-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-6-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a49b5611d7d110d37ce4c3dbd1dbd4a75_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a49b5611d7d110d37ce4c3dbd1dbd4a75_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a49b5611d7d110d37ce4c3dbd1dbd4a75_cgraph" id="classneb_1_1_socket_channel_impl_a49b5611d7d110d37ce4c3dbd1dbd4a75_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="219,5,413,32"/><area shape="rect" id="node4" href="classneb_1_1_codec.html#a399e3f59c1e13efee59b8fb9e2b6d64d" title="字节流解码 " alt="" coords="245,56,387,83"/><area shape="rect" id="node5" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="263,107,369,133"/><area shape="rect" id="node6" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="261,157,371,184"/><area shape="rect" id="node3" href="classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="462,5,621,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aac0628d803eb446d66a81a9f6f4a70ef"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a> neb::SocketChannelImpl::Fetch </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_http_msg.html">HttpMsg</a> &amp;&#160;</td>
+          <td class="paramname"><em>oHttpMsg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac2b575d7d11f5b915de57e9766793e83"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a> neb::SocketChannelImpl::Fetch </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_msg_head.html">MsgHead</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgHead</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_http_msg.html">HttpMsg</a> &amp;&#160;</td>
+          <td class="paramname"><em>oHttpMsg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-7" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-7-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-7-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-7-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_ac2b575d7d11f5b915de57e9766793e83_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_ac2b575d7d11f5b915de57e9766793e83_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_ac2b575d7d11f5b915de57e9766793e83_cgraph" id="classneb_1_1_socket_channel_impl_ac2b575d7d11f5b915de57e9766793e83_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="219,5,405,32"/><area shape="rect" id="node3" href="classneb_1_1_codec.html#a399e3f59c1e13efee59b8fb9e2b6d64d" title="字节流解码 " alt="" coords="241,56,383,83"/><area shape="rect" id="node4" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="259,107,365,133"/><area shape="rect" id="node5" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="257,157,367,184"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aa3a87f7c38d9839f37d1bfc134d30d3f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> neb::SocketChannelImpl::GetActiveTime </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9231fe128fb8ac0a8780768f625c0f9d"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#adde6aaee8457bee49c2a92621fe22b79">uint8</a> neb::SocketChannelImpl::GetChannelStatus </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7b4860ff234d37a5cf64e8741b7bc54b"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string&amp; neb::SocketChannelImpl::GetClientData </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a52645f36c0e60b09cd9250bad93d43da"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#a8d06a2cfea4b21e40b5a0d50047fd3e7">E_CODEC_TYPE</a> neb::SocketChannelImpl::GetCodecType </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-8" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-8-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-8-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-8-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a52645f36c0e60b09cd9250bad93d43da_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a52645f36c0e60b09cd9250bad93d43da_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a52645f36c0e60b09cd9250bad93d43da_cgraph" id="classneb_1_1_socket_channel_impl_a52645f36c0e60b09cd9250bad93d43da_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="219,12,405,39"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a9c69b5fd5d7fca512e56c9ac531c2700"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string&amp; neb::SocketChannelImpl::GetErrMsg </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a60328f49813053dacba1744a6737f668"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int neb::SocketChannelImpl::GetErrno </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a392430dd8b44597faa81eb596f708170"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int neb::SocketChannelImpl::GetFd </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-9" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-9-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-9-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-9-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a392430dd8b44597faa81eb596f708170_icgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a392430dd8b44597faa81eb596f708170_icgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a392430dd8b44597faa81eb596f708170_icgraph" id="classneb_1_1_socket_channel_impl_a392430dd8b44597faa81eb596f708170_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_socket_channel_impl.html#a63ad9c5df2910a6f064da0e33cf46c7f" title="neb::SocketChannelImpl\l::AddIoWatcher" alt="" coords="219,5,384,46"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a5d22a472de0d433732ba23a6dd2b48a8"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string&amp; neb::SocketChannelImpl::GetIdentify </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8d9a01ff35ba205491bb34bb4a422bb5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a> neb::SocketChannelImpl::GetKeepAlive </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-10" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-10-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-10-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-10-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a8d9a01ff35ba205491bb34bb4a422bb5_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a8d9a01ff35ba205491bb34bb4a422bb5_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a8d9a01ff35ba205491bb34bb4a422bb5_cgraph" id="classneb_1_1_socket_channel_impl_a8d9a01ff35ba205491bb34bb4a422bb5_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="219,12,405,39"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="afd0bc2f68b4c5942aacf635d9e8f3ff2"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> neb::SocketChannelImpl::GetMsgNum </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a59fe705d78c5e6a4bdbd142a13dbd531"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const std::string&amp; neb::SocketChannelImpl::GetRemoteAddr </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa7bb09f5962a8b2292b23984df4cd4c7"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> neb::SocketChannelImpl::GetSequence </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a561adaaa739a16b2acf47337fd0fcfce"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> neb::SocketChannelImpl::GetStepSeq </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a733d8d6eb83ee70843001e875fc5702a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a> neb::SocketChannelImpl::GetUnitTimeMsgNum </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a15d47dae9816b043bdeeabce029f88c0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::SocketChannelImpl::Init </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceneb.html#a8d06a2cfea4b21e40b5a0d50047fd3e7">E_CODEC_TYPE</a>&#160;</td>
+          <td class="paramname"><em>eCodecType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strKey</em> = <code>&quot;That's&#160;a&#160;lizard.&quot;</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-11" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-11-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-11-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-11-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a15d47dae9816b043bdeeabce029f88c0_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a15d47dae9816b043bdeeabce029f88c0_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a15d47dae9816b043bdeeabce029f88c0_cgraph" id="classneb_1_1_socket_channel_impl_a15d47dae9816b043bdeeabce029f88c0_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="219,12,387,39"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aa68a7d6b3a2c37d1b17a91b36c084340"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::SocketChannelImpl::IsChannelVerify </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a366122a8cee48026fb85bb1015c2b9bc"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Targs&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">void neb::SocketChannelImpl::Logger </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>iLogLevel</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>szFileName</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>uiFileLine</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>szFunction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">Targs...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a07bf8c9acd4fb90f2f48a55b4ea6f6e1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ev_io* neb::SocketChannelImpl::MutableIoWatcher </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7f661ffe36f00f97f01ffd72ae446426"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ev_timer* neb::SocketChannelImpl::MutableTimerWatcher </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3b09316168b5072134f1c59735cf7678"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::SocketChannelImpl::NeedAliveCheck </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-12" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-12-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-12-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-12-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a3b09316168b5072134f1c59735cf7678_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a3b09316168b5072134f1c59735cf7678_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a3b09316168b5072134f1c59735cf7678_cgraph" id="classneb_1_1_socket_channel_impl_a3b09316168b5072134f1c59735cf7678_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="219,12,405,39"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="aaf5625b34f30b103ec7ca68e0cbf07f3"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a> neb::SocketChannelImpl::Recv </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_msg_head.html">MsgHead</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgHead</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-13" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-13-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-13-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-13-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_aaf5625b34f30b103ec7ca68e0cbf07f3_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_aaf5625b34f30b103ec7ca68e0cbf07f3_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_aaf5625b34f30b103ec7ca68e0cbf07f3_cgraph" id="classneb_1_1_socket_channel_impl_aaf5625b34f30b103ec7ca68e0cbf07f3_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_buffer.html#a9e30405bfb0f027fe8e3164dc1b123b7" title="neb::CBuffer::ReadFD" alt="" coords="226,144,379,171"/><area shape="rect" id="node9" href="classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="1099,43,1293,69"/><area shape="rect" id="node12" href="classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="219,195,387,221"/><area shape="rect" id="node13" href="classneb_1_1_codec.html#a399e3f59c1e13efee59b8fb9e2b6d64d" title="字节流解码 " alt="" coords="231,245,374,272"/><area shape="rect" id="node14" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="247,296,358,323"/><area shape="rect" id="node15" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="249,347,356,373"/><area shape="rect" id="node16" href="class_msg_body.html#a94f10bc2169d84f372018895934565fd" title="MsgBody::set_add_on" alt="" coords="227,397,379,424"/><area shape="rect" id="node3" href="classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="1099,245,1293,272"/><area shape="rect" id="node5" href="classneb_1_1_c_buffer.html#ab8b67f5c5eaf8ab843541f10599f3c58" title="neb::CBuffer::Write" alt="" coords="435,144,570,171"/><area shape="rect" id="node4" href="classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="1342,245,1501,272"/><area shape="rect" id="node6" href="classneb_1_1_c_buffer.html#aa456a7e65f4acfa46411396161360d50" title="neb::CBuffer::EnsureWritable\lBytes" alt="" coords="619,137,813,178"/><area shape="rect" id="node7" href="classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="1118,144,1274,171"/><area shape="rect" id="node8" href="classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="877,195,1035,221"/><area shape="rect" id="node11" href="classneb_1_1_c_buffer.html#a8cad87b6b2b0f14a7c717866d5932864" title="neb::CBuffer::GetWriteIndex" alt="" coords="862,144,1050,171"/><area shape="rect" id="node10" href="classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="1342,43,1501,69"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a8120910a3badd824703871f0854843fa"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a> neb::SocketChannelImpl::Recv </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_http_msg.html">HttpMsg</a> &amp;&#160;</td>
+          <td class="paramname"><em>oHttpMsg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-14" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-14-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-14-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-14-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a8120910a3badd824703871f0854843fa_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a8120910a3badd824703871f0854843fa_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a8120910a3badd824703871f0854843fa_cgraph" id="classneb_1_1_socket_channel_impl_a8120910a3badd824703871f0854843fa_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_buffer.html#a9e30405bfb0f027fe8e3164dc1b123b7" title="neb::CBuffer::ReadFD" alt="" coords="230,144,383,171"/><area shape="rect" id="node9" href="classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="1107,43,1301,69"/><area shape="rect" id="node12" href="classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="223,195,391,221"/><area shape="rect" id="node13" href="class_http_msg.html#ae1ca9c1ad616cd11b84fd6441de27d3e" title="HttpMsg::set_is_decoding" alt="" coords="219,245,394,272"/><area shape="rect" id="node3" href="classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="1107,245,1301,272"/><area shape="rect" id="node5" href="classneb_1_1_c_buffer.html#ab8b67f5c5eaf8ab843541f10599f3c58" title="neb::CBuffer::Write" alt="" coords="443,144,578,171"/><area shape="rect" id="node4" href="classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="1350,245,1509,272"/><area shape="rect" id="node6" href="classneb_1_1_c_buffer.html#aa456a7e65f4acfa46411396161360d50" title="neb::CBuffer::EnsureWritable\lBytes" alt="" coords="627,137,821,178"/><area shape="rect" id="node7" href="classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="1126,144,1282,171"/><area shape="rect" id="node8" href="classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="885,195,1043,221"/><area shape="rect" id="node11" href="classneb_1_1_c_buffer.html#a8cad87b6b2b0f14a7c717866d5932864" title="neb::CBuffer::GetWriteIndex" alt="" coords="870,144,1058,171"/><area shape="rect" id="node10" href="classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="1350,43,1509,69"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="af2140cce9eb159f6267d48fc61c1aa28"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a> neb::SocketChannelImpl::Recv </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_msg_head.html">MsgHead</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgHead</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_http_msg.html">HttpMsg</a> &amp;&#160;</td>
+          <td class="paramname"><em>oHttpMsg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-15" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-15-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-15-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-15-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_af2140cce9eb159f6267d48fc61c1aa28_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_af2140cce9eb159f6267d48fc61c1aa28_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_af2140cce9eb159f6267d48fc61c1aa28_cgraph" id="classneb_1_1_socket_channel_impl_af2140cce9eb159f6267d48fc61c1aa28_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_buffer.html#a9e30405bfb0f027fe8e3164dc1b123b7" title="neb::CBuffer::ReadFD" alt="" coords="235,144,389,171"/><area shape="rect" id="node9" href="classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="1118,43,1311,69"/><area shape="rect" id="node12" href="classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="228,195,396,221"/><area shape="rect" id="node13" href="classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="219,245,405,272"/><area shape="rect" id="node14" href="classneb_1_1_codec.html#a399e3f59c1e13efee59b8fb9e2b6d64d" title="字节流解码 " alt="" coords="241,296,383,323"/><area shape="rect" id="node15" href="class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="257,347,367,373"/><area shape="rect" id="node16" href="class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="259,397,365,424"/><area shape="rect" id="node17" href="class_msg_body.html#a94f10bc2169d84f372018895934565fd" title="MsgBody::set_add_on" alt="" coords="236,448,388,475"/><area shape="rect" id="node3" href="classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="1118,245,1311,272"/><area shape="rect" id="node5" href="classneb_1_1_c_buffer.html#ab8b67f5c5eaf8ab843541f10599f3c58" title="neb::CBuffer::Write" alt="" coords="454,144,589,171"/><area shape="rect" id="node4" href="classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="1361,245,1519,272"/><area shape="rect" id="node6" href="classneb_1_1_c_buffer.html#aa456a7e65f4acfa46411396161360d50" title="neb::CBuffer::EnsureWritable\lBytes" alt="" coords="638,137,831,178"/><area shape="rect" id="node7" href="classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="1137,144,1293,171"/><area shape="rect" id="node8" href="classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="896,195,1053,221"/><area shape="rect" id="node11" href="classneb_1_1_c_buffer.html#a8cad87b6b2b0f14a7c717866d5932864" title="neb::CBuffer::GetWriteIndex" alt="" coords="881,144,1069,171"/><area shape="rect" id="node10" href="classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="1361,43,1519,69"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a8483606b2ef5d51e04bbdba60c487243"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a> neb::SocketChannelImpl::Send </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-16" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-16-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-16-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-16-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a8483606b2ef5d51e04bbdba60c487243_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a8483606b2ef5d51e04bbdba60c487243_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a8483606b2ef5d51e04bbdba60c487243_cgraph" id="classneb_1_1_socket_channel_impl_a8483606b2ef5d51e04bbdba60c487243_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="454,107,647,133"/><area shape="rect" id="node4" href="classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="219,56,405,83"/><area shape="rect" id="node5" href="classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="233,208,391,235"/><area shape="rect" id="node9" href="classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="228,157,396,184"/><area shape="rect" id="node10" href="classneb_1_1_c_buffer.html#a50d6200efe3ca4d8e6dfcae7c0eb2c14" title="neb::CBuffer::WriteFD" alt="" coords="235,5,389,32"/><area shape="rect" id="node3" href="classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="697,107,855,133"/><area shape="rect" id="node6" href="classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="454,183,647,209"/><area shape="rect" id="node8" href="classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="473,233,629,260"/><area shape="rect" id="node7" href="classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="697,183,855,209"/></map>
+</div>
+</p>
+
+<p><div id="dynsection-17" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-17-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-17-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-17-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a8483606b2ef5d51e04bbdba60c487243_icgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a8483606b2ef5d51e04bbdba60c487243_icgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a8483606b2ef5d51e04bbdba60c487243_icgraph" id="classneb_1_1_socket_channel_impl_a8483606b2ef5d51e04bbdba60c487243_icgraph">
+<area shape="rect" id="node2" href="classneb_1_1_socket_channel_impl.html#acdfff0a5710239c7dbea1fcd33238699" title="neb::SocketChannelImpl\l::Send" alt="" coords="219,5,384,46"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="acdfff0a5710239c7dbea1fcd33238699"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a> neb::SocketChannelImpl::Send </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a56f1a81c92849566ae864511088eb7e8">int32</a>&#160;</td>
+          <td class="paramname"><em>iCmd</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>uiSeq</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_msg_body.html">MsgBody</a> &amp;&#160;</td>
+          <td class="paramname"><em>oMsgBody</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-18" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-18-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-18-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-18-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_acdfff0a5710239c7dbea1fcd33238699_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_acdfff0a5710239c7dbea1fcd33238699_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_acdfff0a5710239c7dbea1fcd33238699_cgraph" id="classneb_1_1_socket_channel_impl_acdfff0a5710239c7dbea1fcd33238699_cgraph">
+<area shape="rect" id="node2" href="class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="232,81,371,108"/><area shape="rect" id="node7" href="class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="233,132,369,159"/><area shape="rect" id="node8" href="class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="235,183,367,209"/><area shape="rect" id="node9" href="class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="237,233,365,260"/><area shape="rect" id="node10" href="classneb_1_1_codec.html#ae41b3b2193ed887a46dcc6b55ca8c581" title="字节流编码 " alt="" coords="231,284,372,311"/><area shape="rect" id="node11" href="classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="667,411,861,437"/><area shape="rect" id="node13" href="classneb_1_1_c_buffer.html#a50d6200efe3ca4d8e6dfcae7c0eb2c14" title="neb::CBuffer::WriteFD" alt="" coords="449,385,602,412"/><area shape="rect" id="node14" href="classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="441,588,609,615"/><area shape="rect" id="node15" href="classneb_1_1_socket_channel_impl.html#a8483606b2ef5d51e04bbdba60c487243" title="neb::SocketChannelImpl\l::Send" alt="" coords="219,458,384,499"/><area shape="rect" id="node3" href="class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="470,5,581,32"/><area shape="rect" id="node4" href="class_msg_body.html#a02177ab02a19889a5a90b5aea2759787" title="MsgBody::add_on" alt="" coords="462,56,589,83"/><area shape="rect" id="node5" href="class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="460,107,591,133"/><area shape="rect" id="node6" href="class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="437,157,614,184"/><area shape="rect" id="node12" href="classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="910,411,1069,437"/><area shape="rect" id="node16" href="classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="433,537,618,564"/><area shape="rect" id="node17" href="classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="447,487,604,513"/><area shape="rect" id="node18" href="classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="667,473,861,500"/><area shape="rect" id="node20" href="classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="686,524,842,551"/><area shape="rect" id="node19" href="classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="910,473,1069,500"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a081ebc66d0752a54ef62b92372c78308"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="namespaceneb.html#aab1329362c5763067a46374aac0a8604">E_CODEC_STATUS</a> neb::SocketChannelImpl::Send </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_http_msg.html">HttpMsg</a> &amp;&#160;</td>
+          <td class="paramname"><em>oHttpMsg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>ulStepSeq</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-19" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-19-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-19-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-19-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a081ebc66d0752a54ef62b92372c78308_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a081ebc66d0752a54ef62b92372c78308_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a081ebc66d0752a54ef62b92372c78308_cgraph" id="classneb_1_1_socket_channel_impl_a081ebc66d0752a54ef62b92372c78308_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="435,5,629,32"/><area shape="rect" id="node4" href="classneb_1_1_c_buffer.html#a50d6200efe3ca4d8e6dfcae7c0eb2c14" title="neb::CBuffer::WriteFD" alt="" coords="226,31,379,57"/><area shape="rect" id="node5" href="classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="219,81,387,108"/><area shape="rect" id="node3" href="classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="678,5,837,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="abdc44cf933393b5a5f543b0da21b4d25"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void neb::SocketChannelImpl::SetChannelStatus </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceneb.html#a93917d365712f5e07445bcf0e1bbc55e">E_CHANNEL_STATUS</a>&#160;</td>
+          <td class="paramname"><em>eStatus</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9fe91baabb4b12eefc43b84262b025ac"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void neb::SocketChannelImpl::SetChannelStatus </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceneb.html#a93917d365712f5e07445bcf0e1bbc55e">E_CHANNEL_STATUS</a>&#160;</td>
+          <td class="paramname"><em>eStatus</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#a1134b580f8da4de94ca6b1de4d37975e">uint32</a>&#160;</td>
+          <td class="paramname"><em>ulStepSeq</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a51ff5ac3768876702219f55dda2fcf67"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void neb::SocketChannelImpl::SetClientData </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strClientData</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a933abf19a5f18edfb7a1b053e2da1709"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void neb::SocketChannelImpl::SetIdentify </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strIdentify</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a474238e51183bcd93864c69ab968838e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void neb::SocketChannelImpl::SetKeepAlive </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td>
+          <td class="paramname"><em>dTime</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ae76db32eb9dee0998b203e8d5bc16bf7"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void neb::SocketChannelImpl::SetLabor </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classneb_1_1_labor.html">Labor</a> *&#160;</td>
+          <td class="paramname"><em>pLabor</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a02d25b5d18e5573fd043baf48b8cbe76"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void neb::SocketChannelImpl::SetRemoteAddr </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>strRemoteAddr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a323644dc0242dc5083ca03435bb401b5"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool neb::SocketChannelImpl::SwitchCodec </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="namespaceneb.html#a8d06a2cfea4b21e40b5a0d50047fd3e7">E_CODEC_TYPE</a>&#160;</td>
+          <td class="paramname"><em>eCodecType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="_definition_8hpp.html#add71e34ce2b04bbf7eb6f31a850814e8">ev_tstamp</a>&#160;</td>
+          <td class="paramname"><em>dKeepAlive</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-20" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-20-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-20-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-20-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="classneb_1_1_socket_channel_impl_a323644dc0242dc5083ca03435bb401b5_cgraph.png" border="0" usemap="#classneb_1_1_socket_channel_impl_a323644dc0242dc5083ca03435bb401b5_cgraph" alt=""/></div>
+<map name="classneb_1_1_socket_channel_impl_a323644dc0242dc5083ca03435bb401b5_cgraph" id="classneb_1_1_socket_channel_impl_a323644dc0242dc5083ca03435bb401b5_cgraph">
+<area shape="rect" id="node2" href="classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="219,5,405,32"/><area shape="rect" id="node3" href="classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="228,56,396,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<h2 class="groupheader">友元及相关函数文档</h2>
+<a class="anchor" id="adddd5c43ff870a047aa66db4edf82a7e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classneb_1_1_manager.html">Manager</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ad938f8b51cafc7aff2d7333e58166dd8"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">friend class <a class="el" href="classneb_1_1_worker_impl.html">WorkerImpl</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">friend</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="namespaceneb.html">neb</a></li><li class="navelem"><a class="el" href="classneb_1_1_socket_channel_impl.html">SocketChannelImpl</a></li>
+    <li class="footer">生成于 2018年 六月 9日 星期六 15:04:34 , 为 Nebula使用 
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
+</body>
+</html>

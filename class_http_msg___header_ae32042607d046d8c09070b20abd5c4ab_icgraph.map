@@ -1,0 +1,13 @@
+<map id="HttpMsg_Header::header_value" name="HttpMsg_Header::header_value">
+<area shape="rect" id="node2" href="$classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="250,5,417,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_codec_http.html#ace229dbc77fbcde0a7e4831445c8218c" title="字节流解码 " alt="" coords="250,71,417,97"/>
+<area shape="rect" id="node5" href="$classneb_1_1_codec_http.html#a517a2abd84b5bdeabe429ac9c9e59a5e" title="neb::CodecHttp::Encode" alt="" coords="250,121,417,148"/>
+<area shape="rect" id="node6" href="$classneb_1_1_codec_http.html#a267f62e7bf45f5965eb9600967d48f56" title="neb::CodecHttp::ToString" alt="" coords="248,172,419,199"/>
+<area shape="rect" id="node8" href="$class_http_msg___header.html#a737691382674ce05c4848e78fe38fb7b" title="HttpMsg_Header::Serialize\lWithCachedSizes" alt="" coords="244,223,423,265"/>
+<area shape="rect" id="node9" href="$class_http_msg___header.html#a2565d9e7fd2a342a1bf7775547861d7f" title="HttpMsg_Header::Internal\lSerializeWithCachedSizesToArray" alt="" coords="222,289,445,330"/>
+<area shape="rect" id="node11" href="$class_http_msg___header.html#a337196df497ea34c4a0d86b78b5bf093" title="HttpMsg_Header::ByteSize" alt="" coords="242,355,425,381"/>
+<area shape="rect" id="node12" href="$class_http_msg___header.html#a19902883deab9855bf14d42026ec440d" title="HttpMsg_Header::MergeFrom" alt="" coords="236,405,431,432"/>
+<area shape="rect" id="node3" href="$classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="499,5,666,46"/>
+<area shape="rect" id="node7" href="$classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="499,172,666,199"/>
+<area shape="rect" id="node10" href="$class_http_msg___header.html#a785554726876c46dbce12379f29a71fe" title="HttpMsg_Header::Serialize\lWithCachedSizesToArray" alt="" coords="493,289,672,330"/>
+</map>

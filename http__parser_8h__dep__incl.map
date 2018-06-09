@@ -1,0 +1,12 @@
+<map id="src/util/http/http_parser.h" name="src/util/http/http_parser.h">
+<area shape="rect" id="node2" href="$_http_step_8hpp.html" title="src/actor/step/HttpStep.hpp" alt="" coords="134,104,316,131"/>
+<area shape="rect" id="node5" href="$_codec_http_8hpp.html" title="src/codec/CodecHttp.hpp" alt="" coords="404,104,575,131"/>
+<area shape="rect" id="node11" href="$http__parser_8c.html" title="src/util/http/http\l_parser.c" alt="" coords="599,97,712,138"/>
+<area shape="rect" id="node3" href="$_http_step_8cpp.html" title="src/actor/step/HttpStep.cpp" alt="" coords="5,195,187,221"/>
+<area shape="rect" id="node4" href="$_worker_impl_8cpp.html" title="src/labor/WorkerImpl.cpp" alt="" coords="141,285,309,312"/>
+<area shape="rect" id="node6" href="$_module_8hpp.html" title="src/actor/cmd/Module.hpp" alt="" coords="263,195,436,221"/>
+<area shape="rect" id="node9" href="$_socket_channel_impl_8cpp.html" title="src/channel/SocketChannel\lImpl.cpp" alt="" coords="461,187,643,229"/>
+<area shape="rect" id="node10" href="$_codec_http_8cpp.html" title="src/codec/CodecHttp.cpp" alt="" coords="668,195,839,221"/>
+<area shape="rect" id="node7" href="$_module_http_upgrade_8hpp.html" title="src/actor/cmd/sys_cmd\l/ModuleHttpUpgrade.hpp" alt="" coords="334,278,500,319"/>
+<area shape="rect" id="node8" href="$_module_http_upgrade_8cpp.html" title="src/actor/cmd/sys_cmd\l/ModuleHttpUpgrade.cpp" alt="" coords="334,369,500,410"/>
+</map>

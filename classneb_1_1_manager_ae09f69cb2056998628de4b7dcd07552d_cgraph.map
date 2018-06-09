@@ -1,0 +1,22 @@
+<map id="neb::Manager::ReportToBeacon" name="neb::Manager::ReportToBeacon">
+<area shape="rect" id="node2" href="$classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="277,157,435,184"/>
+<area shape="rect" id="node12" href="$classneb_1_1_c_json_object.html#ae5b74bd05db856ebe68031d15fcfd693" title="neb::CJsonObject::Clear" alt="" coords="273,259,439,285"/>
+<area shape="rect" id="node13" href="$class_msg_body.html#a582009cf3fad55ea2d0327b052e3adf0" title="MsgBody::set_data" alt="" coords="289,360,423,387"/>
+<area shape="rect" id="node6" href="$classneb_1_1_c_json_object.html#a4f2ffa80a1dbdb80fe1a0e0f00758630" title="neb::CJsonObject::ToString" alt="" coords="499,309,683,336"/>
+<area shape="rect" id="node14" href="$classneb_1_1_manager.html#a66e2e5d23ee1e5c5a187ae432216790e" title="neb::Manager::Broadcast" alt="" coords="272,411,440,437"/>
+<area shape="rect" id="node21" href="$classneb_1_1_manager.html#ae3cd78d22b41c887a514606a7cc899fc" title="neb::Manager::GetSequence" alt="" coords="262,461,450,488"/>
+<area shape="rect" id="node3" href="$c_j_s_o_n_8c.html#a56ef70cf5025d81e125030f397a372fc" title="cJSON_CreateObject" alt="" coords="516,5,665,32"/>
+<area shape="rect" id="node4" href="$c_j_s_o_n_8c.html#ad3df5f943457d4befebe4109d48e4a50" title="cJSON_Parse" alt="" coords="537,157,644,184"/>
+<area shape="rect" id="node8" href="$c_j_s_o_n_8c.html#a176d66e0a0e090ce57633ac53a4379fa" title="cJSON_GetErrorPtr" alt="" coords="521,56,660,83"/>
+<area shape="rect" id="node9" href="$c_j_s_o_n_8c.html#a096004811663311569e95aa77518959c" title="cJSON_AddItemToObject" alt="" coords="503,107,678,133"/>
+<area shape="rect" id="node11" href="$c_j_s_o_n_8c.html#aba766c9d2c20996e323522cbf2ba46c6" title="cJSON_GetObjectItem" alt="" coords="512,208,669,235"/>
+<area shape="rect" id="node5" href="$c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="775,208,886,235"/>
+<area shape="rect" id="node7" href="$c_j_s_o_n_8c.html#a5539c9504a8e65390a94852707f105d4" title="cJSON_PrintUnformatted" alt="" coords="745,303,916,329"/>
+<area shape="rect" id="node10" href="$c_j_s_o_n_8c.html#a164dcefd36af8654942116c444bd0b6a" title="cJSON_AddItemToArray" alt="" coords="747,107,914,133"/>
+<area shape="rect" id="node15" href="$classneb_1_1_manager.html#a491bed90774e9489361bd3f903161847" title="neb::Manager::SendTo" alt="" coords="513,421,668,448"/>
+<area shape="rect" id="node16" href="$classneb_1_1_manager.html#a5bfbb5b167e1be8f61240e7a9fdc2606" title="neb::Manager::RemoveIoWrite\lEvent" alt="" coords="731,354,931,395"/>
+<area shape="rect" id="node17" href="$classneb_1_1_manager.html#aa2ac3c9e55e4ae864ffa18ad7bba8f33" title="neb::Manager::AddIoWrite\lEvent" alt="" coords="743,419,918,461"/>
+<area shape="rect" id="node19" href="$classneb_1_1_manager.html#a57e8adb622005fc5fe1ab5fbfe2840e5" title="neb::Manager::DiscardSocket\lChannel" alt="" coords="733,485,928,526"/>
+<area shape="rect" id="node18" href="$classneb_1_1_manager.html#a676468e6f26f46f782cd296c23acca60" title="neb::Manager::IoCallback" alt="" coords="979,427,1149,453"/>
+<area shape="rect" id="node20" href="$classneb_1_1_manager.html#a5fa2d8127a07de18616180ac94386b11" title="neb::Manager::DelEvents" alt="" coords="979,492,1149,519"/>
+</map>

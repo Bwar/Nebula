@@ -1,0 +1,19 @@
+<map id="HttpMsg::ByteSize" name="HttpMsg::ByteSize">
+<area shape="rect" id="node2" href="$class_http_msg.html#a6287289f3eb0f11713fb224733cd57e1" title="HttpMsg::type" alt="" coords="217,5,322,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#a630441004b1dd7ad98dd2ada818d6a3b" title="HttpMsg::http_major" alt="" coords="199,56,340,83"/>
+<area shape="rect" id="node4" href="$class_http_msg.html#a7c04064894b53cf1081f71bc7393e469" title="HttpMsg::http_minor" alt="" coords="199,107,340,133"/>
+<area shape="rect" id="node5" href="$class_http_msg.html#a7ef10f27f3b8109dc6991066cc64c246" title="HttpMsg::content_length" alt="" coords="187,157,352,184"/>
+<area shape="rect" id="node6" href="$class_http_msg.html#a2bda70c8514dab9df26df4c32b2d61fb" title="HttpMsg::method" alt="" coords="208,208,331,235"/>
+<area shape="rect" id="node7" href="$class_http_msg.html#adc7b6752150d5dcf6748431d7f153ddf" title="HttpMsg::status_code" alt="" coords="194,259,345,285"/>
+<area shape="rect" id="node8" href="$class_http_msg.html#a0e3338de14b291b816411acf3aa33f55" title="HttpMsg::encoding" alt="" coords="203,309,335,336"/>
+<area shape="rect" id="node9" href="$class_http_msg.html#ac9e1dc39a940b92f67690bf0f6e2c47e" title="HttpMsg::url" alt="" coords="222,360,317,387"/>
+<area shape="rect" id="node10" href="$class_http_msg.html#ad458ff4134ed34b25c1eed6b8e3f0f36" title="HttpMsg::body" alt="" coords="215,411,323,437"/>
+<area shape="rect" id="node11" href="$class_http_msg.html#ae15c1f686f8984668cf589a7be0d3bb8" title="HttpMsg::has_upgrade" alt="" coords="192,461,347,488"/>
+<area shape="rect" id="node12" href="$class_http_msg.html#a034dab02aff76d9a7fe5fe370b2d55c4" title="HttpMsg::keep_alive" alt="" coords="198,512,341,539"/>
+<area shape="rect" id="node13" href="$class_http_msg.html#a259b24be64d803d3d3a5854f174e292a" title="HttpMsg::path" alt="" coords="217,563,322,589"/>
+<area shape="rect" id="node14" href="$class_http_msg.html#a47cfbae01adf25cd6ad708789d2f7516" title="HttpMsg::is_decoding" alt="" coords="195,613,344,640"/>
+<area shape="rect" id="node15" href="$class_http_msg.html#a29fd49b181f09e297e311459c1d109f5" title="HttpMsg::headers_size" alt="" coords="191,664,348,691"/>
+<area shape="rect" id="node16" href="$class_http_msg.html#a69eca36d980773cbab6f511471a0dbda" title="HttpMsg::headers" alt="" coords="206,715,333,741"/>
+<area shape="rect" id="node17" href="$class_http_msg.html#a4ea027502f6773c67804ee3d1ef4d1da" title="HttpMsg::params_size" alt="" coords="192,765,347,792"/>
+<area shape="rect" id="node18" href="$class_http_msg.html#ac2fffe84678960886379902d2b2cb1e8" title="HttpMsg::params" alt="" coords="208,816,331,843"/>
+</map>

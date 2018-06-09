@@ -1,0 +1,6 @@
+<map id="neb::SocketChannelImpl::Send" name="neb::SocketChannelImpl::Send">
+<area shape="rect" id="node2" href="$classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="435,5,629,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_c_buffer.html#a50d6200efe3ca4d8e6dfcae7c0eb2c14" title="neb::CBuffer::WriteFD" alt="" coords="226,31,379,57"/>
+<area shape="rect" id="node5" href="$classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="219,81,387,108"/>
+<area shape="rect" id="node3" href="$classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="678,5,837,32"/>
+</map>

@@ -1,0 +1,21 @@
+<map id="neb::SocketChannelImpl::Send" name="neb::SocketChannelImpl::Send">
+<area shape="rect" id="node2" href="$class_msg_body.html#a0b973defe62b39b5e816c6e8c1651765" title="MsgBody::ByteSize" alt="" coords="232,81,371,108"/>
+<area shape="rect" id="node7" href="$class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="233,132,369,159"/>
+<area shape="rect" id="node8" href="$class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="235,183,367,209"/>
+<area shape="rect" id="node9" href="$class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="237,233,365,260"/>
+<area shape="rect" id="node10" href="$classneb_1_1_codec.html#ae41b3b2193ed887a46dcc6b55ca8c581" title="字节流编码 " alt="" coords="231,284,372,311"/>
+<area shape="rect" id="node11" href="$classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="667,411,861,437"/>
+<area shape="rect" id="node13" href="$classneb_1_1_c_buffer.html#a50d6200efe3ca4d8e6dfcae7c0eb2c14" title="neb::CBuffer::WriteFD" alt="" coords="449,385,602,412"/>
+<area shape="rect" id="node14" href="$classneb_1_1_labor.html#aae55c5b2a7f789960a8835a63bb18252" title="neb::Labor::GetNowTime" alt="" coords="441,588,609,615"/>
+<area shape="rect" id="node15" href="$classneb_1_1_socket_channel_impl.html#a8483606b2ef5d51e04bbdba60c487243" title="neb::SocketChannelImpl\l::Send" alt="" coords="219,458,384,499"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="470,5,581,32"/>
+<area shape="rect" id="node4" href="$class_msg_body.html#a02177ab02a19889a5a90b5aea2759787" title="MsgBody::add_on" alt="" coords="462,56,589,83"/>
+<area shape="rect" id="node5" href="$class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="460,107,591,133"/>
+<area shape="rect" id="node6" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="437,157,614,184"/>
+<area shape="rect" id="node12" href="$classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="910,411,1069,437"/>
+<area shape="rect" id="node16" href="$classneb_1_1_codec.html#a4549f82188ed66734da31ccf31cacdb3" title="neb::Codec::GetCodecType" alt="" coords="433,537,618,564"/>
+<area shape="rect" id="node17" href="$classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="447,487,604,513"/>
+<area shape="rect" id="node18" href="$classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="667,473,861,500"/>
+<area shape="rect" id="node20" href="$classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="686,524,842,551"/>
+<area shape="rect" id="node19" href="$classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="910,473,1069,500"/>
+</map>

@@ -1,0 +1,10 @@
+<map id="neb::CodecHttp::OnMessageComplete" name="neb::CodecHttp::OnMessageComplete">
+<area shape="rect" id="node2" href="$class_http_msg.html#ad740e8de344bea9a582a01df3d96eb5e" title="HttpMsg::set_status_code" alt="" coords="245,5,421,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#ab466622ab12ef17ceebefbe44125af9c" title="HttpMsg::set_type" alt="" coords="268,56,399,83"/>
+<area shape="rect" id="node4" href="$class_http_msg.html#a4cc4b26d66f6ebd739b8c4216f771eec" title="HttpMsg::set_method" alt="" coords="259,107,407,133"/>
+<area shape="rect" id="node5" href="$class_http_msg.html#a386b5092021d048c86c7b73e251e051c" title="HttpMsg::set_http_major" alt="" coords="250,157,417,184"/>
+<area shape="rect" id="node6" href="$class_http_msg.html#a83532eae33643bede7eece9c8ece697e" title="HttpMsg::set_http_minor" alt="" coords="250,208,417,235"/>
+<area shape="rect" id="node7" href="$class_http_msg.html#a2bda70c8514dab9df26df4c32b2d61fb" title="HttpMsg::method" alt="" coords="272,259,395,285"/>
+<area shape="rect" id="node8" href="$class_http_msg.html#ae1ca9c1ad616cd11b84fd6441de27d3e" title="HttpMsg::set_is_decoding" alt="" coords="246,309,421,336"/>
+<area shape="rect" id="node9" href="$class_http_msg.html#ad458ff4134ed34b25c1eed6b8e3f0f36" title="HttpMsg::body" alt="" coords="279,360,387,387"/>
+</map>

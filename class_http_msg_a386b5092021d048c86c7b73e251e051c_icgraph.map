@@ -1,0 +1,10 @@
+<map id="HttpMsg::set_http_major" name="HttpMsg::set_http_major">
+<area shape="rect" id="node2" href="$classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="462,13,629,54"/>
+<area shape="rect" id="node3" href="$classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="234,42,401,83"/>
+<area shape="rect" id="node4" href="$classneb_1_1_http_step.html#adde8b77b262af8cd09348f8d1966d55c" title="neb::HttpStep::HttpPost" alt="" coords="236,108,399,135"/>
+<area shape="rect" id="node5" href="$classneb_1_1_http_step.html#abb49ccb90a344923b856a28d42f39a9d" title="neb::HttpStep::HttpGet" alt="" coords="239,159,396,185"/>
+<area shape="rect" id="node6" href="$classneb_1_1_codec_http.html#af5d555bd6e647072c3f9e7943d3978b1" title="neb::CodecHttp::OnMessage\lComplete" alt="" coords="221,210,413,251"/>
+<area shape="rect" id="node8" href="$classneb_1_1_worker_impl.html#a7f76368a4bb684a10f0a7dfc66f635f4" title="收到完整的hhtp包后处理 " alt="" coords="234,276,401,303"/>
+<area shape="rect" id="node9" href="$class_http_msg.html#a78c317f2854c3da3968cf11a32c96f4f" title="HttpMsg::MergeFrom" alt="" coords="244,327,391,353"/>
+<area shape="rect" id="node7" href="$classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="462,217,629,244"/>
+</map>

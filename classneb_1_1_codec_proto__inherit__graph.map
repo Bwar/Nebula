@@ -1,0 +1,3 @@
+<map id="neb::CodecProto" name="neb::CodecProto">
+<area shape="rect" id="node2" href="$classneb_1_1_codec.html" title="{neb::Codec\n|# m_pLogger\l|+ Codec()\l+ ~Codec()\l+ GetCodecType()\l+ Encode()\l+ Decode()\l+ Logger()\l# GetKey()\l# Zip()\l# Unzip()\l# Gzip()\l# Gunzip()\l# Rc5Encrypt()\l# Rc5Decrypt()\l# AesEncrypt()\l# AesDecrypt()\l}" alt="" coords="5,5,136,288"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="neb::Session" name="neb::Session">
+<area shape="rect" id="node2" href="$classneb_1_1_session_model.html" title="{neb::SessionModel\n||+ SessionModel()\l+ SessionModel()\l+ SessionModel()\l+ operator=()\l+ ~SessionModel()\l+ Timeout()\l+ GetSessionId()\l+ GetSessionClass()\l}" alt="" coords="13,478,157,658"/>
+<area shape="rect" id="node3" href="$classneb_1_1_actor.html" title="{neb::Actor\n||+ Actor()\l+ Actor()\l+ operator=()\l+ ~Actor()\l# GetSequence()\l# GetNodeId()\l# GetWorkerIndex()\l# GetDefaultTimeout()\l# GetNodeType()\l# GetWorkPath()\l# GetNodeIdentify()\l# GetNowTime()\l# GetCustomConf()\l# GetSession()\l和 13 更多...\l}" alt="" coords="10,147,160,429"/>
+</map>

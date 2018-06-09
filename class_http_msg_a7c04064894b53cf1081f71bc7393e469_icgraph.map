@@ -1,0 +1,13 @@
+<map id="HttpMsg::http_minor" name="HttpMsg::http_minor">
+<area shape="rect" id="node2" href="$classneb_1_1_module_http_upgrade.html#a38664ca0af7916dc446753a99da749bf" title="http服务模块处理入口 " alt="" coords="463,22,630,64"/>
+<area shape="rect" id="node3" href="$classneb_1_1_module_http_upgrade.html#a54f51c00c2eb04adc6334c81e0b4a857" title="neb::ModuleHttpUpgrade\l::WebSocket" alt="" coords="213,52,379,93"/>
+<area shape="rect" id="node4" href="$classneb_1_1_codec_http.html#a517a2abd84b5bdeabe429ac9c9e59a5e" title="neb::CodecHttp::Encode" alt="" coords="213,118,379,144"/>
+<area shape="rect" id="node5" href="$classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="463,194,630,220"/>
+<area shape="rect" id="node6" href="$classneb_1_1_codec_http.html#a267f62e7bf45f5965eb9600967d48f56" title="neb::CodecHttp::ToString" alt="" coords="211,219,381,246"/>
+<area shape="rect" id="node7" href="$classneb_1_1_worker_impl.html#a7f76368a4bb684a10f0a7dfc66f635f4" title="收到完整的hhtp包后处理 " alt="" coords="213,270,379,296"/>
+<area shape="rect" id="node8" href="$class_http_msg.html#aeda572e7e8b695e062e3d702ed13caec" title="HttpMsg::SerializeWithCached\lSizes" alt="" coords="195,321,397,362"/>
+<area shape="rect" id="node9" href="$class_http_msg.html#a70b0bdf2f78714642eeca86b5afb8e17" title="HttpMsg::InternalSerialize\lWithCachedSizesToArray" alt="" coords="209,386,383,428"/>
+<area shape="rect" id="node11" href="$class_http_msg.html#a5c0c4bf3764e3f464cdf1c17b683c871" title="HttpMsg::ByteSize" alt="" coords="229,452,363,479"/>
+<area shape="rect" id="node12" href="$class_http_msg.html#a78c317f2854c3da3968cf11a32c96f4f" title="HttpMsg::MergeFrom" alt="" coords="223,503,369,530"/>
+<area shape="rect" id="node10" href="$class_http_msg.html#a35dd6bc0c90e1892aa6dbc3162329cfc" title="HttpMsg::SerializeWithCached\lSizesToArray" alt="" coords="445,386,648,428"/>
+</map>

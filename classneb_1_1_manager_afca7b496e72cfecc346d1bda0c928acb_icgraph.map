@@ -1,0 +1,6 @@
+<map id="neb::Manager::RefreshServer" name="neb::Manager::RefreshServer">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="249,5,434,46"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="483,5,661,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="709,12,899,39"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="947,12,1106,39"/>
+</map>

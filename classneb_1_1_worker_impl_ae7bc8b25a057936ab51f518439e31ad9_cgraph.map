@@ -1,0 +1,5 @@
+<map id="neb::WorkerImpl::OnRedisDisconnected" name="neb::WorkerImpl::OnRedisDisconnected">
+<area shape="rect" id="node2" href="$classneb_1_1_worker_impl.html#a25c77bf1a0fe9a80f3c73dcc902dd136" title="neb::WorkerImpl::Remove" alt="" coords="239,5,414,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_worker_impl.html#a68b794586930a4c262221785101ea9e9" title="neb::WorkerImpl::DelNamed\lRedisChannel" alt="" coords="233,57,421,98"/>
+<area shape="rect" id="node3" href="$classneb_1_1_worker_impl.html#a75558d54c49145b2eaabcc120a5bcd33" title="neb::WorkerImpl::ResetTimeout" alt="" coords="469,5,677,32"/>
+</map>

@@ -1,0 +1,8 @@
+<map id="getproctitle" name="getproctitle">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a1b80e82446d03e68621e3b293bd349dd" title="neb::Manager::InitLogger" alt="" coords="150,5,317,32"/>
+<area shape="rect" id="node5" href="$classneb_1_1_worker_impl.html#aad6542fa125570e8846a86efaf153511" title="neb::WorkerImpl::InitLogger" alt="" coords="142,56,325,83"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="382,5,509,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="583,5,742,32"/>
+<area shape="rect" id="node6" href="$classneb_1_1_worker_impl.html#a8a8b9ab32913ddee87d067965797369b" title="neb::WorkerImpl::Init" alt="" coords="373,56,517,83"/>
+<area shape="rect" id="node7" href="$classneb_1_1_worker_impl.html#a21b0c5082a0963e1a20696f7e836e513" title="neb::WorkerImpl::WorkerImpl" alt="" coords="566,56,759,83"/>
+</map>

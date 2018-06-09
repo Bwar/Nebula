@@ -1,0 +1,14 @@
+<map id="neb::Worker::MakeSharedSession" name="neb::Worker::MakeSharedSession">
+<area shape="rect" id="node2" href="$classneb_1_1_worker_impl.html#a783e3b2855858c24e2bc3b32715902f9" title="neb::WorkerImpl::MakeShared\lSession" alt="" coords="275,253,474,294"/>
+<area shape="rect" id="node3" href="$classneb_1_1_actor_factory.html#a770921bb50076afd68288edae2076769" title="neb::ActorFactory::\lInstance" alt="" coords="545,5,679,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_actor_factory.html#a96edfbe3057f8f4915368140d16a821d" title="neb::ActorFactory::\lCreate" alt="" coords="545,70,679,111"/>
+<area shape="rect" id="node5" href="$classneb_1_1_actor.html#a3d2cbef00a629a5f6102946b636ea866" title="neb::Actor::SetActiveTime" alt="" coords="524,136,700,163"/>
+<area shape="rect" id="node6" href="$classneb_1_1_session_model.html#a008271a62a92cf70d2ab0022f9f2460c" title="neb::SessionModel::\lGetSessionClass" alt="" coords="541,187,683,229"/>
+<area shape="rect" id="node7" href="$classneb_1_1_session_model.html#aca88ba212aaf26a78f6f71babae6bb3f" title="neb::SessionModel::\lGetSessionId" alt="" coords="541,253,683,294"/>
+<area shape="rect" id="node8" href="$classneb_1_1_worker_impl.html#a897993429ecb6322cedcd7875342856a" title="neb::WorkerImpl::Session\lTimeoutCallback" alt="" coords="525,318,699,359"/>
+<area shape="rect" id="node9" href="$classneb_1_1_actor.html#a3296cb31c3d0306000527b9c35607e88" title="neb::Actor::GetSequence" alt="" coords="527,384,697,411"/>
+<area shape="rect" id="node12" href="$classneb_1_1_actor.html#ac10dd30d691d824fcaa517931ed722cf" title="neb::Actor::GetActiveTime" alt="" coords="523,435,701,461"/>
+<area shape="rect" id="node13" href="$classneb_1_1_actor.html#a49e019171beaa062308e29326d6c703d" title="neb::Actor::GetTimeout" alt="" coords="533,485,691,512"/>
+<area shape="rect" id="node10" href="$classneb_1_1_worker.html#acc8303c5f6045594744ce779cfb39d99" title="neb::Worker::GetSequence" alt="" coords="750,384,930,411"/>
+<area shape="rect" id="node11" href="$classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="979,384,1184,411"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="MsgBody_Request::default_instance" name="MsgBody_Request::default_instance">
+<area shape="rect" id="node2" href="$class_msg_body.html#a0fe00a46572885a711372b8cc6664285" title="MsgBody::req_target" alt="" coords="235,81,378,108"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#ade18fe4e995822d891763ff6c6aed8d2" title="neb::Manager::SendOriented" alt="" coords="435,5,623,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="427,56,632,83"/>
+<area shape="rect" id="node5" href="$class_msg_body.html#a56a636ee73430ef285a401af98b6fbd1" title="MsgBody::MergeFrom" alt="" coords="454,107,605,133"/>
+<area shape="rect" id="node6" href="$class_msg_body.html#af4923fa943d5fbca2815d041122e24c2" title="MsgBody::set_allocated\l_req_target" alt="" coords="448,158,611,199"/>
+</map>

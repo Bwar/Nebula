@@ -1,0 +1,5 @@
+<map id="类继承关系图" name="类继承关系图">
+<area shape="rect" id="node1" href="$classneb_1_1_labor.html" title="neb::Labor" alt="" coords="5,31,88,57"/>
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html" title="neb::Manager" alt="" coords="136,5,237,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_worker.html" title="neb::Worker" alt="" coords="140,56,233,83"/>
+</map>

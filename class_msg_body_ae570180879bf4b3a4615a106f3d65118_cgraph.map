@@ -1,0 +1,8 @@
+<map id="MsgBody::InternalSerializeWithCachedSizesToArray" name="MsgBody::InternalSerializeWithCachedSizesToArray">
+<area shape="rect" id="node2" href="$class_msg_body.html#a86b0aefb20f53830ab52253f12bfa168" title="MsgBody::has_req_target" alt="" coords="232,5,403,32"/>
+<area shape="rect" id="node4" href="$class_msg_body.html#afeada0eea52cddab0feb2bea05467ad0" title="MsgBody::has_rsp_result" alt="" coords="232,56,403,83"/>
+<area shape="rect" id="node5" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="262,107,373,133"/>
+<area shape="rect" id="node6" href="$class_msg_body.html#a02177ab02a19889a5a90b5aea2759787" title="MsgBody::add_on" alt="" coords="254,157,381,184"/>
+<area shape="rect" id="node7" href="$class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="252,208,383,235"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="451,31,629,57"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="MsgHead::InternalSerializeWithCachedSizesToArray" name="MsgHead::InternalSerializeWithCachedSizesToArray">
+<area shape="rect" id="node2" href="$class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="233,5,343,32"/>
+<area shape="rect" id="node3" href="$class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="235,56,341,83"/>
+<area shape="rect" id="node4" href="$class_msg_head.html#a936c898be60508f1da1f7f747c531898" title="MsgHead::len" alt="" coords="237,107,339,133"/>
+</map>

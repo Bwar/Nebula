@@ -1,0 +1,8 @@
+<map id="neb::CodecHttp::Encode" name="neb::CodecHttp::Encode">
+<area shape="rect" id="node2" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="243,5,354,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#afc3b4c0b52130e00ac71d8645daf1b10" title="HttpMsg::add_headers" alt="" coords="221,56,376,83"/>
+<area shape="rect" id="node4" href="$class_http_msg___header.html#adb12bac7c1b17ea02ef8160cbf25ccb2" title="HttpMsg_Header::set\l_header_name" alt="" coords="225,107,372,149"/>
+<area shape="rect" id="node5" href="$class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="243,173,354,200"/>
+<area shape="rect" id="node6" href="$class_http_msg___header.html#a6f95394db567afe3b68c6908387f5a95" title="HttpMsg_Header::set\l_header_value" alt="" coords="225,225,372,266"/>
+<area shape="rect" id="node7" href="$class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="245,291,352,317"/>
+</map>

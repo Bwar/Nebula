@@ -1,0 +1,17 @@
+<map id="neb::WorkerImpl::AddPeriodicTaskEvent" name="neb::WorkerImpl::AddPeriodicTaskEvent">
+<area shape="rect" id="node2" href="$classneb_1_1_worker_impl.html#af22fbb0148e94666e984c9850de721c0" title="neb::WorkerImpl::Periodic\lTaskCallback" alt="" coords="251,201,424,242"/>
+<area shape="rect" id="node3" href="$classneb_1_1_worker_impl.html#a7cdd50cc4c95059b409c003ae3d8e261" title="neb::WorkerImpl::CheckParent" alt="" coords="472,208,675,235"/>
+<area shape="rect" id="node4" href="$classneb_1_1_worker_impl.html#a05176ed6613b983ec6324e20c522e6ca" title="neb::WorkerImpl::Destroy" alt="" coords="739,107,911,133"/>
+<area shape="rect" id="node5" href="$classneb_1_1_c_json_object.html#a1bda90b3b617135a6f013e84538d8065" title="neb::CJsonObject::Add" alt="" coords="746,157,905,184"/>
+<area shape="rect" id="node15" href="$class_msg_body.html#a582009cf3fad55ea2d0327b052e3adf0" title="MsgBody::set_data" alt="" coords="758,208,893,235"/>
+<area shape="rect" id="node9" href="$classneb_1_1_c_json_object.html#a4f2ffa80a1dbdb80fe1a0e0f00758630" title="neb::CJsonObject::ToString" alt="" coords="976,259,1160,285"/>
+<area shape="rect" id="node16" href="$classneb_1_1_worker_impl.html#a0510ddd6ec8b1e75134fa0ca2ea0d31a" title="neb::WorkerImpl::GetSequence" alt="" coords="723,309,928,336"/>
+<area shape="rect" id="node6" href="$c_j_s_o_n_8c.html#a56ef70cf5025d81e125030f397a372fc" title="cJSON_CreateObject" alt="" coords="993,56,1143,83"/>
+<area shape="rect" id="node7" href="$c_j_s_o_n_8c.html#ad3df5f943457d4befebe4109d48e4a50" title="cJSON_Parse" alt="" coords="1015,107,1121,133"/>
+<area shape="rect" id="node11" href="$c_j_s_o_n_8c.html#a176d66e0a0e090ce57633ac53a4379fa" title="cJSON_GetErrorPtr" alt="" coords="999,157,1137,184"/>
+<area shape="rect" id="node12" href="$c_j_s_o_n_8c.html#a096004811663311569e95aa77518959c" title="cJSON_AddItemToObject" alt="" coords="981,208,1155,235"/>
+<area shape="rect" id="node14" href="$c_j_s_o_n_8c.html#aba766c9d2c20996e323522cbf2ba46c6" title="cJSON_GetObjectItem" alt="" coords="989,5,1147,32"/>
+<area shape="rect" id="node8" href="$c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="1238,107,1349,133"/>
+<area shape="rect" id="node10" href="$c_j_s_o_n_8c.html#a5539c9504a8e65390a94852707f105d4" title="cJSON_PrintUnformatted" alt="" coords="1208,259,1379,285"/>
+<area shape="rect" id="node13" href="$c_j_s_o_n_8c.html#a164dcefd36af8654942116c444bd0b6a" title="cJSON_AddItemToArray" alt="" coords="1210,208,1377,235"/>
+</map>

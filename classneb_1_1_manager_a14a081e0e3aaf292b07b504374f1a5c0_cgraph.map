@@ -1,0 +1,5 @@
+<map id="neb::Manager::~Manager" name="neb::Manager::~Manager">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a5189b22a4dd0a7cf2528615660a28417" title="neb::Manager::Destroy" alt="" coords="221,12,376,39"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a57e8adb622005fc5fe1ab5fbfe2840e5" title="neb::Manager::DiscardSocket\lChannel" alt="" coords="424,5,619,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#a5fa2d8127a07de18616180ac94386b11" title="neb::Manager::DelEvents" alt="" coords="667,12,837,39"/>
+</map>

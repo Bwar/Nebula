@@ -1,0 +1,4 @@
+<map id="neb::Actor::GetSession" name="neb::Actor::GetSession">
+<area shape="rect" id="node2" href="$classneb_1_1_worker.html#ab56b63f74358a7ec23e07674de1eb8e3" title="neb::Worker::GetSession" alt="" coords="214,5,383,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_worker_impl.html#ab786baa796a0e64e36e270fcd80cce36" title="neb::WorkerImpl::GetSession" alt="" coords="432,5,627,32"/>
+</map>

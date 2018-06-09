@@ -1,0 +1,11 @@
+<map id="neb::Manager::OnDataAndTransferFd" name="neb::Manager::OnDataAndTransferFd">
+<area shape="rect" id="node2" href="$class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="338,5,449,32"/>
+<area shape="rect" id="node3" href="$class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="340,56,447,83"/>
+<area shape="rect" id="node4" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="338,107,449,133"/>
+<area shape="rect" id="node5" href="$classneb_1_1_socket_channel.html#ac3d3a8f044f1859e5d8597182843c484" title="neb::SocketChannel\l::SendChannelFd" alt="" coords="323,158,463,199"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#a57e8adb622005fc5fe1ab5fbfe2840e5" title="neb::Manager::DiscardSocket\lChannel" alt="" coords="296,223,491,265"/>
+<area shape="rect" id="node8" href="$classneb_1_1_manager.html#a5bfbb5b167e1be8f61240e7a9fdc2606" title="neb::Manager::RemoveIoWrite\lEvent" alt="" coords="293,289,493,330"/>
+<area shape="rect" id="node9" href="$classneb_1_1_manager.html#aa2ac3c9e55e4ae864ffa18ad7bba8f33" title="neb::Manager::AddIoWrite\lEvent" alt="" coords="306,354,481,395"/>
+<area shape="rect" id="node7" href="$classneb_1_1_manager.html#a5fa2d8127a07de18616180ac94386b11" title="neb::Manager::DelEvents" alt="" coords="541,231,712,257"/>
+<area shape="rect" id="node10" href="$classneb_1_1_manager.html#a676468e6f26f46f782cd296c23acca60" title="neb::Manager::IoCallback" alt="" coords="541,361,712,388"/>
+</map>

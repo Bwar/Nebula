@@ -1,0 +1,15 @@
+<map id="src/codec/CodecHttp.cpp" name="src/codec/CodecHttp.cpp">
+<area shape="rect" id="node3" href="$_net_logger_8hpp.html" title="util/logger/NetLogger.hpp" alt="" coords="170,229,336,256"/>
+<area shape="rect" id="node9" href="$_codec_http_8hpp.html" title="CodecHttp.hpp" alt="" coords="930,80,1040,107"/>
+<area shape="rect" id="node6" href="$_file_logger_8hpp.html" title="FileLogger.hpp" alt="" coords="109,312,216,339"/>
+<area shape="rect" id="node8" href="$_logger_8hpp.html" title="Logger.hpp" alt="" coords="5,395,91,421"/>
+<area shape="rect" id="node10" href="$http__parser_8h.html" title="util/http/http_parser.h" alt="" coords="1810,155,1955,181"/>
+<area shape="rect" id="node13" href="$http_8pb_8h.html" title="pb/http.pb.h" alt="" coords="1735,229,1825,256"/>
+<area shape="rect" id="node23" href="$_codec_8hpp.html" title="Codec.hpp" alt="" coords="708,155,793,181"/>
+<area shape="rect" id="node24" href="$_c_w_8hpp.html" title="actor/cmd/CW.hpp" alt="" coords="838,229,969,256"/>
+<area shape="rect" id="node25" href="$_c_buffer_8hpp.html" title="util/CBuffer.hpp" alt="" coords="642,312,755,339"/>
+<area shape="rect" id="node34" href="$msg_8pb_8h.html" title="pb/msg.pb.h" alt="" coords="1571,229,1665,256"/>
+<area shape="rect" id="node35" href="$_error_8hpp.html" title="Error.hpp" alt="" coords="413,229,488,256"/>
+<area shape="rect" id="node36" href="$_definition_8hpp.html" title="Definition.hpp" alt="" coords="513,229,615,256"/>
+<area shape="rect" id="node38" href="$_codec_define_8hpp.html" title="CodecDefine.hpp" alt="" coords="640,229,763,256"/>
+</map>

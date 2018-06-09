@@ -1,0 +1,7 @@
+<map id="neb::Manager::IoTimeoutCallback" name="neb::Manager::IoTimeoutCallback">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a05d02bc4ebc282adef2f2c00cdce51a9" title="neb::Manager::AddIoTimeout" alt="" coords="273,31,463,57"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a95ce1f7539a73754369ebce15ec9a2ad" title="neb::Manager::AcceptServerConn" alt="" coords="512,5,731,32"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#a0d17e2e1b4ae0efc7919b46e158aa866" title="neb::Manager::AutoSend" alt="" coords="538,56,705,83"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="779,5,947,32"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#abd766e1daf2f97a59b3c797cf003008c" title="neb::Manager::SendTo" alt="" coords="785,56,940,83"/>
+</map>

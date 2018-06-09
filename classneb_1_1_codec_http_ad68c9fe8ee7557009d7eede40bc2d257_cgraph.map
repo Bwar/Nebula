@@ -1,0 +1,9 @@
+<map id="neb::CodecHttp::OnHeaderValue" name="neb::CodecHttp::OnHeaderValue">
+<area shape="rect" id="node2" href="$class_http_msg.html#a5604bfbf675cc3027cc1de8ed4f64825" title="HttpMsg::mutable_headers" alt="" coords="235,5,413,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#a29fd49b181f09e297e311459c1d109f5" title="HttpMsg::headers_size" alt="" coords="245,56,403,83"/>
+<area shape="rect" id="node4" href="$class_http_msg___header.html#a6f95394db567afe3b68c6908387f5a95" title="HttpMsg_Header::set\l_header_value" alt="" coords="251,107,397,149"/>
+<area shape="rect" id="node5" href="$class_http_msg.html#af702ba5c71c30e13badea0f2a91c0dd0" title="HttpMsg::set_keep_alive" alt="" coords="241,173,407,200"/>
+<area shape="rect" id="node6" href="$class_http_msg.html#a48057a1a6acdf2e67af311617234f1e6" title="HttpMsg::mutable_upgrade" alt="" coords="235,224,413,251"/>
+<area shape="rect" id="node7" href="$class_http_msg___upgrade.html#a2be103a5f111ee3811d14359f39b2f76" title="HttpMsg_Upgrade::set\l_is_upgrade" alt="" coords="247,275,401,317"/>
+<area shape="rect" id="node8" href="$class_http_msg___upgrade.html#a7bafb15658315d3767daed97d5be5a81" title="HttpMsg_Upgrade::set\l_protocol" alt="" coords="247,341,401,382"/>
+</map>

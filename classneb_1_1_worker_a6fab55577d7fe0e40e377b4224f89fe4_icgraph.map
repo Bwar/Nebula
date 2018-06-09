@@ -1,0 +1,5 @@
+<map id="neb::Worker::GetNodeIdentify" name="neb::Worker::GetNodeIdentify">
+<area shape="rect" id="node2" href="$classneb_1_1_actor.html#a74d5ffe170c1a2d721b450fe31a81040" title="neb::Actor::GetNodeIdentify" alt="" coords="251,45,437,72"/>
+<area shape="rect" id="node3" href="$classneb_1_1_cmd_told_worker.html#a3f636da29abfac8c658cba14e8c1d52d" title="命令处理入口 " alt="" coords="485,5,632,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_step_tell_worker.html#afc69572c70301d4858a6e3ef074efe32" title="提交，发出 " alt="" coords="488,70,629,111"/>
+</map>

@@ -1,0 +1,26 @@
+<map id="HttpMsg::MergeFrom" name="HttpMsg::MergeFrom">
+<area shape="rect" id="node2" href="$class_http_msg.html#a6287289f3eb0f11713fb224733cd57e1" title="HttpMsg::type" alt="" coords="237,5,342,32"/>
+<area shape="rect" id="node3" href="$class_http_msg.html#ab466622ab12ef17ceebefbe44125af9c" title="HttpMsg::set_type" alt="" coords="224,56,355,83"/>
+<area shape="rect" id="node4" href="$class_http_msg.html#a630441004b1dd7ad98dd2ada818d6a3b" title="HttpMsg::http_major" alt="" coords="219,107,360,133"/>
+<area shape="rect" id="node5" href="$class_http_msg.html#a386b5092021d048c86c7b73e251e051c" title="HttpMsg::set_http_major" alt="" coords="206,157,373,184"/>
+<area shape="rect" id="node6" href="$class_http_msg.html#a7c04064894b53cf1081f71bc7393e469" title="HttpMsg::http_minor" alt="" coords="219,208,360,235"/>
+<area shape="rect" id="node7" href="$class_http_msg.html#a83532eae33643bede7eece9c8ece697e" title="HttpMsg::set_http_minor" alt="" coords="206,259,373,285"/>
+<area shape="rect" id="node8" href="$class_http_msg.html#a7ef10f27f3b8109dc6991066cc64c246" title="HttpMsg::content_length" alt="" coords="207,309,372,336"/>
+<area shape="rect" id="node9" href="$class_http_msg.html#a58712d7787e9fe6d999674f443582ea8" title="HttpMsg::set_content\l_length" alt="" coords="215,361,363,402"/>
+<area shape="rect" id="node10" href="$class_http_msg.html#a2bda70c8514dab9df26df4c32b2d61fb" title="HttpMsg::method" alt="" coords="228,427,351,453"/>
+<area shape="rect" id="node11" href="$class_http_msg.html#a4cc4b26d66f6ebd739b8c4216f771eec" title="HttpMsg::set_method" alt="" coords="215,477,363,504"/>
+<area shape="rect" id="node12" href="$class_http_msg.html#adc7b6752150d5dcf6748431d7f153ddf" title="HttpMsg::status_code" alt="" coords="214,528,365,555"/>
+<area shape="rect" id="node13" href="$class_http_msg.html#ad740e8de344bea9a582a01df3d96eb5e" title="HttpMsg::set_status_code" alt="" coords="201,579,377,605"/>
+<area shape="rect" id="node14" href="$class_http_msg.html#a0e3338de14b291b816411acf3aa33f55" title="HttpMsg::encoding" alt="" coords="223,629,355,656"/>
+<area shape="rect" id="node15" href="$class_http_msg.html#a2440ba83a62df6ba86b6c3dac899321a" title="HttpMsg::set_encoding" alt="" coords="211,680,368,707"/>
+<area shape="rect" id="node16" href="$class_http_msg.html#ac9e1dc39a940b92f67690bf0f6e2c47e" title="HttpMsg::url" alt="" coords="242,731,337,757"/>
+<area shape="rect" id="node17" href="$class_http_msg.html#ad458ff4134ed34b25c1eed6b8e3f0f36" title="HttpMsg::body" alt="" coords="235,781,343,808"/>
+<area shape="rect" id="node18" href="$class_http_msg.html#ae15c1f686f8984668cf589a7be0d3bb8" title="HttpMsg::has_upgrade" alt="" coords="212,832,367,859"/>
+<area shape="rect" id="node19" href="$class_http_msg.html#a48057a1a6acdf2e67af311617234f1e6" title="HttpMsg::mutable_upgrade" alt="" coords="200,883,379,909"/>
+<area shape="rect" id="node20" href="$class_http_msg.html#ad83d18c1ea305c386768d8ba1123986c" title="HttpMsg::upgrade" alt="" coords="226,933,353,960"/>
+<area shape="rect" id="node21" href="$class_http_msg.html#a034dab02aff76d9a7fe5fe370b2d55c4" title="HttpMsg::keep_alive" alt="" coords="218,984,361,1011"/>
+<area shape="rect" id="node22" href="$class_http_msg.html#af702ba5c71c30e13badea0f2a91c0dd0" title="HttpMsg::set_keep_alive" alt="" coords="206,1035,373,1061"/>
+<area shape="rect" id="node23" href="$class_http_msg.html#a259b24be64d803d3d3a5854f174e292a" title="HttpMsg::path" alt="" coords="237,1085,342,1112"/>
+<area shape="rect" id="node24" href="$class_http_msg.html#a47cfbae01adf25cd6ad708789d2f7516" title="HttpMsg::is_decoding" alt="" coords="215,1136,364,1163"/>
+<area shape="rect" id="node25" href="$class_http_msg.html#ae1ca9c1ad616cd11b84fd6441de27d3e" title="HttpMsg::set_is_decoding" alt="" coords="202,1187,377,1213"/>
+</map>

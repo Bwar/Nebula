@@ -1,0 +1,9 @@
+<map id="neb::SocketChannelImpl::~SocketChannelImpl" name="neb::SocketChannelImpl::~SocketChannelImpl">
+<area shape="rect" id="node2" href="$classneb_1_1_socket_channel_impl.html#affbafbef916a7b1e063feb58b4da769c" title="neb::SocketChannelImpl\l::Abort" alt="" coords="219,49,384,90"/>
+<area shape="rect" id="node3" href="$classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="432,56,589,83"/>
+<area shape="rect" id="node4" href="$classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="638,5,831,32"/>
+<area shape="rect" id="node6" href="$classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="638,56,831,83"/>
+<area shape="rect" id="node8" href="$classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="657,107,813,133"/>
+<area shape="rect" id="node5" href="$classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="881,5,1039,32"/>
+<area shape="rect" id="node7" href="$classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="881,56,1039,83"/>
+</map>

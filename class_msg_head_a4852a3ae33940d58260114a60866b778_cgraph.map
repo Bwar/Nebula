@@ -1,0 +1,8 @@
+<map id="MsgHead::MergeFrom" name="MsgHead::MergeFrom">
+<area shape="rect" id="node2" href="$class_msg_head.html#ad1dd35144fa6b21036403267c9d882e5" title="MsgHead::cmd" alt="" coords="218,5,329,32"/>
+<area shape="rect" id="node3" href="$class_msg_head.html#a23462cb72c0ddd8c1e4982fc90395a1a" title="MsgHead::set_cmd" alt="" coords="205,56,341,83"/>
+<area shape="rect" id="node4" href="$class_msg_head.html#ae83515500e51933aa0182dc6a0f17995" title="MsgHead::seq" alt="" coords="220,107,327,133"/>
+<area shape="rect" id="node5" href="$class_msg_head.html#a876dde9ed184a6d7ee1ed3729d6b632e" title="MsgHead::set_seq" alt="" coords="207,157,339,184"/>
+<area shape="rect" id="node6" href="$class_msg_head.html#a936c898be60508f1da1f7f747c531898" title="MsgHead::len" alt="" coords="222,208,325,235"/>
+<area shape="rect" id="node7" href="$class_msg_head.html#a21cc030ed6552bbd993592abd6dc5ec9" title="MsgHead::set_len" alt="" coords="209,259,337,285"/>
+</map>

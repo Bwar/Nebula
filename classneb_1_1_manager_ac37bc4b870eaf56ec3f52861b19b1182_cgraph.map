@@ -1,0 +1,15 @@
+<map id="neb::Manager::OnNodeNotify" name="neb::Manager::OnNodeNotify">
+<area shape="rect" id="node2" href="$classneb_1_1_c_json_object.html#a2836a804d5b026725d220d198bb96aa5" title="neb::CJsonObject::Parse" alt="" coords="507,107,677,133"/>
+<area shape="rect" id="node7" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="297,56,407,83"/>
+<area shape="rect" id="node8" href="$classneb_1_1_c_json_object.html#a72b2cb0e775e8b1e6ec6f802c4168d71" title="neb::CJsonObject::GetArraySize" alt="" coords="245,5,459,32"/>
+<area shape="rect" id="node10" href="$classneb_1_1_c_json_object.html#a0e48820c581fd9069a6b2f1d5e88e9f1" title="neb::CJsonObject::Get" alt="" coords="274,157,430,184"/>
+<area shape="rect" id="node13" href="$classneb_1_1_manager.html#a0e31bc84e99c534571db20ba75b87a3b" title="neb::Manager::AddNodeIdentify" alt="" coords="249,208,455,235"/>
+<area shape="rect" id="node14" href="$classneb_1_1_manager.html#a710df57b396ed9317c682287cf8c6df3" title="neb::Manager::DelNodeIdentify" alt="" coords="251,259,453,285"/>
+<area shape="rect" id="node3" href="$classneb_1_1_c_json_object.html#ae5b74bd05db856ebe68031d15fcfd693" title="neb::CJsonObject::Clear" alt="" coords="726,107,893,133"/>
+<area shape="rect" id="node5" href="$c_j_s_o_n_8c.html#ad3df5f943457d4befebe4109d48e4a50" title="cJSON_Parse" alt="" coords="756,56,863,83"/>
+<area shape="rect" id="node6" href="$c_j_s_o_n_8c.html#a176d66e0a0e090ce57633ac53a4379fa" title="cJSON_GetErrorPtr" alt="" coords="740,157,879,184"/>
+<area shape="rect" id="node4" href="$c_j_s_o_n_8c.html#ab18060251de70a2b55a18dec694f8f8a" title="cJSON_Delete" alt="" coords="942,81,1053,108"/>
+<area shape="rect" id="node9" href="$c_j_s_o_n_8c.html#adb5c049d3211599c90cd5a3d5e68d854" title="cJSON_GetArraySize" alt="" coords="517,5,667,32"/>
+<area shape="rect" id="node11" href="$c_j_s_o_n_8c.html#aba766c9d2c20996e323522cbf2ba46c6" title="cJSON_GetObjectItem" alt="" coords="513,157,671,184"/>
+<area shape="rect" id="node12" href="$c_j_s_o_n_8c.html#aea4f15b04dba4dff2edc2bb1d387b555" title="cJSON_Print" alt="" coords="543,208,641,235"/>
+</map>

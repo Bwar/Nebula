@@ -1,0 +1,4 @@
+<map id="neb::Logger" name="neb::Logger">
+<area shape="rect" id="node2" href="$classneb_1_1_file_logger.html" title="{neb::FileLogger\n||+ FileLogger()\l+ ~FileLogger()\l+ SetLogLevel()\l+ WriteLog()\l+ WriteLog()\l+ Instance()\l}" alt="" coords="5,183,120,334"/>
+<area shape="rect" id="node3" href="$classneb_1_1_net_logger.html" title="{neb::NetLogger\n||+ NetLogger()\l+ ~NetLogger()\l+ WriteLog()\l+ WriteLog()\l+ SetLogLevel()\l+ SetNetLogLevel()\l+ EnableNetLogger()\l}" alt="" coords="145,176,287,341"/>
+</map>

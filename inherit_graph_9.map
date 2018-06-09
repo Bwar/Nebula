@@ -1,0 +1,8 @@
+<map id="类继承关系图" name="类继承关系图">
+<area shape="rect" id="node1" href="$classneb_1_1_codec.html" title="neb::Codec" alt="" coords="6,107,95,133"/>
+<area shape="rect" id="node2" href="$classneb_1_1_codec_http.html" title="neb::CodecHttp" alt="" coords="175,5,289,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_codec_private.html" title="neb::CodecPrivate" alt="" coords="167,56,297,83"/>
+<area shape="rect" id="node4" href="$classneb_1_1_codec_proto.html" title="neb::CodecProto" alt="" coords="172,107,292,133"/>
+<area shape="rect" id="node5" href="$classneb_1_1_codec_ws_extent_json.html" title="neb::CodecWsExtentJson" alt="" coords="145,157,319,184"/>
+<area shape="rect" id="node6" href="$classneb_1_1_codec_ws_extent_pb.html" title="neb::CodecWsExtentPb" alt="" coords="151,208,313,235"/>
+</map>

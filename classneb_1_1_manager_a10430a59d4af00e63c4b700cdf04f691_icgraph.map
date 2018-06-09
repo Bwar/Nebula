@@ -1,0 +1,10 @@
+<map id="neb::Manager::SendToWorker" name="neb::Manager::SendToWorker">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#afca7b496e72cfecc346d1bda0c928acb" title="neb::Manager::RefreshServer" alt="" coords="254,16,447,43"/>
+<area shape="rect" id="node7" href="$classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="251,71,450,97"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a0e908221e6e1c0ec367c2fb64c6e9ee3" title="neb::Manager::PeriodicTask\lCallback" alt="" coords="502,5,687,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#a296db1f390d91b4c9485bf99f1b90de2" title="neb::Manager::AddPeriodic\lTaskEvent" alt="" coords="739,5,917,46"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#ab65bcae38b39970422c1d8287eb899f7" title="neb::Manager::CreateEvents" alt="" coords="965,12,1155,39"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="1203,12,1362,39"/>
+<area shape="rect" id="node8" href="$classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="499,70,690,111"/>
+<area shape="rect" id="node9" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="744,77,912,104"/>
+</map>

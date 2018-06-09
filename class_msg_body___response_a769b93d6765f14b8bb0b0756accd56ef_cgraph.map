@@ -1,0 +1,5 @@
+<map id="MsgBody_Response::MergeFrom" name="MsgBody_Response::MergeFrom">
+<area shape="rect" id="node2" href="$class_msg_body___response.html#a4f591576308d40bff1520e1646a68544" title="MsgBody_Response::code" alt="" coords="285,5,464,32"/>
+<area shape="rect" id="node3" href="$class_msg_body___response.html#a49ebf3d7e87e494d73a1c0bbd41ed18e" title="MsgBody_Response::set_code" alt="" coords="273,56,477,83"/>
+<area shape="rect" id="node4" href="$class_msg_body___response.html#a1c734614eb7f76964313063dc8b5bd86" title="MsgBody_Response::msg" alt="" coords="287,107,463,133"/>
+</map>

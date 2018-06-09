@@ -1,0 +1,12 @@
+<map id="neb::CBuffer::Printf" name="neb::CBuffer::Printf">
+<area shape="rect" id="node2" href="$classneb_1_1_c_buffer.html#a7b5eff63263e4aed8d6029a23236b176" title="neb::CBuffer::VPrintf" alt="" coords="189,81,333,108"/>
+<area shape="rect" id="node3" href="$classneb_1_1_c_buffer.html#aa456a7e65f4acfa46411396161360d50" title="neb::CBuffer::EnsureWritable\lBytes" alt="" coords="382,74,575,115"/>
+<area shape="rect" id="node4" href="$classneb_1_1_c_buffer.html#aebc2e5d013d1bf2020350f29c186ee03" title="neb::CBuffer::WriteableBytes" alt="" coords="862,5,1055,32"/>
+<area shape="rect" id="node11" href="$classneb_1_1_c_buffer.html#a7a991a52236d3d07cd0ef96e375fcfd7" title="neb::CBuffer::AdvanceWrite\lIndex" alt="" coords="385,139,572,181"/>
+<area shape="rect" id="node6" href="$classneb_1_1_c_buffer.html#a9966a6d35234c15de15f87710e9d480a" title="neb::CBuffer::Capacity" alt="" coords="881,183,1037,209"/>
+<area shape="rect" id="node7" href="$classneb_1_1_c_buffer.html#a6047ba4cfe8e9611f065c14c461b31f0" title="neb::CBuffer::Compact" alt="" coords="640,157,797,184"/>
+<area shape="rect" id="node10" href="$classneb_1_1_c_buffer.html#a8cad87b6b2b0f14a7c717866d5932864" title="neb::CBuffer::GetWriteIndex" alt="" coords="625,107,813,133"/>
+<area shape="rect" id="node8" href="$classneb_1_1_c_buffer.html#a8c96009e1378b133fef17b6dd5076768" title="neb::CBuffer::ReadableBytes" alt="" coords="862,95,1055,121"/>
+<area shape="rect" id="node5" href="$classneb_1_1_c_buffer.html#a6b156f7511b7f36e1c5ef41ef3811d50" title="neb::CBuffer::Writeable" alt="" coords="1105,5,1263,32"/>
+<area shape="rect" id="node9" href="$classneb_1_1_c_buffer.html#a6796a4a2a37b04b3fa30a0a4a2675096" title="neb::CBuffer::Readable" alt="" coords="1105,95,1263,121"/>
+</map>

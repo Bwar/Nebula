@@ -1,0 +1,5 @@
+<map id="neb::Manager::ClientConnFrequencyTimeoutCallback" name="neb::Manager::ClientConnFrequencyTimeoutCallback">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a758751bee1c3ae2c51880d0a6980a5ed" title="neb::Manager::AddClientConn\lFrequencyTimeout" alt="" coords="235,5,432,46"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#ade4084dc378090b6aeed77bd3707aa97" title="neb::Manager::FdTransfer" alt="" coords="481,12,653,39"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="701,12,869,39"/>
+</map>

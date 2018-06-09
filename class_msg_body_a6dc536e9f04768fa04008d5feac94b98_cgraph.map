@@ -1,0 +1,12 @@
+<map id="MsgBody::MergePartialFromCodedStream" name="MsgBody::MergePartialFromCodedStream">
+<area shape="rect" id="node2" href="$class_msg_body.html#a4bd2dc6beb616a877427c2f964f1004c" title="MsgBody::mutable_req\l_target" alt="" coords="257,5,413,46"/>
+<area shape="rect" id="node5" href="$class_msg_body.html#a3f48a1b0732cb722baaf1a4b219b47c8" title="MsgBody::mutable_rsp\l_result" alt="" coords="257,70,413,111"/>
+<area shape="rect" id="node7" href="$class_msg_body.html#a45ba1da4ceb638a12f64d6b1df405dd0" title="MsgBody::mutable_data" alt="" coords="253,136,416,163"/>
+<area shape="rect" id="node8" href="$class_msg_body.html#a8b6433feb1e246491f543d3a9bb4e431" title="MsgBody::mutable_add_on" alt="" coords="245,187,425,213"/>
+<area shape="rect" id="node9" href="$class_msg_body.html#ab60f17e6a586612605b2fa2f67a36e18" title="MsgBody::mutable_trace_id" alt="" coords="243,237,427,264"/>
+<area shape="rect" id="node10" href="$class_msg_body.html#a62089417a7dde8994b1f835481a798c5" title="MsgBody::trace_id" alt="" coords="269,288,400,315"/>
+<area shape="rect" id="node11" href="$class_msg_body.html#ab2380a7f8c669d0c9e4517f0bef8c233" title="MsgBody::data" alt="" coords="279,339,390,365"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#a86b0aefb20f53830ab52253f12bfa168" title="MsgBody::has_req_target" alt="" coords="475,16,645,43"/>
+<area shape="rect" id="node4" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="694,44,871,71"/>
+<area shape="rect" id="node6" href="$class_msg_body.html#afeada0eea52cddab0feb2bea05467ad0" title="MsgBody::has_rsp_result" alt="" coords="475,71,645,97"/>
+</map>

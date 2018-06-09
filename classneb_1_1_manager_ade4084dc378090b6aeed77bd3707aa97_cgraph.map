@@ -1,0 +1,7 @@
+<map id="neb::Manager::FdTransfer" name="neb::Manager::FdTransfer">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a758751bee1c3ae2c51880d0a6980a5ed" title="neb::Manager::AddClientConn\lFrequencyTimeout" alt="" coords="229,5,427,46"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#a5361d856d497ddc27f8d41eab6c197d5" title="neb::Manager::GetMinLoad\lWorkerDataFd" alt="" coords="239,70,417,111"/>
+<area shape="rect" id="node5" href="$classneb_1_1_socket_channel.html#ac3d3a8f044f1859e5d8597182843c484" title="neb::SocketChannel\l::SendChannelFd" alt="" coords="258,135,398,177"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#a4666b17d7fbaa1cb2505afcaf7e1917d" title="neb::Manager::AddWorkerLoad" alt="" coords="227,201,429,228"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a67210e6b88a9af96c12d020faa7fe94a" title="neb::Manager::ClientConn\lFrequencyTimeoutCallback" alt="" coords="477,5,659,46"/>
+</map>

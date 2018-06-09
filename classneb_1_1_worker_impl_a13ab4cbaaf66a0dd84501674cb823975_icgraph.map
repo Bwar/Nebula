@@ -1,0 +1,5 @@
+<map id="neb::WorkerImpl::SendPolling" name="neb::WorkerImpl::SendPolling">
+<area shape="rect" id="node2" href="$classneb_1_1_worker.html#aa819e233fcc1bd0a398443e7ee9bf6be" title="neb::Worker::SendPolling" alt="" coords="265,5,436,32"/>
+<area shape="rect" id="node4" href="$classneb_1_1_worker_impl.html#a28bab4930ee3096f50e4d3f4a469ffb1" title="neb::WorkerImpl::SendOriented" alt="" coords="248,56,453,83"/>
+<area shape="rect" id="node3" href="$classneb_1_1_actor.html#a382f968bcd528fdf548f7dfc5efda39d" title="发送到下一个同一类型的节点 " alt="" coords="502,5,661,32"/>
+</map>

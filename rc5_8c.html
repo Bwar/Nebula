@@ -1,0 +1,806 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="generator" content="Doxygen 1.8.5"/>
+<title>Nebula: src/util/encrypt/rc5.c 文件参考</title>
+<link href="tabs.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
+<link href="doxygen.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div id="top"><!-- do not remove this div, it is closed by doxygen! -->
+<div id="titlearea">
+<table cellspacing="0" cellpadding="0">
+ <tbody>
+ <tr style="height: 56px;">
+  <td style="padding-left: 0.5em;">
+   <div id="projectname">Nebula
+   </div>
+   <div id="projectbrief">Nebula</div>
+  </td>
+ </tr>
+ </tbody>
+</table>
+</div>
+<!-- end header part -->
+<!-- 制作者 Doxygen 1.8.5 -->
+  <div id="navrow1" class="tabs">
+    <ul class="tablist">
+      <li><a href="index.html"><span>首页</span></a></li>
+      <li><a href="pages.html"><span>相关页面</span></a></li>
+      <li><a href="namespaces.html"><span>命名空间</span></a></li>
+      <li><a href="annotated.html"><span>类</span></a></li>
+      <li class="current"><a href="files.html"><span>文件</span></a></li>
+    </ul>
+  </div>
+  <div id="navrow2" class="tabs2">
+    <ul class="tablist">
+      <li><a href="files.html"><span>文件列表</span></a></li>
+      <li><a href="globals.html"><span>文件成员</span></a></li>
+    </ul>
+  </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('rc5_8c.html','');});
+</script>
+<div id="doc-content">
+<div class="header">
+  <div class="summary">
+<a href="#func-members">函数</a>  </div>
+  <div class="headertitle">
+<div class="title">rc5.c 文件参考</div>  </div>
+</div><!--header-->
+<div class="contents">
+<div class="textblock"><div id="dynsection-0" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-0-trigger" src="closed.png" alt="+"/> rc5.c 的引用(Include)关系图:</div>
+<div id="dynsection-0-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-0-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c__incl.png" border="0" usemap="#src_2util_2encrypt_2rc5_8c" alt=""/></div>
+<map name="src_2util_2encrypt_2rc5_8c" id="src_2util_2encrypt_2rc5_8c">
+<area shape="rect" id="node2" href="rc5_8h.html" title="rc5.h" alt="" coords="143,80,193,107"/></map>
+</div>
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
+函数</h2></td></tr>
+<tr class="memitem:a7a5874d3f605e75ef7a6f976f43300a7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structrc5_user_key.html">rc5UserKey</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a7a5874d3f605e75ef7a6f976f43300a7">RC5_Key_Create</a> ()</td></tr>
+<tr class="memdesc:a7a5874d3f605e75ef7a6f976f43300a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate and initialize an RC5 user key.  <a href="#a7a5874d3f605e75ef7a6f976f43300a7">更多...</a><br/></td></tr>
+<tr class="separator:a7a5874d3f605e75ef7a6f976f43300a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b8391a0277b8f03f50ff1eda8a4b5f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a8b8391a0277b8f03f50ff1eda8a4b5f0">RC5_Key_Destroy</a> (<a class="el" href="structrc5_user_key.html">rc5UserKey</a> *pKey)</td></tr>
+<tr class="memdesc:a8b8391a0277b8f03f50ff1eda8a4b5f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Zero and free an RC5 user key.  <a href="#a8b8391a0277b8f03f50ff1eda8a4b5f0">更多...</a><br/></td></tr>
+<tr class="separator:a8b8391a0277b8f03f50ff1eda8a4b5f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d995302e23e229cd44090ccad80660d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a5d995302e23e229cd44090ccad80660d">RC5_Key_Set</a> (<a class="el" href="structrc5_user_key.html">rc5UserKey</a> *pKey, int keyLength, unsigned char *keyBytes)</td></tr>
+<tr class="memdesc:a5d995302e23e229cd44090ccad80660d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the value of an RC5 user key.  <a href="#a5d995302e23e229cd44090ccad80660d">更多...</a><br/></td></tr>
+<tr class="separator:a5d995302e23e229cd44090ccad80660d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20f58f7887ddd65a26b172e84078247f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a20f58f7887ddd65a26b172e84078247f">RC5_Key_Expand</a> (int b, unsigned char *K, int R, <a class="el" href="rc5_8h.html#a4d436a8d6ad28b65e8d864ebdf57ee0a">RC5_WORD</a> *S)</td></tr>
+<tr class="memdesc:a20f58f7887ddd65a26b172e84078247f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Expand an RC5 user key.  <a href="#a20f58f7887ddd65a26b172e84078247f">更多...</a><br/></td></tr>
+<tr class="separator:a20f58f7887ddd65a26b172e84078247f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1062a818ba3a348bf5290c533b4e59a0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a1062a818ba3a348bf5290c533b4e59a0">RC5_Block_Encrypt</a> (<a class="el" href="rc5_8h.html#a4d436a8d6ad28b65e8d864ebdf57ee0a">RC5_WORD</a> *S, int R, unsigned char *in, unsigned char *out)</td></tr>
+<tr class="memdesc:a1062a818ba3a348bf5290c533b4e59a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">encryption of a single input block  <a href="#a1062a818ba3a348bf5290c533b4e59a0">更多...</a><br/></td></tr>
+<tr class="separator:a1062a818ba3a348bf5290c533b4e59a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec01be585e6d956f5f1fcf511e118b2f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#aec01be585e6d956f5f1fcf511e118b2f">RC5_Block_Decrypt</a> (<a class="el" href="rc5_8h.html#a4d436a8d6ad28b65e8d864ebdf57ee0a">RC5_WORD</a> *S, int R, unsigned char *in, unsigned char *out)</td></tr>
+<tr class="separator:aec01be585e6d956f5f1fcf511e118b2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a200d142691530bb3e9c18c12952c607f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a200d142691530bb3e9c18c12952c607f">RC5_CBC_Create</a> (int Pad, int R, int Version, int bb, unsigned char *I)</td></tr>
+<tr class="memdesc:a200d142691530bb3e9c18c12952c607f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Allocate and initialize the RC5 CBC algorithm object.  <a href="#a200d142691530bb3e9c18c12952c607f">更多...</a><br/></td></tr>
+<tr class="separator:a200d142691530bb3e9c18c12952c607f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a578d1fa1f0c3bb86ddfc06d3c294863a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a578d1fa1f0c3bb86ddfc06d3c294863a">RC5_CBC_Destroy</a> (<a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *pAlg)</td></tr>
+<tr class="memdesc:a578d1fa1f0c3bb86ddfc06d3c294863a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Zero and free an RC5 algorithm object.  <a href="#a578d1fa1f0c3bb86ddfc06d3c294863a">更多...</a><br/></td></tr>
+<tr class="separator:a578d1fa1f0c3bb86ddfc06d3c294863a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab060814c6a9f69f3f55fb92d833c4ad7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#ab060814c6a9f69f3f55fb92d833c4ad7">RC5_CBC_SetIV</a> (<a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *pAlg, unsigned char *I)</td></tr>
+<tr class="memdesc:ab060814c6a9f69f3f55fb92d833c4ad7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Setup a new initialization vector for a CBC operation and reset the CBC object.  <a href="#ab060814c6a9f69f3f55fb92d833c4ad7">更多...</a><br/></td></tr>
+<tr class="separator:ab060814c6a9f69f3f55fb92d833c4ad7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d7bfde8c11b9129c0b09b6261782698"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a5d7bfde8c11b9129c0b09b6261782698">RC5_CBC_Encrypt_Init</a> (<a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *pAlg, <a class="el" href="structrc5_user_key.html">rc5UserKey</a> *pKey)</td></tr>
+<tr class="memdesc:a5d7bfde8c11b9129c0b09b6261782698"><td class="mdescLeft">&#160;</td><td class="mdescRight">Binding a key to a cipher object.  <a href="#a5d7bfde8c11b9129c0b09b6261782698">更多...</a><br/></td></tr>
+<tr class="separator:a5d7bfde8c11b9129c0b09b6261782698"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a3ddee83d72197346017b27dcdb0f22"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a9a3ddee83d72197346017b27dcdb0f22">RC5_CBC_Encrypt_Update</a> (<a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *pAlg, int N, unsigned char *P, int *pCipherLen, int maxCipherLen, unsigned char *C)</td></tr>
+<tr class="memdesc:a9a3ddee83d72197346017b27dcdb0f22"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encrypt a buffer of plaintext.  <a href="#a9a3ddee83d72197346017b27dcdb0f22">更多...</a><br/></td></tr>
+<tr class="separator:a9a3ddee83d72197346017b27dcdb0f22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56b6960d998f70efe16a7dbc24fd763e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a56b6960d998f70efe16a7dbc24fd763e">RC5_CBC_Encrypt_Final</a> (<a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *pAlg, int *pCipherLen, int maxCipherLen, unsigned char *C)</td></tr>
+<tr class="memdesc:a56b6960d998f70efe16a7dbc24fd763e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Produce the final block of ciphertext including any padding, and then reset the algorithm object.  <a href="#a56b6960d998f70efe16a7dbc24fd763e">更多...</a><br/></td></tr>
+<tr class="separator:a56b6960d998f70efe16a7dbc24fd763e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b2a90e4446d62ca3b6a0e92e40767fa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#a8b2a90e4446d62ca3b6a0e92e40767fa">RC5_CBC_Decrypt_Init</a> (<a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *pAlg, <a class="el" href="structrc5_user_key.html">rc5UserKey</a> *pKey)</td></tr>
+<tr class="separator:a8b2a90e4446d62ca3b6a0e92e40767fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afce4ce979b65c1c77f6295e7c38b5790"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rc5_8c.html#afce4ce979b65c1c77f6295e7c38b5790">RC5_CBC_Decrypt_Update</a> (<a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *pAlg, int N, unsigned char *C, int *plainLen, unsigned char *P)</td></tr>
+<tr class="separator:afce4ce979b65c1c77f6295e7c38b5790"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">函数说明</h2>
+<a class="anchor" id="aec01be585e6d956f5f1fcf511e118b2f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void RC5_Block_Decrypt </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="rc5_8h.html#a4d436a8d6ad28b65e8d864ebdf57ee0a">RC5_WORD</a> *&#160;</td>
+          <td class="paramname"><em>S</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>R</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-1" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-1-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-1-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-1-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c_aec01be585e6d956f5f1fcf511e118b2f_icgraph.png" border="0" usemap="#rc5_8c_aec01be585e6d956f5f1fcf511e118b2f_icgraph" alt=""/></div>
+<map name="rc5_8c_aec01be585e6d956f5f1fcf511e118b2f_icgraph" id="rc5_8c_aec01be585e6d956f5f1fcf511e118b2f_icgraph">
+<area shape="rect" id="node2" href="rc5_8h.html#afce4ce979b65c1c77f6295e7c38b5790" title="RC5_CBC_Decrypt_Update" alt="" coords="197,5,384,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a1062a818ba3a348bf5290c533b4e59a0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void RC5_Block_Encrypt </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="rc5_8h.html#a4d436a8d6ad28b65e8d864ebdf57ee0a">RC5_WORD</a> *&#160;</td>
+          <td class="paramname"><em>S</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>R</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>encryption of a single input block </p>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">S</td><td></td></tr>
+    <tr><td class="paramname">R</td><td></td></tr>
+    <tr><td class="paramname">in</td><td></td></tr>
+    <tr><td class="paramname">out</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p><div id="dynsection-2" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-2-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-2-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-2-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c_a1062a818ba3a348bf5290c533b4e59a0_icgraph.png" border="0" usemap="#rc5_8c_a1062a818ba3a348bf5290c533b4e59a0_icgraph" alt=""/></div>
+<map name="rc5_8c_a1062a818ba3a348bf5290c533b4e59a0_icgraph" id="rc5_8c_a1062a818ba3a348bf5290c533b4e59a0_icgraph">
+<area shape="rect" id="node2" href="rc5_8h.html#a9a3ddee83d72197346017b27dcdb0f22" title="Encrypt a buffer of plaintext. " alt="" coords="195,5,381,32"/><area shape="rect" id="node3" href="rc5_8h.html#a56b6960d998f70efe16a7dbc24fd763e" title="Produce the final block of ciphertext including any padding, and then reset the algorithm object..." alt="" coords="202,56,374,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a200d142691530bb3e9c18c12952c607f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a>* RC5_CBC_Create </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>Pad</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>R</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>Version</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>bb</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>I</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Allocate and initialize the RC5 CBC algorithm object. </p>
+<dl class="section note"><dt>注解</dt><dd>To create a cipher algorithm object, the parameters must be checked and then space allocated for the expanded key table. The expanded key is initialized using the method described earlier. Finally, the state variables (padding mode, number of rounds, and the input buffer) are set to their initial values. </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">Pad</td><td>1 = RC5-CBC-Pad, 0 = RC5-CBC. </td></tr>
+    <tr><td class="paramname">R</td><td>Number of rounds. </td></tr>
+    <tr><td class="paramname">Version</td><td>RC5 version number. </td></tr>
+    <tr><td class="paramname">bb</td><td>Bytes per RC5 block == IV len. </td></tr>
+    <tr><td class="paramname">I</td><td>CBC IV, bb bytes long. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>Return 0 if problems. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a8b2a90e4446d62ca3b6a0e92e40767fa"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int RC5_CBC_Decrypt_Init </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *&#160;</td>
+          <td class="paramname"><em>pAlg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structrc5_user_key.html">rc5UserKey</a> *&#160;</td>
+          <td class="paramname"><em>pKey</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-3" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-3-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-3-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-3-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c_a8b2a90e4446d62ca3b6a0e92e40767fa_cgraph.png" border="0" usemap="#rc5_8c_a8b2a90e4446d62ca3b6a0e92e40767fa_cgraph" alt=""/></div>
+<map name="rc5_8c_a8b2a90e4446d62ca3b6a0e92e40767fa_cgraph" id="rc5_8c_a8b2a90e4446d62ca3b6a0e92e40767fa_cgraph">
+<area shape="rect" id="node2" href="rc5_8c.html#a20f58f7887ddd65a26b172e84078247f" title="Expand an RC5 user key. " alt="" coords="216,5,347,32"/><area shape="rect" id="node3" href="rc5_8c.html#ab060814c6a9f69f3f55fb92d833c4ad7" title="Setup a new initialization vector for a CBC operation and reset the CBC object. " alt="" coords="219,56,344,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="afce4ce979b65c1c77f6295e7c38b5790"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int RC5_CBC_Decrypt_Update </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *&#160;</td>
+          <td class="paramname"><em>pAlg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>N</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>C</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>plainLen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>P</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p><div id="dynsection-4" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-4-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-4-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-4-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c_afce4ce979b65c1c77f6295e7c38b5790_cgraph.png" border="0" usemap="#rc5_8c_afce4ce979b65c1c77f6295e7c38b5790_cgraph" alt=""/></div>
+<map name="rc5_8c_afce4ce979b65c1c77f6295e7c38b5790_cgraph" id="rc5_8c_afce4ce979b65c1c77f6295e7c38b5790_cgraph">
+<area shape="rect" id="node2" href="rc5_8c.html#aec01be585e6d956f5f1fcf511e118b2f" title="RC5_Block_Decrypt" alt="" coords="241,5,383,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a578d1fa1f0c3bb86ddfc06d3c294863a"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void RC5_CBC_Destroy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *&#160;</td>
+          <td class="paramname"><em>pAlg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Zero and free an RC5 algorithm object. </p>
+<dl class="section note"><dt>注解</dt><dd>Destroying the cipher object is the inverse of creating it with care being take to zero memory before returning it to the memory manager. </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pAlg</td><td>RC5 CBC algorithm object </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a56b6960d998f70efe16a7dbc24fd763e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int RC5_CBC_Encrypt_Final </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *&#160;</td>
+          <td class="paramname"><em>pAlg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>pCipherLen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>maxCipherLen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>C</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Produce the final block of ciphertext including any padding, and then reset the algorithm object. </p>
+<dl class="section note"><dt>注解</dt><dd>This step handles the last block of plaintext. For RC5-CBC, this step just performs error checking to ensure that the plaintext length was indeed a multiple of the block length. For RC5-CBC-Pad, padding bytes are added to the plaintext. The pad bytes are all the same and are set to a byte that represents the number of bytes of padding. For example if there are eight bytes of padding, the bytes will all have the hexadecimal value 0x08. There will be between one and BB padding bytes, inclusive. </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pAlg</td><td>Cipher algorithm object. </td></tr>
+    <tr><td class="paramname">pCipherLen</td><td>Gets byte len of C. </td></tr>
+    <tr><td class="paramname">maxCipherLen</td><td>Len of C buffer. </td></tr>
+    <tr><td class="paramname">C</td><td>Ciphertext buffer. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>Return zero if problems. </dd></dl>
+
+<p><div id="dynsection-5" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-5-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-5-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-5-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c_a56b6960d998f70efe16a7dbc24fd763e_cgraph.png" border="0" usemap="#rc5_8c_a56b6960d998f70efe16a7dbc24fd763e_cgraph" alt=""/></div>
+<map name="rc5_8c_a56b6960d998f70efe16a7dbc24fd763e_cgraph" id="rc5_8c_a56b6960d998f70efe16a7dbc24fd763e_cgraph">
+<area shape="rect" id="node2" href="rc5_8c.html#a1062a818ba3a348bf5290c533b4e59a0" title="encryption of a single input block " alt="" coords="227,5,368,32"/><area shape="rect" id="node3" href="rc5_8c.html#ab060814c6a9f69f3f55fb92d833c4ad7" title="Setup a new initialization vector for a CBC operation and reset the CBC object. " alt="" coords="235,56,360,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a5d7bfde8c11b9129c0b09b6261782698"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int RC5_CBC_Encrypt_Init </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *&#160;</td>
+          <td class="paramname"><em>pAlg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structrc5_user_key.html">rc5UserKey</a> *&#160;</td>
+          <td class="paramname"><em>pKey</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Binding a key to a cipher object. </p>
+<dl class="section note"><dt>注解</dt><dd>Initialize the encryption object with the given key. After this routine, the caller frees the key object. The IV for this CBC object can be changed by calling the SetIV routine. The only way to change the key is to destroy the CBC object and create a new one. The operation that binds a key to a cipher object performs the key expansion. Key expansion could be an operation on keys, but that would not work correctly for ciphers that modify the expanded key as they operate. After expanding the key, this operation must initialize the CBC chain block from the initialization vector and prepare the input buffer to receive the first character. </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pAlg</td><td>RC5 CBC algorithm object </td></tr>
+    <tr><td class="paramname">pKey</td><td>user key </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>Return zero if problems. </dd></dl>
+
+<p><div id="dynsection-6" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-6-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-6-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-6-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c_a5d7bfde8c11b9129c0b09b6261782698_cgraph.png" border="0" usemap="#rc5_8c_a5d7bfde8c11b9129c0b09b6261782698_cgraph" alt=""/></div>
+<map name="rc5_8c_a5d7bfde8c11b9129c0b09b6261782698_cgraph" id="rc5_8c_a5d7bfde8c11b9129c0b09b6261782698_cgraph">
+<area shape="rect" id="node2" href="rc5_8c.html#a20f58f7887ddd65a26b172e84078247f" title="Expand an RC5 user key. " alt="" coords="216,5,347,32"/><area shape="rect" id="node3" href="rc5_8c.html#ab060814c6a9f69f3f55fb92d833c4ad7" title="Setup a new initialization vector for a CBC operation and reset the CBC object. " alt="" coords="219,56,344,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a9a3ddee83d72197346017b27dcdb0f22"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int RC5_CBC_Encrypt_Update </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *&#160;</td>
+          <td class="paramname"><em>pAlg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>N</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>P</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&#160;</td>
+          <td class="paramname"><em>pCipherLen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>maxCipherLen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>C</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Encrypt a buffer of plaintext. </p>
+<dl class="section note"><dt>注解</dt><dd>The plaintext and ciphertext buffers can be the same. The byte len of the ciphertext is put in *pCipherLen. Call this multiple times passing successive parts of a large message. After the last part has been passed to Update, call Final. The encryption process described here uses the Init-Update-Final paradigm. The update operation can be performed on a sequence of message parts in order to incrementally produce the ciphertext. After the last part is processed, the Final operation is called to pick up any plaintext bytes or padding that are buffered inside the cipher object. </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pAlg</td><td>Cipher algorithm object. </td></tr>
+    <tr><td class="paramname">N</td><td>Byte length of P. </td></tr>
+    <tr><td class="paramname">P</td><td>Plaintext buffer. </td></tr>
+    <tr><td class="paramname">pCipherLen</td><td>Gets byte len of C. </td></tr>
+    <tr><td class="paramname">maxCipherLen</td><td>Size of C. </td></tr>
+    <tr><td class="paramname">C</td><td>Ciphertext buffer. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>Return zero if problems like output buffer too small. </dd></dl>
+
+<p><div id="dynsection-7" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-7-trigger" src="closed.png" alt="+"/> 函数调用图:</div>
+<div id="dynsection-7-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-7-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c_a9a3ddee83d72197346017b27dcdb0f22_cgraph.png" border="0" usemap="#rc5_8c_a9a3ddee83d72197346017b27dcdb0f22_cgraph" alt=""/></div>
+<map name="rc5_8c_a9a3ddee83d72197346017b27dcdb0f22_cgraph" id="rc5_8c_a9a3ddee83d72197346017b27dcdb0f22_cgraph">
+<area shape="rect" id="node2" href="rc5_8c.html#a1062a818ba3a348bf5290c533b4e59a0" title="encryption of a single input block " alt="" coords="240,5,381,32"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="ab060814c6a9f69f3f55fb92d833c4ad7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int RC5_CBC_SetIV </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structrc5_c_b_c_alg.html">rc5CBCAlg</a> *&#160;</td>
+          <td class="paramname"><em>pAlg</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>I</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Setup a new initialization vector for a CBC operation and reset the CBC object. </p>
+<dl class="section note"><dt>注解</dt><dd>This can be called after Final without needing to call Init or Create again. For CBC cipher objects, the state of the algorithm depends on the expanded key, the CBC chain block, and any internally buffered input. Often the same key is used with many messages that each have a unique initialization vector. To avoid the overhead of creating a new cipher object, it makes more sense to provide an operation that allows the caller to change the initialization vector for an existing cipher object. </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pAlg</td><td>RC5 CBC algorithm object </td></tr>
+    <tr><td class="paramname">I</td><td>CBC Initialization vector, BB bytes. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>Return zero if problems. </dd></dl>
+
+<p><div id="dynsection-8" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-8-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-8-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-8-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c_ab060814c6a9f69f3f55fb92d833c4ad7_icgraph.png" border="0" usemap="#rc5_8c_ab060814c6a9f69f3f55fb92d833c4ad7_icgraph" alt=""/></div>
+<map name="rc5_8c_ab060814c6a9f69f3f55fb92d833c4ad7_icgraph" id="rc5_8c_ab060814c6a9f69f3f55fb92d833c4ad7_icgraph">
+<area shape="rect" id="node2" href="rc5_8h.html#a5d7bfde8c11b9129c0b09b6261782698" title="Binding a key to a cipher object. " alt="" coords="184,5,347,32"/><area shape="rect" id="node3" href="rc5_8h.html#a56b6960d998f70efe16a7dbc24fd763e" title="Produce the final block of ciphertext including any padding, and then reset the algorithm object..." alt="" coords="179,56,351,83"/><area shape="rect" id="node4" href="rc5_8h.html#a8b2a90e4446d62ca3b6a0e92e40767fa" title="RC5_CBC_Decrypt_Init" alt="" coords="184,107,347,133"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a7a5874d3f605e75ef7a6f976f43300a7"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structrc5_user_key.html">rc5UserKey</a>* RC5_Key_Create </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Allocate and initialize an RC5 user key. </p>
+<dl class="section note"><dt>注解</dt><dd>To create a key, the memory for the key object must be allocated and initialized. The C code below assumes that a function called "malloc" will return a block of uninitialized memory from the heap, or zero indicating an error. </dd></dl>
+<dl class="section return"><dt>返回</dt><dd>Return 0 if problems. </dd></dl>
+
+</div>
+</div>
+<a class="anchor" id="a8b8391a0277b8f03f50ff1eda8a4b5f0"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void RC5_Key_Destroy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structrc5_user_key.html">rc5UserKey</a> *&#160;</td>
+          <td class="paramname"><em>pKey</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Zero and free an RC5 user key. </p>
+<dl class="section note"><dt>注解</dt><dd>To destroy a key, the memory must be zeroed and released to the memory manager. The C code below assumes that a function called "free" will return a block of memory to the heap. </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pKey</td><td>user key </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a class="anchor" id="a20f58f7887ddd65a26b172e84078247f"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void RC5_Key_Expand </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>K</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>R</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="rc5_8h.html#a4d436a8d6ad28b65e8d864ebdf57ee0a">RC5_WORD</a> *&#160;</td>
+          <td class="paramname"><em>S</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Expand an RC5 user key. </p>
+<dl class="section note"><dt>注解</dt><dd>The key expansion routine converts the b-byte secret key, K, into an expanded key, S, which is a sequence of T = 2*(R+1) words. The expansion algorithm uses two constants that are derived from the constants, e, and phi. These are used to initialize S, which is then modified using K. </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">b</td><td>Byte length of secret key </td></tr>
+    <tr><td class="paramname">K</td><td>Secret key </td></tr>
+    <tr><td class="paramname">R</td><td>Number of rounds </td></tr>
+    <tr><td class="paramname">S</td><td>Expanded key buffer, 2*(R+1) words </td></tr>
+  </table>
+  </dd>
+</dl>
+
+<p><div id="dynsection-9" onclick="return toggleVisibility(this)" class="dynheader closed" style="cursor:pointer;">
+  <img id="dynsection-9-trigger" src="closed.png" alt="+"/> 这是这个函数的调用关系图:</div>
+<div id="dynsection-9-summary" class="dynsummary" style="display:block;">
+</div>
+<div id="dynsection-9-content" class="dyncontent" style="display:none;">
+<div class="center"><img src="rc5_8c_a20f58f7887ddd65a26b172e84078247f_icgraph.png" border="0" usemap="#rc5_8c_a20f58f7887ddd65a26b172e84078247f_icgraph" alt=""/></div>
+<map name="rc5_8c_a20f58f7887ddd65a26b172e84078247f_icgraph" id="rc5_8c_a20f58f7887ddd65a26b172e84078247f_icgraph">
+<area shape="rect" id="node2" href="rc5_8h.html#a5d7bfde8c11b9129c0b09b6261782698" title="Binding a key to a cipher object. " alt="" coords="184,5,347,32"/><area shape="rect" id="node3" href="rc5_8h.html#a8b2a90e4446d62ca3b6a0e92e40767fa" title="RC5_CBC_Decrypt_Init" alt="" coords="184,56,347,83"/></map>
+</div>
+</p>
+
+</div>
+</div>
+<a class="anchor" id="a5d995302e23e229cd44090ccad80660d"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int RC5_Key_Set </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structrc5_user_key.html">rc5UserKey</a> *&#160;</td>
+          <td class="paramname"><em>pKey</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>keyLength</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char *&#160;</td>
+          <td class="paramname"><em>keyBytes</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Set the value of an RC5 user key. </p>
+<dl class="section note"><dt>注解</dt><dd>Setting the key object makes a copy of the secret key into a block of memory allocated from the heap. Copy the key bytes so the caller can zero and free the original. </dd></dl>
+<dl class="params"><dt>参数</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pKey</td><td>user key </td></tr>
+    <tr><td class="paramname">keyLength</td><td>user key length </td></tr>
+    <tr><td class="paramname">keyBytes</td><td>user key bytes </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>返回</dt><dd>Return zero if problems </dd></dl>
+
+</div>
+</div>
+</div><!-- contents -->
+</div><!-- doc-content -->
+<!-- start footer part -->
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_68267d1309a1af8e8297ef4c3efbcdba.html">src</a></li><li class="navelem"><a class="el" href="dir_b7878ad5ecbf2506f4125b9d34c97e45.html">util</a></li><li class="navelem"><a class="el" href="dir_9460958087c929262b899b3be9fa1408.html">encrypt</a></li><li class="navelem"><a class="el" href="rc5_8c.html">rc5.c</a></li>
+    <li class="footer">生成于 2018年 六月 9日 星期六 15:04:33 , 为 Nebula使用 
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
+</body>
+</html>

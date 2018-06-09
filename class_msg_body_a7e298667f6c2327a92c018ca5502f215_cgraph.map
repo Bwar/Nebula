@@ -1,0 +1,4 @@
+<map id="MsgBody::CopyFrom" name="MsgBody::CopyFrom">
+<area shape="rect" id="node2" href="$class_msg_body.html#aaae43dd60f6f2356ccf42f710edcd617" title="MsgBody::Clear" alt="" coords="218,5,334,32"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#a47ade90c03ce601cdca08494f47ceee1" title="MsgBody::MergeFrom" alt="" coords="201,56,351,83"/>
+</map>

@@ -1,0 +1,4 @@
+<map id="RC5_Block_Encrypt" name="RC5_Block_Encrypt">
+<area shape="rect" id="node2" href="$rc5_8h.html#a9a3ddee83d72197346017b27dcdb0f22" title="Encrypt a buffer of plaintext. " alt="" coords="195,5,381,32"/>
+<area shape="rect" id="node3" href="$rc5_8h.html#a56b6960d998f70efe16a7dbc24fd763e" title="Produce the final block of ciphertext including any padding, and then reset the algorithm object..." alt="" coords="202,56,374,83"/>
+</map>

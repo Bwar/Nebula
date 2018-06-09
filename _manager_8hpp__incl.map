@@ -1,0 +1,14 @@
+<map id="src/labor/Manager.hpp" name="src/labor/Manager.hpp">
+<area shape="rect" id="node22" href="$_c_json_object_8hpp.html" title="util/json/CJsonObject.hpp" alt="" coords="1781,88,1952,115"/>
+<area shape="rect" id="node31" href="$_c_buffer_8hpp.html" title="util/CBuffer.hpp" alt="" coords="455,88,568,115"/>
+<area shape="rect" id="node40" href="$msg_8pb_8h.html" title="pb/msg.pb.h" alt="" coords="1151,171,1245,197"/>
+<area shape="rect" id="node43" href="$neb__sys_8pb_8h.html" title="pb/neb_sys.pb.h" alt="" coords="781,171,899,197"/>
+<area shape="rect" id="node44" href="$_error_8hpp.html" title="Error.hpp" alt="" coords="3356,88,3431,115"/>
+<area shape="rect" id="node45" href="$_definition_8hpp.html" title="Definition.hpp" alt="" coords="1373,171,1475,197"/>
+<area shape="rect" id="node46" href="$_net_logger_8hpp.html" title="util/logger/NetLogger.hpp" alt="" coords="978,88,1144,115"/>
+<area shape="rect" id="node47" href="$_labor_8hpp.html" title="Labor.hpp" alt="" coords="1322,88,1400,115"/>
+<area shape="rect" id="node48" href="$_channel_8hpp.html" title="channel/Channel.hpp" alt="" coords="3455,88,3599,115"/>
+<area shape="rect" id="node49" href="$_cmd_8hpp.html" title="actor/cmd/Cmd.hpp" alt="" coords="3623,88,3760,115"/>
+<area shape="rect" id="node50" href="$_session_node_8hpp.html" title="actor/session/sys_session\l/SessionNode.hpp" alt="" coords="1527,81,1704,122"/>
+<area shape="rect" id="node30" href="$c_j_s_o_n_8h.html" title="cJSON.h" alt="" coords="1969,171,2044,197"/>
+</map>

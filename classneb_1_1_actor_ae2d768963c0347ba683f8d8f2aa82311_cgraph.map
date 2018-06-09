@@ -1,0 +1,4 @@
+<map id="neb::Actor::GetNowTime" name="neb::Actor::GetNowTime">
+<area shape="rect" id="node2" href="$classneb_1_1_worker.html#a59036cb98ccf157622c348b560868c06" title="neb::Worker::GetNowTime" alt="" coords="221,5,400,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_worker_impl.html#a899233c601644cb75ff4851bf357bb1c" title="neb::WorkerImpl::GetNowTime" alt="" coords="448,5,651,32"/>
+</map>

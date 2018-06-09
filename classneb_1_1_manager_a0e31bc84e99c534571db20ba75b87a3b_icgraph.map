@@ -1,0 +1,8 @@
+<map id="neb::Manager::AddNodeIdentify" name="neb::Manager::AddNodeIdentify">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a09be65bcb848a8837ef97e5f01463dbc" title="neb::Manager::Init" alt="" coords="298,8,425,35"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#a78be86955676e89b638df7f8baff20eb" title="neb::Manager::OnBeaconData" alt="" coords="262,60,461,87"/>
+<area shape="rect" id="node7" href="$classneb_1_1_manager.html#ac37bc4b870eaf56ec3f52861b19b1182" title="neb::Manager::OnNodeNotify" alt="" coords="265,111,457,137"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#a22a9dcb003b035b4e9d2808a9df06ead" title="neb::Manager::Manager" alt="" coords="526,5,685,32"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#a052349b448be0fa3c73c843aeb2c84cb" title="neb::Manager::DataRecvAnd\lHandle" alt="" coords="510,57,701,98"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#aff17069bb8dbb05113fb4de93254af63" title="neb::Manager::OnIoRead" alt="" coords="749,64,917,91"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="neb::Manager::SendToWorker" name="neb::Manager::SendToWorker">
+<area shape="rect" id="node2" href="$classneb_1_1_manager.html#a5bfbb5b167e1be8f61240e7a9fdc2606" title="neb::Manager::RemoveIoWrite\lEvent" alt="" coords="251,5,451,46"/>
+<area shape="rect" id="node3" href="$classneb_1_1_manager.html#aa2ac3c9e55e4ae864ffa18ad7bba8f33" title="neb::Manager::AddIoWrite\lEvent" alt="" coords="263,70,438,111"/>
+<area shape="rect" id="node5" href="$classneb_1_1_manager.html#a57e8adb622005fc5fe1ab5fbfe2840e5" title="neb::Manager::DiscardSocket\lChannel" alt="" coords="253,135,448,177"/>
+<area shape="rect" id="node4" href="$classneb_1_1_manager.html#a676468e6f26f46f782cd296c23acca60" title="neb::Manager::IoCallback" alt="" coords="499,77,669,104"/>
+<area shape="rect" id="node6" href="$classneb_1_1_manager.html#a5fa2d8127a07de18616180ac94386b11" title="neb::Manager::DelEvents" alt="" coords="499,143,669,169"/>
+</map>

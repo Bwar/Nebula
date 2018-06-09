@@ -1,0 +1,4 @@
+<map id="neb::CodecHttp::OnHeaderField" name="neb::CodecHttp::OnHeaderField">
+<area shape="rect" id="node2" href="$class_http_msg.html#afc3b4c0b52130e00ac71d8645daf1b10" title="HttpMsg::add_headers" alt="" coords="235,5,389,32"/>
+<area shape="rect" id="node3" href="$class_http_msg___header.html#adb12bac7c1b17ea02ef8160cbf25ccb2" title="HttpMsg_Header::set\l_header_name" alt="" coords="239,57,385,98"/>
+</map>

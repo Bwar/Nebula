@@ -1,0 +1,16 @@
+<map id="neb::Manager::SendOriented" name="neb::Manager::SendOriented">
+<area shape="rect" id="node2" href="$class_msg_body.html#a86b0aefb20f53830ab52253f12bfa168" title="MsgBody::has_req_target" alt="" coords="485,5,656,32"/>
+<area shape="rect" id="node4" href="$class_msg_body.html#a0fe00a46572885a711372b8cc6664285" title="MsgBody::req_target" alt="" coords="266,56,409,83"/>
+<area shape="rect" id="node6" href="$class_msg_body___request.html#afc0e4b47c4130c2e42b544cff6121c01" title="MsgBody_Request::route_id" alt="" coords="244,107,431,133"/>
+<area shape="rect" id="node7" href="$classneb_1_1_manager.html#a2924f85bf8d44c5c090353c8010e3636" title="neb::Manager::SendOriented" alt="" coords="243,157,431,184"/>
+<area shape="rect" id="node14" href="$class_msg_body___request.html#ac40cee299a9b7683d60e8cca0da89254" title="MsgBody_Request::route" alt="" coords="252,208,423,235"/>
+<area shape="rect" id="node8" href="$classneb_1_1_manager.html#a491bed90774e9489361bd3f903161847" title="neb::Manager::SendTo" alt="" coords="493,259,648,285"/>
+<area shape="rect" id="node15" href="$classneb_1_1_manager.html#a66feaba7d02ca751c24d2875062924ff" title="neb::Manager::SendPolling" alt="" coords="248,309,427,336"/>
+<area shape="rect" id="node3" href="$class_msg_body.html#a6d33eb1dfa2072237b414ccc00210152" title="MsgBody::msg_type_case" alt="" coords="721,5,898,32"/>
+<area shape="rect" id="node5" href="$class_msg_body___request.html#a57bbfce5042878422173cc213f445bff" title="MsgBody_Request::default\l_instance" alt="" coords="481,57,661,98"/>
+<area shape="rect" id="node9" href="$classneb_1_1_manager.html#a5bfbb5b167e1be8f61240e7a9fdc2606" title="neb::Manager::RemoveIoWrite\lEvent" alt="" coords="709,186,909,227"/>
+<area shape="rect" id="node10" href="$classneb_1_1_manager.html#aa2ac3c9e55e4ae864ffa18ad7bba8f33" title="neb::Manager::AddIoWrite\lEvent" alt="" coords="722,251,897,293"/>
+<area shape="rect" id="node12" href="$classneb_1_1_manager.html#a57e8adb622005fc5fe1ab5fbfe2840e5" title="neb::Manager::DiscardSocket\lChannel" alt="" coords="712,317,907,358"/>
+<area shape="rect" id="node11" href="$classneb_1_1_manager.html#a676468e6f26f46f782cd296c23acca60" title="neb::Manager::IoCallback" alt="" coords="957,259,1128,285"/>
+<area shape="rect" id="node13" href="$classneb_1_1_manager.html#a5fa2d8127a07de18616180ac94386b11" title="neb::Manager::DelEvents" alt="" coords="957,324,1128,351"/>
+</map>

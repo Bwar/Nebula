@@ -1,0 +1,11 @@
+<map id="HttpMsg::type" name="HttpMsg::type">
+<area shape="rect" id="node2" href="$classneb_1_1_codec_http.html#a517a2abd84b5bdeabe429ac9c9e59a5e" title="neb::CodecHttp::Encode" alt="" coords="178,5,345,32"/>
+<area shape="rect" id="node3" href="$classneb_1_1_codec_http.html#a9ab0533741ec8cc521162ba5df2fd11e" title="neb::CodecHttp::Decode" alt="" coords="429,81,595,108"/>
+<area shape="rect" id="node4" href="$classneb_1_1_codec_http.html#a267f62e7bf45f5965eb9600967d48f56" title="neb::CodecHttp::ToString" alt="" coords="176,107,347,133"/>
+<area shape="rect" id="node5" href="$classneb_1_1_worker_impl.html#a7f76368a4bb684a10f0a7dfc66f635f4" title="收到完整的hhtp包后处理 " alt="" coords="178,157,345,184"/>
+<area shape="rect" id="node6" href="$class_http_msg.html#aeda572e7e8b695e062e3d702ed13caec" title="HttpMsg::SerializeWithCached\lSizes" alt="" coords="160,209,363,250"/>
+<area shape="rect" id="node7" href="$class_http_msg.html#a70b0bdf2f78714642eeca86b5afb8e17" title="HttpMsg::InternalSerialize\lWithCachedSizesToArray" alt="" coords="175,274,348,315"/>
+<area shape="rect" id="node9" href="$class_http_msg.html#a5c0c4bf3764e3f464cdf1c17b683c871" title="HttpMsg::ByteSize" alt="" coords="195,340,328,367"/>
+<area shape="rect" id="node10" href="$class_http_msg.html#a78c317f2854c3da3968cf11a32c96f4f" title="HttpMsg::MergeFrom" alt="" coords="188,391,335,417"/>
+<area shape="rect" id="node8" href="$class_http_msg.html#a35dd6bc0c90e1892aa6dbc3162329cfc" title="HttpMsg::SerializeWithCached\lSizesToArray" alt="" coords="411,274,613,315"/>
+</map>

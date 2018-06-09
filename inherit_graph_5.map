@@ -1,0 +1,15 @@
+<map id="类继承关系图" name="类继承关系图">
+<area shape="rect" id="node2" href="$class_http_msg.html" title="HttpMsg" alt="" coords="164,5,236,32"/>
+<area shape="rect" id="node3" href="$class_http_msg___header.html" title="HttpMsg_Header" alt="" coords="139,56,261,83"/>
+<area shape="rect" id="node4" href="$class_http_msg___param.html" title="HttpMsg_Param" alt="" coords="141,107,259,133"/>
+<area shape="rect" id="node5" href="$class_http_msg___upgrade.html" title="HttpMsg_Upgrade" alt="" coords="136,157,264,184"/>
+<area shape="rect" id="node6" href="$class_msg_body.html" title="MsgBody" alt="" coords="161,208,239,235"/>
+<area shape="rect" id="node7" href="$class_msg_body___request.html" title="MsgBody_Request" alt="" coords="133,259,267,285"/>
+<area shape="rect" id="node8" href="$class_msg_body___response.html" title="MsgBody_Response" alt="" coords="129,309,271,336"/>
+<area shape="rect" id="node9" href="$class_msg_head.html" title="MsgHead" alt="" coords="161,360,239,387"/>
+<area shape="rect" id="node10" href="$classneb_1_1_config_info.html" title="neb::ConfigInfo" alt="" coords="145,411,255,437"/>
+<area shape="rect" id="node11" href="$classneb_1_1_log_level.html" title="neb::LogLevel" alt="" coords="149,461,251,488"/>
+<area shape="rect" id="node12" href="$classneb_1_1_target_worker.html" title="neb::TargetWorker" alt="" coords="135,512,265,539"/>
+<area shape="rect" id="node13" href="$classneb_1_1_trace_log.html" title="neb::TraceLog" alt="" coords="147,563,253,589"/>
+<area shape="rect" id="node14" href="$classneb_1_1_worker_load.html" title="neb::WorkerLoad" alt="" coords="139,613,261,640"/>
+</map>
