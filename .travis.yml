@@ -30,7 +30,7 @@ deploy_docs:
   on:
     branch: master
 
-install:
+script:
     - mkdir BuildNebula
     - cd BuildNebula
     - export WORK_PATH=`pwd`
@@ -76,4 +76,3 @@ install:
     - ${WORK_PATH}/NebulaDepend/bin/protoc *.proto --cpp_out=../src/pb
     - cd ../src
     - make
-
