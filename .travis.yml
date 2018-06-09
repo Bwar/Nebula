@@ -9,12 +9,26 @@ addons:
     packages:
       - gcc-6
       - g++-6
-script:
+      - doxygen
+      - doxygen-doc
+      - doxygen-latex
+      - doxygen-gui
+      - graphviz
+before_install:
     - sudo ln -s /usr/bin/gcc-6 /usr/local/bin/gcc
     - sudo ln -s /usr/bin/g++-6 /usr/local/bin/g++
     - export CC=/usr/bin/gcc-6
     - export CXX=/usr/bin/g++-6
     - gcc -v && g++ -v
+    - doxygen docs/Doxyfile
+
+deploy_docs:
+  provider: pages
+  skip_cleanup: pages
+  github-token: $GH_REPO_TOKEN # Set in the settings page of your repository, as a secure variable
+  local_dir: docs/html
+  on:
+    branch: master
 
 install:
     - mkdir BuildNebula
