@@ -39,7 +39,7 @@ Nebula在centos6.5（需升级binutils到2.22之后版本）和centos7.4上用gc
 
 <a name="Documentation"></a>
 ## 文档
-Nebula 完成的文档在 [Nebula documentation](https://github.com/Bwar/Nebula/wiki)，持续更新中。
+Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)和[Nebula wiki](https://github.com/Bwar/Nebula/wiki)，持续更新中。
 
 <a name="DependOn"></a>
 ## 依赖 
