@@ -142,7 +142,7 @@ E_CODEC_STATUS SocketChannelImpl::Send()
     }
 
     m_dActiveTime = m_pLabor->GetNowTime();
-    iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
+    iWriteLen = Write(m_pSendBuff, m_iErrno);
     LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
     if (iWriteLen >= 0)
     {
@@ -242,7 +242,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
     }
 
     errno = 0;
-    int iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
+    int iWriteLen = Write(m_pSendBuff, m_iErrno);
     LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
     if (iWriteLen >= 0)
     {
@@ -320,7 +320,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
         return(eCodecStatus);
     }
 
-    int iWriteLen = m_pSendBuff->WriteFD(m_iFd, m_iErrno);
+    int iWriteLen = Write(m_pSendBuff, m_iErrno);
     if (iWriteLen >= 0)
     {
         m_ulStepSeq = ulStepSeq;
@@ -361,7 +361,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
-    iReadLen = m_pRecvBuff->ReadFD(m_iFd, m_iErrno);
+    iReadLen = Read(m_pRecvBuff, m_iErrno);
     LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d", m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     if (iReadLen > 0)
     {
@@ -444,7 +444,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
-    iReadLen = m_pRecvBuff->ReadFD(m_iFd, m_iErrno);
+    iReadLen = Read(m_pRecvBuff, m_iErrno);
     LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
             m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     if (iReadLen > 0)
@@ -492,7 +492,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
-    iReadLen = m_pRecvBuff->ReadFD(m_iFd, m_iErrno);
+    iReadLen = Read(m_pRecvBuff, m_iErrno);
     LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
             m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     if (iReadLen > 0)
@@ -671,6 +671,16 @@ void SocketChannelImpl::Abort()
         m_pWaitForSendBuff->Compact(1);
         close(m_iFd);
     }
+}
+
+int SocketChannelImpl::Write(CBuffer* pBuff, int& iErrno)
+{
+    return(pBuff->WriteFD(m_iFd, iErrno));
+}
+
+int SocketChannelImpl::Read(CBuffer* pBuff, int& iErrno)
+{
+    return(pBuff->ReadFD(m_iFd, iErrno));
 }
 
 

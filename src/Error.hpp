@@ -35,6 +35,11 @@ enum E_ERROR_NO
     ERR_BODY_JSON                       = 10011,    ///< 消息体json解析错误
     ERR_SERVERINFO_RECORD               = 10012,    ///< 存档服务器信息错误
     ERR_NODE_NUM                        = 10013,    ///< 系统节点数超过最大限制65535
+    ERR_SSL_INIT                        = 10014,    ///< 初始化SSL错误
+    ERR_SSL_CTX                         = 10015,    ///< 创建SSL上下文错误 
+    ERR_SSL_CERTIFICATE                 = 10016,    ///< 加载SSL证书错误
+    ERR_SSL_NEW_CONNECTION              = 10017,    ///< 新建SSL连接错误
+    ERR_SSL_HANDSHAKE                   = 10018,    ///< 建立SSL连接错误
 
     /* 存储代理错误码段  11000~11999 */
     ERR_INCOMPLET_DATAPROXY_DATA        = 11001,    ///< DataProxy请求数据包不完整

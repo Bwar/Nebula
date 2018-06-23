@@ -15,7 +15,6 @@
 #include "labor/Labor.hpp"
 #include "actor/cmd/CW.hpp"
 #include "NetLogger.hpp"
-#include "pb/neb_sys.pb.h"
 
 namespace neb
 {

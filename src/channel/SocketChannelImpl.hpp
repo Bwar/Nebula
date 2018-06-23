@@ -192,6 +192,10 @@ public:
 
     void Abort();
 
+protected:
+    virtual int Write(CBuffer* pBuff, int& iErrno);
+    virtual int Read(CBuffer* pBuff, int& iErrno);
+
 private:
     uint8 m_ucChannelStatus;
     char m_szErrBuff[256];
