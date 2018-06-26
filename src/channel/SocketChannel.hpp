@@ -11,6 +11,7 @@
 #define SRC_CHANNEL_SOCKETCHANNEL_HPP_
 
 #include "SocketChannelImpl.hpp"
+#include "SocketChannelSslImpl.hpp"
 
 namespace neb
 {
@@ -24,7 +25,7 @@ public:
         int iCodecType;
     };
 
-    SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive = 0.0);
+    SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl = false, ev_tstamp dKeepAlive = 0.0);
     virtual ~SocketChannel();
     
     static int SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std::shared_ptr<NetLogger> pLogger);
@@ -36,7 +37,8 @@ public:
     const std::string& GetClientData() const;
 
 private:
-    std::unique_ptr<SocketChannelImpl> m_pImpl;
+    //std::unique_ptr<SocketChannelImpl> m_pImpl;
+    std::shared_ptr<SocketChannelImpl> m_pImpl;
     
     friend class WorkerImpl;
     friend class Manager;

@@ -7,6 +7,7 @@
  * @note
  * Modify history:
  ******************************************************************************/
+#include <memory>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -19,10 +20,17 @@
 namespace neb
 {
 
-SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
+SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, ev_tstamp dKeepAlive)
     : m_pImpl(nullptr)
 {
-    m_pImpl = std::make_unique<SocketChannelImpl>(this, pLogger, iFd, ulSeq, dKeepAlive);
+    if (bWithSsl)
+    {
+        m_pImpl = std::dynamic_pointer_cast<SocketChannelImpl>(std::make_shared<SocketChannelSslImpl>(this, pLogger, iFd, ulSeq, dKeepAlive));
+    }
+    else
+    {
+        m_pImpl = std::make_shared<SocketChannelImpl>(this, pLogger, iFd, ulSeq, dKeepAlive);
+    }
 }
 
 SocketChannel::~SocketChannel()

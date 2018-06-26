@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 
+#include <algorithm>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -330,7 +331,15 @@ bool WorkerImpl::FdTransfer()
         {
             LOG4_WARNING("fail to set TCP_NODELAY");
         }
-        std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec));
+        std::shared_ptr<SocketChannel> pChannel = nullptr;
+        if (CODEC_NEBULA != iCodec && m_oWorkerConf["with_ssl"]("config_path").length() > 0)
+        {
+            pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), true, true);
+        }
+        else
+        {
+            pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), true, false);
+        }
         if (nullptr != pChannel)
         {
             int z;                          /* status return code */
@@ -699,6 +708,26 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
     {
         return(false);
     }
+    if (oJsonConf["with_ssl"]("config_path").length() > 0)
+    {
+        if (ERR_OK != SocketChannelSslImpl::SslInit(m_pLogger))
+        {
+            LOG4_FATAL("SslInit() failed!");
+            return(false);
+        }
+        if (ERR_OK != SocketChannelSslImpl::SslServerCtxCreate(m_pLogger))
+        {
+            LOG4_FATAL("SslServerCtxCreate() failed!");
+            return(false);
+        }
+        std::string strCertFile = m_stWorkerInfo.strWorkPath + "/" + oJsonConf["with_ssl"]("config_path") + "/" + oJsonConf["with_ssl"]("cert_file");
+        std::string strKeyFile = m_stWorkerInfo.strWorkPath + "/" + oJsonConf["with_ssl"]("config_path") + "/" + oJsonConf["with_ssl"]("key_file");
+        if (ERR_OK != SocketChannelSslImpl::SslServerCertificate(m_pLogger, strCertFile, strKeyFile))
+        {
+            LOG4_FATAL("SslServerCertificate() failed!");
+            return(false);
+        }
+    }
     return(true);
 }
 
@@ -798,6 +827,7 @@ void WorkerImpl::Destroy()
     }
     m_mapLoadedSo.clear();
 
+    SocketChannelSslImpl::SslFree();
     // TODO 待补充完整
 
     if (m_loop != nullptr)
@@ -1278,7 +1308,17 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
     x_sock_set_block(iFd, 0);
     int nREUSEADDR = 1;
     setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
-    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, CODEC_HTTP);
+    std::shared_ptr<SocketChannel> pChannel = nullptr;
+    std::string strSchema = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(':'));
+    std::transform(strSchema.begin(), strSchema.end(), strSchema.begin(), [](unsigned char c) -> unsigned char { return std::tolower(c); });
+    if (strSchema == std::string("https"))
+    {
+        pChannel = CreateSocketChannel(iFd, CODEC_HTTP, false, true);
+    }
+    else
+    {
+        pChannel = CreateSocketChannel(iFd, CODEC_HTTP, false, false);
+    }
     if (nullptr != pChannel)
     {
         connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
@@ -1666,7 +1706,7 @@ std::shared_ptr<Session> WorkerImpl::GetSession(const std::string& strSessionId,
     }
 }
 
-std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType)
+std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsServer, bool bWithSsl)
 {
     LOG4_DEBUG("iFd %d, codec_type %d", iFd, eCodecType);
 
@@ -1681,7 +1721,7 @@ std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_
         return(nullptr);
     }
     pChannel->m_pImpl->SetLabor(m_pWorker);
-    bool bInitResult = pChannel->m_pImpl->Init(eCodecType);
+    bool bInitResult = pChannel->m_pImpl->Init(eCodecType, bIsServer);
     if (bInitResult)
     {
         m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));

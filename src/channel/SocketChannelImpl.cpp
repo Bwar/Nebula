@@ -42,7 +42,7 @@ SocketChannelImpl::~SocketChannelImpl()
     LOG4_DEBUG("SocketChannelImpl::~SocketChannelImpl() fd %d, seq %u", m_iFd, m_ulSeq);
 }
 
-bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, const std::string& strKey)
+bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer, const std::string& strKey)
 {
     LOG4_TRACE("fd[%d], codec_type[%d]", m_iFd, eCodecType);
     try

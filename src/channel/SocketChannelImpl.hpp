@@ -25,6 +25,7 @@
 #include "util/StreamCodec.hpp"
 #include "util/json/CJsonObject.hpp"
 
+#include "pb/http.pb.h"
 #include "codec/Codec.hpp"
 #include "Channel.hpp"
 #include "Definition.hpp"
@@ -46,11 +47,11 @@ public:
     virtual ~SocketChannelImpl();
 
     // bool Init(E_CODEC_TYPE eCodecType, IoCallbackFun io_cb, TimerCallbackFun timer_cb, const std::string& strKey = "That's a lizard.");
-    bool Init(E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
+    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsServer = true, const std::string& strKey = "That's a lizard.");
 
     E_CODEC_TYPE GetCodecType() const;
 
-    E_CODEC_STATUS Send();
+    virtual E_CODEC_STATUS Send();
     E_CODEC_STATUS Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     E_CODEC_STATUS Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq);
     E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody);
