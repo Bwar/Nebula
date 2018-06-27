@@ -52,7 +52,7 @@ public:
     static int SslServerCtxCreate(std::shared_ptr<NetLogger> pLogger);
     static int SslServerCertificate(std::shared_ptr<NetLogger> pLogger,
                 const std::string& strCertFile, const std::string& strKeyFile);
-    static int SslFree();
+    static void SslFree();
 
     int SslClientCtxCreate();
     int SslCreateConnection();
@@ -60,7 +60,8 @@ public:
     int SslShutdown();
 
     virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsServer = true, const std::string& strKey = "That's a lizard.");
-    E_CODEC_STATUS Send();      ///< 覆盖基类的Send()方法，实现非阻塞socket连接建立后继续建立SSL连接
+    virtual E_CODEC_STATUS Send();      ///< 覆盖基类的Send()方法，实现非阻塞socket连接建立后继续建立SSL连接
+    virtual void Abort();
 
 protected:
     virtual int Write(CBuffer* pBuff, int& iErrno);

@@ -191,7 +191,7 @@ public:
         return(m_pTimerWatcher);
     }
 
-    void Abort();
+    virtual void Abort();
 
 protected:
     virtual int Write(CBuffer* pBuff, int& iErrno);

@@ -175,7 +175,7 @@ class CBuffer
         {
             return m_buffer;
         }
-        inline const char* GetRawWriteBuffer() const
+        inline char* GetRawWriteBuffer() 
         {
             return m_buffer + m_write_idx;
         }

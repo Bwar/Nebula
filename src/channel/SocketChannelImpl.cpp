@@ -408,7 +408,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                     break;
                 default:
                     LOG4_ERROR("invalid connect status %d!", m_ucChannelStatus);
-                    return(CODEC_STATUS_OK);
+                    return(CODEC_STATUS_ERR);
             }
         }
         LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());

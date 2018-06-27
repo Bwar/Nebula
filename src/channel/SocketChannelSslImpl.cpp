@@ -218,7 +218,7 @@ int SocketChannelSslImpl::SslServerCertificate(std::shared_ptr<NetLogger> pLogge
     } 
 }
 
-int SocketChannelSslImpl::SslFree()
+void SocketChannelSslImpl::SslFree()
 {
     if (m_pServerSslCtx)
     {
@@ -318,9 +318,16 @@ int SocketChannelSslImpl::SslHandshake()
                 m_eSslChannelStatus = SSL_CHANNEL_HANDSHAKE;
                 break;
             case SSL_ERROR_SYSCALL:
-                LOG4_ERROR("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
+                LOG4_INFO("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
                     "For socket I/O on Unix systems, consult errno %d for details.", errno);
-                return(ERR_SSL_HANDSHAKE);
+                if (EINTR == errno)
+                {
+                    return(ERR_OK);
+                }
+                else
+                {
+                    return(ERR_SSL_HANDSHAKE);
+                }
             case SSL_ERROR_SSL:
                 LOG4_ERROR("A failure in the SSL library occurred, usually a protocol error. The OpenSSL error queue contains more information on the error.");
                 return(ERR_SSL_HANDSHAKE);
@@ -348,7 +355,7 @@ int SocketChannelSslImpl::SslShutdown()
         return(ERR_OK);
     }
 
-    int iShutdownResult = 0;
+    // int iShutdownResult = 0;
     // int iShutdownMode = 0;
     // if (c->timedout)
     // {
@@ -376,7 +383,8 @@ int SocketChannelSslImpl::SslShutdown()
 
     // SSL_set_shutdown(m_pSslConnection, iShutdownMode);
 
-    iShutdownResult = SSL_shutdown(m_pSslConnection);
+    // iShutdownResult = SSL_shutdown(m_pSslConnection);
+    SSL_shutdown(m_pSslConnection);
     m_eSslChannelStatus = SSL_CHANNEL_SHUTDOWN;
 
     SSL_free(m_pSslConnection);
@@ -442,6 +450,79 @@ E_CODEC_STATUS SocketChannelSslImpl::Send()
             LOG4_ERROR("invalid ssl channel status!");
             return(CODEC_STATUS_ERR);
     }
+}
+
+void SocketChannelSslImpl::Abort()
+{
+    SslShutdown();
+    SocketChannelImpl::Abort();
+}
+
+int SocketChannelSslImpl::Write(CBuffer* pBuff, int& iErrno)
+{
+    int iNeedWriteLen = (int)pBuff->ReadableBytes();
+    int iWritenLen = SSL_write(m_pSslConnection, pBuff->GetRawReadBuffer(), iNeedWriteLen);
+    if (iWritenLen > 0)
+    {
+        pBuff->AdvanceReadIndex(iWritenLen);
+    }
+    else
+    {
+        iErrno = errno;
+        int iErrCode = SSL_get_error(m_pSslConnection, iWritenLen);
+        switch (iErrCode)
+        {
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+                LOG4_DEBUG("The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                iErrno = EAGAIN;
+                break;
+            case SSL_ERROR_ZERO_RETURN:
+                LOG4_DEBUG("ssl channel(fd %d) closed by peer.", GetFd());
+                break;
+            default:
+                LOG4_ERROR("SSL_write() error code %d, see SSL_get_error() manual for error code detail.", iErrCode);
+                ;
+        }
+    }
+    return(iWritenLen);
+}
+
+int SocketChannelSslImpl::Read(CBuffer* pBuff, int& iErrno)
+{
+    if (pBuff->WriteableBytes() < 1024)
+    {
+        pBuff->EnsureWritableBytes(8192);
+    }
+    int iReadLen = SSL_read(m_pSslConnection, pBuff->GetRawWriteBuffer(), pBuff->WriteableBytes());
+    if (iReadLen > 0)
+    {
+        pBuff->AdvanceWriteIndex(iReadLen);
+    }
+    else
+    {
+        iErrno = errno;
+        int iErrCode = SSL_get_error(m_pSslConnection, iReadLen);
+        switch (iErrCode)
+        {
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+                LOG4_INFO("The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                iErrno = EAGAIN;
+                break;
+            case SSL_ERROR_ZERO_RETURN:
+                LOG4_DEBUG("ssl channel(fd %d) closed by peer.", GetFd());
+                break;
+            case SSL_ERROR_SYSCALL:
+                LOG4_INFO("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
+                    "For socket I/O on Unix systems, consult errno %d for details.", errno);
+                break;
+            default:
+                LOG4_ERROR("SSL_write() error code %d, see SSL_get_error() manual for error code detail.", iErrCode);
+                ;
+        }
+    }
+    return(iReadLen);
 }
 
 }
