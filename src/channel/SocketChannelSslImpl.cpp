@@ -216,6 +216,7 @@ int SocketChannelSslImpl::SslServerCertificate(std::shared_ptr<NetLogger> pLogge
             "SSL_CTX_check_private_key() failed: private key does not match the certificate public key!", strKeyFile.c_str());
         return(ERR_SSL_CERTIFICATE);
     } 
+    return(ERR_OK);
 }
 
 void SocketChannelSslImpl::SslFree()
@@ -235,6 +236,7 @@ int SocketChannelSslImpl::SslClientCtxCreate()
         LOG4_ERROR("SSL_CTX_new() failed!");
         return(ERR_SSL_CTX);
     }
+    return(ERR_OK);
 }
 
 int SocketChannelSslImpl::SslCreateConnection()

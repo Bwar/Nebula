@@ -25,15 +25,15 @@ class Logger
 public:
     enum LogLev
     {
-        FATAL = 0,          //致命错误
-        CRITICAL = 1,       //严重错误
-        ERROR = 2,          //一般错误
-        NOTICE = 3,         //关键提示消息
-        WARNING = 4,        //警告
-        INFO = 5,           //一般提示消息
-        DEBUG = 6,          //调试消息
-        TRACE = 7,          //追踪消息
-        LEV_MAX             //日志错误级别数
+        FATAL = 0,        //致命错误
+        CRITICAL = 1,     //严重错误
+        ERROR = 2,        //一般错误
+        NOTICE = 3,       //关键提示消息
+        WARNING = 4,      //警告
+        INFO = 5,         //一般提示消息
+        DEBUG = 6,        //调试消息
+        TRACE = 7,        //追踪消息
+        LEV_MAX           //日志错误级别数
     };
 
 public:

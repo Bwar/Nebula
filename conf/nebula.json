@@ -25,8 +25,8 @@
     "log_path": "log/",
     "//beacon": "控制中心",
     "beacon": [
-        { "host": "192.168.1.11", "port": "9987" },
-        { "host": "192.168.1.12", "port": "9987" }
+        { "host": "192.168.1.11", "port": 16000 },
+        { "host": "192.168.1.12", "port": 16000 }
     ],
     "//max_log_file_num": "最大日志文件数量，用于日志文件滚动",
     "max_log_file_num": 5,
@@ -41,9 +41,9 @@
     "io_timeout": 300.0,
     "//step_timeout": "步骤超时设置（单位：秒）小数点后面至少保留一位",
     "step_timeout": 1.5,
-    "log_levels": { "FATAL": 50000, "ERROR": 40000, "WARN": 30000, "INFO": 20000, "DEBUG": 10000, "TRACE": 0 },
-    "log_level": 10000,
-    "net_log_level": 20000,
+    "log_levels": { "FATAL": 0, "CRITICAL": 1, "ERROR": 2, "NOTICE": 3, "WARNING": 4, "INFO": 5, "DEBUG": 6, "TRACE": 7 },
+    "log_level": 7,
+    "net_log_level": 6,
     "boot_load": {
         "cmd": [
             { "cmd": 1001, "class": "neb::CmdHello" },
