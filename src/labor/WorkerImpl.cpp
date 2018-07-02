@@ -1542,7 +1542,8 @@ WorkerImpl::tagSo* WorkerImpl::LoadSo(const std::string& strSoPath, int iVersion
         {
             dlclose(pHandle);
         }
-        return(pSo);
+        delete pSo;
+        return(nullptr);
     }
     pSo->pSoHandle = pHandle;
     pSo->iVersion = iVersion;
