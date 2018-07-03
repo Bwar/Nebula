@@ -55,8 +55,23 @@ all: $(TARGET)
 	
 libnebula.so: $(OBJS)
 	$(CXX) -fPIE -rdynamic -shared -lstdc++ -g -o $@ $^ $(LDFLAGS)
-	@for dir in $(SUB_INCLUDE); do mkdir -p $(NEBULA_PATH)/include/$$dir; cp $(NEBULA_PATH)/src/$$dir/*.hpp $(NEBULA_PATH)/src/$$dir/*.inl $(NEBULA_PATH)/include/$$dir/ >> /dev/null 2>&1; cp $(NEBULA_PATH)/src/$$dir/*.h $(NEBULA_PATH)/include/$$dir/ >> /dev/null 2>&1; done
-	@for d in `find $(DEEP_SUB_INCLUDE) -type d`; do mkdir -p $(NEBULA_PATH)/include/$$d; cp $(NEBULA_PATH)/src/$$d/*.hpp $(NEBULA_PATH)/src/$$d/*.inl $(NEBULA_PATH)/include/$$d/ >> /dev/null 2>&1; cp $(NEBULA_PATH)/src/$$d/*.h $(NEBULA_PATH)/include/$$d/ >> /dev/null 2>&1; done
+	mkdir -p $(NEBULA_PATH)/include $(NEBULA_PATH)/lib
+	@for dir in $(SUB_INCLUDE); \
+	do \
+		mkdir -p $(NEBULA_PATH)/include/$$dir; \
+		for f in `ls $(NEBULA_PATH)/src/$$dir/*.*`; \
+		do \
+			if [[ $$f =~ ".hpp" || $$f =~ ".h" || $$f =~ ".inl" ]]; then cp $$f $(NEBULA_PATH)/include/$$dir/; fi; \
+		done; \
+	done
+	@for d in `find $(DEEP_SUB_INCLUDE) -type d`; \
+	do \
+		mkdir -p $(NEBULA_PATH)/include/$$d; \
+		for f in `ls $(NEBULA_PATH)/src/$$d/*.*`; \
+		do \
+			if [[ $$f =~ ".hpp" || $$f =~ ".h" || $$f =~ ".inl" ]]; then cp $$f $(NEBULA_PATH)/include/$$d/; fi; \
+		done; \
+	done
 	cp -f $(NEBULA_PATH)/src/*.hpp $(NEBULA_PATH)/include/
 	cp -f $@ $(NEBULA_PATH)/lib/
 
