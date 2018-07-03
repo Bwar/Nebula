@@ -22,8 +22,11 @@ namespace neb
 NetLogger::NetLogger(const std::string strLogFile, int iLogLev, unsigned int uiMaxFileSize, unsigned int uiMaxRollFileIndex, Labor* pLabor)
     : m_pLog(nullptr), m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO), m_bEnableNetLogger(false), m_pLabor(pLabor)
 {
+#if __cplusplus >= 201401L
     m_pLog = std::make_unique<neb::FileLogger>(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex);
-    //m_pLog = std::unique_ptr<FileLogger>(new FileLogger(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex));
+#else
+    m_pLog = std::unique_ptr<FileLogger>(new FileLogger(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex));
+#endif
 }
 
 NetLogger::~NetLogger()

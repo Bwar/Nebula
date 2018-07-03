@@ -15,6 +15,8 @@
 #include <iomanip>
 #include <string>
 #include <iostream>
+#include <sstream>
+#include <fstream>
 
 #include "FileLogger.hpp"
 

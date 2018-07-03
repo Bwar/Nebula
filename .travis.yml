@@ -66,6 +66,14 @@ script:
     - cp *.h ../../NebulaDepend/include/cryptopp/
     - cp libcryptopp.so ../../NebulaDepend/lib/
     - cd ..
+    - wget https://github.com/openssl/openssl/archive/OpenSSL_1_1_0.zip
+    - unzip OpenSSL_1_1_0.zip
+    - rm OpenSSL_1_1_0.zip 
+    - cd openssl-OpenSSL_1_1_0
+    - ./config --prefix=${WORK_PATH}/NebulaDepend
+    - make
+    - make install
+    - cd ..
 
     # now build nebula
     - cd ..

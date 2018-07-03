@@ -784,7 +784,12 @@ bool Manager::GetConf()
 bool Manager::Init()
 {
     InitLogger(m_oCurrentConf);
+#if __cplusplus >= 201401L
     m_pSessionNode = std::make_unique<SessionNode>();
+#else
+    m_pSessionNode = std::unique_ptr<SessionNode>(new SessionNode());
+#endif
+
 
     socklen_t addressLen = 0;
     int queueLen = 100;
