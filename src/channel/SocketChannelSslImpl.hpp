@@ -10,6 +10,7 @@
 #ifndef SRC_CHANNEL_SOCKETCHANNELSSLIMPL_HPP_
 #define SRC_CHANNEL_SOCKETCHANNELSSLIMPL_HPP_
 
+#ifdef WITH_OPENSSL
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/bn.h>
@@ -86,4 +87,5 @@ private:
 
 }
 
+#endif  // ifdef WITH_OPENSSL
 #endif  // SRC_CHANNEL_SOCKETCHANNELSSLIMPL_HPP_

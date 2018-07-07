@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 
+#ifdef WITH_OPENSSL
 #include "SocketChannelSslImpl.hpp"
 
 namespace neb
@@ -528,3 +529,5 @@ int SocketChannelSslImpl::Read(CBuffer* pBuff, int& iErrno)
 }
 
 }
+
+#endif   // ifdef WITH_OPENSSL

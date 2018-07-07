@@ -11,7 +11,9 @@
 #define SRC_CHANNEL_SOCKETCHANNEL_HPP_
 
 #include "SocketChannelImpl.hpp"
+#ifdef WITH_OPENSSL
 #include "SocketChannelSslImpl.hpp"
+#endif
 
 namespace neb
 {

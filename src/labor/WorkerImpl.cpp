@@ -710,6 +710,7 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
     }
     if (oJsonConf["with_ssl"]("config_path").length() > 0)
     {
+#ifdef WITH_OPENSSL
         if (ERR_OK != SocketChannelSslImpl::SslInit(m_pLogger))
         {
             LOG4_FATAL("SslInit() failed!");
@@ -727,6 +728,7 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
             LOG4_FATAL("SslServerCertificate() failed!");
             return(false);
         }
+#endif
     }
     return(true);
 }
@@ -831,7 +833,9 @@ void WorkerImpl::Destroy()
     }
     m_mapLoadedSo.clear();
 
+#ifdef WITH_OPENSSL
     SocketChannelSslImpl::SslFree();
+#endif
     // TODO 待补充完整
 
     if (m_loop != nullptr)

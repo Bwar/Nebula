@@ -25,7 +25,12 @@ SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32
 {
     if (bWithSsl)
     {
+#ifdef WITH_OPENSSL
         m_pImpl = std::dynamic_pointer_cast<SocketChannelImpl>(std::make_shared<SocketChannelSslImpl>(this, pLogger, iFd, ulSeq, dKeepAlive));
+#else
+        pLogger->WriteLog(Logger::INFO, __FILE__, __LINE__, "without openssl, SocekChannelImpl instead.");
+        m_pImpl = std::make_shared<SocketChannelImpl>(this, pLogger, iFd, ulSeq, dKeepAlive);
+#endif
     }
     else
     {
