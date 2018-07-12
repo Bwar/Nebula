@@ -164,11 +164,11 @@ int FileLogger::Vappend(int iLev, const char* szFileName, unsigned int uiFileLin
     auto duration_in_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_now.time_since_epoch());
     auto t = std::chrono::system_clock::to_time_t(time_now);
     std::ostringstream oss;
-    oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S") << ","
+    oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S") << ","
                     << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
                     << szFileName << ":" << uiFileLine << "][" << szFunction << "] ";
     fprintf(m_fp, oss.str().c_str());
-    //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
+    //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
     vfprintf(m_fp, szLogStr, ap);
     fflush(m_fp);
     return 0;
@@ -202,11 +202,11 @@ int FileLogger::Vappend(const std::string& strTraceId, int iLev, const char* szF
     auto duration_in_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_now.time_since_epoch());
     auto t = std::chrono::system_clock::to_time_t(time_now);
     std::ostringstream oss;
-    oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S") << ","
+    oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S") << ","
                     << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
                     << szFileName << ":" << uiFileLine << "][" << szFunction << "][" << strTraceId << "] ";
     fprintf(m_fp, oss.str().c_str());
-    //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H.%M.%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
+    //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
     vfprintf(m_fp, szLogStr, ap);
     fflush(m_fp);
     return 0;

@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package neb;
 
-message Storage
+message Mydis
 {
     uint32 section_factor       = 1;
     RedisOperate redis_operate  = 2;
