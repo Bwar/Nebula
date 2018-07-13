@@ -562,6 +562,7 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 
 E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
 {
+    // TODO 当http1.0响应包未带Content-Length头时，以关闭连接表示数据发送完毕。需再处理
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_ABORT == m_ucChannelStatus)
     {

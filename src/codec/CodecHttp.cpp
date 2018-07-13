@@ -878,21 +878,26 @@ int CodecHttp::OnMessageComplete(http_parser *parser)
     }
     pHttpMsg->set_http_major(parser->http_major);
     pHttpMsg->set_http_minor(parser->http_minor);
-    if (HTTP_GET == (http_method)pHttpMsg->method())
+    pHttpMsg->set_is_decoding(false);
+    /*
+    switch ((http_method)pHttpMsg->method())
     {
-        pHttpMsg->set_is_decoding(false);
-    }
-    else
-    {
-        if (parser->content_length == 0)
-        {
+        case HTTP_GET:
+        case HTTP_OPTIONS:
             pHttpMsg->set_is_decoding(false);
-        }
-        else if (parser->content_length == pHttpMsg->body().size())
-        {
-            pHttpMsg->set_is_decoding(false);
-        }
+            break;
+        default:
+            if (parser->content_length == 0)
+            {
+                pHttpMsg->set_is_decoding(false);
+            }
+            else if (parser->content_length == pHttpMsg->body().size())
+            {
+                pHttpMsg->set_is_decoding(false);
+            }
+            break;
     }
+    */
     return(0);
 }
 
