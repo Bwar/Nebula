@@ -38,32 +38,33 @@ Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建�
 &emsp;&emsp;构建前必须保证你的系统已安装好完全支持C++11的编译器，除此之外的所有依赖都会在以下构建步骤中自动解决了。
 
 构建步骤：
-``` bash
-wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip
-unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap
-cd NebulaBootstrap
-chmod u+x deploy.sh
-./deploy.sh
-```
+1. wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip
+2. unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap
+3. cd NebulaBootstrap
+4. chmod u+x deploy.sh
+5. ./deploy.sh
 
 &emsp;&emsp;执行deploy脚本后即完成了Nebula及NebulaBootstrap分布式服务的编译和部署，Nebula的依赖也由deploy在构建Nebula前自动从网上下载并编译部署。虽然不像autoconf、automake那样众所周知，但deploy脚本完成的不止是autoconf、automake的工作。deploy之后的目录结构如下：
 * NebulaBootstrap
-  + bin                  server的bin文件存放路径。
-  + build                构建路径，由deploy.sh生成，如果部署完后不需要再构建，可以直接删掉(可选)。
-  + conf                 配置文件存放路径。
-  + data                 数据文件存放路径，比如基于Nebula开发的页面埋点数据采集和实时分析[Nebio](https://github.com/Bwar/Nebio)项目，将采集的数据落地到这个路径（可选）。
-  + lib                  运行所需的库文件存放路径。
-  + log                  程序日志存放路径。
-  + plugins              插件（动态加载的业务逻辑so）存放路径。
-    - logic                  逻辑Server插件存放路径，插件按server存放只是为了好区分，也可直接存放在plugins下，具体规则可自定义（可选）。
-  + script               脚本库存放路径，deploy.sh startup.sh shutdown.sh等脚本都需要依赖这个路径。
-  + temp                 临时文件存放路径(可选)。
-  - configure.sh         配置脚本，deploy之后第一次启动server之前先执行该脚本做简单的配置修改，也可以逐个配置文件打开直接修改。
-  - deploy.sh            自动构建和部署脚本，自动下载并安装依赖，自动构建和部署，执行./deploy.sh --help查看帮助。
-  - shutdown.sh          关闭server，可以指定关闭一个或多个server，也可关闭所有server，不带参数时关闭所有server（需用户确认）。
-  - startup.sh           启动server，可以指定启动一个或多个server，也可启动所有server。
-  - README_cn.md
-  - README.md
+  .::         .::                       .::      .::                 
+                .::       .:.::                        .::   .::                    
+                .::         .::         .::    .: .:::  .:: .::   .::  .::   .::    
+  + bin              server的bin文件存放路径。
+  + build            构建路径，由deploy.sh生成，如果部署完后不需要再构建，可以直接删掉(可选)。
+  + conf             配置文件存放路径。
+  + data             数据文件存放路径，比如基于Nebula开发的页面埋点数据采集和实时分析[Nebio](https://github.com/Bwar/Nebio)项目，将采集的数据落地到这个路径（可选）。
+  + lib              运行所需的库文件存放路径。
+  + log              程序日志存放路径。
+  + plugins          插件（动态加载的业务逻辑so）存放路径。
+    - logic              逻辑Server插件存放路径，插件按server存放只是为了好区分，也可直接存放在plugins下，具体规则可自定义（可选）。
+  + script           脚本库存放路径，deploy.sh startup.sh shutdown.sh等脚本都需要依赖这个路径。
+  + temp             临时文件存放路径(可选)。
+  - configure.sh     配置脚本，deploy之后第一次启动server之前先执行该脚本做简单的配置修改，也可以逐个配置文件打开直接修改。
+  - deploy.sh        自动构建和部署脚本，自动下载并安装依赖，自动构建和部署，执行./deploy.sh --help查看帮助。
+  - shutdown.sh      关闭server，可以指定关闭一个或多个server，也可关闭所有server，不带参数时关闭所有server（需用户确认）。
+  - startup.sh       启动server，可以指定启动一个或多个server，也可启动所有server。
+  - README_cn.md              
+  - README.md              
 
 &emsp;&emsp;构建完成后，可以开始启动server了：
 ```
@@ -75,7 +76,8 @@ chmod u+x deploy.sh
 curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello
 ```
 &emsp;&emsp;这个简单的测试可以只启动一个NebulaInterface即可完成，不过这需要自己开发插件。NebulaBootstrap提供的HelloWorld是基于集群的，启动了NebulaBeacon、NebulaInterface、NebulaLogic三个server。下面是一张集群部署图：
-![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/tree/master/image/nebula_cluster.png)
+
+![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/blob/master/image/nebula_cluster.png?raw=true)
 
 <a name="Documentation"></a>
 ## 文档
