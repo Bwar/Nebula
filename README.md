@@ -4,7 +4,7 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 1. [Overview](#Overview)
 2. [License](#License)
-3. [Building](#Building)
+3. [Getting Start](#GettingStart)
 4. [Documentation](#Documentation)
 5. [Depend on](#DependOn)
 6. [Todo list](#TODO)
@@ -42,11 +42,12 @@ MIT License
 >  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 >  THE SOFTWARE.
 
-<a name="Building"></a>
-## Building 
+<a name="GettingStart"></a>
+## Getting Start
    Nebula was builded passing with gcc6.4 on centos6.5(upgrade binutils to 2.22 or later) and centos7.4.  
    
 ![nebula_build_dir](docs/image/build_dir.png)
+
 
    build step：
    1. $ mkdir NebulaDepend

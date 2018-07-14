@@ -4,7 +4,7 @@
 
 1. [概述](#Overview)
 2. [许可证](#License)
-3. [编译](#Building)
+3. [开始](#GettingStart)
 4. [文档](#Documentation)
 5. [依赖](#DependOn)
 6. [开发任务](#TODO)
@@ -13,7 +13,7 @@
 <a name="Overview"></a>
 ## 概述 
 
-Nebula是一个C\+\+语言开发的事件驱动型的TCP协议网络框架，它支持包括proto3、http、https、websocket多种应用层通信协议。开发Nebula框架的目的是提供一种基于C\+\+快速构建一个高性能的分布式服务集群。
+Nebula是一个C\+\+语言开发的事件驱动型的TCP协议网络框架，支持包括proto3、http、https、websocket多种应用层通信协议。开发Nebula框架的目的是提供一种基于C\+\+快速构建一个高性能的分布式服务集群。Nebula自身核心代码只有万行左右（不计算proto文件生成的代码）。
 
 Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建集群才能真正体现其价值。为了能快速搭建分布式服务集群，开发了包括各种类型服务的NebulaBootstrap集群解决方案。关于NebulaBootstrap的详细说明请参考[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)。
 
@@ -27,15 +27,55 @@ Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建�
 >
 > 本软件按“原样”提供，不附有任何形式的明示或暗示保证，包括但不限于适销性，适用于特定用途和不侵权的保证。在任何情况下，作者或版权所有者都不承担任何索赔，损害或其他责任，无论是在合同，侵权或其他方面的行为，不论是由软件或其使用或其他交易引起或与之相关的行为。
 
-<a name="Building"></a>
-## 编译
-Nebula在centos6.5（需升级binutils到2.22之后版本）和centos7.4上用gcc6.4编译通过。
-![nebula_build_dir](docs/image/build_dir.png)
+<a name="GettingStart"></a>
+## 开始
+&emsp;&emsp;Nebula以C++14/C++11标准开发，编译器必须完全支持C++11(部分C++14的特性在遇到较低版本的编译器时有预编译开关控制使用C++11标准替代),建议使用5以上gcc版本，推荐使用gcc6。Nebula目前只有Linux版本，暂无支持Linux之外的其他类UNIX系统的时间表。
 
-编译步骤：
-  1. $ mkdir NebulaDepend
-  2. 下载[依赖](#DependOn)并编译，编译完成后拷贝共享库到NebulaDepend/lib，拷贝头文件的文件夹到NebulaDepend/include。
-  3. $ cd Nebula/src; $ make
+&emsp;&emsp;Nebula在centos6.5（需升级binutils到2.22之后版本）和centos7.4上用gcc6.4编译和测试通过。同时Nebula也在[Travis CI](https://travis-ci.org/Bwar/Nebula)持续集成构建项目，构建结果可以直接通过项目首页的[![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula)跳转过去查看。Travis CI的系统是Ubuntu，编译器是gcc6。
+
+&emsp;&emsp;Nebula是个较大型项目（因为要构建一个生产用的分布式集群），有一些外部[依赖](#DependOn)，鉴于外部依赖的存在和框架本身较难测试，提供了[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)，让开发者可以快速部署和体验Nebula。相信部署和体验之后，你会对Nebula产生兴趣，这将会是一个可以广泛应用的框架，基于NebulaBootstrap提供的分布式解决方案可以很方便地用C++开发微服务应用。
+
+&emsp;&emsp;构建前必须保证你的系统已安装好完全支持C++11的编译器，除此之外的所有依赖都会在以下构建步骤中自动解决了。
+
+构建步骤：
+``` bash
+wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip
+unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap
+cd NebulaBootstrap
+chmod u+x deploy.sh
+./deploy.sh
+```
+
+&emsp;&emsp;执行deploy脚本后即完成了Nebula及NebulaBootstrap分布式服务的编译和部署，Nebula的依赖也由deploy在构建Nebula前自动从网上下载并编译部署。虽然不像autoconf、automake那样众所周知，但deploy脚本完成的不止是autoconf、automake的工作。deploy之后的目录结构如下：
+* NebulaBootstrap
+  + bin                  server的bin文件存放路径。
+  + build                构建路径，由deploy.sh生成，如果部署完后不需要再构建，可以直接删掉(可选)。
+  + conf                 配置文件存放路径。
+  + data                 数据文件存放路径，比如基于Nebula开发的页面埋点数据采集和实时分析[Nebio](https://github.com/Bwar/Nebio)项目，将采集的数据落地到这个路径（可选）。
+  + lib                  运行所需的库文件存放路径。
+  + log                  程序日志存放路径。
+  + plugins              插件（动态加载的业务逻辑so）存放路径。
+    - logic                  逻辑Server插件存放路径，插件按server存放只是为了好区分，也可直接存放在plugins下，具体规则可自定义（可选）。
+  + script               脚本库存放路径，deploy.sh startup.sh shutdown.sh等脚本都需要依赖这个路径。
+  + temp                 临时文件存放路径(可选)。
+  - configure.sh         配置脚本，deploy之后第一次启动server之前先执行该脚本做简单的配置修改，也可以逐个配置文件打开直接修改。
+  - deploy.sh            自动构建和部署脚本，自动下载并安装依赖，自动构建和部署，执行./deploy.sh --help查看帮助。
+  - shutdown.sh          关闭server，可以指定关闭一个或多个server，也可关闭所有server，不带参数时关闭所有server（需用户确认）。
+  - startup.sh           启动server，可以指定启动一个或多个server，也可启动所有server。
+  - README_cn.md
+  - README.md
+
+&emsp;&emsp;构建完成后，可以开始启动server了：
+```
+./configure.sh
+./startup.sh
+```
+&emsp;&emsp;绝大部分情况下server应该已经启动成功了，startup.sh会打印已启动的server。如果没有启动成功，可以到log目录查看原因。执行grep "ERROR" log/*和grep "FATAL" log/* 先看看是否有错误，再到具体日志文件查看错误详情。如果server已启动成功，那么可以用postman、curl等做测试，看看结果。
+```
+curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello
+```
+&emsp;&emsp;这个简单的测试可以只启动一个NebulaInterface即可完成，不过这需要自己开发插件。NebulaBootstrap提供的HelloWorld是基于集群的，启动了NebulaBeacon、NebulaInterface、NebulaLogic三个server。下面是一张集群部署图：
+![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/tree/master/image/nebula_cluster.png)
 
 <a name="Documentation"></a>
 ## 文档
