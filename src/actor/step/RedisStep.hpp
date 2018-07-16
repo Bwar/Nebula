@@ -39,6 +39,15 @@ public:
                     int status,
                     redisReply* pReply) = 0;
 
+    /**
+     * @brief redis超时
+     * @note 此函数暂时无用，不会有redis超时回调
+     */
+    virtual E_CMD_STATUS Timeout()
+    {
+        return(CMD_STATUS_FAULT);
+    }
+
 public:
     /**
      * @brief 设置redis命令

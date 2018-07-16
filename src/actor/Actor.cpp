@@ -113,6 +113,21 @@ bool Actor::SendTo(const std::string& strHost, int iPort, const std::string& str
     return(m_pWorker->SendTo(strHost, iPort, strUrlPath, oHttpMsg, this->GetSequence()));
 }
 
+bool Actor::SendTo(std::shared_ptr<RedisChannel> pChannel)
+{
+    return(m_pWorker->SendTo(pChannel, this));
+}
+
+bool Actor::SendTo(const std::string& strIdentify)
+{
+    return(m_pWorker->SendTo(strIdentify, this));
+}
+
+bool Actor::SendTo(const std::string& strHost, int iPort)
+{
+    return(m_pWorker->SendTo(strHost, iPort, this));
+}
+
 bool Actor::SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     return(m_pWorker->SendPolling(strNodeType, iCmd, uiSeq, oMsgBody, this));

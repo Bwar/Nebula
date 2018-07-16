@@ -27,7 +27,7 @@ public:
         {
             char* szDemangleName = nullptr;
             std::string strTypeName;
-#ifdef __GUNC__
+#ifdef __GNUC__
             szDemangleName = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, nullptr);
 #else
             //in this format?:     szDemangleName =  typeid(T).name();

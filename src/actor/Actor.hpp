@@ -37,6 +37,7 @@ class WorkerImpl;
 class WorkerFriend;
 
 class SocketChannel;
+class RedisChannel;
 class ActorCreator;
 class Cmd;
 class Module;
@@ -139,6 +140,31 @@ protected:
      * @return 是否发送成功
      */
     bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg);
+
+    /**
+     * @brief 发送到redis channel
+     * @note 只有RedisStep及其派生类才能调用此方法，调用此方法时将调用者自身(RedisStep)添加到
+     *       RedisChannel的pipeline中。
+     * @param pChannel RedisChannel指针
+     */
+    bool SendTo(std::shared_ptr<RedisChannel> pChannel);
+
+    /**
+     * @brief 发送到redis channel
+     * @note 只有RedisStep及其派生类才能调用此方法，调用此方法时将调用者自身(RedisStep)添加到
+     *       RedisChannel的pipeline中。
+     * @param strIdentify RedisChannel通道标识
+     */
+    bool SendTo(const std::string& strIdentify);
+
+    /**
+     * @brief 发送到redis channel
+     * @note 只有RedisStep及其派生类才能调用此方法，调用此方法时将调用者自身(RedisStep)添加到
+     *       RedisChannel的pipeline中。
+     * @param strHost RedisChannel地址
+     * @param iPort RedisChannel端口
+     */
+    bool SendTo(const std::string& strHost, int iPort);
 
     /**
      * @brief 发送到下一个同一类型的节点

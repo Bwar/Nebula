@@ -32,7 +32,7 @@ public:
      * @brief 提交，发出
      * @note 注册了一个回调步骤之后执行Emit()就开始等待回调。
      */
-    virtual E_CMD_STATUS Emit(int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = nullptr) = 0;
+    virtual E_CMD_STATUS Emit(int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL) = 0;
 
     /**
      * @brief 步骤超时回调

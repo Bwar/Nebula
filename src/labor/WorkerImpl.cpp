@@ -1167,9 +1167,20 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, const std::string
     }
 }
 
-bool WorkerImpl::SendTo(std::shared_ptr<RedisChannel> pRedisChannel, std::shared_ptr<RedisStep> pRedisStep)
+bool WorkerImpl::SendTo(std::shared_ptr<RedisChannel> pRedisChannel, Actor* pSender)
 {
     LOG4_TRACE(" ");
+    if (nullptr == pSender)
+    {
+        LOG4_ERROR("pSender can't be nullptr!");
+        return(false);
+    }
+    if (Actor::ACT_REDIS_STEP != pSender->GetActorType())
+    {
+        LOG4_ERROR("The actor which send data to the RedisChannel must be a RedisStep.");
+        return(false);
+    }
+    std::shared_ptr<RedisStep> pRedisStep = std::dynamic_pointer_cast<RedisStep>(pSender->shared_from_this());
     if (pRedisChannel->bIsReady)
     {
         int status;
@@ -1204,20 +1215,69 @@ bool WorkerImpl::SendTo(std::shared_ptr<RedisChannel> pRedisChannel, std::shared
     }
 }
 
-bool WorkerImpl::SendTo(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep)
+bool WorkerImpl::SendTo(const std::string& strIdentify, Actor* pSender)
+{
+    LOG4_TRACE("%s", strIdentify.c_str());
+    if (nullptr == pSender)
+    {
+        LOG4_ERROR("pSender can't be nullptr!");
+        return(false);
+    }
+    auto ctx_iter = m_mapNamedRedisChannel.find(strIdentify);
+    if (ctx_iter != m_mapNamedRedisChannel.end())
+    {
+        return(SendTo(*(ctx_iter->second.begin()), pSender));
+    }
+    else
+    {
+        size_t iPosIpPortSeparator = strIdentify.rfind(':');
+        if (iPosIpPortSeparator == std::string::npos)
+        {
+            LOG4_ERROR("invalid node identify \"%s\"", strIdentify.c_str());
+            return(false);
+        }
+        std::string strHost = strIdentify.substr(0, iPosIpPortSeparator);
+        std::string strPort = strIdentify.substr(iPosIpPortSeparator + 1, std::string::npos);
+        int iPort = atoi(strPort.c_str());
+        if (iPort == 0)
+        {
+            LOG4_ERROR("invalid node identify \"%s\"", strIdentify.c_str());
+            return(false);
+        }
+        if (Actor::ACT_REDIS_STEP != pSender->GetActorType())
+        {
+            LOG4_ERROR("The actor which send data to the RedisChannel must be a RedisStep.");
+            return(false);
+        }
+        std::shared_ptr<RedisStep> pRedisStep = std::dynamic_pointer_cast<RedisStep>(pSender->shared_from_this());
+        return(AutoRedisCmd(strHost, iPort, pRedisStep));
+    }
+}
+
+bool WorkerImpl::SendTo(const std::string& strHost, int iPort, Actor* pSender)
 {
     LOG4_TRACE("%s, %d", strHost.c_str(), iPort);
+    if (nullptr == pSender)
+    {
+        LOG4_ERROR("pSender can't be nullptr!");
+        return(false);
+    }
     std::ostringstream oss;
     oss << strHost << ":" << iPort;
     std::string strIdentify = std::move(oss.str());
     auto ctx_iter = m_mapNamedRedisChannel.find(strIdentify);
     if (ctx_iter != m_mapNamedRedisChannel.end())
     {
-        return(SendTo(*(ctx_iter->second.begin()), pRedisStep));
+        return(SendTo(*(ctx_iter->second.begin()), pSender));
     }
     else
     {
-        LOG4_TRACE("m_pLabor->AutoRedisCmd(%s, %d)", strHost.c_str(), iPort);
+        if (Actor::ACT_REDIS_STEP != pSender->GetActorType())
+        {
+            LOG4_ERROR("The actor which send data to the RedisChannel must be a RedisStep.");
+            return(false);
+        }
+        std::shared_ptr<RedisStep> pRedisStep = std::dynamic_pointer_cast<RedisStep>(pSender->shared_from_this());
         return(AutoRedisCmd(strHost, iPort, pRedisStep));
     }
 }

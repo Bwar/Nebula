@@ -149,9 +149,19 @@ bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& st
     return(m_pImpl->SendTo(strHost, iPort, strUrlPath, oHttpMsg, uiHttpStepSeq));
 }
 
-bool Worker::SendTo(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep)
+bool Worker::SendTo(std::shared_ptr<RedisChannel> pChannel, Actor* pSender)
 {
-    return(m_pImpl->SendTo(strHost, iPort, pRedisStep));
+    return(m_pImpl->SendTo(pChannel, pSender));
+}
+
+bool Worker::SendTo(const std::string& strIdentify, Actor* pSender)
+{
+    return(m_pImpl->SendTo(strIdentify, pSender));
+}
+
+bool Worker::SendTo(const std::string& strHost, int iPort, Actor* pSender)
+{
+    return(m_pImpl->SendTo(strHost, iPort, pSender));
 }
 
 } /* namespace neb */
