@@ -23,7 +23,7 @@ namespace neb
 class RedisStep: public Step
 {
 public:
-    RedisStep(Step* pNextStep = NULL);
+    RedisStep(std::shared_ptr<Step> pNextStep = nullptr);
     RedisStep(const RedisStep&) = delete;
     RedisStep& operator=(const RedisStep&) = delete;
     virtual ~RedisStep();

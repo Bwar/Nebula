@@ -20,7 +20,7 @@ namespace neb
 class Step: public StepModel
 {
 public:
-    Step(Actor::ACTOR_TYPE eActorType, Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout)
+    Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout)
         : StepModel(eActorType, pNextStep, dTimeout)
     {
     }

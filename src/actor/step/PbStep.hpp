@@ -20,9 +20,9 @@ class WorkerImpl;
 class PbStep: public Step
 {
 public:
-    PbStep(Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    PbStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     PbStep(std::shared_ptr<SocketChannel> pUpstreamChannel, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody,
-                    Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
+                    std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     PbStep(const PbStep&) = delete;
     PbStep& operator=(const PbStep&) = delete;
     virtual ~PbStep();

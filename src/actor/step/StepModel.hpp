@@ -21,7 +21,7 @@ class Step;
 class StepModel: public Actor
 {
 public:
-    StepModel(Actor::ACTOR_TYPE eActorType, Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    StepModel(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     StepModel(const StepModel&) = delete;
     StepModel& operator=(const StepModel&) = delete;
     virtual ~StepModel();

@@ -13,7 +13,7 @@
 namespace neb
 {
 
-StepModel::StepModel(Actor::ACTOR_TYPE eActorType, Step* pNextStep, ev_tstamp dTimeout)
+StepModel::StepModel(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
     : Actor(eActorType, dTimeout)
 {
     if (nullptr != pNextStep)

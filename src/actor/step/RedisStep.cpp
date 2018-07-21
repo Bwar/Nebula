@@ -12,7 +12,7 @@
 namespace neb
 {
 
-RedisStep::RedisStep(Step* pNextStep)
+RedisStep::RedisStep(std::shared_ptr<Step> pNextStep)
     : Step(ACT_REDIS_STEP, pNextStep, gc_dNoTimeout)
 {
 }

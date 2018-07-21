@@ -19,8 +19,8 @@ namespace neb
 class HttpStep: public Step
 {
 public:
-    HttpStep(Step* pNextStep = NULL, ev_tstamp dTimeout = gc_dDefaultTimeout);
-    HttpStep(std::shared_ptr<SocketChannel> pUpstreamChannel, Step* pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    HttpStep(std::shared_ptr<Step> pNextStep = NULL, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    HttpStep(std::shared_ptr<SocketChannel> pUpstreamChannel, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     HttpStep(const HttpStep&) = delete;
     HttpStep& operator=(const HttpStep&) = delete;
     virtual ~HttpStep();

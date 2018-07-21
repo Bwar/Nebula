@@ -12,12 +12,12 @@
 namespace neb
 {
 
-HttpStep::HttpStep(Step* pNextStep, ev_tstamp dTimeout)
+HttpStep::HttpStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
     : Step(ACT_HTTP_STEP, pNextStep, dTimeout)
 {
 }
 
-HttpStep::HttpStep(std::shared_ptr<SocketChannel> pUpstreamChannel, Step* pNextStep, ev_tstamp dTimeout)
+HttpStep::HttpStep(std::shared_ptr<SocketChannel> pUpstreamChannel, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
     : Step(ACT_HTTP_STEP, pNextStep, dTimeout),
       m_pUpstreamChannel(pUpstreamChannel)
 {
