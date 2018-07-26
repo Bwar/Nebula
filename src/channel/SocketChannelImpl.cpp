@@ -663,14 +663,27 @@ ev_timer* SocketChannelImpl::AddTimerWatcher()
     return(m_pTimerWatcher);
 }
 
-void SocketChannelImpl::Abort()
+bool SocketChannelImpl::Abort()
 {
     if (CHANNEL_STATUS_ABORT != m_ucChannelStatus)
     {
-        m_ucChannelStatus = CHANNEL_STATUS_ABORT;
         m_pSendBuff->Compact(1);
         m_pWaitForSendBuff->Compact(1);
-        close(m_iFd);
+        if (0 == close(m_iFd))
+        {
+            m_ucChannelStatus = CHANNEL_STATUS_ABORT;
+            return(true);
+        }
+        else
+        {
+            LOG4_WARNING("failed to close channel(fd %d), errno %d, it will be close later.", m_iFd, errno);
+            return(false);
+        }
+    }
+    else
+    {
+        LOG4_WARNING("channel(fd %d) had been closed before.", m_iFd);
+        return(true);
     }
 }
 

@@ -1127,6 +1127,7 @@ bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
             DiscardSocketChannel(pChannel);
             return(true);
         default:
+            DiscardSocketChannel(pChannel);
             return(false);
     }
 }
@@ -1809,6 +1810,11 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     {
         ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
     }
+    bool bAbortResult = pChannel->m_pImpl->Abort();
+    if (!bAbortResult)
+    {
+        return(bAbortResult);
+    }
     ev_io_stop (m_loop, pChannel->m_pImpl->MutableIoWatcher());
     if (nullptr != pChannel->m_pImpl->MutableTimerWatcher())
     {
@@ -1838,7 +1844,6 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     {
         m_mapSocketChannel.erase(channel_iter);
     }
-    pChannel->m_pImpl->Abort();
     return(true);
 }
 

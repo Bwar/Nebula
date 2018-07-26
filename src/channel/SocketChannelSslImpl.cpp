@@ -455,10 +455,10 @@ E_CODEC_STATUS SocketChannelSslImpl::Send()
     }
 }
 
-void SocketChannelSslImpl::Abort()
+bool SocketChannelSslImpl::Abort()
 {
     SslShutdown();
-    SocketChannelImpl::Abort();
+    return(SocketChannelImpl::Abort());
 }
 
 int SocketChannelSslImpl::Write(CBuffer* pBuff, int& iErrno)
