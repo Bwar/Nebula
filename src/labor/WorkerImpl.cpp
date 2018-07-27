@@ -332,6 +332,7 @@ bool WorkerImpl::FdTransfer()
             LOG4_WARNING("fail to set TCP_NODELAY");
         }
         std::shared_ptr<SocketChannel> pChannel = nullptr;
+        LOG4_TRACE("fd[%d] transfer successfully.", iAcceptFd);
         if (CODEC_NEBULA != iCodec && m_oWorkerConf["with_ssl"]("config_path").length() > 0)
         {
             pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), true, true);

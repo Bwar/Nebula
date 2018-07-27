@@ -668,7 +668,7 @@ ev_timer* SocketChannelImpl::AddTimerWatcher()
 
 bool SocketChannelImpl::Close()
 {
-    LOG4_TRACE("channel_status %d", m_ucChannelStatus);
+    LOG4_TRACE("channel[%d] channel_status %d", m_iFd, m_ucChannelStatus);
     if (CHANNEL_STATUS_CLOSE != m_ucChannelStatus)
     {
         m_pSendBuff->Compact(1);
@@ -676,6 +676,7 @@ bool SocketChannelImpl::Close()
         if (0 == close(m_iFd))
         {
             m_ucChannelStatus = CHANNEL_STATUS_CLOSE;
+            LOG4_DEBUG("channel[%d] close successfully.", m_iFd);
             return(true);
         }
         else

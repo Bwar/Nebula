@@ -243,6 +243,7 @@ bool Manager::FdTransfer(int iFd)
         {
             LOG4_WARNING("client addr %d had been connected more than %u times in %f seconds, it's not permitted",
                             stClientAddr.sin_addr.s_addr, m_stManagerInfo.iAddrPermitNum, m_stManagerInfo.dAddrStatInterval);
+            close(iAcceptFd);
             return(false);
         }
     }
@@ -267,6 +268,8 @@ bool Manager::FdTransfer(int iFd)
         close(iAcceptFd);
         return(true);
     }
+    LOG4_WARNING("GetMinLoadWorkerDataFd() found worker_pid_fd.second = %d", worker_pid_fd.second);
+    close(iAcceptFd);
     return(false);
 }
 
