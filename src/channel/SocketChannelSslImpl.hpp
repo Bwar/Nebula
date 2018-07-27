@@ -62,7 +62,7 @@ public:
 
     virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsServer = true, const std::string& strKey = "That's a lizard.");
     virtual E_CODEC_STATUS Send();      ///< 覆盖基类的Send()方法，实现非阻塞socket连接建立后继续建立SSL连接
-    virtual bool Abort();
+    virtual bool Close();
 
 protected:
     virtual int Write(CBuffer* pBuff, int& iErrno);

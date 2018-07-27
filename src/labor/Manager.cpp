@@ -69,7 +69,7 @@ void Manager::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revent
         {
             pManager->OnIoError(pChannel->shared_from_this());
         }
-        if (CHANNEL_STATUS_ABORT == pChannel->m_pImpl->GetChannelStatus())
+        if (CHANNEL_STATUS_CLOSE == pChannel->m_pImpl->GetChannelStatus())
         {
             watcher->data = NULL;
         }
@@ -1667,7 +1667,7 @@ bool Manager::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel)
     {
         m_mapSocketChannel.erase(iter);
     }
-    pChannel->m_pImpl->Abort();
+    pChannel->m_pImpl->Close();
     return(true);
 }
 

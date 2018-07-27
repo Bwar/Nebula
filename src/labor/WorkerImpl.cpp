@@ -1810,10 +1810,10 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     {
         ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
     }
-    bool bAbortResult = pChannel->m_pImpl->Abort();
-    if (!bAbortResult)
+    bool bCloseResult = pChannel->m_pImpl->Close();
+    if (!bCloseResult)
     {
-        return(bAbortResult);
+        return(bCloseResult);
     }
     ev_io_stop (m_loop, pChannel->m_pImpl->MutableIoWatcher());
     if (nullptr != pChannel->m_pImpl->MutableTimerWatcher())
