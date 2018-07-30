@@ -223,8 +223,8 @@ public:     // about channel
     virtual bool SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType);
 
 public:     // about session
-    virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId, const std::string& strSessionClass = "neb::Session");
-    virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId, const std::string& strSessionClass = "neb::Session");
+    virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
+    virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
 
 public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worker自身的初始化和更新）
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
@@ -310,7 +310,7 @@ private:
 
     // Step and Session
     std::unordered_map<uint32, std::shared_ptr<Step> > m_mapCallbackStep;
-    std::unordered_map<std::string, std::unordered_map<std::string, std::shared_ptr<Session>> > m_mapCallbackSession;
+    std::unordered_map<std::string, std::shared_ptr<Session> > m_mapCallbackSession;
 
     // Channel
     std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapSocketChannel;

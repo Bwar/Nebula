@@ -39,14 +39,14 @@ uint32 Worker::GetSequence() const
     return(m_pImpl->GetSequence());
 }
 
-std::shared_ptr<Session> Worker::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> Worker::GetSession(uint32 uiSessionId)
 {
-    return(m_pImpl->GetSession(uiSessionId, strSessionClass));
+    return(m_pImpl->GetSession(uiSessionId));
 }
 
-std::shared_ptr<Session> Worker::GetSession(const std::string& strSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> Worker::GetSession(const std::string& strSessionId)
 {
-    return(m_pImpl->GetSession(strSessionId, strSessionClass));
+    return(m_pImpl->GetSession(strSessionId));
 }
 
 uint32 Worker::GetNodeId() const

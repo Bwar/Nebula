@@ -33,7 +33,7 @@ SocketChannelImpl::SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_
 SocketChannelImpl::~SocketChannelImpl()
 {
     LOG4_DEBUG("SocketChannelImpl::~SocketChannelImpl() fd %d, seq %u", m_iFd, m_ulSeq);
-    if (CHANNEL_STATUS_CLOSE != m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED != m_ucChannelStatus)
     {
         Close();
     }
@@ -108,7 +108,7 @@ bool SocketChannelImpl::NeedAliveCheck() const
 E_CODEC_STATUS SocketChannelImpl::Send()
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_ulSeq, m_ucChannelStatus);
-    if (CHANNEL_STATUS_CLOSE == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
@@ -176,7 +176,7 @@ E_CODEC_STATUS SocketChannelImpl::Send()
 E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], cmd[%u], seq[%u]", m_iFd, m_ulSeq, iCmd, uiSeq);
-    if (CHANNEL_STATUS_CLOSE == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
@@ -283,7 +283,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
 E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_ulSeq, m_ucChannelStatus);
-    if (CHANNEL_STATUS_CLOSE == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
@@ -358,7 +358,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
 E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_ulSeq, m_ucChannelStatus);
-    if (CHANNEL_STATUS_CLOSE == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
@@ -441,7 +441,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
-    if (CHANNEL_STATUS_CLOSE == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
@@ -489,7 +489,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
 E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
-    if (CHANNEL_STATUS_CLOSE == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
@@ -545,7 +545,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
 E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
-    if (CHANNEL_STATUS_CLOSE == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
@@ -567,7 +567,7 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
 {
     // TODO 当http1.0响应包未带Content-Length头时，以关闭连接表示数据发送完毕。需再处理
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
-    if (CHANNEL_STATUS_CLOSE == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
@@ -580,7 +580,7 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
 E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
-    if (CHANNEL_STATUS_CLOSE == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         return(CODEC_STATUS_EOF);
     }
@@ -669,13 +669,13 @@ ev_timer* SocketChannelImpl::AddTimerWatcher()
 bool SocketChannelImpl::Close()
 {
     LOG4_TRACE("channel[%d] channel_status %d", m_iFd, m_ucChannelStatus);
-    if (CHANNEL_STATUS_CLOSE != m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED != m_ucChannelStatus)
     {
         m_pSendBuff->Compact(1);
         m_pWaitForSendBuff->Compact(1);
         if (0 == close(m_iFd))
         {
-            m_ucChannelStatus = CHANNEL_STATUS_CLOSE;
+            m_ucChannelStatus = CHANNEL_STATUS_CLOSED;
             LOG4_DEBUG("channel[%d] close successfully.", m_iFd);
             return(true);
         }

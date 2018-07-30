@@ -501,8 +501,7 @@ bool WorkerImpl::OnSessionTimeout(std::shared_ptr<Session> pSession)
     }
     else    // 会话已超时
     {
-        LOG4_TRACE("session_name: %s,  session_id: %s",
-                        pSession->GetSessionClass().c_str(), pSession->GetSessionId().c_str());
+        LOG4_TRACE("session_id: %s", pSession->GetSessionId().c_str());
         if (CMD_STATUS_RUNNING == pSession->Timeout())
         {
             ev_timer_stop (m_loop, watcher);
@@ -1731,49 +1730,33 @@ bool WorkerImpl::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp
     }
 }
 
-std::shared_ptr<Session> WorkerImpl::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> WorkerImpl::GetSession(uint32 uiSessionId)
 {
-    auto name_iter = m_mapCallbackSession.find(strSessionClass);
-    if (name_iter == m_mapCallbackSession.end())
+    std::ostringstream oss;
+    oss << uiSessionId;
+    auto id_iter = m_mapCallbackSession.find(oss.str());
+    if (id_iter == m_mapCallbackSession.end())
     {
         return(nullptr);
     }
     else
     {
-        std::ostringstream oss;
-        oss << uiSessionId;
-        auto id_iter = name_iter->second.find(oss.str());
-        if (id_iter == name_iter->second.end())
-        {
-            return(nullptr);
-        }
-        else
-        {
-            id_iter->second->SetActiveTime(ev_now(m_loop));
-            return(id_iter->second);
-        }
+        id_iter->second->SetActiveTime(ev_now(m_loop));
+        return(id_iter->second);
     }
 }
 
-std::shared_ptr<Session> WorkerImpl::GetSession(const std::string& strSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> WorkerImpl::GetSession(const std::string& strSessionId)
 {
-    auto name_iter = m_mapCallbackSession.find(strSessionClass);
-    if (name_iter == m_mapCallbackSession.end())
+    auto id_iter = m_mapCallbackSession.find(strSessionId);
+    if (id_iter == m_mapCallbackSession.end())
     {
         return(nullptr);
     }
     else
     {
-        auto id_iter = name_iter->second.find(strSessionId);
-        if (id_iter == name_iter->second.end())
-        {
-            return(nullptr);
-        }
-        else
-        {
-            id_iter->second->SetActiveTime(ev_now(m_loop));
-            return(id_iter->second);
-        }
+        id_iter->second->SetActiveTime(ev_now(m_loop));
+        return(id_iter->second);
     }
 }
 
@@ -1892,20 +1875,11 @@ void WorkerImpl::Remove(std::shared_ptr<Session> pSession)
     {
         ev_timer_stop (m_loop, pSession->MutableTimerWatcher());
     }
-    auto callback_iter = m_mapCallbackSession.find(pSession->GetSessionClass());
-    if (callback_iter != m_mapCallbackSession.end())
+    auto iter = m_mapCallbackSession.find(pSession->GetSessionId());
+    if (iter != m_mapCallbackSession.end())
     {
-        auto iter = callback_iter->second.find(pSession->GetSessionId());
-        if (iter != callback_iter->second.end())
-        {
-            LOG4_TRACE("erase session(session_name %s, session_id %s)",
-                            pSession->GetSessionClass().c_str(), pSession->GetSessionId().c_str());
-            callback_iter->second.erase(iter);
-            if (callback_iter->second.empty())
-            {
-                m_mapCallbackSession.erase(callback_iter);
-            }
-        }
+        LOG4_TRACE("erase session(session_id %s)", pSession->GetSessionId().c_str());
+        m_mapCallbackSession.erase(iter);
     }
 }
 

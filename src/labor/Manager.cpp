@@ -69,7 +69,7 @@ void Manager::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revent
         {
             pManager->OnIoError(pChannel->shared_from_this());
         }
-        if (CHANNEL_STATUS_CLOSE == pChannel->m_pImpl->GetChannelStatus())
+        if (CHANNEL_STATUS_CLOSED == pChannel->m_pImpl->GetChannelStatus())
         {
             watcher->data = NULL;
         }

@@ -18,8 +18,8 @@ namespace neb
 class SessionModel: public Actor
 {
 public:
-    SessionModel(uint32 ulSessionId, ev_tstamp dSessionTimeout = 60.0, const std::string& strSessionClass = "neb::Session");
-    SessionModel(const std::string& strSessionId, ev_tstamp dSessionTimeout = 60.0, const std::string& strSessionClass = "neb::Session");
+    SessionModel(uint32 ulSessionId, ev_tstamp dSessionTimeout = 60.0);
+    SessionModel(const std::string& strSessionId, ev_tstamp dSessionTimeout = 60.0);
     SessionModel(const SessionModel&) = delete;
     SessionModel& operator=(const SessionModel&) = delete;
     virtual ~SessionModel();
@@ -33,14 +33,9 @@ public:
     {
         return(m_strSessionId);
     }
-    const std::string& GetSessionClass() const
-    {
-        return(m_strSessionClass);
-    }
 
 private:
     std::string m_strSessionId;
-    std::string m_strSessionClass;
     friend class WorkerImpl;
 };
 

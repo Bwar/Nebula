@@ -125,18 +125,7 @@ std::shared_ptr<Session> WorkerImpl::MakeSharedSession(Actor* pCreator, const st
 
     std::shared_ptr<Session> pSharedSession;
     pSharedSession.reset(pSession);
-    std::pair<std::unordered_map<std::string, std::shared_ptr<Session>>::iterator, bool> ret;
-    auto session_name_iter = m_mapCallbackSession.find(pSessionAlias->GetSessionClass());
-    if (session_name_iter == m_mapCallbackSession.end())
-    {
-        std::unordered_map<std::string, std::shared_ptr<Session>> mapSession;
-        ret = mapSession.insert(std::make_pair(pSessionAlias->GetSessionId(), pSharedSession));
-        m_mapCallbackSession.insert(std::make_pair(pSessionAlias->GetSessionClass(), mapSession));
-    }
-    else
-    {
-        ret = session_name_iter->second.insert(std::make_pair(pSessionAlias->GetSessionId(), pSharedSession));
-    }
+    auto ret = m_mapCallbackSession.insert(std::make_pair(pSessionAlias->GetSessionId(), pSharedSession));
     if (ret.second)
     {
         if (gc_dNoTimeout != pSessionAlias->m_dTimeout)

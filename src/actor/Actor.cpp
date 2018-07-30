@@ -78,14 +78,14 @@ const CJsonObject& Actor::GetCustomConf() const
 {
     return(m_pWorker->GetCustomConf());
 }
-std::shared_ptr<Session> Actor::GetSession(uint32 uiSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> Actor::GetSession(uint32 uiSessionId)
 {
-    return(m_pWorker->GetSession(uiSessionId, strSessionClass));
+    return(m_pWorker->GetSession(uiSessionId));
 }
 
-std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId, const std::string& strSessionClass)
+std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId)
 {
-    return(m_pWorker->GetSession(strSessionId, strSessionClass));
+    return(m_pWorker->GetSession(strSessionId));
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel)

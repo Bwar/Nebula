@@ -20,8 +20,8 @@ namespace neb
 class Session: public SessionModel
 {
 public:
-    Session(uint32 ulSessionId, ev_tstamp dSessionTimeout = 60.0, const std::string& strSessionClass = "neb::Session");
-    Session(const std::string& strSessionId, ev_tstamp dSessionTimeout = 60.0, const std::string& strSessionClass = "neb::Session");
+    Session(uint32 ulSessionId, ev_tstamp dSessionTimeout = 60.0);
+    Session(const std::string& strSessionId, ev_tstamp dSessionTimeout = 60.0);
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;
     virtual ~Session();

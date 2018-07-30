@@ -82,8 +82,8 @@ protected:
      */
     const CJsonObject& GetCustomConf() const;
 
-    std::shared_ptr<Session> GetSession(uint32 uiSessionId, const std::string& strSessionClass = "oss::Session");
-    std::shared_ptr<Session> GetSession(const std::string& strSessionId, const std::string& strSessionClass = "oss::Session");
+    std::shared_ptr<Session> GetSession(uint32 uiSessionId);
+    std::shared_ptr<Session> GetSession(const std::string& strSessionId);
 
 protected:
     /**

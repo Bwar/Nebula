@@ -13,13 +13,13 @@
 namespace neb
 {
 
-Session::Session(uint32 ulSessionId, ev_tstamp dSessionTimeout, const std::string& strSessionClass)
-    : SessionModel(ulSessionId, dSessionTimeout, strSessionClass)
+Session::Session(uint32 ulSessionId, ev_tstamp dSessionTimeout)
+    : SessionModel(ulSessionId, dSessionTimeout)
 {
 }
 
-Session::Session(const std::string& strSessionId, ev_tstamp dSessionTimeout, const std::string& strSessionClass)
-    : SessionModel(strSessionId, dSessionTimeout, strSessionClass)
+Session::Session(const std::string& strSessionId, ev_tstamp dSessionTimeout)
+    : SessionModel(strSessionId, dSessionTimeout)
 {
 }
 

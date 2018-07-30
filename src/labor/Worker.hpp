@@ -45,8 +45,8 @@ public:
     std::shared_ptr<Module> MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
 
     virtual uint32 GetSequence() const;
-    virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId, const std::string& strSessionClass = "neb::Session");
-    virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId, const std::string& strSessionClass = "neb::Session");
+    virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
+    virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
 
     // 获取worker信息相关方法
     virtual uint32 GetNodeId() const;
