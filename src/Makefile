@@ -1,8 +1,8 @@
-CC = gcc-6
-CXX = g++-6
+CC = gcc
+CXX = g++
 CFLAGS = -g -g2 -O3 -Wall -m64 -Wl,--export-dynamic -D__GUNC__ -fPIC 
 cplusplus_version=$(shell g++ -dumpversion | awk '{if ($$NF > 5.0) print "c++14"; else print "c++11";}')
-CXXFLAG = -std=$(cplusplus_version) -g2 -O3 -Wall -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC -DWITH_OPENSSL -DNODE_BEAT=10.0 
+CXXFLAG = -std=$(cplusplus_version) -g2 -O3 -Wall -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC  -DNODE_BEAT=10.0 
 
 ifeq ($(unit_test),y)
 CXXFLAG += -DUNIT_TEST
@@ -37,10 +37,9 @@ LDFLAGS := $(LDFLAGS) -D_LINUX_OS_ \
            -L$(LIB3RD_PATH)/lib -lcryptopp \
            -L$(LIB3RD_PATH)/lib -lev \
            -L$(LIB3RD_PATH)/lib -lprotobuf \
-           -L$(LIB3RD_PATH)/lib -lssl \
            -L$(SYSTEM_LIB_PATH) -lc -lrt -ldl
 
-SUB_INCLUDE = channel labor codec pb
+SUB_INCLUDE = channel labor codec pb mydis
 DEEP_SUB_INCLUDE = actor util
 CPP_SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
 CC_SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cc))

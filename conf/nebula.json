@@ -34,8 +34,8 @@
     "max_log_file_size": 20480000,
     "//permission": "限制。addr_permit为连接限制，限制每个IP在统计时间内连接次数；uin_permit为消息数量限制，限制每个用户在单位统计时间内发送消息数量。",
     "permission": {
-        "addr_permit": { "stat_interval": 60.0, "permit_num": 10 },
-        "uin_permit": { "stat_interval": 60.0, "permit_num": 60 }
+        "addr_permit": { "stat_interval": 60.0, "permit_num": 1000000000 },
+        "uin_permit": { "stat_interval": 60.0, "permit_num": 600000000 }
     },
     "//io_timeout": "网络IO（连接）超时设置（单位：秒）小数点后面至少保留一位",
     "io_timeout": 300.0,

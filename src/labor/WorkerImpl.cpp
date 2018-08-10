@@ -1795,40 +1795,43 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
     }
     bool bCloseResult = pChannel->m_pImpl->Close();
-    if (!bCloseResult)
+    if (bCloseResult)
+    {
+        ev_io_stop (m_loop, pChannel->m_pImpl->MutableIoWatcher());
+        if (nullptr != pChannel->m_pImpl->MutableTimerWatcher())
+        {
+            ev_timer_stop (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
+        }
+
+        auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
+        if (named_iter != m_mapNamedSocketChannel.end())
+        {
+            for (auto it = named_iter->second.begin();
+                    it != named_iter->second.end(); ++it)
+            {
+                if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
+                {
+                    named_iter->second.erase(it);
+                    break;
+                }
+            }
+            if (0 == named_iter->second.size())
+            {
+                m_mapNamedSocketChannel.erase(named_iter);
+            }
+        }
+
+        auto channel_iter = m_mapSocketChannel.find(pChannel->m_pImpl->GetFd());
+        if (channel_iter != m_mapSocketChannel.end())
+        {
+            m_mapSocketChannel.erase(channel_iter);
+        }
+        return(true);
+    }
+    else
     {
         return(bCloseResult);
     }
-    ev_io_stop (m_loop, pChannel->m_pImpl->MutableIoWatcher());
-    if (nullptr != pChannel->m_pImpl->MutableTimerWatcher())
-    {
-        ev_timer_stop (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
-    }
-
-    auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
-    if (named_iter != m_mapNamedSocketChannel.end())
-    {
-        for (auto it = named_iter->second.begin();
-                it != named_iter->second.end(); ++it)
-        {
-            if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
-            {
-                named_iter->second.erase(it);
-                break;
-            }
-        }
-        if (0 == named_iter->second.size())
-        {
-            m_mapNamedSocketChannel.erase(named_iter);
-        }
-    }
-
-    auto channel_iter = m_mapSocketChannel.find(pChannel->m_pImpl->GetFd());
-    if (channel_iter != m_mapSocketChannel.end())
-    {
-        m_mapSocketChannel.erase(channel_iter);
-    }
-    return(true);
 }
 
 void WorkerImpl::Remove(std::shared_ptr<Step> pStep)
