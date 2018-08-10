@@ -36,7 +36,7 @@ bool CmdToldWorker::AnyMessage(
         bResult = true;
         LOG4_DEBUG("AddNodeIdentify(%s, %s)!", oInTargetWorker.node_type().c_str(),
                         oInTargetWorker.worker_identify().c_str());
-        GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
+// 发起连接的节点执行autosend时已添加过，这里已不再需要添加        GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
         GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
         oOutTargetWorker.set_worker_identify(GetNodeIdentify());
         oOutTargetWorker.set_node_type(GetNodeType());

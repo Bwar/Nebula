@@ -1812,6 +1812,7 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
                 if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
                 {
                     named_iter->second.erase(it);
+                    LOG4_TRACE("erase channel %d from m_mapNamedSocketChannel.", pChannel->m_pImpl->GetFd());
                     break;
                 }
             }
@@ -1825,6 +1826,7 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         if (channel_iter != m_mapSocketChannel.end())
         {
             m_mapSocketChannel.erase(channel_iter);
+            LOG4_TRACE("erase channel %d from m_mapSocketChannel.", pChannel->m_pImpl->GetFd());
         }
         return(true);
     }
