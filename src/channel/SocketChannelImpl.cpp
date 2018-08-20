@@ -91,7 +91,10 @@ ev_tstamp SocketChannelImpl::GetKeepAlive()
 {
     if (CODEC_HTTP == m_pCodec->GetCodecType())
     {
-        m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
+        if (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0)
+        {
+            return(((CodecHttp*)m_pCodec)->GetKeepAlive());
+        }
     }
     return(m_dKeepAlive);
 }
@@ -293,7 +296,6 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
     {
         case CHANNEL_STATUS_ESTABLISHED:
             eCodecStatus = ((CodecHttp*)m_pCodec)->Encode(oHttpMsg, m_pSendBuff);
-            m_dKeepAlive = ((CodecHttp*)m_pCodec)->GetKeepAlive();
             break;
         case CHANNEL_STATUS_TELL_WORKER:
         case CHANNEL_STATUS_WORKER:
@@ -454,7 +456,6 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
     {
         m_dActiveTime = m_pLabor->GetNowTime();
         E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
-        m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
         return(eCodecStatus);
     }
     else if (iReadLen == 0)
@@ -504,7 +505,6 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
         if (CODEC_HTTP == m_pCodec->GetCodecType())
         {
             E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
-            m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
             return(eCodecStatus);
         }
         else
@@ -573,7 +573,6 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
         return(CODEC_STATUS_EOF);
     }
     E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
-    m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
     return(eCodecStatus);
 }
 
@@ -588,7 +587,6 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, Ht
     if (CODEC_HTTP == m_pCodec->GetCodecType())
     {
         eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
-        m_dKeepAlive = (((CodecHttp*)m_pCodec)->GetKeepAlive() >= 0.0) ? ((CodecHttp*)m_pCodec)->GetKeepAlive() : m_dKeepAlive;
         return(eCodecStatus);
     }
     else

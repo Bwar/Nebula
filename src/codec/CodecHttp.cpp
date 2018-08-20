@@ -251,6 +251,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         else
         {
             m_mapAddingHttpHeader.insert(std::pair<std::string, std::string>("Connection", "keep-alive"));
+            m_dKeepAlive = -1;
         }
         m_mapAddingHttpHeader.insert(std::make_pair("Server", "NebulaHttp"));
         m_mapAddingHttpHeader.insert(std::make_pair("Content-Type", "application/json;charset=UTF-8"));
@@ -283,6 +284,11 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
                         && std::string("chunked") == oHttpMsg.headers(i).header_value())
         {
             bIsChunked = true;
+        }
+        if (std::string("Connection") == oHttpMsg.headers(i).header_name()
+                        && std::string("keep-alive") == oHttpMsg.headers(i).header_value())
+        {
+            m_dKeepAlive = -1;
         }
     }
     for (h_iter = m_mapAddingHttpHeader.begin(); h_iter != m_mapAddingHttpHeader.end(); ++h_iter)
@@ -817,7 +823,7 @@ int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
         }
         else if (std::string("close") == pHeader->header_value())
         {
-            pHttpMsg->set_keep_alive(0.0);
+            ; //pHttpMsg->set_keep_alive(0.0);
         }
 
         if (std::string("Upgrade") == pHeader->header_value())
@@ -838,14 +844,6 @@ int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
 
 int CodecHttp::OnHeadersComplete(http_parser *parser)
 {
-    if (http_should_keep_alive(parser))
-    {
-        ;
-//        HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
-//        HttpMsg::Header* pHeader = pHttpMsg->add_headers();
-//        pHeader->set_header_name("Connection");
-//        pHeader->set_header_value("keep-alive");
-    }
     return(0);
 }
 
@@ -879,6 +877,15 @@ int CodecHttp::OnMessageComplete(http_parser *parser)
     pHttpMsg->set_http_major(parser->http_major);
     pHttpMsg->set_http_minor(parser->http_minor);
     pHttpMsg->set_is_decoding(false);
+
+    if (http_should_keep_alive(parser))
+    {
+        pHttpMsg->set_keep_alive(-1); ;
+    }
+    else
+    {
+        pHttpMsg->set_keep_alive(0); 
+    }
     /*
     switch ((http_method)pHttpMsg->method())
     {
