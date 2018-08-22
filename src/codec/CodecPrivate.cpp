@@ -8,7 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include <netinet/in.h>
-#include "util/logger/NetLogger.hpp"
+#include "logger/NetLogger.hpp"
 #include "CodecPrivate.hpp"
 #include "CodecDefine.hpp"
 

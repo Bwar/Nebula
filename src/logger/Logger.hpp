@@ -7,8 +7,8 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#ifndef SRC_UTIL_LOGGER_LOGGER_HPP_
-#define SRC_UTIL_LOGGER_LOGGER_HPP_
+#ifndef LOGGER_LOGGER_HPP_
+#define LOGGER_LOGGER_HPP_
 
 #include <string>
 
@@ -57,4 +57,4 @@ const std::string LogLevMsg[Logger::LEV_MAX] =
 
 } /* namespace neb */
 
-#endif /* SRC_UTIL_LOGGER_LOGGER_HPP_ */
+#endif /* LOGGER_LOGGER_HPP_ */

@@ -26,6 +26,7 @@ extern "C" {
 #include "actor/step/PbStep.hpp"
 #include "actor/step/RedisStep.hpp"
 #include "actor/step/Step.hpp"
+#include "actor/session/sys_session/SessionLogger.hpp"
 
 namespace neb
 {
@@ -812,6 +813,7 @@ void WorkerImpl::LoadSysCmd()
 #else
     m_pSessionNode = std::unique_ptr<SessionNode>(new SessionNode());
 #endif
+    m_pSessionLogger = std::dynamic_pointer_cast<SessionLogger>(MakeSharedSession(nullptr, "neb::SessionLogger"));
 }
 
 void WorkerImpl::Destroy()
@@ -924,10 +926,14 @@ void WorkerImpl::AddNodeIdentify(const std::string& strNodeType, const std::stri
     LOG4_TRACE("%s, %s", strNodeType.c_str(), strIdentify.c_str());
     m_pSessionNode->AddNode(strNodeType, strIdentify);
 
-    std::string strOnlineNode;
-    if (std::string("LOGGER") == strNodeType && m_pSessionNode->GetNode(strNodeType, strOnlineNode))
+    if (std::string("BEACON") != m_stWorkerInfo.strNodeType
+            && std::string("LOGGER") != m_stWorkerInfo.strNodeType)
     {
-        m_pLogger->EnableNetLogger(true);
+        std::string strOnlineNode;
+        if (std::string("LOGGER") == strNodeType && m_pSessionNode->GetNode(strNodeType, strOnlineNode))
+        {
+            m_pLogger->EnableNetLogger(true);
+        }
     }
 }
 
@@ -937,10 +943,18 @@ void WorkerImpl::DelNodeIdentify(const std::string& strNodeType, const std::stri
     m_pSessionNode->DelNode(strNodeType, strIdentify);
 
     std::string strOnlineNode;
-    if (std::string("LOGGER") == strNodeType && !m_pSessionNode->GetNode(strNodeType, strOnlineNode))
+    if (std::string("LOGGER") == strNodeType 
+            && !m_pSessionNode->GetNode(strNodeType, strOnlineNode))
     {
         m_pLogger->EnableNetLogger(false);
     }
+}
+
+bool WorkerImpl::AddNetLogMsg(const MsgBody& oMsgBody)
+{
+    // 此函数不能写日志，不然可能会导致写日志函数与此函数无限递归
+    m_pSessionLogger->AddMsg(oMsgBody);
+    return(true);
 }
 
 bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel)

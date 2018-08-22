@@ -7,8 +7,8 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#ifndef SRC_UTIL_LOGGER_FILELOGGER_HPP_
-#define SRC_UTIL_LOGGER_FILELOGGER_HPP_
+#ifndef LOGGER_FILELOGGER_HPP_
+#define LOGGER_FILELOGGER_HPP_
 
 #include <cstdio>
 #include <string>
@@ -68,4 +68,4 @@ private:
 
 } /* namespace neb */
 
-#endif /* SRC_UTIL_LOGGER_FILELOGGER_HPP_ */
+#endif /* LOGGER_FILELOGGER_HPP_ */

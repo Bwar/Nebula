@@ -8,7 +8,7 @@
  * Modify history:
  ******************************************************************************/
 
-#include "util/logger/NetLogger.hpp"
+#include "logger/NetLogger.hpp"
 #include "CodecUtil.hpp"
 #include "CodecWsExtentPb.hpp"
 

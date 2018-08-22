@@ -57,7 +57,7 @@ extern "C" {
 #include "channel/SocketChannel.hpp"
 #include "channel/RedisChannel.hpp"
 #include "codec/Codec.hpp"
-#include "util/logger/NetLogger.hpp"
+#include "logger/NetLogger.hpp"
 
 #include "actor/Actor.hpp"
 #include "actor/ActorFactory.hpp"
@@ -80,6 +80,8 @@ class Timer;
 class Step;
 class RedisStep;
 class HttpStep;
+
+class SessionLogger;
 
 class WorkerImpl
 {
@@ -185,9 +187,9 @@ public:     // about worker
     virtual bool ResetTimeout(std::shared_ptr<Actor> pActor);
 
     template <typename ...Targs>
-        void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
+        void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
     template <typename ...Targs>
-        void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
+        void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
     template <typename ...Targs>
     std::shared_ptr<Step> MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args);
@@ -202,6 +204,7 @@ public:     // about worker
     std::shared_ptr<Module> MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
 
 public:     // about channel
+    virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
@@ -302,6 +305,7 @@ private:
     std::shared_ptr<SocketChannel> m_pManagerControlChannel;        // std::unique_ptr<SocketChannel> is perfect
     std::shared_ptr<SocketChannel> m_pManagerDataChannel;
     std::unique_ptr<SessionNode> m_pSessionNode;
+    std::shared_ptr<SessionLogger> m_pSessionLogger;
 
     // Cmd and Module
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;

@@ -112,9 +112,11 @@ void protobuf_AssignDesc_neb_5fsys_2eproto() {
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogLevel, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(LogLevel, _is_default_instance_));
   TraceLog_descriptor_ = file->message_type(4);
-  static const int TraceLog_offsets_[6] = {
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, node_id_),
+  static const int TraceLog_offsets_[8] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, log_time_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, node_type_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, node_identify_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, log_level_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, code_file_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, code_file_line_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, code_function_),
@@ -184,11 +186,12 @@ void protobuf_AddDesc_neb_5fsys_2eproto() {
     "orkerLoad\022\013\n\003pid\030\001 \001(\005\022\014\n\004load\030\002 \001(\005\":\n\014"
     "TargetWorker\022\027\n\017worker_identify\030\001 \001(\t\022\021\n"
     "\tnode_type\030\002 \001(\t\"4\n\010LogLevel\022\021\n\tlog_leve"
-    "l\030\001 \001(\005\022\025\n\rnet_log_level\030\002 \001(\005\"\216\001\n\010Trace"
-    "Log\022\017\n\007node_id\030\001 \001(\r\022\025\n\rnode_identify\030\002 "
-    "\001(\t\022\026\n\016code_file_name\030\003 \001(\t\022\026\n\016code_file"
-    "_line\030\004 \001(\r\022\025\n\rcode_function\030\005 \001(\t\022\023\n\013lo"
-    "g_content\030\006 \001(\014b\006proto3", 383);
+    "l\030\001 \001(\005\022\025\n\rnet_log_level\030\002 \001(\005\"\265\001\n\010Trace"
+    "Log\022\020\n\010log_time\030\001 \001(\t\022\021\n\tnode_type\030\002 \001(\t"
+    "\022\025\n\rnode_identify\030\003 \001(\t\022\021\n\tlog_level\030\004 \001"
+    "(\t\022\026\n\016code_file_name\030\005 \001(\t\022\026\n\016code_file_"
+    "line\030\006 \001(\r\022\025\n\rcode_function\030\007 \001(\t\022\023\n\013log"
+    "_content\030\010 \001(\014b\006proto3", 422);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "neb_sys.proto", &protobuf_RegisterTypes);
   ConfigInfo::default_instance_ = new ConfigInfo();
@@ -1598,8 +1601,10 @@ void LogLevel::clear_net_log_level() {
 // ===================================================================
 
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
-const int TraceLog::kNodeIdFieldNumber;
+const int TraceLog::kLogTimeFieldNumber;
+const int TraceLog::kNodeTypeFieldNumber;
 const int TraceLog::kNodeIdentifyFieldNumber;
+const int TraceLog::kLogLevelFieldNumber;
 const int TraceLog::kCodeFileNameFieldNumber;
 const int TraceLog::kCodeFileLineFieldNumber;
 const int TraceLog::kCodeFunctionFieldNumber;
@@ -1628,8 +1633,10 @@ void TraceLog::SharedCtor() {
     _is_default_instance_ = false;
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
-  node_id_ = 0u;
+  log_time_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  node_type_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   node_identify_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  log_level_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   code_file_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   code_file_line_ = 0u;
   code_function_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1642,7 +1649,10 @@ TraceLog::~TraceLog() {
 }
 
 void TraceLog::SharedDtor() {
+  log_time_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  node_type_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   node_identify_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  log_level_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   code_file_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   code_function_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   log_content_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
@@ -1677,31 +1687,14 @@ TraceLog* TraceLog::New(::google::protobuf::Arena* arena) const {
 
 void TraceLog::Clear() {
 // @@protoc_insertion_point(message_clear_start:neb.TraceLog)
-#if defined(__clang__)
-#define ZR_HELPER_(f) \
-  _Pragma("clang diagnostic push") \
-  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
-  __builtin_offsetof(TraceLog, f) \
-  _Pragma("clang diagnostic pop")
-#else
-#define ZR_HELPER_(f) reinterpret_cast<char*>(\
-  &reinterpret_cast<TraceLog*>(16)->f)
-#endif
-
-#define ZR_(first, last) do {\
-  ::memset(&first, 0,\
-           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
-} while (0)
-
-  ZR_(node_id_, code_file_line_);
+  log_time_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  node_type_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   node_identify_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  log_level_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   code_file_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  code_file_line_ = 0u;
   code_function_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   log_content_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-
-#undef ZR_HELPER_
-#undef ZR_
-
 }
 
 bool TraceLog::MergePartialFromCodedStream(
@@ -1714,23 +1707,42 @@ bool TraceLog::MergePartialFromCodedStream(
     tag = p.first;
     if (!p.second) goto handle_unusual;
     switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
-      // optional uint32 node_id = 1;
+      // optional string log_time = 1;
       case 1: {
-        if (tag == 8) {
-          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
-                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
-                 input, &node_id_)));
-
+        if (tag == 10) {
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_log_time()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->log_time().data(), this->log_time().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "neb.TraceLog.log_time"));
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(18)) goto parse_node_identify;
+        if (input->ExpectTag(18)) goto parse_node_type;
         break;
       }
 
-      // optional string node_identify = 2;
+      // optional string node_type = 2;
       case 2: {
         if (tag == 18) {
+         parse_node_type:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_node_type()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->node_type().data(), this->node_type().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "neb.TraceLog.node_type"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_node_identify;
+        break;
+      }
+
+      // optional string node_identify = 3;
+      case 3: {
+        if (tag == 26) {
          parse_node_identify:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_node_identify()));
@@ -1741,13 +1753,30 @@ bool TraceLog::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(26)) goto parse_code_file_name;
+        if (input->ExpectTag(34)) goto parse_log_level;
         break;
       }
 
-      // optional string code_file_name = 3;
-      case 3: {
-        if (tag == 26) {
+      // optional string log_level = 4;
+      case 4: {
+        if (tag == 34) {
+         parse_log_level:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_log_level()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->log_level().data(), this->log_level().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "neb.TraceLog.log_level"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(42)) goto parse_code_file_name;
+        break;
+      }
+
+      // optional string code_file_name = 5;
+      case 5: {
+        if (tag == 42) {
          parse_code_file_name:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_code_file_name()));
@@ -1758,13 +1787,13 @@ bool TraceLog::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(32)) goto parse_code_file_line;
+        if (input->ExpectTag(48)) goto parse_code_file_line;
         break;
       }
 
-      // optional uint32 code_file_line = 4;
-      case 4: {
-        if (tag == 32) {
+      // optional uint32 code_file_line = 6;
+      case 6: {
+        if (tag == 48) {
          parse_code_file_line:
           DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
                    ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
@@ -1773,13 +1802,13 @@ bool TraceLog::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(42)) goto parse_code_function;
+        if (input->ExpectTag(58)) goto parse_code_function;
         break;
       }
 
-      // optional string code_function = 5;
-      case 5: {
-        if (tag == 42) {
+      // optional string code_function = 7;
+      case 7: {
+        if (tag == 58) {
          parse_code_function:
           DO_(::google::protobuf::internal::WireFormatLite::ReadString(
                 input, this->mutable_code_function()));
@@ -1790,13 +1819,13 @@ bool TraceLog::MergePartialFromCodedStream(
         } else {
           goto handle_unusual;
         }
-        if (input->ExpectTag(50)) goto parse_log_content;
+        if (input->ExpectTag(66)) goto parse_log_content;
         break;
       }
 
-      // optional bytes log_content = 6;
-      case 6: {
-        if (tag == 50) {
+      // optional bytes log_content = 8;
+      case 8: {
+        if (tag == 66) {
          parse_log_content:
           DO_(::google::protobuf::internal::WireFormatLite::ReadBytes(
                 input, this->mutable_log_content()));
@@ -1831,50 +1860,75 @@ failure:
 void TraceLog::SerializeWithCachedSizes(
     ::google::protobuf::io::CodedOutputStream* output) const {
   // @@protoc_insertion_point(serialize_start:neb.TraceLog)
-  // optional uint32 node_id = 1;
-  if (this->node_id() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->node_id(), output);
+  // optional string log_time = 1;
+  if (this->log_time().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->log_time().data(), this->log_time().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.TraceLog.log_time");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      1, this->log_time(), output);
   }
 
-  // optional string node_identify = 2;
+  // optional string node_type = 2;
+  if (this->node_type().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->node_type().data(), this->node_type().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.TraceLog.node_type");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      2, this->node_type(), output);
+  }
+
+  // optional string node_identify = 3;
   if (this->node_identify().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->node_identify().data(), this->node_identify().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "neb.TraceLog.node_identify");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      2, this->node_identify(), output);
+      3, this->node_identify(), output);
   }
 
-  // optional string code_file_name = 3;
+  // optional string log_level = 4;
+  if (this->log_level().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->log_level().data(), this->log_level().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.TraceLog.log_level");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      4, this->log_level(), output);
+  }
+
+  // optional string code_file_name = 5;
   if (this->code_file_name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->code_file_name().data(), this->code_file_name().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "neb.TraceLog.code_file_name");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      3, this->code_file_name(), output);
+      5, this->code_file_name(), output);
   }
 
-  // optional uint32 code_file_line = 4;
+  // optional uint32 code_file_line = 6;
   if (this->code_file_line() != 0) {
-    ::google::protobuf::internal::WireFormatLite::WriteUInt32(4, this->code_file_line(), output);
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(6, this->code_file_line(), output);
   }
 
-  // optional string code_function = 5;
+  // optional string code_function = 7;
   if (this->code_function().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->code_function().data(), this->code_function().length(),
       ::google::protobuf::internal::WireFormatLite::SERIALIZE,
       "neb.TraceLog.code_function");
     ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
-      5, this->code_function(), output);
+      7, this->code_function(), output);
   }
 
-  // optional bytes log_content = 6;
+  // optional bytes log_content = 8;
   if (this->log_content().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::WriteBytesMaybeAliased(
-      6, this->log_content(), output);
+      8, this->log_content(), output);
   }
 
   // @@protoc_insertion_point(serialize_end:neb.TraceLog)
@@ -1883,12 +1937,29 @@ void TraceLog::SerializeWithCachedSizes(
 ::google::protobuf::uint8* TraceLog::InternalSerializeWithCachedSizesToArray(
     bool deterministic, ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:neb.TraceLog)
-  // optional uint32 node_id = 1;
-  if (this->node_id() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->node_id(), target);
+  // optional string log_time = 1;
+  if (this->log_time().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->log_time().data(), this->log_time().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.TraceLog.log_time");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        1, this->log_time(), target);
   }
 
-  // optional string node_identify = 2;
+  // optional string node_type = 2;
+  if (this->node_type().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->node_type().data(), this->node_type().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.TraceLog.node_type");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        2, this->node_type(), target);
+  }
+
+  // optional string node_identify = 3;
   if (this->node_identify().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->node_identify().data(), this->node_identify().length(),
@@ -1896,10 +1967,21 @@ void TraceLog::SerializeWithCachedSizes(
       "neb.TraceLog.node_identify");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        2, this->node_identify(), target);
+        3, this->node_identify(), target);
   }
 
-  // optional string code_file_name = 3;
+  // optional string log_level = 4;
+  if (this->log_level().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->log_level().data(), this->log_level().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.TraceLog.log_level");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        4, this->log_level(), target);
+  }
+
+  // optional string code_file_name = 5;
   if (this->code_file_name().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->code_file_name().data(), this->code_file_name().length(),
@@ -1907,15 +1989,15 @@ void TraceLog::SerializeWithCachedSizes(
       "neb.TraceLog.code_file_name");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        3, this->code_file_name(), target);
+        5, this->code_file_name(), target);
   }
 
-  // optional uint32 code_file_line = 4;
+  // optional uint32 code_file_line = 6;
   if (this->code_file_line() != 0) {
-    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(4, this->code_file_line(), target);
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(6, this->code_file_line(), target);
   }
 
-  // optional string code_function = 5;
+  // optional string code_function = 7;
   if (this->code_function().size() > 0) {
     ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
       this->code_function().data(), this->code_function().length(),
@@ -1923,14 +2005,14 @@ void TraceLog::SerializeWithCachedSizes(
       "neb.TraceLog.code_function");
     target =
       ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
-        5, this->code_function(), target);
+        7, this->code_function(), target);
   }
 
-  // optional bytes log_content = 6;
+  // optional bytes log_content = 8;
   if (this->log_content().size() > 0) {
     target =
       ::google::protobuf::internal::WireFormatLite::WriteBytesToArray(
-        6, this->log_content(), target);
+        8, this->log_content(), target);
   }
 
   // @@protoc_insertion_point(serialize_to_array_end:neb.TraceLog)
@@ -1941,42 +2023,56 @@ int TraceLog::ByteSize() const {
 // @@protoc_insertion_point(message_byte_size_start:neb.TraceLog)
   int total_size = 0;
 
-  // optional uint32 node_id = 1;
-  if (this->node_id() != 0) {
+  // optional string log_time = 1;
+  if (this->log_time().size() > 0) {
     total_size += 1 +
-      ::google::protobuf::internal::WireFormatLite::UInt32Size(
-        this->node_id());
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->log_time());
   }
 
-  // optional string node_identify = 2;
+  // optional string node_type = 2;
+  if (this->node_type().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->node_type());
+  }
+
+  // optional string node_identify = 3;
   if (this->node_identify().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->node_identify());
   }
 
-  // optional string code_file_name = 3;
+  // optional string log_level = 4;
+  if (this->log_level().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->log_level());
+  }
+
+  // optional string code_file_name = 5;
   if (this->code_file_name().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->code_file_name());
   }
 
-  // optional uint32 code_file_line = 4;
+  // optional uint32 code_file_line = 6;
   if (this->code_file_line() != 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::UInt32Size(
         this->code_file_line());
   }
 
-  // optional string code_function = 5;
+  // optional string code_function = 7;
   if (this->code_function().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->code_function());
   }
 
-  // optional bytes log_content = 6;
+  // optional bytes log_content = 8;
   if (this->log_content().size() > 0) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::BytesSize(
@@ -2011,12 +2107,21 @@ void TraceLog::MergeFrom(const TraceLog& from) {
   if (GOOGLE_PREDICT_FALSE(&from == this)) {
     ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
   }
-  if (from.node_id() != 0) {
-    set_node_id(from.node_id());
+  if (from.log_time().size() > 0) {
+
+    log_time_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.log_time_);
+  }
+  if (from.node_type().size() > 0) {
+
+    node_type_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.node_type_);
   }
   if (from.node_identify().size() > 0) {
 
     node_identify_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.node_identify_);
+  }
+  if (from.log_level().size() > 0) {
+
+    log_level_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.log_level_);
   }
   if (from.code_file_name().size() > 0) {
 
@@ -2059,8 +2164,10 @@ void TraceLog::Swap(TraceLog* other) {
   InternalSwap(other);
 }
 void TraceLog::InternalSwap(TraceLog* other) {
-  std::swap(node_id_, other->node_id_);
+  log_time_.Swap(&other->log_time_);
+  node_type_.Swap(&other->node_type_);
   node_identify_.Swap(&other->node_identify_);
+  log_level_.Swap(&other->log_level_);
   code_file_name_.Swap(&other->code_file_name_);
   std::swap(code_file_line_, other->code_file_line_);
   code_function_.Swap(&other->code_function_);
@@ -2080,21 +2187,95 @@ void TraceLog::InternalSwap(TraceLog* other) {
 #if PROTOBUF_INLINE_NOT_IN_HEADERS
 // TraceLog
 
-// optional uint32 node_id = 1;
-void TraceLog::clear_node_id() {
-  node_id_ = 0u;
+// optional string log_time = 1;
+void TraceLog::clear_log_time() {
+  log_time_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- ::google::protobuf::uint32 TraceLog::node_id() const {
-  // @@protoc_insertion_point(field_get:neb.TraceLog.node_id)
-  return node_id_;
+ const ::std::string& TraceLog::log_time() const {
+  // @@protoc_insertion_point(field_get:neb.TraceLog.log_time)
+  return log_time_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
- void TraceLog::set_node_id(::google::protobuf::uint32 value) {
+ void TraceLog::set_log_time(const ::std::string& value) {
   
-  node_id_ = value;
-  // @@protoc_insertion_point(field_set:neb.TraceLog.node_id)
+  log_time_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.TraceLog.log_time)
+}
+ void TraceLog::set_log_time(const char* value) {
+  
+  log_time_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.TraceLog.log_time)
+}
+ void TraceLog::set_log_time(const char* value, size_t size) {
+  
+  log_time_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.TraceLog.log_time)
+}
+ ::std::string* TraceLog::mutable_log_time() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.TraceLog.log_time)
+  return log_time_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* TraceLog::release_log_time() {
+  // @@protoc_insertion_point(field_release:neb.TraceLog.log_time)
+  
+  return log_time_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void TraceLog::set_allocated_log_time(::std::string* log_time) {
+  if (log_time != NULL) {
+    
+  } else {
+    
+  }
+  log_time_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), log_time);
+  // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.log_time)
 }
 
-// optional string node_identify = 2;
+// optional string node_type = 2;
+void TraceLog::clear_node_type() {
+  node_type_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& TraceLog::node_type() const {
+  // @@protoc_insertion_point(field_get:neb.TraceLog.node_type)
+  return node_type_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void TraceLog::set_node_type(const ::std::string& value) {
+  
+  node_type_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.TraceLog.node_type)
+}
+ void TraceLog::set_node_type(const char* value) {
+  
+  node_type_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.TraceLog.node_type)
+}
+ void TraceLog::set_node_type(const char* value, size_t size) {
+  
+  node_type_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.TraceLog.node_type)
+}
+ ::std::string* TraceLog::mutable_node_type() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.TraceLog.node_type)
+  return node_type_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* TraceLog::release_node_type() {
+  // @@protoc_insertion_point(field_release:neb.TraceLog.node_type)
+  
+  return node_type_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void TraceLog::set_allocated_node_type(::std::string* node_type) {
+  if (node_type != NULL) {
+    
+  } else {
+    
+  }
+  node_type_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), node_type);
+  // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.node_type)
+}
+
+// optional string node_identify = 3;
 void TraceLog::clear_node_identify() {
   node_identify_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -2138,7 +2319,51 @@ void TraceLog::clear_node_identify() {
   // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.node_identify)
 }
 
-// optional string code_file_name = 3;
+// optional string log_level = 4;
+void TraceLog::clear_log_level() {
+  log_level_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& TraceLog::log_level() const {
+  // @@protoc_insertion_point(field_get:neb.TraceLog.log_level)
+  return log_level_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void TraceLog::set_log_level(const ::std::string& value) {
+  
+  log_level_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.TraceLog.log_level)
+}
+ void TraceLog::set_log_level(const char* value) {
+  
+  log_level_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.TraceLog.log_level)
+}
+ void TraceLog::set_log_level(const char* value, size_t size) {
+  
+  log_level_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.TraceLog.log_level)
+}
+ ::std::string* TraceLog::mutable_log_level() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.TraceLog.log_level)
+  return log_level_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* TraceLog::release_log_level() {
+  // @@protoc_insertion_point(field_release:neb.TraceLog.log_level)
+  
+  return log_level_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void TraceLog::set_allocated_log_level(::std::string* log_level) {
+  if (log_level != NULL) {
+    
+  } else {
+    
+  }
+  log_level_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), log_level);
+  // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.log_level)
+}
+
+// optional string code_file_name = 5;
 void TraceLog::clear_code_file_name() {
   code_file_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -2182,7 +2407,7 @@ void TraceLog::clear_code_file_name() {
   // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.code_file_name)
 }
 
-// optional uint32 code_file_line = 4;
+// optional uint32 code_file_line = 6;
 void TraceLog::clear_code_file_line() {
   code_file_line_ = 0u;
 }
@@ -2196,7 +2421,7 @@ void TraceLog::clear_code_file_line() {
   // @@protoc_insertion_point(field_set:neb.TraceLog.code_file_line)
 }
 
-// optional string code_function = 5;
+// optional string code_function = 7;
 void TraceLog::clear_code_function() {
   code_function_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -2240,7 +2465,7 @@ void TraceLog::clear_code_function() {
   // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.code_function)
 }
 
-// optional bytes log_content = 6;
+// optional bytes log_content = 8;
 void TraceLog::clear_log_content() {
   log_content_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

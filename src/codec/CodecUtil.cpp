@@ -9,7 +9,7 @@
 ******************************************************************************/
 
 
-#include "util/logger/NetLogger.hpp"
+#include "logger/NetLogger.hpp"
 #include "CodecUtil.hpp"
 
 namespace neb

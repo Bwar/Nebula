@@ -44,11 +44,13 @@ message LogLevel
 
 message TraceLog
 {
-    uint32 node_id = 1;
-    string node_identify = 2;
-    string code_file_name = 3;
-    uint32 code_file_line = 4;
-    string code_function = 5;
-    bytes log_content = 6;
+    string log_time = 1;
+    string node_type = 2;
+    string node_identify = 3;
+    string log_level    = 4;
+    string code_file_name = 5;
+    uint32 code_file_line = 6;
+    string code_function = 7;
+    bytes log_content = 8;
 }
 

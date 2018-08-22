@@ -8,7 +8,7 @@
  * Modify history:
  ******************************************************************************/
 
-#include "util/logger/NetLogger.hpp"
+#include "logger/NetLogger.hpp"
 #include "CodecProto.hpp"
 
 namespace neb

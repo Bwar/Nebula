@@ -29,7 +29,7 @@
 #include "codec/Codec.hpp"
 #include "Channel.hpp"
 #include "Definition.hpp"
-#include "util/logger/NetLogger.hpp"
+#include "logger/NetLogger.hpp"
 
 namespace neb
 {

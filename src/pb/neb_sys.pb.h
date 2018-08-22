@@ -480,15 +480,31 @@ class TraceLog : public ::google::protobuf::Message /* @@protoc_insertion_point(
 
   // accessors -------------------------------------------------------
 
-  // optional uint32 node_id = 1;
-  void clear_node_id();
-  static const int kNodeIdFieldNumber = 1;
-  ::google::protobuf::uint32 node_id() const;
-  void set_node_id(::google::protobuf::uint32 value);
+  // optional string log_time = 1;
+  void clear_log_time();
+  static const int kLogTimeFieldNumber = 1;
+  const ::std::string& log_time() const;
+  void set_log_time(const ::std::string& value);
+  void set_log_time(const char* value);
+  void set_log_time(const char* value, size_t size);
+  ::std::string* mutable_log_time();
+  ::std::string* release_log_time();
+  void set_allocated_log_time(::std::string* log_time);
 
-  // optional string node_identify = 2;
+  // optional string node_type = 2;
+  void clear_node_type();
+  static const int kNodeTypeFieldNumber = 2;
+  const ::std::string& node_type() const;
+  void set_node_type(const ::std::string& value);
+  void set_node_type(const char* value);
+  void set_node_type(const char* value, size_t size);
+  ::std::string* mutable_node_type();
+  ::std::string* release_node_type();
+  void set_allocated_node_type(::std::string* node_type);
+
+  // optional string node_identify = 3;
   void clear_node_identify();
-  static const int kNodeIdentifyFieldNumber = 2;
+  static const int kNodeIdentifyFieldNumber = 3;
   const ::std::string& node_identify() const;
   void set_node_identify(const ::std::string& value);
   void set_node_identify(const char* value);
@@ -497,9 +513,20 @@ class TraceLog : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::std::string* release_node_identify();
   void set_allocated_node_identify(::std::string* node_identify);
 
-  // optional string code_file_name = 3;
+  // optional string log_level = 4;
+  void clear_log_level();
+  static const int kLogLevelFieldNumber = 4;
+  const ::std::string& log_level() const;
+  void set_log_level(const ::std::string& value);
+  void set_log_level(const char* value);
+  void set_log_level(const char* value, size_t size);
+  ::std::string* mutable_log_level();
+  ::std::string* release_log_level();
+  void set_allocated_log_level(::std::string* log_level);
+
+  // optional string code_file_name = 5;
   void clear_code_file_name();
-  static const int kCodeFileNameFieldNumber = 3;
+  static const int kCodeFileNameFieldNumber = 5;
   const ::std::string& code_file_name() const;
   void set_code_file_name(const ::std::string& value);
   void set_code_file_name(const char* value);
@@ -508,15 +535,15 @@ class TraceLog : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::std::string* release_code_file_name();
   void set_allocated_code_file_name(::std::string* code_file_name);
 
-  // optional uint32 code_file_line = 4;
+  // optional uint32 code_file_line = 6;
   void clear_code_file_line();
-  static const int kCodeFileLineFieldNumber = 4;
+  static const int kCodeFileLineFieldNumber = 6;
   ::google::protobuf::uint32 code_file_line() const;
   void set_code_file_line(::google::protobuf::uint32 value);
 
-  // optional string code_function = 5;
+  // optional string code_function = 7;
   void clear_code_function();
-  static const int kCodeFunctionFieldNumber = 5;
+  static const int kCodeFunctionFieldNumber = 7;
   const ::std::string& code_function() const;
   void set_code_function(const ::std::string& value);
   void set_code_function(const char* value);
@@ -525,9 +552,9 @@ class TraceLog : public ::google::protobuf::Message /* @@protoc_insertion_point(
   ::std::string* release_code_function();
   void set_allocated_code_function(::std::string* code_function);
 
-  // optional bytes log_content = 6;
+  // optional bytes log_content = 8;
   void clear_log_content();
-  static const int kLogContentFieldNumber = 6;
+  static const int kLogContentFieldNumber = 8;
   const ::std::string& log_content() const;
   void set_log_content(const ::std::string& value);
   void set_log_content(const char* value);
@@ -541,12 +568,14 @@ class TraceLog : public ::google::protobuf::Message /* @@protoc_insertion_point(
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr log_time_;
+  ::google::protobuf::internal::ArenaStringPtr node_type_;
   ::google::protobuf::internal::ArenaStringPtr node_identify_;
-  ::google::protobuf::uint32 node_id_;
-  ::google::protobuf::uint32 code_file_line_;
+  ::google::protobuf::internal::ArenaStringPtr log_level_;
   ::google::protobuf::internal::ArenaStringPtr code_file_name_;
   ::google::protobuf::internal::ArenaStringPtr code_function_;
   ::google::protobuf::internal::ArenaStringPtr log_content_;
+  ::google::protobuf::uint32 code_file_line_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_neb_5fsys_2eproto();
   friend void protobuf_AssignDesc_neb_5fsys_2eproto();
@@ -811,21 +840,95 @@ inline void LogLevel::set_net_log_level(::google::protobuf::int32 value) {
 
 // TraceLog
 
-// optional uint32 node_id = 1;
-inline void TraceLog::clear_node_id() {
-  node_id_ = 0u;
+// optional string log_time = 1;
+inline void TraceLog::clear_log_time() {
+  log_time_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline ::google::protobuf::uint32 TraceLog::node_id() const {
-  // @@protoc_insertion_point(field_get:neb.TraceLog.node_id)
-  return node_id_;
+inline const ::std::string& TraceLog::log_time() const {
+  // @@protoc_insertion_point(field_get:neb.TraceLog.log_time)
+  return log_time_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
-inline void TraceLog::set_node_id(::google::protobuf::uint32 value) {
+inline void TraceLog::set_log_time(const ::std::string& value) {
   
-  node_id_ = value;
-  // @@protoc_insertion_point(field_set:neb.TraceLog.node_id)
+  log_time_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.TraceLog.log_time)
+}
+inline void TraceLog::set_log_time(const char* value) {
+  
+  log_time_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.TraceLog.log_time)
+}
+inline void TraceLog::set_log_time(const char* value, size_t size) {
+  
+  log_time_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.TraceLog.log_time)
+}
+inline ::std::string* TraceLog::mutable_log_time() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.TraceLog.log_time)
+  return log_time_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TraceLog::release_log_time() {
+  // @@protoc_insertion_point(field_release:neb.TraceLog.log_time)
+  
+  return log_time_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TraceLog::set_allocated_log_time(::std::string* log_time) {
+  if (log_time != NULL) {
+    
+  } else {
+    
+  }
+  log_time_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), log_time);
+  // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.log_time)
 }
 
-// optional string node_identify = 2;
+// optional string node_type = 2;
+inline void TraceLog::clear_node_type() {
+  node_type_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& TraceLog::node_type() const {
+  // @@protoc_insertion_point(field_get:neb.TraceLog.node_type)
+  return node_type_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TraceLog::set_node_type(const ::std::string& value) {
+  
+  node_type_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.TraceLog.node_type)
+}
+inline void TraceLog::set_node_type(const char* value) {
+  
+  node_type_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.TraceLog.node_type)
+}
+inline void TraceLog::set_node_type(const char* value, size_t size) {
+  
+  node_type_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.TraceLog.node_type)
+}
+inline ::std::string* TraceLog::mutable_node_type() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.TraceLog.node_type)
+  return node_type_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TraceLog::release_node_type() {
+  // @@protoc_insertion_point(field_release:neb.TraceLog.node_type)
+  
+  return node_type_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TraceLog::set_allocated_node_type(::std::string* node_type) {
+  if (node_type != NULL) {
+    
+  } else {
+    
+  }
+  node_type_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), node_type);
+  // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.node_type)
+}
+
+// optional string node_identify = 3;
 inline void TraceLog::clear_node_identify() {
   node_identify_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -869,7 +972,51 @@ inline void TraceLog::set_allocated_node_identify(::std::string* node_identify) 
   // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.node_identify)
 }
 
-// optional string code_file_name = 3;
+// optional string log_level = 4;
+inline void TraceLog::clear_log_level() {
+  log_level_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& TraceLog::log_level() const {
+  // @@protoc_insertion_point(field_get:neb.TraceLog.log_level)
+  return log_level_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TraceLog::set_log_level(const ::std::string& value) {
+  
+  log_level_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.TraceLog.log_level)
+}
+inline void TraceLog::set_log_level(const char* value) {
+  
+  log_level_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.TraceLog.log_level)
+}
+inline void TraceLog::set_log_level(const char* value, size_t size) {
+  
+  log_level_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.TraceLog.log_level)
+}
+inline ::std::string* TraceLog::mutable_log_level() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.TraceLog.log_level)
+  return log_level_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* TraceLog::release_log_level() {
+  // @@protoc_insertion_point(field_release:neb.TraceLog.log_level)
+  
+  return log_level_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void TraceLog::set_allocated_log_level(::std::string* log_level) {
+  if (log_level != NULL) {
+    
+  } else {
+    
+  }
+  log_level_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), log_level);
+  // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.log_level)
+}
+
+// optional string code_file_name = 5;
 inline void TraceLog::clear_code_file_name() {
   code_file_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -913,7 +1060,7 @@ inline void TraceLog::set_allocated_code_file_name(::std::string* code_file_name
   // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.code_file_name)
 }
 
-// optional uint32 code_file_line = 4;
+// optional uint32 code_file_line = 6;
 inline void TraceLog::clear_code_file_line() {
   code_file_line_ = 0u;
 }
@@ -927,7 +1074,7 @@ inline void TraceLog::set_code_file_line(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:neb.TraceLog.code_file_line)
 }
 
-// optional string code_function = 5;
+// optional string code_function = 7;
 inline void TraceLog::clear_code_function() {
   code_function_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -971,7 +1118,7 @@ inline void TraceLog::set_allocated_code_function(::std::string* code_function) 
   // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.code_function)
 }
 
-// optional bytes log_content = 6;
+// optional bytes log_content = 8;
 inline void TraceLog::clear_log_content() {
   log_content_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }

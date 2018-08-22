@@ -14,7 +14,7 @@
 #include "codec/CodecHttp.hpp"
 #include "labor/Labor.hpp"
 #include "labor/Manager.hpp"
-#include "util/logger/NetLogger.hpp"
+#include "logger/NetLogger.hpp"
 #include "SocketChannelImpl.hpp"
 
 namespace neb

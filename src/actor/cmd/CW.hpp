@@ -67,8 +67,6 @@ enum E_CMD
     CMD_RSP_STORATE                     = 506,     ///< 存储响应
     CMD_REQ_BEAT                        = 507,     ///< 心跳请求
     CMD_RSP_BEAT                        = 508,     ///< 心跳响应
-    CMD_REQ_LOG                         = 509,     ///< 日志请求
-    CMD_RSP_LOG                         = 510,     ///< 日志响应（不会被使用）
     CMD_REQ_LOCATE_STORAGE              = 511,     ///< 定位数据存储位置请求
     CMD_RSP_LOCATE_STORAGE              = 512,     ///< 定位数据存储位置响应
     CMD_REQ_SYS_ERROR                   = 999,     ///< 系统错误请求（无意义，不会被使用）

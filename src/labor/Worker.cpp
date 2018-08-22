@@ -104,6 +104,11 @@ time_t Worker::GetNowTime() const
     return(m_pImpl->GetNowTime());
 }
 
+bool Worker::AddNetLogMsg(const MsgBody& oMsgBody) 
+{
+    return(m_pImpl->AddNetLogMsg(oMsgBody));
+}
+
 bool Worker::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
     return(m_pImpl->SendTo(pChannel));

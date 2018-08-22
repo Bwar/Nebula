@@ -54,11 +54,12 @@ extern "C" {
 #include "pb/neb_sys.pb.h"
 #include "Error.hpp"
 #include "Definition.hpp"
-#include "util/logger/NetLogger.hpp"
+#include "logger/NetLogger.hpp"
 #include "Labor.hpp"
 #include "channel/Channel.hpp"
 #include "actor/cmd/Cmd.hpp"
 #include "actor/session/sys_session/SessionNode.hpp"
+#include "actor/session/sys_session/SessionManagerLogger.hpp"
 
 
 namespace neb
@@ -200,6 +201,7 @@ public:
 public:
     bool InitLogger(const CJsonObject& oJsonConf);
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
+    virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
@@ -227,6 +229,11 @@ public:
     virtual const std::string& GetNodeIdentify() const
     {
         return(m_stManagerInfo.strNodeIdentify);
+    }
+
+    virtual const std::string& GetNodeType() const
+    {
+        return(m_stManagerInfo.strNodeType);
     }
 
     virtual void AddInnerChannel(std::shared_ptr<SocketChannel> pChannel){};
@@ -285,6 +292,7 @@ private:
 
     tagManagerInfo m_stManagerInfo;
     std::unique_ptr<SessionNode> m_pSessionNode = nullptr;
+    std::unique_ptr<SessionManagerLogger> m_pSessionLogger = nullptr;
 
     std::unordered_map<int, tagWorkerAttr> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
     std::unordered_map<int, int> m_mapWorkerRestartNum;       ///< 进程被重启次数，key为WorkerIdx

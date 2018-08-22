@@ -494,6 +494,16 @@ bool Manager::SetProcessName(const CJsonObject& oJsonConf)
     return(true);
 }
 
+bool Manager::AddNetLogMsg(const MsgBody& oMsgBody)
+{
+    if (std::string("BEACON") != m_stManagerInfo.strNodeType
+            && std::string("LOGGER") != m_stManagerInfo.strNodeType)
+    {
+        m_pSessionLogger->AddMsg(oMsgBody);
+    }
+    return(true);
+}
+
 bool Manager::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
     E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send();
@@ -789,8 +799,10 @@ bool Manager::Init()
     InitLogger(m_oCurrentConf);
 #if __cplusplus >= 201401L
     m_pSessionNode = std::make_unique<SessionNode>();
+    m_pSessionLogger = std::make_unique<SessionManagerLogger>(this);
 #else
     m_pSessionNode = std::unique_ptr<SessionNode>(new SessionNode());
+    m_pSessionLogger = std::unique_ptr<SessionManagerLogger>(new SessionManagerLogger(this));
 #endif
 
 
@@ -1341,6 +1353,7 @@ void Manager::RefreshServer()
     {
         LOG4_ERROR("GetConf() error, please check the config file.", "");
     }
+    m_pSessionLogger->Timeout();
 }
 
 bool Manager::RegisterToBeacon()

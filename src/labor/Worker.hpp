@@ -63,6 +63,7 @@ public:
     virtual time_t GetNowTime() const;
 
     // 网络IO相关方法
+    virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);

@@ -19,7 +19,7 @@
 #include "Error.hpp"
 #include "Definition.hpp"
 #include "CodecDefine.hpp"
-#include "util/logger/NetLogger.hpp"
+#include "logger/NetLogger.hpp"
 
 namespace neb
 {

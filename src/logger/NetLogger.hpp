@@ -7,8 +7,8 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#ifndef SRC_UTIL_LOGGER_NETLOGGER_HPP_
-#define SRC_UTIL_LOGGER_NETLOGGER_HPP_
+#ifndef LOGGER_NETLOGGER_HPP_
+#define LOGGER_NETLOGGER_HPP_
 
 #include <cstdio>
 #include <memory>
@@ -53,13 +53,14 @@ public:
     }
 
 private:
-    std::unique_ptr<neb::FileLogger> m_pLog;
+    char* m_pLogBuff;
     int m_iLogLevel;
     int m_iNetLogLevel;
     bool m_bEnableNetLogger;
     Labor* m_pLabor;
+    std::unique_ptr<neb::FileLogger> m_pLog;
 };
 
 } /* namespace neb */
 
-#endif /* SRC_UTIL_LOGGER_NETLOGGER_HPP_ */
+#endif /* LOGGER_NETLOGGER_HPP_ */

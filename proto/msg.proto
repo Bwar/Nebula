@@ -4,6 +4,9 @@ syntax = "proto3";
 
 /**
  * @brief 消息头
+ * @note MsgHead为固定15字节的头部，当MsgHead不等于15字节时，消息发送将出错。
+ *       在proto2版本，MsgHead为15字节总是成立，cmd、seq、len都是required；
+ *       但proto3版本，MsgHead为15字节则必须要求cmd、seq、len均不等于0，否则无法正确进行收发编解码。
  */
 message MsgHead
 {
