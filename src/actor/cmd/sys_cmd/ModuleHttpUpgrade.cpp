@@ -57,16 +57,15 @@ bool ModuleHttpUpgrade::WebSocket(std::shared_ptr<SocketChannel> pChannel, const
     {
         std::string strSecWebSocketKey;
         int iSecWebSocketVersion = 0;
-        for (int i = 0; i < oHttpMsg.headers_size(); ++i)
+        auto it = oHttpMsg.headers().find("Sec-WebSocket-Key");
+        if (it != oHttpMsg.headers().end())
         {
-            if (std::string("Sec-WebSocket-Key") == oHttpMsg.headers(i).header_name())
-            {
-                strSecWebSocketKey = oHttpMsg.headers(i).header_value();
-            }
-            else if (std::string("Sec-WebSocket-Version") == oHttpMsg.headers(i).header_name())
-            {
-                iSecWebSocketVersion = atoi(oHttpMsg.headers(i).header_value().c_str());
-            }
+            strSecWebSocketKey = it->second;
+        }
+        it = oHttpMsg.headers().find("Sec-WebSocket-Version");
+        if (it != oHttpMsg.headers().end())
+        {
+            iSecWebSocketVersion = atoi(it->second.c_str());
         }
         if (13 != iSecWebSocketVersion)
         {
@@ -115,18 +114,10 @@ bool ModuleHttpUpgrade::WebSocket(std::shared_ptr<SocketChannel> pChannel, const
             oEncoder.Get((CryptoPP::byte*)strBase64EncodeAcceptKey.data(), strBase64EncodeAcceptKey.size());
         }
         oOutHttpMsg.set_status_code(101);
-        HttpMsg::Header* pHeader = oOutHttpMsg.add_headers();
-        pHeader->set_header_name("Upgrade");
-        pHeader->set_header_value("websocket");
-        pHeader = oOutHttpMsg.add_headers();
-        pHeader->set_header_name("Connection");
-        pHeader->set_header_value("Upgrade");
-        pHeader = oOutHttpMsg.add_headers();
-        pHeader->set_header_name("Sec-WebSocket-Extensions");
-        pHeader->set_header_value("private-extension");
-        pHeader = oOutHttpMsg.add_headers();
-        pHeader->set_header_name("Sec-WebSocket-Accept");
-        pHeader->set_header_value(strBase64EncodeAcceptKey);
+        oOutHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("Upgrade", "websocket"));
+        oOutHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("Connection", "Upgrade"));
+        oOutHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("Sec-WebSocket-Extensions", "private-extension"));
+        oOutHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("Sec-WebSocket-Accept", strBase64EncodeAcceptKey));
         SendTo(pChannel, oOutHttpMsg);
         GetWorkerImpl(this)->SwitchCodec(pChannel, CODEC_WS_EXTEND_JSON);
     }

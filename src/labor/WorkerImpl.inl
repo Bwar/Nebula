@@ -63,7 +63,7 @@ std::shared_ptr<Step> WorkerImpl::MakeSharedStep(Actor* pCreator, const std::str
                 ;
         }
     }
-    ev_timer* timer_watcher = pStepAlias->AddTimerWatcher();
+    ev_timer* timer_watcher = pStepAlias->MutableTimerWatcher();
     if (NULL == timer_watcher)
     {
         delete pStep;
@@ -115,7 +115,7 @@ std::shared_ptr<Session> WorkerImpl::MakeSharedSession(Actor* pCreator, const st
 
     pSessionAlias->SetWorker(m_pWorker);
     pSessionAlias->SetActiveTime(ev_now(m_loop));
-    ev_timer* timer_watcher = pSessionAlias->AddTimerWatcher();
+    ev_timer* timer_watcher = pSessionAlias->MutableTimerWatcher();
     if (NULL == timer_watcher)
     {
         delete pSession;

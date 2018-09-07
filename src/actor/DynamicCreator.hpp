@@ -25,15 +25,15 @@ public:
     {
         Register()
         {
-            char* szDemangleName = nullptr;
+            char* szDemangleName = NULL;
             std::string strTypeName;
 #ifdef __GNUC__
-            szDemangleName = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, nullptr);
+            szDemangleName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
 #else
             //in this format?:     szDemangleName =  typeid(T).name();
-            szDemangleName = abi::__cxa_demangle(typeid(T).name(), nullptr, nullptr, nullptr);
+            szDemangleName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
 #endif
-            if (nullptr != szDemangleName)
+            if (NULL != szDemangleName)
             {
                 strTypeName = szDemangleName;
                 free(szDemangleName);

@@ -17,7 +17,7 @@ DbOperator::DbOperator(
         const std::string& strTableName,
         Mydis::DbOperate::E_QUERY_TYPE eQueryType,
         uint32 uiModFactor)
-    : m_pDbMemRequest(NULL), m_pDbOperate(NULL), m_uiSectionFactor(uiSectionFactor)
+    : m_pDbMemRequest(nullptr), m_pDbOperate(nullptr), m_uiSectionFactor(uiSectionFactor)
 {
     m_pDbOperate = new Mydis::DbOperate();
     m_pDbOperate->set_table_name(strTableName);
@@ -30,24 +30,24 @@ DbOperator::DbOperator(
 
 DbOperator::~DbOperator()
 {
-    if (m_pDbMemRequest != NULL)
+    if (m_pDbMemRequest != nullptr)
     {
         delete m_pDbMemRequest;
-        m_pDbMemRequest = NULL;
+        m_pDbMemRequest = nullptr;
     }
     else
     {
-        if (m_pDbOperate != NULL)
+        if (m_pDbOperate != nullptr)
         {
             delete m_pDbOperate;
-            m_pDbOperate = NULL;
+            m_pDbOperate = nullptr;
         }
     }
 }
 
 Mydis* DbOperator::MakeMemOperate()
 {
-    if (m_pDbMemRequest == NULL)
+    if (m_pDbMemRequest == nullptr)
     {
         m_pDbMemRequest = new Mydis();
     }

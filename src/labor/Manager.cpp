@@ -474,7 +474,8 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         int32 iMaxLogFileSize = 0;
         int32 iMaxLogFileNum = 0;
         std::string strLoggingHost;
-        std::string strLogname = oJsonConf("log_path") + std::string("/") + getproctitle() + std::string(".log");
+        std::string strLogname = m_stManagerInfo.strWorkPath + std::string("/")
+                        + oJsonConf("log_path") + std::string("/") + getproctitle() + std::string(".log");
         std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
         std::ostringstream ssServerName;
         ssServerName << getproctitle() << " " << m_stManagerInfo.strHostForServer << ":" << m_stManagerInfo.iPortForServer;
@@ -999,22 +1000,23 @@ bool Manager::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
     ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (NULL == io_watcher)
     {
-        io_watcher = pChannel->m_pImpl->AddIoWatcher();
-        if (NULL == io_watcher)
-        {
-            return(false);
-        }
-        ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_READ);
-        ev_io_start (m_loop, io_watcher);
-        return(true);
+        return(false);
     }
     else
     {
-        ev_io_stop(m_loop, io_watcher);
-        ev_io_set(io_watcher, io_watcher->fd, io_watcher->events | EV_READ);
-        ev_io_start (m_loop, io_watcher);
+        if (ev_is_active(io_watcher))
+        {
+            ev_io_stop(m_loop, io_watcher);
+            ev_io_set(io_watcher, io_watcher->fd, io_watcher->events | EV_READ);
+            ev_io_start (m_loop, io_watcher);
+        }
+        else
+        {
+            ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_READ);
+            ev_io_start (m_loop, io_watcher);
+        }
+        return(true);
     }
-    return(true);
 }
 
 bool Manager::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
@@ -1023,22 +1025,23 @@ bool Manager::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
     ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (NULL == io_watcher)
     {
-        io_watcher = pChannel->m_pImpl->AddIoWatcher();
-        if (NULL == io_watcher)
-        {
-            return(false);
-        }
-        ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_WRITE);
-        ev_io_start (m_loop, io_watcher);
-        return(true);
+        return(false);
     }
     else
     {
-        ev_io_stop(m_loop, io_watcher);
-        ev_io_set(io_watcher, io_watcher->fd, io_watcher->events | EV_WRITE);
-        ev_io_start (m_loop, io_watcher);
+        if (ev_is_active(io_watcher))
+        {
+            ev_io_stop(m_loop, io_watcher);
+            ev_io_set(io_watcher, io_watcher->fd, io_watcher->events | EV_WRITE);
+            ev_io_start (m_loop, io_watcher);
+        }
+        else
+        {
+            ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_WRITE);
+            ev_io_start (m_loop, io_watcher);
+        }
+        return(true);
     }
-    return(true);
 }
 
 bool Manager::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
@@ -1591,23 +1594,23 @@ bool Manager::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dT
     ev_timer* timer_watcher = pChannel->m_pImpl->MutableTimerWatcher();
     if (NULL == timer_watcher)
     {
-        timer_watcher = pChannel->m_pImpl->AddTimerWatcher();
-        if (NULL == timer_watcher)
-        {
-            return(false);
-        }
-        pChannel->m_pImpl->SetKeepAlive(ev_now(m_loop));
-        ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
-        ev_timer_start (m_loop, timer_watcher);
-        return(true);
+        return(false);
     }
     else
     {
-        ev_timer_stop(m_loop, timer_watcher);
-        ev_timer_set(timer_watcher, dTimeout + ev_time() - ev_now(m_loop), 0);
-        ev_timer_start (m_loop, timer_watcher);
+        if (ev_is_active(timer_watcher))
+        {
+            ev_timer_stop(m_loop, timer_watcher);
+            ev_timer_set(timer_watcher, dTimeout + ev_time() - ev_now(m_loop), 0);
+            ev_timer_start (m_loop, timer_watcher);
+        }
+        else
+        {
+            ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
+            ev_timer_start (m_loop, timer_watcher);
+        }
+        return(true);
     }
-    return(true);
 }
 
 bool Manager::AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout)

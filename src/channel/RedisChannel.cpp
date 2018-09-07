@@ -13,14 +13,14 @@ namespace neb
 {
 
 RedisChannel::RedisChannel()
-    : bIsReady(false), m_pRedisCtx(nullptr)
+    : bIsReady(false), m_pRedisCtx(NULL)
 {
     
 }
 
 RedisChannel::~RedisChannel()
 {
-    if (nullptr != m_pRedisCtx)
+    if (NULL != m_pRedisCtx)
     {
         redisAsyncFree(m_pRedisCtx);
     }

@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include <iostream>
+#include "util/StringCoder.hpp"
 #include "logger/NetLogger.hpp"
 #include "CodecHttp.hpp"
 
@@ -93,15 +94,8 @@ E_CODEC_STATUS CodecHttp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBod
     HttpMsg oHttpMsg;
     if (oHttpMsg.ParseFromString(oMsgBody.data()))
     {
-        char szValue[16] = {0};
-        HttpMsg::Header* header = oHttpMsg.add_headers();
-        header->set_header_name("x-cmd");
-        snprintf(szValue, sizeof(szValue), "%u", oMsgHead.cmd());
-        header->set_header_value(szValue);
-        header = oHttpMsg.add_headers();
-        header->set_header_name("x-seq");
-        snprintf(szValue, sizeof(szValue), "%u", oMsgHead.seq());
-        header->set_header_value(szValue);
+        oHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("x-cmd", std::to_string(oMsgHead.cmd())));
+        oHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("x-seq", std::to_string(oMsgHead.seq())));
         return(Encode(oHttpMsg, pBuff));
     }
     else
@@ -125,19 +119,19 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMs
     {
         oMsgBody.set_data(oHttpMsg.body());
         oMsgHead.set_len(oMsgBody.ByteSize());
-        for (int i = 0; i < oHttpMsg.headers_size(); ++i)
+        for (auto it = oHttpMsg.headers().begin(); it != oHttpMsg.headers().end(); ++it)
         {
-            if (std::string("x-cmd") == oHttpMsg.headers(i).header_name()
-                            || std::string("x-CMD") == oHttpMsg.headers(i).header_name()
-                            || std::string("x-Cmd") == oHttpMsg.headers(i).header_name())
+            if (std::string("x-cmd") == it->first
+                            || std::string("x-CMD") == it->first
+                            || std::string("x-Cmd") == it->first)
             {
-                oMsgHead.set_cmd(atoi(oHttpMsg.headers(i).header_value().c_str()));
+                oMsgHead.set_cmd(atoi(it->second.c_str()));
             }
-            else if (std::string("x-seq") == oHttpMsg.headers(i).header_name()
-                            || std::string("x-SEQ") == oHttpMsg.headers(i).header_name()
-                            || std::string("x-Seq") == oHttpMsg.headers(i).header_name())
+            else if (std::string("x-seq") == it->first
+                            || std::string("x-SEQ") == it->first
+                            || std::string("x-Seq") == it->first)
             {
-                oMsgHead.set_seq(strtoul(oHttpMsg.headers(i).header_value().c_str(), NULL, 10));
+                oMsgHead.set_seq(strtoul(it->second.c_str(), NULL, 10));
             }
         }
     }
@@ -259,39 +253,29 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     }
     bool bIsChunked = false;
     bool bIsGzip = false;   // 是否用gizp压缩传输包
-    std::map<std::string, std::string>::iterator h_iter;
-    for (int i = 0; i < oHttpMsg.headers_size(); ++i)
+    for (auto h_iter = oHttpMsg.headers().begin(); h_iter != oHttpMsg.headers().end(); ++h_iter)
     {
-        if (std::string("Content-Length") != oHttpMsg.headers(i).header_name())
+        iWriteSize = pBuff->Printf("%s: %s\r\n", h_iter->first.c_str(), h_iter->second.c_str());
+        if (iWriteSize < 0)
         {
-            h_iter = m_mapAddingHttpHeader.find(oHttpMsg.headers(i).header_name());
-            if (h_iter == m_mapAddingHttpHeader.end())
-            {
-                m_mapAddingHttpHeader.insert(std::make_pair(
-                                oHttpMsg.headers(i).header_name(), oHttpMsg.headers(i).header_value()));
-            }
-            else
-            {
-                h_iter->second = oHttpMsg.headers(i).header_value();
-            }
+            pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadWriteSize);
+            m_mapAddingHttpHeader.clear();
+            return(CODEC_STATUS_ERR);
         }
-        if (std::string("Content-Encoding") == oHttpMsg.headers(i).header_name()
-                        && std::string("gzip") == oHttpMsg.headers(i).header_value())
+        else
+        {
+            iHadWriteSize += iWriteSize;
+        }
+        if (std::string("Content-Encoding") == h_iter->first && std::string("gzip") == h_iter->second)
         {
             bIsGzip = true;
         }
-        if (std::string("Transfer-Encoding") == oHttpMsg.headers(i).header_name()
-                        && std::string("chunked") == oHttpMsg.headers(i).header_value())
+        else if (std::string("Transfer-Encoding") == h_iter->first && std::string("chunked") == h_iter->second)
         {
             bIsChunked = true;
         }
-        if (std::string("Connection") == oHttpMsg.headers(i).header_name()
-                        && std::string("keep-alive") == oHttpMsg.headers(i).header_value())
-        {
-            m_dKeepAlive = -1;
-        }
     }
-    for (h_iter = m_mapAddingHttpHeader.begin(); h_iter != m_mapAddingHttpHeader.end(); ++h_iter)
+    for (auto h_iter = m_mapAddingHttpHeader.begin(); h_iter != m_mapAddingHttpHeader.end(); ++h_iter)
     {
         iWriteSize = pBuff->Printf("%s: %s\r\n", h_iter->first.c_str(), h_iter->second.c_str());
         if (iWriteSize < 0)
@@ -671,10 +655,10 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
         m_iHttpMinor = oHttpMsg.http_minor();
         m_dKeepAlive = oHttpMsg.keep_alive();
     }
-    for (int i = 0; i < oHttpMsg.headers_size(); ++i)
+    auto iter = oHttpMsg.headers().find("Content-Encoding");
+    if (iter != oHttpMsg.headers().end())
     {
-        if (std::string("Content-Encoding") == oHttpMsg.headers(i).header_name()
-                        && std::string("gzip") == oHttpMsg.headers(i).header_value())
+        if ("gzip" == iter->second)
         {
             std::string strData;
             if (Gunzip(oHttpMsg.body(), strData))
@@ -686,14 +670,6 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
                 LOG4_ERROR("guzip error!");
                 return(CODEC_STATUS_ERR);
             }
-        }
-        else if ("X-Real-IP" == oHttpMsg.headers(i).header_name())
-        {
-            LOG4_DEBUG("X-Real-IP: %s", oHttpMsg.headers(i).header_value().c_str());
-        }
-        else if ("X-Forwarded-For" == oHttpMsg.headers(i).header_name())
-        {
-            LOG4_DEBUG("X-Forwarded-For: %s", oHttpMsg.headers(i).header_value().c_str());
         }
     }
     LOG4_DEBUG("%s", ToString(oHttpMsg).c_str());
@@ -731,11 +707,11 @@ const std::string& CodecHttp::ToString(const HttpMsg& oHttpMsg)
             m_strHttpString += tmp;
         }
     }
-    for (int i = 0; i < oHttpMsg.headers_size(); ++i)
+    for (auto it = oHttpMsg.headers().begin(); it != oHttpMsg.headers().end(); ++it)
     {
-        m_strHttpString += oHttpMsg.headers(i).header_name();
+        m_strHttpString += it->first;
         m_strHttpString += ":";
-        m_strHttpString += oHttpMsg.headers(i).header_value();
+        m_strHttpString += it->second;
         m_strHttpString += "\r\n";
     }
     m_strHttpString += "\r\n";
@@ -787,6 +763,18 @@ int CodecHttp::OnUrl(http_parser *parser, const char *at, size_t len)
             pHttpMsg->set_path(path, stUrl.field_data[UF_PATH].len);
             free(path);
         }
+
+        if (stUrl.field_set & (1 << UF_QUERY))
+        {
+            std::string strQuery;
+            strQuery.assign(at+stUrl.field_data[UF_QUERY].off, stUrl.field_data[UF_QUERY].len);
+            std::map<std::string, std::string> mapParam;
+            EncodeParameter(mapParam, strQuery);
+            for (auto it = mapParam.begin(); it != mapParam.end(); ++it)
+            {
+                (*pHttpMsg->mutable_params())[it->first] = it->second;
+            }
+        }
     }
     return 0;
 }
@@ -801,32 +789,34 @@ int CodecHttp::OnStatus(http_parser *parser, const char *at, size_t len)
 int CodecHttp::OnHeaderField(http_parser *parser, const char *at, size_t len)
 {
     HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
-    HttpMsg::Header* pHeader = pHttpMsg->add_headers();
-    pHeader->set_header_name(at, len);
+    pHttpMsg->set_body(at, len);        // 用body暂存head_name，解析完head_value后再填充到head里
     return(0);
 }
 
 int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
 {
     HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
-    HttpMsg::Header* pHeader = pHttpMsg->mutable_headers(pHttpMsg->headers_size() - 1);
-    pHeader->set_header_value(at, len);
-    if (pHeader->header_name() == std::string("Keep-Alive"))
+    std::string strHeadName = pHttpMsg->body();
+    std::string strHeadValue;
+    strHeadValue.assign(at, len);
+    pHttpMsg->set_body("");
+    pHttpMsg->mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>(strHeadName, strHeadValue));
+    if (strHeadName == std::string("Keep-Alive"))
     {
-        pHttpMsg->set_keep_alive(atof(at));
+        pHttpMsg->set_keep_alive(atof(strHeadValue.c_str()));
     }
-    else if (std::string("Connection") == pHeader->header_name())
+    else if (std::string("Connection") == strHeadName)
     {
-        if (std::string("keep-alive") == pHeader->header_value())
+        if (std::string("keep-alive") == strHeadValue)
         {
             pHttpMsg->set_keep_alive(-1);     // 由配置的IoTimeout决定
         }
-        else if (std::string("close") == pHeader->header_value())
+        else if (std::string("close") == strHeadValue)
         {
             ; //pHttpMsg->set_keep_alive(0.0);
         }
 
-        if (std::string("Upgrade") == pHeader->header_value())
+        if (std::string("Upgrade") == strHeadValue)
         {
             pHttpMsg->mutable_upgrade()->set_is_upgrade(true);
         }
@@ -835,9 +825,9 @@ int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
             pHttpMsg->mutable_upgrade()->set_is_upgrade(false);
         }
     }
-    else if (std::string("Upgrade") == pHeader->header_name())
+    else if (std::string("Upgrade") == strHeadName)
     {
-        pHttpMsg->mutable_upgrade()->set_protocol(pHeader->header_value());
+        pHttpMsg->mutable_upgrade()->set_protocol(strHeadValue);
     }
     return(0);
 }

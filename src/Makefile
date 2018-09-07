@@ -1,8 +1,8 @@
 CC = gcc
 CXX = g++
-CFLAGS = -g -g2 -O3 -Wall -m64 -Wl,--export-dynamic -D__GUNC__ -fPIC 
+CFLAGS = -g -O3 -Wall -m64 -Wl,--export-dynamic -D__GUNC__ -fPIC 
 cplusplus_version=$(shell g++ -dumpversion | awk '{if ($$NF > 5.0) print "c++14"; else print "c++11";}')
-CXXFLAG = -std=$(cplusplus_version) -g2 -O3 -Wall -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC  -DNODE_BEAT=10.0 
+CXXFLAG = -std=$(cplusplus_version) -g -O3 -Wall -m64 -Wl,--export-dynamic -D_GNU_SOURCE=1 -D_REENTRANT -D__GUNC__ -fPIC  -DNODE_BEAT=10.0 
 
 ifeq ($(unit_test),y)
 CXXFLAG += -DUNIT_TEST
@@ -73,7 +73,7 @@ libnebula.so: $(OBJS)
 	cp -f $@ $(NEBULA_PATH)/lib/
 
 %.o:%.cpp
-	$(CXX) $(INC) $(CXXFLAG) $(CFLAGS) -c -o $@ $< $(LDFLAGS)
+	$(CXX) $(INC) $(CXXFLAG) -c -o $@ $< $(LDFLAGS)
 %.o:%.cc
 	$(CXX) $(INC) $(CXXFLAG) -c -o $@ $< $(LDFLAGS)
 %.o:%.c

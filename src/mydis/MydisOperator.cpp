@@ -19,22 +19,22 @@ MydisOperator::MydisOperator(uint32 uiSectionFactor,
         const std::string& strReadCmd, uint32 uiModFactor)
     : RedisOperator(uiSectionFactor, strRedisKey, strWriteCmd, strReadCmd),
       DbOperator(uiSectionFactor, strTableName, eQueryType, uiModFactor),
-      m_pMemRequest(NULL), m_uiSectionFactor(uiSectionFactor)
+      m_pMemRequest(nullptr), m_uiSectionFactor(uiSectionFactor)
 {
 }
 
 MydisOperator::~MydisOperator()
 {
-    if (m_pMemRequest != NULL)
+    if (m_pMemRequest != nullptr)
     {
         delete m_pMemRequest;
-        m_pMemRequest = NULL;
+        m_pMemRequest = nullptr;
     }
 }
 
 Mydis* MydisOperator::MakeMemOperate()
 {
-    if (m_pMemRequest == NULL)
+    if (m_pMemRequest == nullptr)
     {
         m_pMemRequest = new Mydis();
     }
@@ -45,12 +45,12 @@ Mydis* MydisOperator::MakeMemOperate()
     Mydis::DbOperate* pDbOperate = GetDbOperate();
     Mydis::RedisOperate* pRedisOperate = GetRedisOperate();
     m_pMemRequest->set_section_factor(m_uiSectionFactor);
-    if (pRedisOperate != NULL)
+    if (pRedisOperate != nullptr)
     {
         m_pMemRequest->set_allocated_redis_operate(pRedisOperate);
         SetRedisOperateNull();
     }
-    if (pDbOperate != NULL)
+    if (pDbOperate != nullptr)
     {
         m_pMemRequest->set_allocated_db_operate(pDbOperate);
         SetDbOperateNull();

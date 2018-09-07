@@ -179,17 +179,9 @@ public:
 
     bool SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive);
 
-    ev_io* AddIoWatcher();
-    ev_io* MutableIoWatcher()
-    {
-        return(m_pIoWatcher);
-    }
+    ev_io* MutableIoWatcher();
 
-    ev_timer* AddTimerWatcher();
-    ev_timer* MutableTimerWatcher()
-    {
-        return(m_pTimerWatcher);
-    }
+    ev_timer* MutableTimerWatcher();
 
     virtual bool Close();
 

@@ -27,7 +27,7 @@ HttpStep::~HttpStep()
 {
 }
 
-bool HttpStep::HttpPost(const std::string& strUrl, const std::string& strBody, const std::map<std::string, std::string>& mapHeaders)
+bool HttpStep::HttpPost(const std::string& strUrl, const std::string& strBody, const std::unordered_map<std::string, std::string>& mapHeaders)
 {
     HttpMsg oHttpMsg;
     oHttpMsg.set_http_major(1);
@@ -35,13 +35,9 @@ bool HttpStep::HttpPost(const std::string& strUrl, const std::string& strBody, c
     oHttpMsg.set_type(HTTP_REQUEST);
     oHttpMsg.set_method(HTTP_POST);
     oHttpMsg.set_url(strUrl);
-    HttpMsg::Header* pHeader = NULL;
-    for (std::map<std::string, std::string>::const_iterator c_iter = mapHeaders.begin();
-                    c_iter != mapHeaders.end(); ++c_iter)
+    for (auto c_iter = mapHeaders.begin(); c_iter != mapHeaders.end(); ++c_iter)
     {
-        pHeader = oHttpMsg.add_headers();
-        pHeader->set_header_name(c_iter->first);
-        pHeader->set_header_value(c_iter->second);
+        oHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>(c_iter->first, c_iter->second));
     }
     oHttpMsg.set_body(strBody);
     return(HttpRequest(oHttpMsg));

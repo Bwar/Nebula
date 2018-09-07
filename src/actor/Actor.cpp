@@ -19,12 +19,13 @@ namespace neb
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : m_eActorType(eActorType),
       m_ulSequence(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
-      m_pWorker(NULL), m_pTimerWatcher(NULL)
+      m_pWorker(nullptr), m_pTimerWatcher(NULL)
 {
 }
 
 Actor::~Actor()
 {
+    FREE(m_pTimerWatcher);
 }
 
 uint32 Actor::GetSequence()
@@ -148,12 +149,16 @@ void Actor::SetWorker(Worker* pWorker)
     m_pWorker = pWorker;
 }
 
-ev_timer* Actor::AddTimerWatcher()
+ev_timer* Actor::MutableTimerWatcher()
 {
-    m_pTimerWatcher = (ev_timer*)malloc(sizeof(ev_timer));
-    if (NULL != m_pTimerWatcher)
+    if (NULL == m_pTimerWatcher)
     {
-        m_pTimerWatcher->data = this;    // (void*)(Actor*)
+        m_pTimerWatcher = (ev_timer*)malloc(sizeof(ev_timer));
+        if (NULL != m_pTimerWatcher)
+        {
+            memset(m_pTimerWatcher, 0, sizeof(ev_timer));
+            m_pTimerWatcher->data = this;    // (void*)(Actor*)
+        }
     }
     return(m_pTimerWatcher);
 }

@@ -11,6 +11,7 @@
 #define SRC_DEFINITION_HPP_
 
 #include <stddef.h>
+#include <mcheck.h>
 
 #ifndef NODE_BEAT
 #define NODE_BEAT 1.0
@@ -46,20 +47,20 @@
 #define DELETE(ptr)     \
     do\
     {                   \
-        if(NULL != ptr) \
+        if(nullptr != ptr) \
         {               \
             delete ptr; \
-            ptr = NULL; \
+            ptr = nullptr; \
         }               \
     } while(0)
 
 #define DELETE_ARRAY(ptr) \
     do\
     {                   \
-        if(NULL != ptr) \
+        if(nullptr != ptr) \
         {               \
             delete[] ptr; \
-            ptr = NULL; \
+            ptr = nullptr; \
         }               \
     } while(0)
 

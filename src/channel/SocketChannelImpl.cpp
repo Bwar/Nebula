@@ -23,7 +23,7 @@ namespace neb
 SocketChannelImpl::SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
     : m_ucChannelStatus(CHANNEL_STATUS_INIT), m_unRemoteWorkerIdx(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulForeignSeq(0), m_ulStepSeq(0),
       m_ulUnitTimeMsgNum(0), m_ulMsgNum(0), m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
-      m_pIoWatcher(nullptr), m_pTimerWatcher(nullptr),
+      m_pIoWatcher(NULL), m_pTimerWatcher(NULL),
       m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
       m_pCodec(nullptr), m_iErrno(0), m_pLabor(nullptr), m_pSocketChannel(pSocketChannel), m_pLogger(pLogger)
 {
@@ -101,7 +101,7 @@ ev_tstamp SocketChannelImpl::GetKeepAlive()
 
 bool SocketChannelImpl::NeedAliveCheck() const
 {
-    if (CODEC_HTTP == m_pCodec->GetCodecType())
+    if (CODEC_HTTP == m_pCodec->GetCodecType() || CODEC_NEBULA == m_pCodec->GetCodecType())
     {
         return(false);
     }
@@ -643,23 +643,31 @@ bool SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAliv
     return(true);
 }
 
-ev_io* SocketChannelImpl::AddIoWatcher()
+ev_io* SocketChannelImpl::MutableIoWatcher()
 {
-    m_pIoWatcher = (ev_io*)malloc(sizeof(ev_io));
-    if (NULL != m_pIoWatcher)
+    if (NULL == m_pIoWatcher)
     {
-        m_pIoWatcher->data = m_pSocketChannel;      // (void*)(Channel*)
-        m_pIoWatcher->fd = GetFd();
+        m_pIoWatcher = (ev_io*)malloc(sizeof(ev_io));
+        if (NULL != m_pIoWatcher)
+        {
+            memset(m_pIoWatcher, 0, sizeof(ev_io));
+            m_pIoWatcher->data = m_pSocketChannel;      // (void*)(Channel*)
+            m_pIoWatcher->fd = GetFd();
+        }
     }
     return(m_pIoWatcher);
 }
 
-ev_timer* SocketChannelImpl::AddTimerWatcher()
+ev_timer* SocketChannelImpl::MutableTimerWatcher()
 {
-    m_pTimerWatcher = (ev_timer*)malloc(sizeof(ev_timer));
-    if (NULL != m_pTimerWatcher)
+    if (NULL == m_pTimerWatcher)
     {
-        m_pTimerWatcher->data = m_pSocketChannel;    // (void*)(Channel*)
+        m_pTimerWatcher = (ev_timer*)malloc(sizeof(ev_timer));
+        if (NULL != m_pTimerWatcher)
+        {
+            memset(m_pTimerWatcher, 0, sizeof(ev_timer));
+            m_pTimerWatcher->data = m_pSocketChannel;    // (void*)(Channel*)
+        }
     }
     return(m_pTimerWatcher);
 }

@@ -30,7 +30,7 @@ FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
     : m_iLogLevel(iLogLev), m_uiMaxFileSize(uiMaxFileSize),
       m_uiMaxRollFileIndex(uiMaxRollFileIndex), m_strLogFileBase(strLogFile)
 {
-    m_fp = nullptr;
+    m_fp = NULL;
     OpenLogFile(strLogFile);
     WriteLog(Logger::NOTICE, __FILE__, __LINE__, __FUNCTION__, "new log instance.");
 }
@@ -38,7 +38,7 @@ FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
 int FileLogger::OpenLogFile(const std::string strLogFile)
 {
     m_fp = fopen(strLogFile.c_str(), "a+" );
-    if(nullptr == m_fp)
+    if(NULL == m_fp)
     {
         std::cerr << "Can not open file: " << strLogFile << std::endl;
         return -1;
@@ -53,7 +53,7 @@ int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLi
         return 0;
     }
 
-    if(nullptr == m_fp)
+    if(NULL == m_fp)
     {
         std::cerr << "Write log error: no log file handle." << std::endl;
         return -1;
@@ -78,7 +78,7 @@ int FileLogger::WriteLog(const std::string& strTraceId, int iLev, const char* sz
         return 0;
     }
 
-    if(nullptr == m_fp)
+    if(NULL == m_fp)
     {
         std::cerr << "Write log error: no log file handle." << std::endl;
         return -1;

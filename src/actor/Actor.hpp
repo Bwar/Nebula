@@ -215,11 +215,7 @@ protected:
 private:
     void SetWorker(Worker* pWorker);
 
-    ev_timer* AddTimerWatcher();
-    ev_timer* MutableTimerWatcher()
-    {
-        return(m_pTimerWatcher);
-    }
+    ev_timer* MutableTimerWatcher();
 
 private:
     ACTOR_TYPE m_eActorType;

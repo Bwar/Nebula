@@ -47,7 +47,7 @@ int NetLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLin
     {
         return 0;
     }
-    if (m_bEnableNetLogger && m_pLabor)
+    if (m_bEnableNetLogger && m_pLabor)  // TODO 当前版本Manager进程的日志不会发送到LOGGER，因为Manager并未存储除Beacon之外的节点信息
     {
         MsgBody oMsgBody;
         TraceLog oTraceLog;

@@ -63,7 +63,7 @@ private:
     http_parser m_parser;
     HttpMsg m_oParsingHttpMsg;      // TODO 如果是较大的http包只解了一部分，要记录断点位置，收到信的数据再从断点位置开始解
     std::string m_strHttpString;
-    std::map<std::string, std::string> m_mapAddingHttpHeader;       ///< encode前添加的http头，encode之后要清空
+    std::unordered_map<std::string, std::string> m_mapAddingHttpHeader;       ///< encode前添加的http头，encode之后要清空
 };
 
 } /* namespace neb */

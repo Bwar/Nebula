@@ -138,7 +138,7 @@ void WorkerImpl::RedisCmdCallback(redisAsyncContext *c, void *reply, void *privd
 }
 
 WorkerImpl::WorkerImpl(Worker* pWorker, const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf)
-    : m_pErrBuff(nullptr), m_pWorker(pWorker), m_loop(nullptr), m_pSessionNode(nullptr)
+    : m_pErrBuff(nullptr), m_pWorker(pWorker), m_loop(NULL), m_pSessionNode(nullptr)
 {
     m_stWorkerInfo.iManagerControlFd = iControlFd;
     m_stWorkerInfo.iManagerDataFd = iDataFd;
@@ -840,10 +840,10 @@ void WorkerImpl::Destroy()
 #endif
     // TODO 待补充完整
 
-    if (m_loop != nullptr)
+    if (m_loop != NULL)
     {
         ev_loop_destroy(m_loop);
-        m_loop = nullptr;
+        m_loop = NULL;
     }
 
     if (m_pErrBuff != nullptr)
@@ -1372,7 +1372,7 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
     {
         struct hostent *he;
         he = gethostbyname(strHost.c_str());
-        if (he != nullptr)
+        if (he != NULL)
         {
             stAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)(he->h_addr)));
         }
@@ -1637,7 +1637,7 @@ bool WorkerImpl::AddPeriodicTaskEvent()
 {
     LOG4_TRACE(" ");
     ev_timer* timeout_watcher = (ev_timer*)malloc(sizeof(ev_timer));
-    if (timeout_watcher == nullptr)
+    if (timeout_watcher == NULL)
     {
         LOG4_ERROR("malloc timeout_watcher error!");
         return(false);
@@ -1654,22 +1654,23 @@ bool WorkerImpl::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
     ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (NULL == io_watcher)
     {
-        io_watcher = pChannel->m_pImpl->AddIoWatcher();
-        if (NULL == io_watcher)
-        {
-            return(false);
-        }
-        ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_READ);
-        ev_io_start (m_loop, io_watcher);
-        return(true);
+        return(false);
     }
     else
     {
-        ev_io_stop(m_loop, io_watcher);
-        ev_io_set(io_watcher, io_watcher->fd, io_watcher->events | EV_READ);
-        ev_io_start (m_loop, io_watcher);
+        if (ev_is_active(io_watcher))
+        {
+            ev_io_stop(m_loop, io_watcher);
+            ev_io_set(io_watcher, io_watcher->fd, io_watcher->events | EV_READ);
+            ev_io_start (m_loop, io_watcher);
+        }
+        else
+        {
+            ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_READ);
+            ev_io_start (m_loop, io_watcher);
+        }
+        return(true);
     }
-    return(true);
 }
 
 bool WorkerImpl::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
@@ -1678,22 +1679,23 @@ bool WorkerImpl::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
     ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
     if (NULL == io_watcher)
     {
-        io_watcher = pChannel->m_pImpl->AddIoWatcher();
-        if (NULL == io_watcher)
-        {
-            return(false);
-        }
-        ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_WRITE);
-        ev_io_start (m_loop, io_watcher);
-        return(true);
+        return(false);
     }
     else
     {
-        ev_io_stop(m_loop, io_watcher);
-        ev_io_set(io_watcher, io_watcher->fd, io_watcher->events | EV_WRITE);
-        ev_io_start (m_loop, io_watcher);
+        if (ev_is_active(io_watcher))
+        {
+            ev_io_stop(m_loop, io_watcher);
+            ev_io_set(io_watcher, io_watcher->fd, io_watcher->events | EV_WRITE);
+            ev_io_start (m_loop, io_watcher);
+        }
+        else
+        {
+            ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_WRITE);
+            ev_io_start (m_loop, io_watcher);
+        }
+        return(true);
     }
-    return(true);
 }
 
 bool WorkerImpl::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
@@ -1722,24 +1724,23 @@ bool WorkerImpl::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp
 {
     LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
     ev_timer* timer_watcher = pChannel->m_pImpl->MutableTimerWatcher();
-    if (nullptr == timer_watcher)
+    if (NULL == timer_watcher)
     {
-        timer_watcher = pChannel->m_pImpl->AddTimerWatcher();
-        if (nullptr == timer_watcher)
-        {
-            return(false);
-        }
-        // @deprecated pChannel->m_pImpl->SetKeepAlive(m_dIoTimeout);
-        ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
-        ev_timer_start (m_loop, timer_watcher);
-        return(true);
+        return(false);
     }
     else
     {
-        LOG4_TRACE("pChannel = 0x%d,  timer_watcher = 0x%d", pChannel, timer_watcher);
-        ev_timer_stop(m_loop, timer_watcher);
-        ev_timer_set(timer_watcher, dTimeout + ev_time() - ev_now(m_loop), 0);
-        ev_timer_start (m_loop, timer_watcher);
+        if (ev_is_active(timer_watcher))
+        {
+            ev_timer_stop(m_loop, timer_watcher);
+            ev_timer_set(timer_watcher, dTimeout + ev_time() - ev_now(m_loop), 0);
+            ev_timer_start (m_loop, timer_watcher);
+        }
+        else
+        {
+            ev_timer_init (timer_watcher, IoTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
+            ev_timer_start (m_loop, timer_watcher);
+        }
         return(true);
     }
 }
@@ -1872,7 +1873,7 @@ void WorkerImpl::Remove(std::shared_ptr<Step> pStep)
             return;
         }
     }
-    if (pStep->MutableTimerWatcher() != nullptr)
+    if (pStep->MutableTimerWatcher() != NULL)
     {
         ev_timer_stop (m_loop, pStep->MutableTimerWatcher());
     }
@@ -1890,7 +1891,7 @@ void WorkerImpl::Remove(std::shared_ptr<Session> pSession)
     {
         return;
     }
-    if (pSession->MutableTimerWatcher() != nullptr)
+    if (pSession->MutableTimerWatcher() != NULL)
     {
         ev_timer_stop (m_loop, pSession->MutableTimerWatcher());
     }
