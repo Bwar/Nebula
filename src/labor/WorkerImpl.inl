@@ -55,7 +55,7 @@ std::shared_ptr<Step> WorkerImpl::MakeSharedStep(Actor* pCreator, const std::str
             case Actor::ACT_TIMER:
             {
                 std::ostringstream oss;
-                oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
+                oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << pStepAlias->GetSequence();
                 pStepAlias->m_strTraceId = std::move(oss.str());
             }
                 break;

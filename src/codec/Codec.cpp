@@ -26,6 +26,7 @@ Codec::Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const 
 
 Codec::~Codec()
 {
+    LOG4_TRACE("");
 }
 
 bool Codec::Zip(const std::string& strSrc, std::string& strDest)

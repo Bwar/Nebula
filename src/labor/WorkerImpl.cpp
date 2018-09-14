@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 
+//#include <mcheck.h>
 #include <algorithm>
 #ifdef __cplusplus
 extern "C" {
@@ -171,7 +172,9 @@ void WorkerImpl::Run()
     BootLoadCmd(m_oWorkerConf["boot_load"]);
     DynamicLoadCmd(m_oWorkerConf["dynamic_loading"]);
 
+    //mtrace();
     ev_run (m_loop, 0);
+    //muntrace();
 }
 
 void WorkerImpl::Terminated(struct ev_signal* watcher)
@@ -187,7 +190,8 @@ void WorkerImpl::Terminated(struct ev_signal* watcher)
 
 bool WorkerImpl::CheckParent()
 {
-    LOG4_TRACE(" ");
+    LOG4_TRACE("m_mapCallbackStep.size() = %u, m_mapCallbackSession.size() = %u",
+            m_mapCallbackStep.size(), m_mapCallbackSession.size());
     pid_t iParentPid = getppid();
     if (iParentPid == 1)    // manager进程已不存在
     {
@@ -197,7 +201,7 @@ bool WorkerImpl::CheckParent()
     }
     MsgBody oMsgBody;
     CJsonObject oJsonLoad;
-    oJsonLoad.Add("load", int32(m_stWorkerInfo.iConnectionNum + m_mapCallbackStep.size()));
+    oJsonLoad.Add("load", int32(m_stWorkerInfo.iConnectionNum + m_mapCallbackStep.size() + m_mapCallbackSession.size()));
     oJsonLoad.Add("connect", m_stWorkerInfo.iConnectionNum);
     oJsonLoad.Add("recv_num", m_stWorkerInfo.iRecvNum);
     oJsonLoad.Add("recv_byte", m_stWorkerInfo.iRecvByte);
@@ -491,7 +495,9 @@ bool WorkerImpl::OnStepTimeout(std::shared_ptr<Step> pStep)
 
 bool WorkerImpl::OnSessionTimeout(std::shared_ptr<Session> pSession)
 {
+    LOG4_TRACE("CHECK pSession = 0x%x", pSession);
     ev_timer* watcher = pSession->MutableTimerWatcher();
+    LOG4_TRACE("CHECK watchar = 0x%x", watcher);
     ev_tstamp after = pSession->GetActiveTime() - ev_now(m_loop) + pSession->GetTimeout();
     if (after > 0)    // 定时时间内被重新刷新过，重新设置定时器
     {
@@ -778,7 +784,7 @@ bool WorkerImpl::CreateEvents()
 
     signal(SIGPIPE, SIG_IGN);
     // 注册信号事件
-    ev_signal* signal_watcher = new ev_signal();
+    ev_signal* signal_watcher = (ev_signal*)malloc(sizeof(ev_signal));
     ev_signal_init (signal_watcher, TerminatedCallback, SIGINT);
     signal_watcher->data = (void*)this;
     ev_signal_start (m_loop, signal_watcher);
@@ -1794,6 +1800,11 @@ std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_
     if (bInitResult)
     {
         m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
+        ++m_stWorkerInfo.iConnectionNum;
+        if (CODEC_NEBULA != eCodecType)
+        {
+            ++m_stWorkerInfo.iClientNum;
+        }
         return(pChannel);
     }
     else
@@ -1841,6 +1852,11 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         if (channel_iter != m_mapSocketChannel.end())
         {
             m_mapSocketChannel.erase(channel_iter);
+            --m_stWorkerInfo.iConnectionNum;
+            if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType())
+            {
+                --m_stWorkerInfo.iClientNum;
+            }
             LOG4_TRACE("erase channel %d from m_mapSocketChannel.", pChannel->m_pImpl->GetFd());
         }
         return(true);

@@ -25,6 +25,8 @@ StepModel::StepModel(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextSt
 StepModel::~StepModel()
 {
     // TODO Auto-generated destructor stub
+    m_setNextStepSeq.clear();
+    m_setPreStepSeq.clear();
 }
 
 } /* namespace neb */

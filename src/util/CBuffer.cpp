@@ -2,7 +2,7 @@
  * Project:  neb
  * @file     CBuffer.cpp
  * @brief 
- * @author   bwarliao
+ * @author   
  * @date:    2014年8月21日
  * @note
  * Modify history:

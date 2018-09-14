@@ -152,6 +152,11 @@ E_CODEC_STATUS SocketChannelImpl::Send()
     LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
     if (iWriteLen >= 0)
     {
+        if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
+        {
+            m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
+        }
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iWriteLen && 0 == m_pWaitForSendBuff->ReadableBytes())
         {
@@ -252,6 +257,11 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
     LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
     if (iWriteLen >= 0)
     {
+        if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
+        {
+            m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
+        }
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iWriteLen)
         {
@@ -328,6 +338,11 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
     int iWriteLen = Write(m_pSendBuff, m_iErrno);
     if (iWriteLen >= 0)
     {
+        if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
+        {
+            m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
+        }
         m_ulStepSeq = ulStepSeq;
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iWriteLen)
@@ -370,6 +385,11 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
     LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d", m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     if (iReadLen > 0)
     {
+        if (m_pRecvBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pRecvBuff->ReadableBytes() < m_pRecvBuff->Capacity() / 2))
+        {
+            m_pRecvBuff->Compact(m_pRecvBuff->ReadableBytes() * 2);
+        }
         m_dActiveTime = m_pLabor->GetNowTime();
         E_CODEC_STATUS eCodecStatus = m_pCodec->Decode(m_pRecvBuff, oMsgHead, oMsgBody);
         if (CODEC_STATUS_OK == eCodecStatus)
@@ -454,6 +474,11 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
             m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     if (iReadLen > 0)
     {
+        if (m_pRecvBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pRecvBuff->ReadableBytes() < m_pRecvBuff->Capacity() / 2))
+        {
+            m_pRecvBuff->Compact(m_pRecvBuff->ReadableBytes() * 2);
+        }
         m_dActiveTime = m_pLabor->GetNowTime();
         E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
         return(eCodecStatus);
@@ -501,6 +526,11 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
             m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     if (iReadLen > 0)
     {
+        if (m_pRecvBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pRecvBuff->ReadableBytes() < m_pRecvBuff->Capacity() / 2))
+        {
+            m_pRecvBuff->Compact(m_pRecvBuff->ReadableBytes() * 2);
+        }
         m_dActiveTime = m_pLabor->GetNowTime();
         if (CODEC_HTTP == m_pCodec->GetCodecType())
         {
