@@ -28,7 +28,6 @@ namespace neb
 typedef unsigned int uint32_t;
 
 /**
- * 鍔ㄦ�佽嚜澧為暱鐨刡uffer绫伙紝鍚屾椂璁板綍璇诲啓鏍囪, 鍐呭瓨妯″瀷濡備笅
  *
  *       +-------------------+------------------+------------------+
  *       | readed bytes      |  readable bytes  |  writable bytes  |
