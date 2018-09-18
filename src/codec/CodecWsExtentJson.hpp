@@ -20,7 +20,7 @@ namespace neb
 class CodecWsExtentJson: public Codec
 {
 public:
-    CodecWsExtentJson(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
+    CodecWsExtentJson(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
     virtual ~CodecWsExtentJson();
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);

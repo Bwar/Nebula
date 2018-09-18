@@ -65,8 +65,8 @@ public:
     virtual bool Close();
 
 protected:
-    virtual int Write(CBuffer* pBuff, int& iErrno);
-    virtual int Read(CBuffer* pBuff, int& iErrno);
+    virtual int Write(CBuffer* pBuff, int& iErrno) override;
+    virtual int Read(CBuffer* pBuff, int& iErrno) override;
 
 private: 
     static int m_iSslConnectionIndex;

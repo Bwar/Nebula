@@ -38,6 +38,12 @@ public:
     const std::string& GetRemoteAddr() const;
     const std::string& GetClientData() const;
 
+    // 设置对称加密密钥
+    void SetSecretKey(const std::string& strKey)
+    {
+        m_pImpl->SetSecretKey(strKey);
+    }
+
 private:
     //std::unique_ptr<SocketChannelImpl> m_pImpl;
     std::shared_ptr<SocketChannelImpl> m_pImpl;

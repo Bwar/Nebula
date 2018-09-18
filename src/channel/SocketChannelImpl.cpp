@@ -45,7 +45,7 @@ SocketChannelImpl::~SocketChannelImpl()
     DELETE(m_pCodec);
 }
 
-bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer, const std::string& strKey)
+bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer)
 {
     LOG4_TRACE("fd[%d], codec_type[%d]", m_iFd, eCodecType);
     try
@@ -56,15 +56,18 @@ bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer, const std:
         switch (eCodecType)
         {
             case CODEC_NEBULA:
-                m_pCodec = new CodecProto(m_pLogger, eCodecType, strKey);
+                m_pCodec = new CodecProto(m_pLogger, eCodecType);
+                m_pCodec->SetKey(m_strKey);
                 m_ucChannelStatus = CHANNEL_STATUS_INIT;
                 break;
             case CODEC_PRIVATE:
-                m_pCodec = new CodecPrivate(m_pLogger, eCodecType, strKey);
+                m_pCodec = new CodecPrivate(m_pLogger, eCodecType);
+                m_pCodec->SetKey(m_strKey);
                 m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
                 break;
             case CODEC_HTTP:
-                m_pCodec = new CodecHttp(m_pLogger, eCodecType, strKey);
+                m_pCodec = new CodecHttp(m_pLogger, eCodecType);
+                m_pCodec->SetKey(m_strKey);
                 m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
                 break;
             default:
@@ -77,7 +80,6 @@ bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer, const std:
         LOG4_ERROR("%s", e.what());
         return(false);
     }
-    m_strKey = strKey;
     m_dActiveTime = m_pLabor->GetNowTime();
     return(true);
 }
@@ -633,6 +635,12 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, Ht
     }
 }
 
+void SocketChannelImpl::SetSecretKey(const std::string& strKey)
+{
+    m_strKey = strKey;
+    m_pCodec->SetKey(m_strKey);
+}
+
 bool SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], codec_type[%d], new_codec_type[%d]",
@@ -648,13 +656,16 @@ bool SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAliv
         switch (eCodecType)
         {
             case CODEC_NEBULA:
-                pNewCodec = new CodecProto(m_pLogger, eCodecType, m_strKey);
+                pNewCodec = new CodecProto(m_pLogger, eCodecType);
+                pNewCodec->SetKey(m_strKey);
                 break;
             case CODEC_PRIVATE:
-                pNewCodec = new CodecPrivate(m_pLogger, eCodecType, m_strKey);
+                pNewCodec = new CodecPrivate(m_pLogger, eCodecType);
+                pNewCodec->SetKey(m_strKey);
                 break;
             case CODEC_HTTP:
-                pNewCodec = new CodecHttp(m_pLogger, eCodecType, m_strKey);
+                pNewCodec = new CodecHttp(m_pLogger, eCodecType);
+                pNewCodec->SetKey(m_strKey);
                 break;
             default:
                 LOG4_ERROR("no codec defined for code type %d", eCodecType);

@@ -18,7 +18,7 @@ namespace neb
 class CodecPrivate: public Codec
 {
 public:
-    CodecPrivate(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
+    CodecPrivate(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
     virtual ~CodecPrivate();
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);

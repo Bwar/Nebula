@@ -78,8 +78,8 @@ static const char * status_string(int code)
 namespace neb
 {
 
-CodecHttp::CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey)
-    : Codec(pLogger, eCodecType, strKey),
+CodecHttp::CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
+    : Codec(pLogger, eCodecType),
       m_iHttpMajor(1), m_iHttpMinor(1), m_dKeepAlive(10.0)
 {
 }

@@ -60,7 +60,7 @@ enum E_CODEC_STATUS
 class Codec
 {
 public:
-    Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey = "That's a lizard.");
+    Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
     virtual ~Codec();
 
     E_CODEC_TYPE GetCodecType() const
@@ -85,6 +85,11 @@ public:
      * @return 编解码状态
      */
     virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody) = 0;
+
+    void SetKey(const std::string& strKey)
+    {
+        m_strKey = strKey;
+    }
 
     template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
 

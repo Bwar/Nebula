@@ -15,8 +15,8 @@
 namespace neb
 {
 
-CodecPrivate::CodecPrivate(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey)
-    : Codec(pLogger, eCodecType, strKey)
+CodecPrivate::CodecPrivate(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
+    : Codec(pLogger, eCodecType)
 {
 }
 

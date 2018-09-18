@@ -19,8 +19,8 @@
 namespace neb
 {
 
-Codec::Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, const std::string& strKey)
-    : m_pLogger(pLogger), m_eCodecType(eCodecType), m_strKey(strKey)
+Codec::Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
+    : m_pLogger(pLogger), m_eCodecType(eCodecType)
 {
 }
 

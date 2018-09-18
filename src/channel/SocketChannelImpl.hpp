@@ -40,14 +40,16 @@ class Manager;
 class NetLogger;
 class SocketChannel;
 
-class SocketChannelImpl: public Channel//, public std::enable_shared_from_this<SocketChannelImpl>
+class SocketChannelImpl: public Channel
 {
 public:
     SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive = 0.0);
     virtual ~SocketChannelImpl();
 
-    // bool Init(E_CODEC_TYPE eCodecType, IoCallbackFun io_cb, TimerCallbackFun timer_cb, const std::string& strKey = "That's a lizard.");
-    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsServer = true, const std::string& strKey = "That's a lizard.");
+    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsServer = true);
+    //virtual bool InitClientChannel(E_CODEC_TYPE eCodecType, const std::string& strIdentify);
+    //virtual bool InitAcceptChannel(E_CODEC_TYPE eCodecType);
+    //virtual bool InitListenChannel(E_CODEC_TYPE eCodecType);
 
     E_CODEC_TYPE GetCodecType() const;
 
@@ -176,6 +178,8 @@ public:
     {
         m_strRemoteAddr = strRemoteAddr;
     }
+
+    void SetSecretKey(const std::string& strKey);
 
     bool SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive);
 
