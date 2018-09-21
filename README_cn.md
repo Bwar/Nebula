@@ -29,13 +29,13 @@ Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建�
 
 <a name="GettingStart"></a>
 ## 开始
-&emsp;&emsp;Nebula以C++14/C++11标准开发，编译器必须完全支持C++11(部分C++14的特性在遇到较低版本的编译器时有预编译开关控制使用C++11标准替代),建议使用5以上gcc版本，推荐使用gcc6。Nebula目前只有Linux版本，暂无支持Linux之外的其他类UNIX系统的时间表。
+&emsp;&emsp;Nebula以C++11/C++14标准开发，编译器必须完全支持C++11(部分C++14的特性在遇到较低版本的编译器时有预编译开关控制使用C++11标准替代),建议使用5以上gcc版本，推荐使用gcc6。Nebula目前只有Linux版本，暂无支持Linux之外的其他类UNIX系统的时间表。
 
 &emsp;&emsp;Nebula在centos6.5（需升级binutils到2.22之后版本）和centos7.4上用gcc6.4编译和测试通过。同时Nebula也在[Travis CI](https://travis-ci.org/Bwar/Nebula)持续集成构建项目，构建结果可以直接通过项目首页的[![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula)跳转过去查看。Travis CI的系统是Ubuntu，编译器是gcc6。
 
 &emsp;&emsp;Nebula是个较大型项目（因为要构建一个生产用的分布式集群），有一些外部[依赖](#DependOn)，鉴于外部依赖的存在和框架本身较难测试，提供了[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)，让开发者可以快速部署和体验Nebula。相信部署和体验之后，你会对Nebula产生兴趣，这将会是一个可以广泛应用的框架，基于NebulaBootstrap提供的分布式解决方案可以很方便地用C++开发微服务应用。
 
-&emsp;&emsp;构建前必须保证你的系统已安装好完全支持C++11的编译器，除此之外的所有依赖都会在以下构建步骤中自动解决了。
+&emsp;&emsp;构建前必须保证你的系统已安装好完全支持C++11的编译器，除此之外的所有依赖都会在以下构建步骤中自动解决。
 
 构建步骤：
 1. wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip
@@ -72,7 +72,7 @@ Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建�
 ```
 curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello
 ```
-&emsp;&emsp;这个简单的测试可以只启动一个NebulaInterface即可完成，不过这需要自己开发插件。NebulaBootstrap提供的HelloWorld是基于集群的，启动了NebulaBeacon、NebulaInterface、NebulaLogic三个server。下面是一张集群部署图：
+&emsp;&emsp;这个简单的测试可以只启动一个NebulaInterface即可完成，不过这需要自己开发插件。NebulaBootstrap提供的HelloWorld是基于集群的，启动了NebulaBeacon、NebulaInterface、NebulaLogic三个server。下面是一张集群架构图：
 
 ![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/blob/master/image/nebula_cluster.png?raw=true)
 
@@ -91,12 +91,18 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 
 <a name="TODO"></a>
 ## 开发任务
-   - 2018年6月 增加https支持
-   - 2018年8月 增加ipv6支持
-   - 2018年10月 增加协程支持
+   - 2018年10月 增加ipv6支持
+   - 2018年12月 增加协程支持
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v0.4
+   - 分布式日志服务测试通过
+   - 增加https支持
+   - http通道增加keep alive设置
+   - 用proto3中的map将http header替换掉原repeated数据类型
+   - Channel增加设置对称加密密钥接口
+   - 缺陷修复
 #### v0.3
    - 用C++14标准改写整个项目
    - 用模板实现反射机制创建actor实例

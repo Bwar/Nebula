@@ -81,6 +81,15 @@ bool HttpStep::HttpRequest(const HttpMsg& oHttpMsg)
             strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, stUrl.field_data[UF_PATH].len);
         }
 
+        if (iPort == 80)
+        {
+            std::string strSchema = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(':'));
+            std::transform(strSchema.begin(), strSchema.end(), strSchema.begin(), [](unsigned char c) -> unsigned char { return std::tolower(c); });
+            if (strSchema == std::string("https"))
+            {
+                iPort = 443;
+            }
+        }
         return(SendTo(strHost, iPort, strPath, oHttpMsg));
     }
     else

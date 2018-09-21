@@ -127,6 +127,7 @@ int SocketChannelSslImpl::SslInit(std::shared_ptr<NetLogger> pLogger)
 
 int SocketChannelSslImpl::SslServerCtxCreate(std::shared_ptr<NetLogger> pLogger)
 {
+    pLogger->WriteLog(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__, " ");
     m_pServerSslCtx = SSL_CTX_new(TLS_server_method());
 
     if (m_pServerSslCtx == NULL)
@@ -194,6 +195,8 @@ int SocketChannelSslImpl::SslServerCtxCreate(std::shared_ptr<NetLogger> pLogger)
 int SocketChannelSslImpl::SslServerCertificate(std::shared_ptr<NetLogger> pLogger,
     const std::string& strCertFile, const std::string& strKeyFile)
 {
+    pLogger->WriteLog(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
+            "SslServerCertificate(%s, %s)", strCertFile.c_str(), strKeyFile.c_str());
     // 加载使用公钥证书
     if (!SSL_CTX_use_certificate_chain_file(m_pServerSslCtx, strCertFile.c_str()))
     {
@@ -277,6 +280,7 @@ int SocketChannelSslImpl::SslCreateConnection()
 
 int SocketChannelSslImpl::SslHandshake()
 {
+    LOG4_TRACE("");
     int iHandshakeResult = SSL_do_handshake(m_pSslConnection);
     if (iHandshakeResult == 1)
     {
@@ -402,9 +406,9 @@ int SocketChannelSslImpl::SslShutdown()
     return(ERR_OK);
 }
 
-bool SocketChannelSslImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer, const std::string& strKey)
+bool SocketChannelSslImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer)
 {
-    if (!SocketChannelImpl::Init(eCodecType, bIsServer, strKey))
+    if (!SocketChannelImpl::Init(eCodecType, bIsServer))
     {
         return(false);
     }
@@ -414,16 +418,19 @@ bool SocketChannelSslImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer, const s
         {
             return(false);
         }
+        LOG4_TRACE("SslClientCtxCreate() successfully.");
     }
     if (ERR_OK != SslCreateConnection())
     {
         return(false);
     }
+    LOG4_TRACE("SslCreateConnection() successfully.");
     return(true);
 }
 
 E_CODEC_STATUS SocketChannelSslImpl::Send()
 {
+    LOG4_TRACE("");
     switch (m_eSslChannelStatus)
     {
         case SSL_CHANNEL_ESTABLISHED:
@@ -455,6 +462,108 @@ E_CODEC_STATUS SocketChannelSslImpl::Send()
     }
 }
 
+E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
+{
+    LOG4_TRACE("");
+    switch (m_eSslChannelStatus)
+    {
+        case SSL_CHANNEL_ESTABLISHED:
+            return(SocketChannelImpl::Recv(oMsgHead, oMsgBody));
+        case SSL_CHANNEL_HANDSHAKE:
+        case SSL_CHANNEL_INIT:
+            if (ERR_OK == SslHandshake())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
+                {
+                    return(SocketChannelImpl::Recv(oMsgHead, oMsgBody));
+                }
+                else
+                {
+                    return(CODEC_STATUS_PAUSE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
+        case SSL_CHANNEL_SHUTDOWN:
+            LOG4_ERROR("the ssl channel had been shutdown!");
+            return(CODEC_STATUS_ERR);
+        default:
+            LOG4_ERROR("invalid ssl channel status!");
+            return(CODEC_STATUS_ERR);
+    }
+}
+
+E_CODEC_STATUS SocketChannelSslImpl::Recv(HttpMsg& oHttpMsg)
+{
+    LOG4_TRACE("");
+    switch (m_eSslChannelStatus)
+    {
+        case SSL_CHANNEL_ESTABLISHED:
+            return(SocketChannelImpl::Recv(oHttpMsg));
+        case SSL_CHANNEL_HANDSHAKE:
+        case SSL_CHANNEL_INIT:
+            if (ERR_OK == SslHandshake())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
+                {
+                    return(SocketChannelImpl::Recv(oHttpMsg));
+                }
+                else
+                {
+                    return(CODEC_STATUS_PAUSE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
+        case SSL_CHANNEL_SHUTDOWN:
+            LOG4_ERROR("the ssl channel had been shutdown!");
+            return(CODEC_STATUS_ERR);
+        default:
+            LOG4_ERROR("invalid ssl channel status!");
+            return(CODEC_STATUS_ERR);
+    }
+}
+
+E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
+{
+    LOG4_TRACE("");
+    switch (m_eSslChannelStatus)
+    {
+        case SSL_CHANNEL_ESTABLISHED:
+            return(SocketChannelImpl::Recv(oMsgHead, oMsgBody, oHttpMsg));
+        case SSL_CHANNEL_HANDSHAKE:
+        case SSL_CHANNEL_INIT:
+            if (ERR_OK == SslHandshake())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
+                {
+                    return(SocketChannelImpl::Recv(oMsgHead, oMsgBody, oHttpMsg));
+                }
+                else
+                {
+                    return(CODEC_STATUS_PAUSE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
+        case SSL_CHANNEL_SHUTDOWN:
+            LOG4_ERROR("the ssl channel had been shutdown!");
+            return(CODEC_STATUS_ERR);
+        default:
+            LOG4_ERROR("invalid ssl channel status!");
+            return(CODEC_STATUS_ERR);
+    }
+}
+
 bool SocketChannelSslImpl::Close()
 {
     SslShutdown();
@@ -463,6 +572,7 @@ bool SocketChannelSslImpl::Close()
 
 int SocketChannelSslImpl::Write(CBuffer* pBuff, int& iErrno)
 {
+    LOG4_TRACE("");
     int iNeedWriteLen = (int)pBuff->ReadableBytes();
     int iWritenLen = SSL_write(m_pSslConnection, pBuff->GetRawReadBuffer(), iNeedWriteLen);
     if (iWritenLen > 0)
@@ -493,6 +603,7 @@ int SocketChannelSslImpl::Write(CBuffer* pBuff, int& iErrno)
 
 int SocketChannelSslImpl::Read(CBuffer* pBuff, int& iErrno)
 {
+    LOG4_TRACE("");
     if (pBuff->WriteableBytes() < 1024)
     {
         pBuff->EnsureWritableBytes(8192);
@@ -521,7 +632,7 @@ int SocketChannelSslImpl::Read(CBuffer* pBuff, int& iErrno)
                     "For socket I/O on Unix systems, consult errno %d for details.", errno);
                 break;
             default:
-                LOG4_ERROR("SSL_write() error code %d, see SSL_get_error() manual for error code detail.", iErrCode);
+                LOG4_ERROR("SSL_read() error code %d, see SSL_get_error() manual for error code detail.", iErrCode);
                 ;
         }
     }

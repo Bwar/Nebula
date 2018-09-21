@@ -54,11 +54,11 @@ public:
     E_CODEC_TYPE GetCodecType() const;
 
     virtual E_CODEC_STATUS Send();
-    E_CODEC_STATUS Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    E_CODEC_STATUS Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq);
-    E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody);
-    E_CODEC_STATUS Recv(HttpMsg& oHttpMsg);
-    E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg);
+    virtual E_CODEC_STATUS Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    virtual E_CODEC_STATUS Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq);
+    virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody);
+    virtual E_CODEC_STATUS Recv(HttpMsg& oHttpMsg);
+    virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg);
     E_CODEC_STATUS Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody);
     E_CODEC_STATUS Fetch(HttpMsg& oHttpMsg);
     E_CODEC_STATUS Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg);

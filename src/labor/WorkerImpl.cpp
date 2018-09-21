@@ -1783,12 +1783,12 @@ std::shared_ptr<Session> WorkerImpl::GetSession(const std::string& strSessionId)
 
 std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsServer, bool bWithSsl)
 {
-    LOG4_DEBUG("iFd %d, codec_type %d", iFd, eCodecType);
+    LOG4_DEBUG("iFd %d, codec_type %d, with_ssl = %d", iFd, eCodecType, bWithSsl);
 
     std::shared_ptr<SocketChannel> pChannel = nullptr;
     try
     {
-        pChannel = std::make_shared<SocketChannel>(m_pLogger, iFd, GetSequence());
+        pChannel = std::make_shared<SocketChannel>(m_pLogger, iFd, GetSequence(), bWithSsl);
     }
     catch(std::bad_alloc& e)
     {

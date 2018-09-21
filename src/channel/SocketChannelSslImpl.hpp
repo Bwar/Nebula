@@ -60,9 +60,12 @@ public:
     int SslHandshake();
     int SslShutdown();
 
-    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsServer = true, const std::string& strKey = "That's a lizard.");
-    virtual E_CODEC_STATUS Send();      ///< 覆盖基类的Send()方法，实现非阻塞socket连接建立后继续建立SSL连接
-    virtual bool Close();
+    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsServer = true) override;
+    virtual E_CODEC_STATUS Send() override;      ///< 覆盖基类的Send()方法，实现非阻塞socket连接建立后继续建立SSL连接
+    virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody) override;
+    virtual E_CODEC_STATUS Recv(HttpMsg& oHttpMsg) override;
+    virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg) override;
+    virtual bool Close() override;
 
 protected:
     virtual int Write(CBuffer* pBuff, int& iErrno) override;

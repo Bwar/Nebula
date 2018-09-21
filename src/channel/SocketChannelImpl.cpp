@@ -741,11 +741,13 @@ bool SocketChannelImpl::Close()
 
 int SocketChannelImpl::Write(CBuffer* pBuff, int& iErrno)
 {
+    LOG4_TRACE("");
     return(pBuff->WriteFD(m_iFd, iErrno));
 }
 
 int SocketChannelImpl::Read(CBuffer* pBuff, int& iErrno)
 {
+    LOG4_TRACE("");
     return(pBuff->ReadFD(m_iFd, iErrno));
 }
 

@@ -44,15 +44,50 @@ MIT License
 
 <a name="GettingStart"></a>
 ## Getting Start
+   Nebula was developed with C++11/C++14 standard, and the compiler must fully support C++11(some C++14 features are replaced by C++11 standard when encountering a lower version of the compiler).
    Nebula was builded passing with gcc6.4 on centos6.5(upgrade binutils to 2.22 or later) and centos7.4.  
-   
-![nebula_build_dir](docs/image/build_dir.png)
-
+   We provides [NebulaBootstrap] (https://github.com/Bwar/NebulaBootstrap), which allows developers to quickly build and deploy Nebula. Nebula will be a framework that be widely used. A distributed solution based on NebulaBootstrap will make it easy to develop micro-service applications in C++.
+   You must ensure that your system is installed with a fully C++11 compiler before you build, and all dependencies will be automatically resolved in the following build steps.
 
    build step：
-   1. $ mkdir NebulaDepend
-   2. go to [Depend on](#DependOn), download and compile these dependent libraries, copy the shared library files to NebulaDepend/lib, copy the header files directory to NebulaDepend/include.
-   3. $ cd Nebula/src;    $ make
+1. wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip
+2. unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap
+3. cd NebulaBootstrap
+4. chmod u+x deploy.sh
+5. ./deploy.sh
+
+   Run deploy.sh, the NebulaBootstrap distributed services were build completed. The reliance of Nebula was also automatically downloaded and compiled by deploy from the Internet before the construction of Nebula. The deploy path as follows:
+* NebulaBootstrap
+  + bin &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; server bin location。
+  + build &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; build path，created by deploy.sh, if you do not need to build again, just delete it.(optional)。
+  + conf &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; configuration path.
+  + data &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; application data path. e.g. [Nebio](https://github.com/Bwar/Nebio) which is a data collect and real-time analysis application, write it's data to this path (optional).
+  + lib &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; library path.
+  + log &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; program logs path.
+  + plugins &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; plugins path.
+    - logic &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; plugins for logic server(optional).
+  + script &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; script path. deploy.sh, startup.sh and shutdown.sh were depend on this path.
+  + temp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; temp file path(optional).
+  - configure.sh &nbsp;&nbsp;&nbsp; run configure.sh for a simple configuration when deploy for the first time.
+  - deploy.sh &nbsp;&nbsp;&nbsp;&nbsp; auto build and deploy.
+  - shutdown.sh &nbsp;&nbsp;&nbsp;&nbsp; shutdown one or more server.
+  - startup.sh &nbsp;&nbsp;&nbsp;&nbsp; startup one or more server.
+  - README_cn.md              
+  - README.md  
+
+  build completed, you can start the server:
+```
+./configure.sh
+./startup.s
+```
+
+The server should have started successfully now, startup.sh will print the server that had been started, If not, check logs for reason. Notice that the default configuration file of Nebula limits the number of connections per IP in a period. If you have a large amount of testing, you should check the configuration limit. If the server has been successfully started, testing with postman or curl.
+```
+curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello
+```
+A simple testing can be start with a NebulaInterface only, but you need to develop your own plugins. NebulaBootstrap provided the a cluster HelloWorld, the testing will launch NebulaBeacon, NebulaInterface and NebulaLogic. This is a diagram of the cluster architecture:
+
+![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/blob/master/image/nebula_cluster.png?raw=true)
 
 <a name="Documentation"></a>
 ## Documentation 
@@ -69,12 +104,18 @@ MIT License
 
 <a name="TODO"></a>
 ## Todo list 
-   - June 2018:    https support.
-   - Auguest 2018: ipv6 support.
-   - October 2018: coroutine support.
+   - October 2018: ipv6 support.
+   - December 2018: coroutine support.
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v0.4
+   - distributed log service test passing.
+   - add https support.
+   - add keep alive settings to http channel.
+   - replace repeated http headers with proto3 map.
+   - provides a symmetric encryption key setup interface for channel.
+   - bug fix.
 #### v0.3
    - rewrite with C++14
    - create actors by reflection (using template)
