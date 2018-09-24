@@ -291,6 +291,7 @@ int SocketChannelSslImpl::SslHandshake()
     else    // 0 and < 0
     {
         int iErrCode = SSL_get_error(m_pSslConnection, iHandshakeResult);
+        LOG4_DEBUG("iErrCode = %d", iErrCode);
         switch (iErrCode)
         {
             case SSL_ERROR_ZERO_RETURN:
@@ -301,29 +302,32 @@ int SocketChannelSslImpl::SslHandshake()
                     "Note that in this case SSL_ERROR_ZERO_RETURN does not necessarily indicate "
                     "that the underlying transport has been closed.");
                 return(ERR_SSL_HANDSHAKE);
-            case SSL_ERROR_WANT_CONNECT:
-            case SSL_ERROR_WANT_ACCEPT:
-                LOG4_INFO("The operation did not complete; the same TLS/SSL I/O function should be called again later.");
-                m_eSslChannelStatus = SSL_CHANNEL_HANDSHAKE;
-                break;
             case SSL_ERROR_WANT_READ:
-            case SSL_ERROR_WANT_WRITE:
-                LOG4_INFO("The operation did not complete; the same TLS/SSL I/O function should be called again later.");
-                m_eSslChannelStatus = SSL_CHANNEL_HANDSHAKE;
+                LOG4_INFO("SSL_ERROR_WANT_READ: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                m_eSslChannelStatus = SSL_CHANNEL_WANT_READ;
                 break;
-            case SSL_ERROR_WANT_X509_LOOKUP:
+            case SSL_ERROR_WANT_WRITE:
+                LOG4_INFO("SSL_ERROR_WANT_WRITE: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                m_eSslChannelStatus = SSL_CHANNEL_WANT_WRITE;
+                break;
+            case SSL_ERROR_WANT_CONNECT: // SSL_do_handshake() will never get this
+                LOG4_INFO("SSL_ERROR_WANT_CONNECT: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                return(ERR_SSL_HANDSHAKE);
+            case SSL_ERROR_WANT_ACCEPT: // SSL_do_handshake() will never get this
+                LOG4_INFO("SSL_ERROR_WANT_ACCEPT: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                return(ERR_SSL_HANDSHAKE);
+            case SSL_ERROR_WANT_X509_LOOKUP: // SSL_do_handshake() will never get this
                 LOG4_INFO("The operation did not complete because an application callback set by SSL_CTX_set_client_cert_cb() "
                     "has asked to be called again. The TLS/SSL I/O function should be called again later.");
-                m_eSslChannelStatus = SSL_CHANNEL_HANDSHAKE;
-                break;
-            case SSL_ERROR_WANT_ASYNC:  // This will only occur if the mode has been set to SSL_MODE_ASYNC using SSL_CTX_set_mode or SSL_set_mode and an asynchronous capable engine is being used. 
+                return(ERR_SSL_HANDSHAKE);
+            case SSL_ERROR_WANT_ASYNC: // SSL_do_handshake() will never get this 
+                // This will only occur if the mode has been set to SSL_MODE_ASYNC using SSL_CTX_set_mode or SSL_set_mode and an asynchronous capable engine is being used. 
                 LOG4_WARNING("The operation did not complete because an asynchronous engine is still processing data. ");
-                m_eSslChannelStatus = SSL_CHANNEL_HANDSHAKE;
-                break;
-            case SSL_ERROR_WANT_ASYNC_JOB: // This will only occur if the mode has been set to SSL_MODE_ASYNC using SSL_CTX_set_mode or SSL_set_mode and a maximum limit has been set on the async job pool through a call to ASYNC_init_thread. 
+                return(ERR_SSL_HANDSHAKE);
+            case SSL_ERROR_WANT_ASYNC_JOB: // SSL_do_handshake() will never get this 
+                // This will only occur if the mode has been set to SSL_MODE_ASYNC using SSL_CTX_set_mode or SSL_set_mode and a maximum limit has been set on the async job pool through a call to ASYNC_init_thread. 
                 LOG4_WARNING("The asynchronous job could not be started because there were no async jobs available in the pool (see ASYNC_init_thread(3)).");
-                m_eSslChannelStatus = SSL_CHANNEL_HANDSHAKE;
-                break;
+                return(ERR_SSL_HANDSHAKE);
             case SSL_ERROR_SYSCALL:
                 LOG4_INFO("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
                     "For socket I/O on Unix systems, consult errno %d for details.", errno);
@@ -435,7 +439,8 @@ E_CODEC_STATUS SocketChannelSslImpl::Send()
     {
         case SSL_CHANNEL_ESTABLISHED:
             return(SocketChannelImpl::Send());
-        case SSL_CHANNEL_HANDSHAKE:
+        case SSL_CHANNEL_WANT_READ:
+        case SSL_CHANNEL_WANT_WRITE:
         case SSL_CHANNEL_INIT:
             if (ERR_OK == SslHandshake())
             {
@@ -443,9 +448,107 @@ E_CODEC_STATUS SocketChannelSslImpl::Send()
                 {
                     return(SocketChannelImpl::Send());
                 }
-                else
+                else if (m_eSslChannelStatus == SSL_CHANNEL_WANT_READ)
                 {
-                    return(CODEC_STATUS_PAUSE);
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    return(CODEC_STATUS_WANT_WRITE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
+        case SSL_CHANNEL_SHUTDOWN:
+            LOG4_ERROR("the ssl channel had been shutdown!");
+            return(CODEC_STATUS_ERR);
+        default:
+            LOG4_ERROR("invalid ssl channel status!");
+            return(CODEC_STATUS_ERR);
+    }
+}
+
+E_CODEC_STATUS SocketChannelSslImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+{
+    LOG4_TRACE("");
+    switch (m_eSslChannelStatus)
+    {
+        case SSL_CHANNEL_ESTABLISHED:
+            return(SocketChannelImpl::Send(iCmd, uiSeq, oMsgBody));
+        case SSL_CHANNEL_WANT_READ:
+        case SSL_CHANNEL_WANT_WRITE:
+        case SSL_CHANNEL_INIT:
+            if (ERR_OK == SslHandshake())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
+                {
+                    return(SocketChannelImpl::Send(iCmd, uiSeq, oMsgBody));
+                }
+                else if (m_eSslChannelStatus == SSL_CHANNEL_WANT_READ)
+                {
+                    uint8 ucChannelStatus = GetChannelStatus();
+                    SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+                    SocketChannelImpl::Send(iCmd, uiSeq, oMsgBody);
+                    SetChannelStatus((E_CHANNEL_STATUS)ucChannelStatus);
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    uint8 ucChannelStatus = GetChannelStatus();
+                    SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+                    SocketChannelImpl::Send(iCmd, uiSeq, oMsgBody);
+                    SetChannelStatus((E_CHANNEL_STATUS)ucChannelStatus);
+                    return(CODEC_STATUS_WANT_WRITE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
+        case SSL_CHANNEL_SHUTDOWN:
+            LOG4_ERROR("the ssl channel had been shutdown!");
+            return(CODEC_STATUS_ERR);
+        default:
+            LOG4_ERROR("invalid ssl channel status!");
+            return(CODEC_STATUS_ERR);
+    }
+}
+
+E_CODEC_STATUS SocketChannelSslImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
+{
+    LOG4_TRACE("");
+    switch (m_eSslChannelStatus)
+    {
+        case SSL_CHANNEL_ESTABLISHED:
+            return(SocketChannelImpl::Send(oHttpMsg, ulStepSeq));
+        case SSL_CHANNEL_WANT_READ:
+        case SSL_CHANNEL_WANT_WRITE:
+        case SSL_CHANNEL_INIT:
+            if (ERR_OK == SslHandshake())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
+                {
+                    return(SocketChannelImpl::Send(oHttpMsg, ulStepSeq));
+                }
+                else if (m_eSslChannelStatus == SSL_CHANNEL_WANT_READ)
+                {
+                    uint8 ucChannelStatus = GetChannelStatus();
+                    SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+                    SocketChannelImpl::Send(oHttpMsg, ulStepSeq);
+                    SetChannelStatus((E_CHANNEL_STATUS)ucChannelStatus);
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    uint8 ucChannelStatus = GetChannelStatus();
+                    SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+                    SocketChannelImpl::Send(oHttpMsg, ulStepSeq);
+                    SetChannelStatus((E_CHANNEL_STATUS)ucChannelStatus);
+                    return(CODEC_STATUS_WANT_WRITE);
                 }
             }
             else
@@ -469,17 +572,29 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
     {
         case SSL_CHANNEL_ESTABLISHED:
             return(SocketChannelImpl::Recv(oMsgHead, oMsgBody));
-        case SSL_CHANNEL_HANDSHAKE:
+        case SSL_CHANNEL_WANT_READ:
+        case SSL_CHANNEL_WANT_WRITE:
         case SSL_CHANNEL_INIT:
             if (ERR_OK == SslHandshake())
             {
                 if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
                 {
-                    return(SocketChannelImpl::Recv(oMsgHead, oMsgBody));
+                    if (m_pClientSslCtx != nullptr)
+                    {
+                        return(CODEC_STATUS_WANT_WRITE);
+                    }
+                    else
+                    {
+                        return(SocketChannelImpl::Recv(oMsgHead, oMsgBody));
+                    }
                 }
-                else
+                else if (m_eSslChannelStatus == SSL_CHANNEL_WANT_READ)
                 {
-                    return(CODEC_STATUS_PAUSE);
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    return(CODEC_STATUS_WANT_WRITE);
                 }
             }
             else
@@ -503,17 +618,29 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(HttpMsg& oHttpMsg)
     {
         case SSL_CHANNEL_ESTABLISHED:
             return(SocketChannelImpl::Recv(oHttpMsg));
-        case SSL_CHANNEL_HANDSHAKE:
+        case SSL_CHANNEL_WANT_READ:
+        case SSL_CHANNEL_WANT_WRITE:
         case SSL_CHANNEL_INIT:
             if (ERR_OK == SslHandshake())
             {
                 if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
                 {
-                    return(SocketChannelImpl::Recv(oHttpMsg));
+                    if (m_pClientSslCtx != nullptr)
+                    {
+                        return(CODEC_STATUS_WANT_WRITE);
+                    }
+                    else
+                    {
+                        return(SocketChannelImpl::Recv(oHttpMsg));
+                    }
                 }
-                else
+                else if (m_eSslChannelStatus == SSL_CHANNEL_WANT_READ)
                 {
-                    return(CODEC_STATUS_PAUSE);
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    return(CODEC_STATUS_WANT_WRITE);
                 }
             }
             else
@@ -537,7 +664,8 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, 
     {
         case SSL_CHANNEL_ESTABLISHED:
             return(SocketChannelImpl::Recv(oMsgHead, oMsgBody, oHttpMsg));
-        case SSL_CHANNEL_HANDSHAKE:
+        case SSL_CHANNEL_WANT_READ:
+        case SSL_CHANNEL_WANT_WRITE:
         case SSL_CHANNEL_INIT:
             if (ERR_OK == SslHandshake())
             {
@@ -545,9 +673,13 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, 
                 {
                     return(SocketChannelImpl::Recv(oMsgHead, oMsgBody, oHttpMsg));
                 }
-                else
+                else if (m_eSslChannelStatus == SSL_CHANNEL_WANT_READ)
                 {
-                    return(CODEC_STATUS_PAUSE);
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    return(CODEC_STATUS_WANT_WRITE);
                 }
             }
             else

@@ -51,10 +51,12 @@ enum E_CODEC_STATUS
 {
     CODEC_STATUS_OK         = 0,    ///< 编解码成功
     CODEC_STATUS_PAUSE      = 1,    ///< 编解码暂停（数据不完整，等待数据完整之后再解码）
-    CODEC_STATUS_INVALID    = 2,    ///< 使用了错误的编解码方式（此时为调用错误，应修改调用方式）
-    CODEC_STATUS_ERR        = 3,    ///< 编解码失败
-    CODEC_STATUS_EOF        = 4,    ///< 连接正常关闭
-    CODEC_STATUS_INT        = 5,    ///< 连接非正常关闭
+    CODEC_STATUS_WANT_READ  = 2,    ///< 等待对端握手信息（此时，应该不再监听FD的可写事件，直到对端握手信息到达。此状态用于SSL连接握手）
+    CODEC_STATUS_WANT_WRITE = 3,    ///< 等待己端握手信息（此时，应发起握手信息，并添加FD的可写事件监听。此状态用于SSL连接握手）或握手成功等待数据发送
+    CODEC_STATUS_INVALID    = 4,    ///< 使用了错误的编解码方式（此时为调用错误，应修改调用方式）
+    CODEC_STATUS_ERR        = 5,    ///< 编解码失败
+    CODEC_STATUS_EOF        = 6,    ///< 连接正常关闭
+    CODEC_STATUS_INT        = 7,    ///< 连接非正常关闭
 };
 
 class Codec

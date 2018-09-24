@@ -7,7 +7,7 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#include <iostream>
+#include <algorithm>
 #include "util/StringCoder.hpp"
 #include "logger/NetLogger.hpp"
 #include "CodecHttp.hpp"

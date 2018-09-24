@@ -58,17 +58,14 @@ bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer)
             case CODEC_NEBULA:
                 m_pCodec = new CodecProto(m_pLogger, eCodecType);
                 m_pCodec->SetKey(m_strKey);
-                m_ucChannelStatus = CHANNEL_STATUS_INIT;
                 break;
             case CODEC_PRIVATE:
                 m_pCodec = new CodecPrivate(m_pLogger, eCodecType);
                 m_pCodec->SetKey(m_strKey);
-                m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
                 break;
             case CODEC_HTTP:
                 m_pCodec = new CodecHttp(m_pLogger, eCodecType);
                 m_pCodec->SetKey(m_strKey);
-                m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
                 break;
             default:
                 LOG4_ERROR("no codec defined for code type %d", eCodecType);
@@ -338,6 +335,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
     }
 
     int iWriteLen = Write(m_pSendBuff, m_iErrno);
+    LOG4_TRACE("iWriteLen = %d, m_iErrno = %d", iWriteLen, m_iErrno);
     if (iWriteLen >= 0)
     {
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ

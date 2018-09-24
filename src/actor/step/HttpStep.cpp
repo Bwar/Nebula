@@ -7,6 +7,7 @@
  * @note
  * Modify history:
  ******************************************************************************/
+#include <algorithm>
 #include <actor/step/HttpStep.hpp>
 
 namespace neb

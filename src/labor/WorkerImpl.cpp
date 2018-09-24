@@ -253,6 +253,10 @@ bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
             {
                 Handle(pChannel, oHttpMsg);
             }
+            else if (CODEC_STATUS_WANT_WRITE == eCodecStatus)
+            {
+                return(SendTo(pChannel));
+            }
             else
             {
                 break;
@@ -284,6 +288,15 @@ bool WorkerImpl::RecvDataAndHandle(std::shared_ptr<SocketChannel> pChannel)
 
     if (CODEC_STATUS_PAUSE == eCodecStatus)
     {
+        return(true);
+    }
+    else if (CODEC_STATUS_WANT_WRITE == eCodecStatus)
+    {
+        return(SendTo(pChannel));
+    }
+    else if (CODEC_STATUS_WANT_READ == eCodecStatus)
+    {
+        RemoveIoWriteEvent(pChannel);
         return(true);
     }
     else    // 编解码出错或连接关闭或连接中断
@@ -374,6 +387,7 @@ bool WorkerImpl::FdTransfer()
             }
             else
             {
+                pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
                 AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
             }
             return(true);
@@ -388,9 +402,9 @@ bool WorkerImpl::FdTransfer()
 
 bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
-    if (CHANNEL_STATUS_TRY_CONNECT == pChannel->m_pImpl->GetChannelStatus())  // connect之后的第一个写事件
+    if (CODEC_NEBULA == pChannel->m_pImpl->GetCodecType())  // 系统内部Server间通信
     {
-        if (CODEC_NEBULA == pChannel->m_pImpl->GetCodecType())  // 系统内部Server间通信
+        if (CHANNEL_STATUS_TRY_CONNECT == pChannel->m_pImpl->GetChannelStatus())  // connect之后的第一个写事件
         {
             std::shared_ptr<Step> pStepConnectWorker = MakeSharedStep(nullptr, "neb::StepConnectWorker", pChannel, pChannel->m_pImpl->m_unRemoteWorkerIdx);
             if (nullptr == pStepConnectWorker)
@@ -405,15 +419,23 @@ bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
             return(true);
         }
     }
+    else
+    {
+        pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+    }
 
     E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send();
     if (CODEC_STATUS_OK == eCodecStatus)
     {
         RemoveIoWriteEvent(pChannel);
     }
-    else if (CODEC_STATUS_PAUSE == eCodecStatus)
+    else if (CODEC_STATUS_PAUSE == eCodecStatus || CODEC_STATUS_WANT_WRITE == eCodecStatus)
     {
         AddIoWriteEvent(pChannel);
+    }
+    else if (CODEC_STATUS_WANT_READ == eCodecStatus)
+    {
+        RemoveIoWriteEvent(pChannel);
     }
     else
     {
@@ -965,15 +987,21 @@ bool WorkerImpl::AddNetLogMsg(const MsgBody& oMsgBody)
 
 bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
+    LOG4_TRACE("channel %d", pChannel->m_pImpl->GetFd());
     E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send();
     if (CODEC_STATUS_OK == eStatus)
     {
         RemoveIoWriteEvent(pChannel);
         return(true);
     }
-    else if (CODEC_STATUS_PAUSE == eStatus)
+    else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
     {
         AddIoWriteEvent(pChannel);
+        return(true);
+    }
+    else if (CODEC_STATUS_WANT_READ == eStatus)
+    {
+        RemoveIoWriteEvent(pChannel);
         return(true);
     }
     return(false);
@@ -991,9 +1019,14 @@ bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uin
         RemoveIoWriteEvent(pChannel);
         return(true);
     }
-    else if (CODEC_STATUS_PAUSE == eStatus)
+    else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
     {
         AddIoWriteEvent(pChannel);
+        return(true);
+    }
+    else if (CODEC_STATUS_WANT_READ == eStatus)
+    {
+        RemoveIoWriteEvent(pChannel);
         return(true);
     }
     return(false);
@@ -1024,9 +1057,14 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
             RemoveIoWriteEvent(*named_iter->second.begin());
             return(true);
         }
-        else if (CODEC_STATUS_PAUSE == eStatus)
+        else if (CODEC_STATUS_PAUSE == eStatus) // || CODEC_STATUS_WANT_WRITE == eCodecStatus)
         {
             AddIoWriteEvent(*named_iter->second.begin());
+            return(true);
+        }
+        else if (CODEC_STATUS_WANT_READ == eStatus)
+        {
+            RemoveIoWriteEvent(*named_iter->second.begin());
             return(true);
         }
         return(false);
@@ -1141,7 +1179,11 @@ bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
         case CODEC_STATUS_OK:
             return(true);
         case CODEC_STATUS_PAUSE:
+        case CODEC_STATUS_WANT_WRITE:
             AddIoWriteEvent(pChannel);
+            return(true);
+        case CODEC_STATUS_WANT_READ:
+            RemoveIoWriteEvent(pChannel);
             return(true);
         case CODEC_STATUS_EOF:      // http1.0 respone and close
             DiscardSocketChannel(pChannel);
@@ -1178,9 +1220,14 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, const std::string
                 named_iter->second.erase(channel_iter);     // erase from named channel pool, the channel remain in m_mapSocketChannel.               
                 return(true);
             }
-            else if (CODEC_STATUS_PAUSE == eStatus)
+            else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
             {
                 AddIoWriteEvent(*channel_iter);
+                return(true);
+            }
+            else if (CODEC_STATUS_WANT_READ == eStatus)
+            {
+                RemoveIoWriteEvent(*channel_iter);
                 return(true);
             }
             return(false);
@@ -1349,7 +1396,10 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiS
         pChannel->m_pImpl->SetIdentify(strIdentify);
         pChannel->m_pImpl->SetRemoteAddr(strHost);
         E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
-        if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
+        if (CODEC_STATUS_OK != eCodecStatus
+                && CODEC_STATUS_PAUSE != eCodecStatus
+                && CODEC_STATUS_WANT_WRITE != eCodecStatus
+                && CODEC_STATUS_WANT_READ != eCodecStatus)
         {
             DiscardSocketChannel(pChannel);
         }
@@ -1419,7 +1469,10 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
         pChannel->m_pImpl->SetIdentify(szIdentify);
         pChannel->m_pImpl->SetRemoteAddr(strHost);
         E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(oHttpMsg, uiHttpStepSeq);
-        if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PAUSE != eCodecStatus)
+        if (CODEC_STATUS_OK != eCodecStatus
+                && CODEC_STATUS_PAUSE != eCodecStatus 
+                && CODEC_STATUS_WANT_WRITE != eCodecStatus
+                && CODEC_STATUS_WANT_READ != eCodecStatus)
         {
             DiscardSocketChannel(pChannel);
         }
