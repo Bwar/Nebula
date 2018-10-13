@@ -15,7 +15,7 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 Nebula is an event-driven TCP protocol network framework developed in C++ language. It supports multiple application layer communication protocols including proto3, http, https, and websocket. The purpose of developing the Nebula framework is to provide a fast and high-performance distributed service cluster based on C++.
 
-Nebula can be used as a single high-performance TCP server, but building a cluster based on Nebula can truly reflect its value. In order to quickly build distributed service clusters, Nebula Bootstrap cluster solutions including various types of services have been developed. For details on NebulaBootstrap, please refer to [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap).
+Nebula can be used as a single high-performance TCP server, but building a cluster based on Nebula will be truly reflect its value. In order to build distributed service clusters quickly, Nebula Bootstrap cluster solutions including various types of services have been developed. For details on NebulaBootstrap, please refer to [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap).
 
 <a name="License"></a>
 ## License 
@@ -46,7 +46,7 @@ MIT License
 ## Getting Start
    Nebula was developed with C++11/C++14 standard, and the compiler must fully support C++11(some C++14 features are replaced by C++11 standard when encountering a lower version of the compiler).
    Nebula was builded passing with gcc6.4 on centos6.5(upgrade binutils to 2.22 or later) and centos7.4.  
-   We provides [NebulaBootstrap] (https://github.com/Bwar/NebulaBootstrap), which allows developers to quickly build and deploy Nebula. Nebula will be a framework that be widely used. A distributed solution based on NebulaBootstrap will make it easy to develop micro-service applications in C++.
+   We provides [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap), which allows developers to build and deploy Nebula quickly. Nebula will be a framework that be widely used. A distributed solution based on NebulaBootstrap will make it easy to develop micro-service applications in C++.
    You must ensure that your system is installed with a fully C++11 compiler before you build, and all dependencies will be automatically resolved in the following build steps.
 
    build step：

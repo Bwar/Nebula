@@ -303,21 +303,21 @@ int SocketChannelSslImpl::SslHandshake()
                     "that the underlying transport has been closed.");
                 return(ERR_SSL_HANDSHAKE);
             case SSL_ERROR_WANT_READ:
-                LOG4_INFO("SSL_ERROR_WANT_READ: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                LOG4_DEBUG("SSL_ERROR_WANT_READ: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
                 m_eSslChannelStatus = SSL_CHANNEL_WANT_READ;
                 break;
             case SSL_ERROR_WANT_WRITE:
-                LOG4_INFO("SSL_ERROR_WANT_WRITE: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                LOG4_DEBUG("SSL_ERROR_WANT_WRITE: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
                 m_eSslChannelStatus = SSL_CHANNEL_WANT_WRITE;
                 break;
             case SSL_ERROR_WANT_CONNECT: // SSL_do_handshake() will never get this
-                LOG4_INFO("SSL_ERROR_WANT_CONNECT: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                LOG4_DEBUG("SSL_ERROR_WANT_CONNECT: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
                 return(ERR_SSL_HANDSHAKE);
             case SSL_ERROR_WANT_ACCEPT: // SSL_do_handshake() will never get this
-                LOG4_INFO("SSL_ERROR_WANT_ACCEPT: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                LOG4_DEBUG("SSL_ERROR_WANT_ACCEPT: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
                 return(ERR_SSL_HANDSHAKE);
             case SSL_ERROR_WANT_X509_LOOKUP: // SSL_do_handshake() will never get this
-                LOG4_INFO("The operation did not complete because an application callback set by SSL_CTX_set_client_cert_cb() "
+                LOG4_DEBUG("The operation did not complete because an application callback set by SSL_CTX_set_client_cert_cb() "
                     "has asked to be called again. The TLS/SSL I/O function should be called again later.");
                 return(ERR_SSL_HANDSHAKE);
             case SSL_ERROR_WANT_ASYNC: // SSL_do_handshake() will never get this 
@@ -329,7 +329,7 @@ int SocketChannelSslImpl::SslHandshake()
                 LOG4_WARNING("The asynchronous job could not be started because there were no async jobs available in the pool (see ASYNC_init_thread(3)).");
                 return(ERR_SSL_HANDSHAKE);
             case SSL_ERROR_SYSCALL:
-                LOG4_INFO("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
+                LOG4_DEBUG("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
                     "For socket I/O on Unix systems, consult errno %d for details.", errno);
                 if (EINTR == errno)
                 {
@@ -363,6 +363,14 @@ int SocketChannelSslImpl::SslShutdown()
         m_eSslChannelStatus = SSL_CHANNEL_SHUTDOWN;
         SSL_free(m_pSslConnection);
         m_pSslConnection = NULL;
+        
+        ERR_clear_error();
+#if OPENSSL_VERSION_NUMBER < 0x10100003L
+        EVP_cleanup();
+#ifndef OPENSSL_NO_ENGINE
+        ENGINE_cleanup();
+#endif
+#endif
         return(ERR_OK);
     }
 
@@ -394,12 +402,57 @@ int SocketChannelSslImpl::SslShutdown()
 
     // SSL_set_shutdown(m_pSslConnection, iShutdownMode);
 
-    // iShutdownResult = SSL_shutdown(m_pSslConnection);
-    SSL_shutdown(m_pSslConnection);
-    m_eSslChannelStatus = SSL_CHANNEL_SHUTDOWN;
+    int iShutdownResult = SSL_shutdown(m_pSslConnection);
+    if (iShutdownResult == 1)
+    {
+        LOG4_TRACE("fd %d ssl shutdown was successful.", GetFd());
+        m_eSslChannelStatus = SSL_CHANNEL_SHUTDOWN;
+    }
+    else    // 0 and < 0
+    {
+        int iErrCode = SSL_get_error(m_pSslConnection, iShutdownResult);
+        LOG4_DEBUG("iErrCode = %d", iErrCode);
+        switch (iErrCode)
+        {
+            case SSL_ERROR_ZERO_RETURN:
+                LOG4_ERROR("The TLS/SSL connection has been closed. "
+                    "If the protocol version is SSL 3.0 or higher, this result code is returned "
+                    "only if a closure alert has occurred in the protocol, "
+                    "i.e. if the connection has been closed cleanly. "
+                    "Note that in this case SSL_ERROR_ZERO_RETURN does not necessarily indicate "
+                    "that the underlying transport has been closed.");
+                break;
+            case SSL_ERROR_WANT_READ:
+                LOG4_DEBUG("SSL_ERROR_WANT_READ: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                m_eSslChannelStatus = SSL_CHANNEL_SHUTING_WANT_READ;
+                return(ERR_OK);
+            case SSL_ERROR_WANT_WRITE:
+                LOG4_DEBUG("SSL_ERROR_WANT_WRITE: The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                m_eSslChannelStatus = SSL_CHANNEL_SHUTING_WANT_WRITE;
+                return(ERR_OK);
+            case SSL_ERROR_SYSCALL:
+                LOG4_DEBUG("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
+                    "For socket I/O on Unix systems, consult errno %d for details.", errno);
+                break;
+            case SSL_ERROR_SSL:
+                LOG4_ERROR("A failure in the SSL library occurred, usually a protocol error. The OpenSSL error queue contains more information on the error.");
+                break;
+            default:
+                ;
+        }
+        m_eSslChannelStatus = SSL_CHANNEL_SHUTDOWN;
+    }
 
     SSL_free(m_pSslConnection);
     m_pSslConnection = NULL;
+
+    ERR_clear_error();
+#if OPENSSL_VERSION_NUMBER < 0x10100003L
+    EVP_cleanup();
+#ifndef OPENSSL_NO_ENGINE
+    ENGINE_cleanup();
+#endif
+#endif
 
     if (m_pClientSslCtx != NULL)
     {
@@ -462,6 +515,28 @@ E_CODEC_STATUS SocketChannelSslImpl::Send()
                 return(CODEC_STATUS_ERR);
             }
             break;
+        case SSL_CHANNEL_SHUTING_WANT_READ:
+        case SSL_CHANNEL_SHUTING_WANT_WRITE:
+            if (ERR_OK == SslShutdown())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_SHUTDOWN)
+                {
+                    return(CODEC_STATUS_EOF);
+                }
+                else if (m_eSslChannelStatus == SSL_CHANNEL_SHUTING_WANT_READ)
+                {
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    return(CODEC_STATUS_WANT_WRITE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
         case SSL_CHANNEL_SHUTDOWN:
             LOG4_ERROR("the ssl channel had been shutdown!");
             return(CODEC_STATUS_ERR);
@@ -501,6 +576,28 @@ E_CODEC_STATUS SocketChannelSslImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBod
                     SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
                     SocketChannelImpl::Send(iCmd, uiSeq, oMsgBody);
                     SetChannelStatus((E_CHANNEL_STATUS)ucChannelStatus);
+                    return(CODEC_STATUS_WANT_WRITE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
+        case SSL_CHANNEL_SHUTING_WANT_READ:
+        case SSL_CHANNEL_SHUTING_WANT_WRITE:
+            if (ERR_OK == SslShutdown())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_SHUTDOWN)
+                {
+                    return(CODEC_STATUS_EOF);
+                }
+                else if (m_eSslChannelStatus == SSL_CHANNEL_SHUTING_WANT_READ)
+                {
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
                     return(CODEC_STATUS_WANT_WRITE);
                 }
             }
@@ -556,6 +653,28 @@ E_CODEC_STATUS SocketChannelSslImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStep
                 return(CODEC_STATUS_ERR);
             }
             break;
+        case SSL_CHANNEL_SHUTING_WANT_READ:
+        case SSL_CHANNEL_SHUTING_WANT_WRITE:
+            if (ERR_OK == SslShutdown())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_SHUTDOWN)
+                {
+                    return(CODEC_STATUS_EOF);
+                }
+                else if (m_eSslChannelStatus == SSL_CHANNEL_SHUTING_WANT_READ)
+                {
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    return(CODEC_STATUS_WANT_WRITE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
         case SSL_CHANNEL_SHUTDOWN:
             LOG4_ERROR("the ssl channel had been shutdown!");
             return(CODEC_STATUS_ERR);
@@ -589,6 +708,28 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                     }
                 }
                 else if (m_eSslChannelStatus == SSL_CHANNEL_WANT_READ)
+                {
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    return(CODEC_STATUS_WANT_WRITE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
+        case SSL_CHANNEL_SHUTING_WANT_READ:
+        case SSL_CHANNEL_SHUTING_WANT_WRITE:
+            if (ERR_OK == SslShutdown())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_SHUTDOWN)
+                {
+                    return(CODEC_STATUS_EOF);
+                }
+                else if (m_eSslChannelStatus == SSL_CHANNEL_SHUTING_WANT_READ)
                 {
                     return(CODEC_STATUS_WANT_READ);
                 }
@@ -648,6 +789,28 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(HttpMsg& oHttpMsg)
                 return(CODEC_STATUS_ERR);
             }
             break;
+        case SSL_CHANNEL_SHUTING_WANT_READ:
+        case SSL_CHANNEL_SHUTING_WANT_WRITE:
+            if (ERR_OK == SslShutdown())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_SHUTDOWN)
+                {
+                    return(CODEC_STATUS_EOF);
+                }
+                else if (m_eSslChannelStatus == SSL_CHANNEL_SHUTING_WANT_READ)
+                {
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    return(CODEC_STATUS_WANT_WRITE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
         case SSL_CHANNEL_SHUTDOWN:
             LOG4_ERROR("the ssl channel had been shutdown!");
             return(CODEC_STATUS_ERR);
@@ -687,6 +850,28 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, 
                 return(CODEC_STATUS_ERR);
             }
             break;
+        case SSL_CHANNEL_SHUTING_WANT_READ:
+        case SSL_CHANNEL_SHUTING_WANT_WRITE:
+            if (ERR_OK == SslShutdown())
+            {
+                if (m_eSslChannelStatus == SSL_CHANNEL_SHUTDOWN)
+                {
+                    return(CODEC_STATUS_EOF);
+                }
+                else if (m_eSslChannelStatus == SSL_CHANNEL_SHUTING_WANT_READ)
+                {
+                    return(CODEC_STATUS_WANT_READ);
+                }
+                else 
+                {
+                    return(CODEC_STATUS_WANT_WRITE);
+                }
+            }
+            else
+            {
+                return(CODEC_STATUS_ERR);
+            }
+            break;
         case SSL_CHANNEL_SHUTDOWN:
             LOG4_ERROR("the ssl channel had been shutdown!");
             return(CODEC_STATUS_ERR);
@@ -698,7 +883,15 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, 
 
 bool SocketChannelSslImpl::Close()
 {
-    SslShutdown();
+    if (m_eSslChannelStatus != SSL_CHANNEL_SHUTDOWN)
+    {
+        SslShutdown();
+        if (m_eSslChannelStatus == SSL_CHANNEL_SHUTING_WANT_READ
+                || m_eSslChannelStatus == SSL_CHANNEL_SHUTING_WANT_WRITE)
+        {
+            return(false);
+        }
+    }
     return(SocketChannelImpl::Close());
 }
 
@@ -753,14 +946,14 @@ int SocketChannelSslImpl::Read(CBuffer* pBuff, int& iErrno)
         {
             case SSL_ERROR_WANT_READ:
             case SSL_ERROR_WANT_WRITE:
-                LOG4_INFO("The operation did not complete; the same TLS/SSL I/O function should be called again later.");
+                LOG4_DEBUG("The operation did not complete; the same TLS/SSL I/O function should be called again later.");
                 iErrno = EAGAIN;
                 break;
             case SSL_ERROR_ZERO_RETURN:
                 LOG4_DEBUG("ssl channel(fd %d) closed by peer.", GetFd());
                 break;
             case SSL_ERROR_SYSCALL:
-                LOG4_INFO("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
+                LOG4_DEBUG("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
                     "For socket I/O on Unix systems, consult errno %d for details.", errno);
                 break;
             default:

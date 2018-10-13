@@ -37,11 +37,13 @@ namespace neb
 
 enum E_SSL_CHANNEL_STATUS
 {
-    SSL_CHANNEL_INIT            = 0,        ///< SslCreateConnection()
-    SSL_CHANNEL_WANT_READ       = 1,        ///< SslHandshake() in progress, see SSL_ERROR_WANT_READ for detail
-    SSL_CHANNEL_WANT_WRITE      = 2,        ///< SslHandshake() in progress, see SSL_ERROR_WANT_WRITE for detail
-    SSL_CHANNEL_ESTABLISHED     = 3,        ///< SslHanshaked() done
-    SSL_CHANNEL_SHUTDOWN        = 4,        ///< SslShutDown() done
+    SSL_CHANNEL_INIT                    = 0,        ///< SslCreateConnection()
+    SSL_CHANNEL_WANT_READ               = 1,        ///< SslHandshake() in progress, see SSL_ERROR_WANT_READ for detail
+    SSL_CHANNEL_WANT_WRITE              = 2,        ///< SslHandshake() in progress, see SSL_ERROR_WANT_WRITE for detail
+    SSL_CHANNEL_ESTABLISHED             = 3,        ///< SslHanshaked() done
+    SSL_CHANNEL_SHUTING_WANT_READ       = 4,        ///< SslShutDown() in progress
+    SSL_CHANNEL_SHUTING_WANT_WRITE      = 4,        ///< SslShutDown() in progress
+    SSL_CHANNEL_SHUTDOWN                = 5,        ///< SslShutDown() done
 };
     
 class SocketChannelSslImpl : public SocketChannelImpl 
