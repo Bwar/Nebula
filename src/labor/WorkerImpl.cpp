@@ -56,13 +56,14 @@ void WorkerImpl::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int rev
     {
         SocketChannel* pChannel = static_cast<SocketChannel*>(watcher->data);
         Worker* pWorker = (Worker*)pChannel->m_pImpl->m_pLabor;
+        std::shared_ptr<SocketChannel> pSharedChannel = pChannel->shared_from_this();
         if (revents & EV_READ)
         {
-            pWorker->m_pImpl->OnIoRead(pChannel->shared_from_this());
+            pWorker->m_pImpl->OnIoRead(pSharedChannel);
         }
-        if (revents & EV_WRITE)
+        if (revents & EV_WRITE && CHANNEL_STATUS_CLOSED != pChannel->m_pImpl->GetChannelStatus()) // the channel maybe closed by OnIoRead()
         {
-            pWorker->m_pImpl->OnIoWrite(pChannel->shared_from_this());
+            pWorker->m_pImpl->OnIoWrite(pSharedChannel);
         }
     }
 }
@@ -421,7 +422,10 @@ bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     }
     else
     {
-        pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+        if (CHANNEL_STATUS_CLOSED != pChannel->m_pImpl->GetChannelStatus())
+        {
+            pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+        }
     }
 
     E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send();

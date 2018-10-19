@@ -26,7 +26,7 @@ Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
 Actor::~Actor()
 {
     FREE(m_pTimerWatcher);
-    m_pWorker->Logger(m_strTraceId, Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "seq %u", m_ulSequence);
+    m_pWorker->Logger(m_strTraceId, Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "eActorType %d, seq %u", m_eActorType, m_ulSequence);
 }
 
 uint32 Actor::GetSequence()

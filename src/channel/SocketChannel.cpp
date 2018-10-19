@@ -21,7 +21,7 @@ namespace neb
 {
 
 SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, ev_tstamp dKeepAlive)
-    : m_pImpl(nullptr)
+    : m_pImpl(nullptr), m_pLogger(pLogger)
 {
     if (bWithSsl)
     {
@@ -42,6 +42,7 @@ SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32
 
 SocketChannel::~SocketChannel()
 {
+    m_pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "");
 }
 
 const std::string& SocketChannel::GetIdentify() const

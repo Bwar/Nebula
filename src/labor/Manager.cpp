@@ -57,17 +57,18 @@ void Manager::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revent
     {
         SocketChannel* pChannel = (SocketChannel*)watcher->data;
         Manager* pManager = (Manager*)pChannel->m_pImpl->m_pLabor;
+        std::shared_ptr<SocketChannel> pSharedChannel = pChannel->shared_from_this();
         if (revents & EV_READ)
         {
-            pManager->OnIoRead(pChannel->shared_from_this());
+            pManager->OnIoRead(pSharedChannel);
         }
         else if (revents & EV_WRITE)
         {
-            pManager->OnIoWrite(pChannel->shared_from_this());
+            pManager->OnIoWrite(pSharedChannel);
         }
         else if (revents & EV_ERROR)
         {
-            pManager->OnIoError(pChannel->shared_from_this());
+            pManager->OnIoError(pSharedChannel);
         }
         if (CHANNEL_STATUS_CLOSED == pChannel->m_pImpl->GetChannelStatus())
         {

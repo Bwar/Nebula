@@ -33,6 +33,7 @@ SocketChannelSslImpl::SocketChannelSslImpl(
 
 SocketChannelSslImpl::~SocketChannelSslImpl()
 {
+    LOG4_DEBUG("SocketChannelSslImpl::~SocketChannelSslImpl() fd %d, seq %u", GetFd(), GetSequence());
     if (m_pClientSslCtx)
     {
         SSL_CTX_free(m_pClientSslCtx);
@@ -329,14 +330,14 @@ int SocketChannelSslImpl::SslHandshake()
                 LOG4_WARNING("The asynchronous job could not be started because there were no async jobs available in the pool (see ASYNC_init_thread(3)).");
                 return(ERR_SSL_HANDSHAKE);
             case SSL_ERROR_SYSCALL:
-                LOG4_DEBUG("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
-                    "For socket I/O on Unix systems, consult errno %d for details.", errno);
                 if (EINTR == errno)
                 {
                     return(ERR_OK);
                 }
                 else
                 {
+                    LOG4_ERROR("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
+                        "For socket I/O on Unix systems, consult errno %d for details.", errno);
                     return(ERR_SSL_HANDSHAKE);
                 }
             case SSL_ERROR_SSL:
@@ -431,8 +432,11 @@ int SocketChannelSslImpl::SslShutdown()
                 m_eSslChannelStatus = SSL_CHANNEL_SHUTING_WANT_WRITE;
                 return(ERR_OK);
             case SSL_ERROR_SYSCALL:
-                LOG4_DEBUG("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
-                    "For socket I/O on Unix systems, consult errno %d for details.", errno);
+                if (errno != 0)
+                {
+                    LOG4_DEBUG("Some non-recoverable I/O error occurred. The OpenSSL error queue may contain more information on the error. "
+                        "For socket I/O on Unix systems, consult errno %d for details.", errno);
+                }
                 break;
             case SSL_ERROR_SSL:
                 LOG4_ERROR("A failure in the SSL library occurred, usually a protocol error. The OpenSSL error queue contains more information on the error.");

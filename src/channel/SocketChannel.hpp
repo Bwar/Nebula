@@ -47,6 +47,7 @@ public:
 private:
     //std::unique_ptr<SocketChannelImpl> m_pImpl;
     std::shared_ptr<SocketChannelImpl> m_pImpl;
+    std::shared_ptr<NetLogger> m_pLogger;
     
     friend class WorkerImpl;
     friend class Manager;
