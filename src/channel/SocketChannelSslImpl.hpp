@@ -63,7 +63,7 @@ public:
     int SslHandshake();
     int SslShutdown();
 
-    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsServer = true) override;
+    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsClient = false) override;
     virtual E_CODEC_STATUS Send() override;      ///< 覆盖基类的Send()方法，实现非阻塞socket连接建立后继续建立SSL连接
     virtual E_CODEC_STATUS Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody) override;
     virtual E_CODEC_STATUS Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq) override;
@@ -77,20 +77,12 @@ protected:
     virtual int Read(CBuffer* pBuff, int& iErrno) override;
 
 private: 
-    static int m_iSslConnectionIndex;
-    static int m_iSslServerConfIndex;
-    static int m_iSslSessionCacheIndex;
-    static int m_iSslSessionTicketKeysIndex;
-    static int m_iSslCertificateIndex;
-    static int m_iSslNextCertificateIndex;
-    static int m_iSslCertificateNameIndex;
-    static int m_iSslStaplingIndex;
     E_SSL_CHANNEL_STATUS m_eSslChannelStatus;
+    bool m_bIsClientConnection;
+    SSL* m_pSslConnection;
 
     static SSL_CTX* m_pServerSslCtx;
-    SSL_CTX* m_pClientSslCtx;
-
-    SSL* m_pSslConnection;
+    static SSL_CTX* m_pClientSslCtx;
 };
 
 }

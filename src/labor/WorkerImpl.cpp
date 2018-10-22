@@ -354,11 +354,11 @@ bool WorkerImpl::FdTransfer()
         LOG4_TRACE("fd[%d] transfer successfully.", iAcceptFd);
         if (CODEC_NEBULA != iCodec && m_oWorkerConf["with_ssl"]("config_path").length() > 0)
         {
-            pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), true, true);
+            pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), false, true);
         }
         else
         {
-            pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), true, false);
+            pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), false, false);
         }
         if (nullptr != pChannel)
         {
@@ -1456,11 +1456,11 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
     std::transform(strSchema.begin(), strSchema.end(), strSchema.begin(), [](unsigned char c) -> unsigned char { return std::tolower(c); });
     if (strSchema == std::string("https"))
     {
-        pChannel = CreateSocketChannel(iFd, CODEC_HTTP, false, true);
+        pChannel = CreateSocketChannel(iFd, CODEC_HTTP, true, true);
     }
     else
     {
-        pChannel = CreateSocketChannel(iFd, CODEC_HTTP, false, false);
+        pChannel = CreateSocketChannel(iFd, CODEC_HTTP, true, false);
     }
     if (nullptr != pChannel)
     {
@@ -1838,7 +1838,7 @@ std::shared_ptr<Session> WorkerImpl::GetSession(const std::string& strSessionId)
     }
 }
 
-std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsServer, bool bWithSsl)
+std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsClient, bool bWithSsl)
 {
     LOG4_DEBUG("iFd %d, codec_type %d, with_ssl = %d", iFd, eCodecType, bWithSsl);
 
@@ -1853,7 +1853,7 @@ std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_
         return(nullptr);
     }
     pChannel->m_pImpl->SetLabor(m_pWorker);
-    bool bInitResult = pChannel->m_pImpl->Init(eCodecType, bIsServer);
+    bool bInitResult = pChannel->m_pImpl->Init(eCodecType, bIsClient);
     if (bInitResult)
     {
         m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));

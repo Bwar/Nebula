@@ -253,7 +253,7 @@ protected:
     bool AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel);
     bool AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
     bool RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
-    std::shared_ptr<SocketChannel> CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsServer = true, bool bWithSsl = false);
+    std::shared_ptr<SocketChannel> CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsClient = false, bool bWithSsl = false);
     bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
     void Remove(std::shared_ptr<Step> pStep);
     void Remove(std::shared_ptr<Session> pSession);

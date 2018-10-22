@@ -45,7 +45,7 @@ SocketChannelImpl::~SocketChannelImpl()
     DELETE(m_pCodec);
 }
 
-bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer)
+bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
 {
     LOG4_TRACE("fd[%d], codec_type[%d]", m_iFd, eCodecType);
     try

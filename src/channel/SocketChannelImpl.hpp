@@ -46,7 +46,7 @@ public:
     SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive = 0.0);
     virtual ~SocketChannelImpl();
 
-    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsServer = true);
+    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsClient = false);
     //virtual bool InitClientChannel(E_CODEC_TYPE eCodecType, const std::string& strIdentify);
     //virtual bool InitAcceptChannel(E_CODEC_TYPE eCodecType);
     //virtual bool InitListenChannel(E_CODEC_TYPE eCodecType);

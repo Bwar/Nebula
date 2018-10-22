@@ -14,30 +14,19 @@
 namespace neb
 {
 
-int SocketChannelSslImpl::m_iSslConnectionIndex = -1;
-int SocketChannelSslImpl::m_iSslServerConfIndex = -1;
-int SocketChannelSslImpl::m_iSslSessionCacheIndex = -1;
-int SocketChannelSslImpl::m_iSslSessionTicketKeysIndex = -1;
-int SocketChannelSslImpl::m_iSslCertificateIndex = -1;
-int SocketChannelSslImpl::m_iSslNextCertificateIndex = -1;
-int SocketChannelSslImpl::m_iSslCertificateNameIndex = -1;
-int SocketChannelSslImpl::m_iSslStaplingIndex = -1;
 SSL_CTX* SocketChannelSslImpl::m_pServerSslCtx = NULL;
+SSL_CTX* SocketChannelSslImpl::m_pClientSslCtx = NULL;
 
 SocketChannelSslImpl::SocketChannelSslImpl(
     SocketChannel* pSocketChannel, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
     : SocketChannelImpl(pSocketChannel, pLogger, iFd, ulSeq, dKeepAlive),
-      m_eSslChannelStatus(SSL_CHANNEL_INIT), m_pClientSslCtx(NULL), m_pSslConnection(NULL)
+      m_eSslChannelStatus(SSL_CHANNEL_INIT), m_bIsClientConnection(false), m_pSslConnection(NULL)
 {
 }
 
 SocketChannelSslImpl::~SocketChannelSslImpl()
 {
     LOG4_DEBUG("SocketChannelSslImpl::~SocketChannelSslImpl() fd %d, seq %u", GetFd(), GetSequence());
-    if (m_pClientSslCtx)
-    {
-        SSL_CTX_free(m_pClientSslCtx);
-    }
 }
 
 int SocketChannelSslImpl::SslInit(std::shared_ptr<NetLogger> pLogger)
@@ -68,61 +57,6 @@ int SocketChannelSslImpl::SslInit(std::shared_ptr<NetLogger> pLogger)
 
 #endif
 
-    m_iSslConnectionIndex = SSL_get_ex_new_index(0, NULL, NULL, NULL, NULL);
-    if (m_iSslConnectionIndex == -1)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "SSL_get_ex_new_index() failed!");
-        return(ERR_SSL_INIT);
-    }
-
-    m_iSslServerConfIndex = SSL_CTX_get_ex_new_index(0, NULL, NULL, NULL, NULL);
-    if (m_iSslServerConfIndex == -1)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "SSL_CTX_get_ex_new_index() failed!");
-        return(ERR_SSL_INIT);
-    }
-
-    m_iSslSessionCacheIndex = SSL_CTX_get_ex_new_index(0, NULL, NULL, NULL, NULL);
-    if (m_iSslSessionCacheIndex == -1)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "SSL_CTX_get_ex_new_index() failed!");
-        return(ERR_SSL_INIT);
-    }
-
-    m_iSslSessionTicketKeysIndex = SSL_CTX_get_ex_new_index(0, NULL, NULL, NULL, NULL);
-    if (m_iSslSessionTicketKeysIndex == -1)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "SSL_CTX_get_ex_new_index() failed!");
-        return(ERR_SSL_INIT);
-    }
-
-    m_iSslCertificateIndex = SSL_CTX_get_ex_new_index(0, NULL, NULL, NULL, NULL);
-    if (m_iSslCertificateIndex == -1)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "SSL_CTX_get_ex_new_index() failed!");
-        return(ERR_SSL_INIT);
-    }
-
-    m_iSslNextCertificateIndex = X509_get_ex_new_index(0, NULL, NULL, NULL, NULL);
-    if (m_iSslNextCertificateIndex == -1)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "X509_get_ex_new_index() failed!");
-        return(ERR_SSL_INIT);
-    }
-
-    m_iSslCertificateNameIndex = X509_get_ex_new_index(0, NULL, NULL, NULL, NULL);
-    if (m_iSslCertificateNameIndex == -1) {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "X509_get_ex_new_index() failed!");
-        return(ERR_SSL_INIT);
-    }
-
-    m_iSslStaplingIndex = X509_get_ex_new_index(0, NULL, NULL, NULL, NULL);
-    if (m_iSslStaplingIndex == -1)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "X509_get_ex_new_index() failed!");
-        return(ERR_SSL_INIT);
-    }
-
     return(ERR_OK);
 }
 
@@ -134,19 +68,6 @@ int SocketChannelSslImpl::SslServerCtxCreate(std::shared_ptr<NetLogger> pLogger)
     if (m_pServerSslCtx == NULL)
     {
         pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "SSL_CTX_new() failed");
-        return(ERR_SSL_CTX);
-    }
-
-    // if (SSL_CTX_set_ex_data(m_pServerSslCtx, m_iSslServerConfIndex, data) == 0)
-    if (SSL_CTX_set_ex_data(m_pServerSslCtx, m_iSslServerConfIndex, NULL) == 0)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "SSL_CTX_set_ex_data() failed");
-        return(ERR_SSL_CTX);
-    }
-
-    if (SSL_CTX_set_ex_data(m_pServerSslCtx, m_iSslCertificateIndex, NULL) == 0)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "SSL_CTX_set_ex_data() failed");
         return(ERR_SSL_CTX);
     }
 
@@ -187,8 +108,6 @@ int SocketChannelSslImpl::SslServerCtxCreate(std::shared_ptr<NetLogger> pLogger)
 #endif
 
     SSL_CTX_set_read_ahead(m_pServerSslCtx, 1);
-
-    // SSL_CTX_set_info_callback(m_pServerSslCtx, ngx_ssl_info_callback);
 
     return(ERR_OK);
 }
@@ -231,28 +150,36 @@ void SocketChannelSslImpl::SslFree()
         SSL_CTX_free(m_pServerSslCtx);
         m_pServerSslCtx = NULL;
     }
+    if (m_pClientSslCtx)
+    {
+        SSL_CTX_free(m_pClientSslCtx);
+        m_pClientSslCtx = NULL;
+    }
 }
 
 int SocketChannelSslImpl::SslClientCtxCreate()
 {
-    m_pClientSslCtx = SSL_CTX_new(TLS_client_method());
     if (m_pClientSslCtx == NULL)
     {
-        LOG4_ERROR("SSL_CTX_new() failed!");
-        return(ERR_SSL_CTX);
+        m_pClientSslCtx = SSL_CTX_new(TLS_client_method());
+        if (m_pClientSslCtx == NULL)
+        {
+            LOG4_ERROR("SSL_CTX_new() failed!");
+            return(ERR_SSL_CTX);
+        }
     }
     return(ERR_OK);
 }
 
 int SocketChannelSslImpl::SslCreateConnection()
 {
-    if (m_pClientSslCtx == NULL)
+    if (m_bIsClientConnection)
     {
-        m_pSslConnection = SSL_new(m_pServerSslCtx);
+        m_pSslConnection = SSL_new(m_pClientSslCtx);
     }
     else
     {
-        m_pSslConnection = SSL_new(m_pClientSslCtx);
+        m_pSslConnection = SSL_new(m_pServerSslCtx);
     }
 
     if (m_pSslConnection == NULL)
@@ -267,13 +194,13 @@ int SocketChannelSslImpl::SslCreateConnection()
         return(ERR_SSL_NEW_CONNECTION);
     }
 
-    if (m_pClientSslCtx == NULL)
+    if (m_bIsClientConnection)
     {
-        SSL_set_accept_state(m_pSslConnection);
+        SSL_set_connect_state(m_pSslConnection);
     }
     else
     {
-        SSL_set_connect_state(m_pSslConnection);
+        SSL_set_accept_state(m_pSslConnection);
     }
 
     return(ERR_OK);
@@ -447,10 +374,20 @@ int SocketChannelSslImpl::SslShutdown()
         m_eSslChannelStatus = SSL_CHANNEL_SHUTDOWN;
     }
 
+    if (m_bIsClientConnection)
+    {
+        SSL_CTX_remove_session(m_pClientSslCtx, SSL_get0_session(m_pSslConnection));
+    }
+    else
+    {
+        SSL_CTX_remove_session(m_pServerSslCtx, SSL_get0_session(m_pSslConnection));
+    }
+
     SSL_free(m_pSslConnection);
     m_pSslConnection = NULL;
 
     ERR_clear_error();
+    CRYPTO_cleanup_all_ex_data();
 #if OPENSSL_VERSION_NUMBER < 0x10100003L
     EVP_cleanup();
 #ifndef OPENSSL_NO_ENGINE
@@ -458,23 +395,18 @@ int SocketChannelSslImpl::SslShutdown()
 #endif
 #endif
 
-    if (m_pClientSslCtx != NULL)
-    {
-        SSL_CTX_free(m_pClientSslCtx);
-        m_pClientSslCtx = NULL;
-    }
-
     return(ERR_OK);
 }
 
-bool SocketChannelSslImpl::Init(E_CODEC_TYPE eCodecType, bool bIsServer)
+bool SocketChannelSslImpl::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
 {
-    if (!SocketChannelImpl::Init(eCodecType, bIsServer))
+    if (!SocketChannelImpl::Init(eCodecType, bIsClient))
     {
         return(false);
     }
-    if (!bIsServer)
+    if (bIsClient)
     {
+        m_bIsClientConnection = true;
         if (ERR_OK != SslClientCtxCreate())
         {
             return(false);
@@ -702,7 +634,7 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
             {
                 if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
                 {
-                    if (m_pClientSslCtx != nullptr)
+                    if (m_bIsClientConnection)
                     {
                         return(CODEC_STATUS_WANT_WRITE);
                     }
@@ -770,7 +702,7 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(HttpMsg& oHttpMsg)
             {
                 if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
                 {
-                    if (m_pClientSslCtx != nullptr)
+                    if (m_bIsClientConnection)
                     {
                         return(CODEC_STATUS_WANT_WRITE);
                     }
