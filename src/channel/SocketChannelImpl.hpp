@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Project:  Nebula
  * @file     SocketChannelImpl.hpp
- * @brief    通信通道
+ * @brief    Socket通信通道实现
  * @author   Bwar
  * @date:    2016年8月10日
- * @note     通信通道，如Socket连接
+ * @note     Socket通信通道实现
  * Modify history:
  ******************************************************************************/
 #ifndef SRC_CHANNEL_SOCKETCHANNELIMPL_HPP_
@@ -47,9 +47,6 @@ public:
     virtual ~SocketChannelImpl();
 
     virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsClient = false);
-    //virtual bool InitClientChannel(E_CODEC_TYPE eCodecType, const std::string& strIdentify);
-    //virtual bool InitAcceptChannel(E_CODEC_TYPE eCodecType);
-    //virtual bool InitListenChannel(E_CODEC_TYPE eCodecType);
 
     E_CODEC_TYPE GetCodecType() const;
 

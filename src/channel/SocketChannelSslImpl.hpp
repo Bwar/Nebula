@@ -1,10 +1,10 @@
 /*******************************************************************************
  * Project:  Nebula
  * @file     SocketChannelSslImpl.hpp
- * @brief    SSL通信通道
+ * @brief    SSL Socket通信通道实现
  * @author   Bwar
  * @date:    2018年6月21日
- * @note     SSL Socket通信通道
+ * @note     SSL Socket通信通道实现
  * Modify history:
  ******************************************************************************/
 #ifndef SRC_CHANNEL_SOCKETCHANNELSSLIMPL_HPP_
