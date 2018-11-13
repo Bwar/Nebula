@@ -39,8 +39,8 @@ enum E_CMD
 
     CMD_REQ_NODE_REGISTER               = 13,   ///< 节点注册,各个节点启动时主动注册到Center模块
     CMD_RSP_NODE_REGISTER               = 14,   ///< 节点注册应答
-    CMD_REQ_NODE_REG_NOTICE             = 15,   ///< 节点通知,各个节点启动时主动注册到Center模块，发的通知
-    CMD_RSP_NODE_REG_NOTICE             = 16,   ///< 节点通知应答通知（Manager应答，Worker无须应答）
+    CMD_REQ_NODE_NOTICE                 = 15,   ///< 节点通知,各个节点启动时主动注册到Center模块，发的通知
+    CMD_RSP_NODE_NOTICE                 = 16,   ///< 节点通知应答通知（Manager应答，Worker无须应答）
     CMD_REQ_REFRESH_NODE_ID             = 17,   ///< 更新节点ID请求（Manager发往Worker）
     CMD_RSP_REFRESH_NODE_ID             = 18,   ///< 更新节点ID应答（一般无须应答）
     CMD_REQ_DISCONNECT                  = 19,   ///< 连接断开（由框架层触发通知并以Cmd的形式通知到系统Cmd，断开原因有error、timeout之类）

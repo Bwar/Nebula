@@ -838,7 +838,7 @@ void WorkerImpl::LoadSysCmd()
     // 调用MakeSharedCmd等系列函数必须严格匹配参数类型，类型不符需显式转换，如 (int)CMD_REQ_CONNECT_TO_WORKER
     MakeSharedCmd(nullptr, "neb::CmdToldWorker", (int)CMD_REQ_TELL_WORKER);
     MakeSharedCmd(nullptr, "neb::CmdUpdateNodeId", (int)CMD_REQ_REFRESH_NODE_ID);
-    MakeSharedCmd(nullptr, "neb::CmdNodeNotice", (int)CMD_REQ_NODE_REG_NOTICE);
+    MakeSharedCmd(nullptr, "neb::CmdNodeNotice", (int)CMD_REQ_NODE_NOTICE);
     MakeSharedCmd(nullptr, "neb::CmdBeat", (int)CMD_REQ_BEAT);
 #if __cplusplus >= 201401L
     m_pSessionNode = std::make_unique<SessionNode>();

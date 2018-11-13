@@ -1265,7 +1265,17 @@ bool Manager::RestartWorker(int iDeathPid)
             {
                 restart_num_iter->second++;
             }
-            RegisterToBeacon();     // 重启Worker进程后向Beacon重发注册请求，以获得beacon下发其他节点的信息
+            // 重启Worker进程后下发其他节点的信息
+            
+            MsgBody oMsgBody;
+            CJsonObject oSubscribeNode;
+            oSubscribeNode.Add("add_nodes", CJsonObject("[]"));
+            for (auto it = m_mapOnlineNodes.begin(); it != m_mapOnlineNodes.end(); ++it)
+            {
+                oSubscribeNode["add_nodes"].Add(CJsonObject(it->second));
+            }
+            oMsgBody.set_data(oSubscribeNode.ToString());
+            SendToWorker(CMD_REQ_NODE_NOTICE, GetSequence(), oMsgBody);
             return(true);
         }
         else
@@ -1863,6 +1873,10 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
             return(true);
         }
         SendToWorker(oInMsgHead.cmd(), oInMsgHead.seq(), oInMsgBody);
+        if (oInMsgHead.cmd() == CMD_REQ_NODE_NOTICE)
+        {
+            OnNodeNotify(oInMsgBody);
+        }
         MsgBody oOutMsgBody;
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
         oOutMsgBody.mutable_rsp_result()->set_msg("OK");
@@ -1956,6 +1970,8 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
         LOG4_ERROR("failed to parse msgbody content!");
         return(false);
     }
+    std::ostringstream oss;
+    std::string strIdentify;
     std::string strNodeType;
     std::string strNodeHost;
     int iNodePort = 0;
@@ -1967,14 +1983,25 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
                 && oJson["add_nodes"][i].Get("node_port",iNodePort)
                 && oJson["add_nodes"][i].Get("worker_num",iWorkerNum))
         {
+            oss << strNodeHost << ":" << iNodePort;
+            strIdentify = std::move(oss.str());
+            auto n_iter = m_mapOnlineNodes.find(strIdentify);
+            if (n_iter == m_mapOnlineNodes.end())
+            {
+                m_mapOnlineNodes.insert(
+                        std::make_pair(strIdentify, oJson["add_nodes"][i].ToString()));
+            }
+            else
+            {
+                n_iter->second = oJson["add_nodes"][i].ToString();
+            }
             if (std::string("LOGGER") == strNodeType)
             {
                 for(int j = 1; j <= iWorkerNum; ++j)
                 {
-                    std::shared_ptr<SocketChannel> pChannel = std::make_shared<SocketChannel>(m_pLogger, 0, 0);
-                    std::ostringstream oss;
                     oss << strNodeHost << ":" << iNodePort << "." << j;
-                    std::string strIdentify = std::move(oss.str());
+                    strIdentify = std::move(oss.str());
+                    std::shared_ptr<SocketChannel> pChannel = std::make_shared<SocketChannel>(m_pLogger, 0, 0);
                     AddNodeIdentify(strNodeType, strIdentify);
                     LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), strIdentify.c_str());
                 }
@@ -1989,13 +2016,19 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
                 && oJson["del_nodes"][i].Get("node_port",iNodePort)
                 && oJson["del_nodes"][i].Get("worker_num",iWorkerNum))
         {
+            oss << strNodeHost << ":" << iNodePort;
+            strIdentify = std::move(oss.str());
+            auto n_iter = m_mapOnlineNodes.find(strIdentify);
+            if (n_iter != m_mapOnlineNodes.end())
+            {
+                m_mapOnlineNodes.erase(n_iter);
+            }
             if (std::string("LOGGER") == strNodeType)
             {
                 for(int j = 1; j <= iWorkerNum; ++j)
                 {
-                    std::ostringstream oss;
                     oss << strNodeHost << ":" << iNodePort << "." << j;
-                    std::string strIdentify = std::move(oss.str());
+                    strIdentify = std::move(oss.str());
                     if (std::string("LOGGER") == strNodeType)
                     {
                         DelNodeIdentify(strNodeType, strIdentify);

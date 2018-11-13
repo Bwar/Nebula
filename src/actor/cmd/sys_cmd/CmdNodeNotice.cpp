@@ -42,22 +42,6 @@ bool CmdNodeNotice::AnyMessage(
         int iNodePort = 0;
         int iWorkerNum = 0;
         char szIdentify[64] = {0};
-        for (int i = 0; i < oJson["add_nodes"].GetArraySize(); ++i)
-        {
-            if (oJson["add_nodes"][i].Get("node_type",strNodeType)
-                    && oJson["add_nodes"][i].Get("node_ip",strNodeHost)
-                    && oJson["add_nodes"][i].Get("node_port",iNodePort)
-                    && oJson["add_nodes"][i].Get("worker_num",iWorkerNum))
-            {
-                for(int j = 1; j <= iWorkerNum; ++j)
-                {
-                    snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
-                    GetWorkerImpl(this)->AddNodeIdentify(strNodeType, std::string(szIdentify));
-                    LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
-                }
-            }
-        }
-
         for (int i = 0; i < oJson["del_nodes"].GetArraySize(); ++i)
         {
             if (oJson["del_nodes"][i].Get("node_type",strNodeType)
@@ -70,6 +54,22 @@ bool CmdNodeNotice::AnyMessage(
                     snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
                     GetWorkerImpl(this)->DelNodeIdentify(strNodeType, std::string(szIdentify));
                     LOG4_DEBUG("DelNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
+                }
+            }
+        }
+
+        for (int i = 0; i < oJson["add_nodes"].GetArraySize(); ++i)
+        {
+            if (oJson["add_nodes"][i].Get("node_type",strNodeType)
+                    && oJson["add_nodes"][i].Get("node_ip",strNodeHost)
+                    && oJson["add_nodes"][i].Get("node_port",iNodePort)
+                    && oJson["add_nodes"][i].Get("worker_num",iWorkerNum))
+            {
+                for(int j = 1; j <= iWorkerNum; ++j)
+                {
+                    snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
+                    GetWorkerImpl(this)->AddNodeIdentify(strNodeType, std::string(szIdentify));
+                    LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
                 }
             }
         }

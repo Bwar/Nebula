@@ -297,6 +297,7 @@ private:
     std::unordered_map<int, tagWorkerAttr> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
     std::unordered_map<int, int> m_mapWorkerRestartNum;       ///< 进程被重启次数，key为WorkerIdx
     std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
+    std::unordered_map<std::string, std::string> m_mapOnlineNodes;     ///< 订阅的节点在线信息
 
     std::unordered_map<std::string, std::shared_ptr<SocketChannel> > m_mapNamedSocketChannel;
     std::unordered_map<int, std::shared_ptr<SocketChannel> > m_mapSocketChannel;                   ///< 通信通道

@@ -10,6 +10,7 @@
 #ifndef SRC_ACTOR_ACTORFACTORY_HPP_
 #define SRC_ACTOR_ACTORFACTORY_HPP_
 
+#include <functional>
 #include <string>
 #include <unordered_map>
 
