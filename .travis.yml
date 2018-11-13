@@ -36,8 +36,10 @@ script:
     - export WORK_PATH=`pwd`
     - mkdir NebulaDepend NebulaDependBuild
     - cd NebulaDependBuild
-    - git clone https://github.com/google/protobuf.git protobuf
-    - cd protobuf
+    - wget https://github.com/google/protobuf/archive/v3.6.0.zip
+    - unzip v3.6.0.zip
+    - cd protobuf-3.6.0
+    - chmod u+x autogen.sh
     - ./autogen.sh
     - ./configure --prefix=${WORK_PATH}/NebulaDepend
     - make
