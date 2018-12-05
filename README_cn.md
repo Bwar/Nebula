@@ -7,8 +7,9 @@
 3. [开始](#GettingStart)
 4. [文档](#Documentation)
 5. [依赖](#DependOn)
-6. [开发任务](#TODO)
-7. [版本历史](#ChangeLog)
+6. [相关项目](#RelatedProject)
+7. [开发任务](#TODO)
+8. [版本历史](#ChangeLog)
 
 <a name="Overview"></a>
 ## 概述 
@@ -89,10 +90,22 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
    * [http_parse](https://github.com/nodejs/http-parser) 已集成到 Nebula/src/util/http
    * [CJsonObject](https://github.com/Bwar/CJsonObject) 已集成到 Nebula/src/util/json
 
+<a name="RelatedProject"></a>
+## 相关项目
+   * [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap) Nebula自动构建和部署
+   * [NebulaBeacon](https://github.com/Bwar/NebulaBeacon) Nebula集群管理、注册中心、配置管理
+   * [NebulaInterface](https://github.com/Bwar/NebulaInterface) Nebula集群http接入服务
+   * [NebulaLogic](https://github.com/Bwar/NebulaLogic) Nebula集群逻辑服务
+   * [NebulaMydis](https://github.com/Bwar/NebulaMydis) Nebula集群存储代理（redis）
+   * [NebulaDbAgent](https://github.com/Bwar/NebulaDbAgent) Nebula集群数据库代理（mysql）
+   * [NebulaLogger](https://github.com/Bwar/NebulaLogger) Nebula集群分布式日志服务
+   * [NebulaAccess](https://github.com/Bwar/NebulaAccess) Nebula集群私有应用协议接入服务
+   * [NebulaDynamic](https://github.com/Bwar/NebulaDynamic) Nebula集群动态加载插件
+
 <a name="TODO"></a>
 ## 开发任务
-   - 2018年10月 增加ipv6支持
-   - 2018年12月 增加协程支持
+   - 增加ipv6支持
+   - 增加协程支持
 
 <a name="ChangeLog"></a>
 ## 版本历史
