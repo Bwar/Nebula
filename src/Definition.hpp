@@ -131,6 +131,9 @@ const int gc_iMaxBuffLen = 65535;
 /** @brief 错误信息缓冲区大小 */
 const int gc_iErrBuffLen = 256;
 
+/** @brief IP地址长度 */
+const int gc_iAddrLen = 64;
+
 const uint32 gc_uiMsgHeadSize = 15;
 const uint32 gc_uiClientMsgHeadSize = 14;
 

@@ -312,8 +312,9 @@ bool WorkerImpl::FdTransfer()
 {
     LOG4_TRACE(" ");
     int iAcceptFd = -1;
+    int iAiFamily = AF_INET;
     int iCodec = 0;
-    int iErrno = SocketChannel::RecvChannelFd(m_stWorkerInfo.iManagerDataFd, iAcceptFd, iCodec, m_pLogger);
+    int iErrno = SocketChannel::RecvChannelFd(m_stWorkerInfo.iManagerDataFd, iAcceptFd, iAiFamily, iCodec, m_pLogger);
     if (iErrno != ERR_OK)
     {
         if (iErrno == ERR_CHANNEL_EOF)
@@ -362,18 +363,41 @@ bool WorkerImpl::FdTransfer()
         }
         if (nullptr != pChannel)
         {
-            int z;                          /* status return code */
-            struct sockaddr_in adr_inet;    /* AF_INET */
-            unsigned int len_inet = 16;                   /* length */
-            z = getpeername(iAcceptFd, (struct sockaddr *)&adr_inet, &len_inet);
-            if (z == 0)
+            if (AF_INET == iAiFamily)
             {
-                LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, inet_ntoa(adr_inet.sin_addr));
-                pChannel->m_pImpl->SetRemoteAddr(inet_ntoa(adr_inet.sin_addr));
+                char szClientAddr[64] = {0};
+                int z;                          /* status return code */
+                struct sockaddr_in stClientAddr;
+                socklen_t iClientAddrSize = sizeof(stClientAddr);
+                z = getpeername(iAcceptFd, (struct sockaddr *)&stClientAddr, &iClientAddrSize);
+                if (z == 0)
+                {
+                    inet_ntop(AF_INET, &stClientAddr, szClientAddr, sizeof(szClientAddr));
+                    LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
+                    pChannel->m_pImpl->SetRemoteAddr(std::string(szClientAddr));
+                }
+                else
+                {
+                    LOG4_ERROR("getpeername error %d", errno);
+                }
             }
-            else
+            else   // AF_INET6
             {
-                LOG4_ERROR("getpeername error %d", errno);
+                char szClientAddr[64] = {0};
+                int z;                          /* status return code */
+                struct sockaddr_in6 stClientAddr;
+                socklen_t iClientAddrSize = sizeof(stClientAddr);
+                z = getpeername(iAcceptFd, (struct sockaddr *)&stClientAddr, &iClientAddrSize);
+                if (z == 0)
+                {
+                    inet_ntop(AF_INET6, &stClientAddr, szClientAddr, sizeof(szClientAddr));
+                    LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
+                    pChannel->m_pImpl->SetRemoteAddr(std::string(szClientAddr));
+                }
+                else
+                {
+                    LOG4_ERROR("getpeername error %d", errno);
+                }
             }
             AddIoReadEvent(pChannel);
             if (CODEC_NEBULA == iCodec)
@@ -1357,7 +1381,7 @@ bool WorkerImpl::SendTo(const std::string& strHost, int iPort, Actor* pSender)
 bool WorkerImpl::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s", strIdentify.c_str());
-    size_t iPosIpPortSeparator = strIdentify.find(':');
+    size_t iPosIpPortSeparator = strIdentify.rfind(':');
     if (iPosIpPortSeparator == std::string::npos)
     {
         return(false);
@@ -1376,24 +1400,51 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiS
     {
         return(false);
     }
-    struct sockaddr_in stAddr;
-    int iFd = -1;
-    stAddr.sin_family = AF_INET;
-    stAddr.sin_port = htons(iPort);
-    stAddr.sin_addr.s_addr = inet_addr(strHost.c_str());
-    bzero(&(stAddr.sin_zero), 8);
-    iFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (iFd == -1)
+
+    struct addrinfo stAddrHints;
+    struct addrinfo* pAddrResult;
+    struct addrinfo* pAddrCurrent;
+    memset(&stAddrHints, 0, sizeof(struct addrinfo));
+	stAddrHints.ai_family = AF_UNSPEC;
+	stAddrHints.ai_socktype = SOCK_STREAM;
+	stAddrHints.ai_protocol = IPPROTO_IP;
+    int iCode = getaddrinfo(strHost.c_str(), strPort.c_str(), &stAddrHints, &pAddrResult);
+    if (0 != iCode)
     {
+        LOG4_ERROR("getaddrinfo(\"%s\", \"%s\") error %d: %s",
+                strHost.c_str(), strPort.c_str(), iCode, gai_strerror(iCode));
         return(false);
     }
+    int iFd = -1;
+    for (pAddrCurrent = pAddrResult;
+            pAddrCurrent != NULL; pAddrCurrent = pAddrCurrent->ai_next)
+    {
+        iFd = socket(pAddrCurrent->ai_family,
+                pAddrCurrent->ai_socktype, pAddrCurrent->ai_protocol);
+        if (iFd == -1)
+        {
+            continue;
+        }
+
+        break;
+    }
+
+    /* No address succeeded */
+    if (pAddrCurrent == NULL)
+    {
+        LOG4_ERROR("Could not connect to \"%s:%s\"", strHost.c_str(), strPort.c_str());
+        freeaddrinfo(pAddrResult);           /* No longer needed */
+        return(false);
+    }
+
     x_sock_set_block(iFd, 0);
     int nREUSEADDR = 1;
     setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
     std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, CODEC_NEBULA);
     if (nullptr != pChannel)
     {
-        connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
+        connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
+        freeaddrinfo(pAddrResult);           /* No longer needed */
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
@@ -1415,6 +1466,7 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiS
     }
     else    // 没有足够资源分配给新连接，直接close掉
     {
+        freeaddrinfo(pAddrResult);           /* No longer needed */
         close(iFd);
         return(false);
     }
@@ -1423,31 +1475,42 @@ bool WorkerImpl::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiS
 bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
     LOG4_TRACE("%s, %d, %s", strHost.c_str(), iPort, strUrlPath.c_str());
-    struct sockaddr_in stAddr;
-    int iFd;
-    stAddr.sin_family = AF_INET;
-    stAddr.sin_port = htons(iPort);
-    stAddr.sin_addr.s_addr = inet_addr(strHost.c_str());
-    if (stAddr.sin_addr.s_addr == 4294967295 || stAddr.sin_addr.s_addr == 0)
+    struct addrinfo stAddrHints;
+    struct addrinfo* pAddrResult;
+    struct addrinfo* pAddrCurrent;
+    memset(&stAddrHints, 0, sizeof(struct addrinfo));
+	stAddrHints.ai_family = AF_UNSPEC;
+	stAddrHints.ai_socktype = SOCK_STREAM;
+	stAddrHints.ai_protocol = IPPROTO_IP;
+    int iCode = getaddrinfo(strHost.c_str(), std::to_string(iPort).c_str(), &stAddrHints, &pAddrResult);
+    if (0 != iCode)
     {
-        struct hostent *he;
-        he = gethostbyname(strHost.c_str());
-        if (he != NULL)
-        {
-            stAddr.sin_addr.s_addr = inet_addr(inet_ntoa(*(struct in_addr*)(he->h_addr)));
-        }
-        else
-        {
-            LOG4_ERROR("gethostbyname(%s) error!", strHost.c_str());
-            return(false);
-        }
-    }
-    bzero(&(stAddr.sin_zero), 8);
-    iFd = socket(AF_INET, SOCK_STREAM, 0);
-    if (iFd == -1)
-    {
+        LOG4_ERROR("getaddrinfo(\"%s\", \"%s\") error %d: %s",
+                strHost.c_str(), iPort, iCode, gai_strerror(iCode));
         return(false);
     }
+    int iFd = -1;
+    for (pAddrCurrent = pAddrResult;
+            pAddrCurrent != NULL; pAddrCurrent = pAddrCurrent->ai_next)
+    {
+        iFd = socket(pAddrCurrent->ai_family,
+                pAddrCurrent->ai_socktype, pAddrCurrent->ai_protocol);
+        if (iFd == -1)
+        {
+            continue;
+        }
+
+        break;
+    }
+
+    /* No address succeeded */
+    if (pAddrCurrent == NULL)
+    {
+        LOG4_ERROR("Could not connect to \"%s:%d\"", strHost.c_str(), iPort);
+        freeaddrinfo(pAddrResult);           /* No longer needed */
+        return(false);
+    }
+
     x_sock_set_block(iFd, 0);
     int nREUSEADDR = 1;
     setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
@@ -1464,7 +1527,8 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
     }
     if (nullptr != pChannel)
     {
-        connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
+        connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
+        freeaddrinfo(pAddrResult);           /* No longer needed */
         char szIdentify[32] = {0};
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
@@ -1487,6 +1551,7 @@ bool WorkerImpl::AutoSend(const std::string& strHost, int iPort, const std::stri
     }
     else    // 没有足够资源分配给新连接，直接close掉
     {
+        freeaddrinfo(pAddrResult);           /* No longer needed */
         close(iFd);
         return(false);
     }

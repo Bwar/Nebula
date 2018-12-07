@@ -184,7 +184,7 @@ bool Manager::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
     }
     else if (m_stManagerInfo.iC2SListenFd > 2 && pChannel->m_pImpl->GetFd() == m_stManagerInfo.iC2SListenFd)
     {
-        return(FdTransfer(pChannel->m_pImpl->GetFd()));
+        return(FdTransfer(m_stManagerInfo.iC2SListenFd, m_stManagerInfo.iC2SFamily));
     }
     else
     {
@@ -192,58 +192,48 @@ bool Manager::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
     }
 }
 
-bool Manager::FdTransfer(int iFd)
+bool Manager::FdTransfer(int iFd, int iFamily)
 {
-    char szIpAddr[16] = {0};
-    struct sockaddr_in stClientAddr;
-    socklen_t clientAddrSize = sizeof(stClientAddr);
-    int iAcceptFd = accept(iFd, (struct sockaddr*) &stClientAddr, &clientAddrSize);
-    if (iAcceptFd < 0)
+    char szClientAddr[64] = {0};
+    int iAcceptFd = -1;
+    if (AF_INET == iFamily)
     {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-        return(false);
+        struct sockaddr_in stClientAddr;
+        socklen_t clientAddrSize = sizeof(stClientAddr);
+        iAcceptFd = accept(iFd, (struct sockaddr*) &stClientAddr, &clientAddrSize);
+        if (iAcceptFd < 0)
+        {
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+            return(false);
+        }
+        inet_ntop(AF_INET, &stClientAddr, szClientAddr, sizeof(szClientAddr));
     }
-    strncpy(szIpAddr, inet_ntoa(stClientAddr.sin_addr), 16);
-    /* tcp连接检测 */
-//    int iKeepAlive = 1;
-//    int iKeepIdle = 1000;
-//    int iKeepInterval = 10;
-//    int iKeepCount = 3;
-//    int iTcpNoDelay = 1;
-//    if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
-//    {
-//        LOG4_WARNING("fail to set SO_KEEPALIVE");
-//    }
-//    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
-//    {
-//        LOG4_WARNING("fail to set TCP_KEEPIDLE");
-//    }
-//    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
-//    {
-//        LOG4_WARNING("fail to set TCP_KEEPINTVL");
-//    }
-//    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
-//    {
-//        LOG4_WARNING("fail to set TCP_KEEPCNT");
-//    }
-//    if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
-//    {
-//        LOG4_WARNING("fail to set TCP_NODELAY");
-//    }
+    else    // AF_INET6
+    {
+        struct sockaddr_in6 stClientAddr;
+        socklen_t clientAddrSize = sizeof(stClientAddr);
+        iAcceptFd = accept(iFd, (struct sockaddr*) &stClientAddr, &clientAddrSize);
+        if (iAcceptFd < 0)
+        {
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
+            return(false);
+        }
+        inet_ntop(AF_INET6, &stClientAddr, szClientAddr, sizeof(szClientAddr));
+    }
 
-    auto iter = m_mapClientConnFrequency.find(stClientAddr.sin_addr.s_addr);
+    auto iter = m_mapClientConnFrequency.find(std::string(szClientAddr));
     if (iter == m_mapClientConnFrequency.end())
     {
-        m_mapClientConnFrequency.insert(std::pair<in_addr_t, uint32>(stClientAddr.sin_addr.s_addr, 1));
-        AddClientConnFrequencyTimeout(stClientAddr.sin_addr.s_addr, m_stManagerInfo.dAddrStatInterval);
+        m_mapClientConnFrequency.insert(std::make_pair(std::string(szClientAddr), 1));
+        AddClientConnFrequencyTimeout(szClientAddr, m_stManagerInfo.dAddrStatInterval);
     }
     else
     {
         iter->second++;
         if (m_stManagerInfo.iC2SListenFd > 2 && iter->second > (uint32)m_stManagerInfo.iAddrPermitNum)
         {
-            LOG4_WARNING("client addr %d had been connected more than %u times in %f seconds, it's not permitted",
-                            stClientAddr.sin_addr.s_addr, m_stManagerInfo.iAddrPermitNum, m_stManagerInfo.dAddrStatInterval);
+            LOG4_WARNING("client addr %s had been connected more than %u times in %f seconds, it's not permitted",
+                            szClientAddr, m_stManagerInfo.iAddrPermitNum, m_stManagerInfo.dAddrStatInterval);
             close(iAcceptFd);
             return(false);
         }
@@ -255,9 +245,7 @@ bool Manager::FdTransfer(int iFd)
         LOG4_DEBUG("send new fd %d to worker communication fd %d",
                         iAcceptFd, worker_pid_fd.second);
         int iCodec = m_stManagerInfo.eCodec;
-        //int iErrno = send_fd(worker_pid_fd.second, iAcceptFd);
-        //int iErrno = send_fd_with_attr(worker_pid_fd.second, iAcceptFd, szIpAddr, 16, iCodec);
-        int iErrno = SocketChannel::SendChannelFd(worker_pid_fd.second, iAcceptFd, iCodec, m_pLogger);
+        int iErrno = SocketChannel::SendChannelFd(worker_pid_fd.second, iAcceptFd, iFamily, iCodec, m_pLogger);
         if (iErrno == 0)
         {
             AddWorkerLoad(worker_pid_fd.first);
@@ -432,7 +420,7 @@ bool Manager::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
 bool Manager::OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher)
 {
     bool bRes = false;
-    auto iter = m_mapClientConnFrequency.find(pData->iAddr);
+    auto iter = m_mapClientConnFrequency.find(std::string(pData->pAddr));
     if (iter == m_mapClientConnFrequency.end())
     {
         bRes = false;
@@ -663,20 +651,48 @@ bool Manager::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq
 bool Manager::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("%s", strIdentify.c_str());
-    int iPosIpPortSeparator = strIdentify.find(':');
+    int iPosIpPortSeparator = strIdentify.rfind(':');
     int iPosPortWorkerIndexSeparator = strIdentify.rfind('.');
     std::string strHost = strIdentify.substr(0, iPosIpPortSeparator);
     std::string strPort = strIdentify.substr(iPosIpPortSeparator + 1, iPosPortWorkerIndexSeparator - (iPosIpPortSeparator + 1));
     std::string strWorkerIndex = strIdentify.substr(iPosPortWorkerIndexSeparator + 1, std::string::npos);
-    int iPort = atoi(strPort.c_str());
     int iWorkerIndex = atoi(strWorkerIndex.c_str());
-    struct sockaddr_in stAddr;
+
+    struct addrinfo stAddrHints;
+    struct addrinfo* pAddrResult;
+    struct addrinfo* pAddrCurrent;
+    memset(&stAddrHints, 0, sizeof(struct addrinfo));
+	stAddrHints.ai_family = AF_UNSPEC;
+	stAddrHints.ai_socktype = SOCK_STREAM;
+	stAddrHints.ai_protocol = IPPROTO_IP;
+    int iCode = getaddrinfo(strHost.c_str(), strPort.c_str(), &stAddrHints, &pAddrResult);
+    if (0 != iCode)
+    {
+        LOG4_ERROR("getaddrinfo(\"%s\", \"%s\") error %d: %s",
+                strHost.c_str(), strPort.c_str(), iCode, gai_strerror(iCode));
+        return(false);
+    }
     int iFd = -1;
-    stAddr.sin_family = AF_INET;
-    stAddr.sin_port = htons(iPort);
-    stAddr.sin_addr.s_addr = inet_addr(strHost.c_str());
-    bzero(&(stAddr.sin_zero), 8);
-    iFd = socket(AF_INET, SOCK_STREAM, 0);
+    for (pAddrCurrent = pAddrResult;
+            pAddrCurrent != NULL; pAddrCurrent = pAddrCurrent->ai_next)
+    {
+        iFd = socket(pAddrCurrent->ai_family,
+                pAddrCurrent->ai_socktype, pAddrCurrent->ai_protocol);
+        if (iFd == -1)
+        {
+            continue;
+        }
+
+        break;
+    }
+
+    /* No address succeeded */
+    if (pAddrCurrent == NULL)
+    {
+        LOG4_ERROR("Could not connect to \"%s:%s\"", strHost.c_str(), strPort.c_str());
+        freeaddrinfo(pAddrResult);           /* No longer needed */
+        return(false);
+    }
 
     x_sock_set_block(iFd, 0);
     int reuse = 1;
@@ -709,7 +725,8 @@ bool Manager::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq,
         {
             LOG4_WARNING("fail to set TCP_NODELAY");
         }
-        connect(iFd, (struct sockaddr*)&stAddr, sizeof(struct sockaddr));
+        connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
+        freeaddrinfo(pAddrResult);           /* No longer needed */
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
@@ -726,6 +743,7 @@ bool Manager::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq,
         AddNamedSocketChannel(strIdentify, pChannel);
         return(true);
     }
+    freeaddrinfo(pAddrResult);           /* No longer needed */
     close(iFd);
     return(false);
 }
@@ -808,7 +826,6 @@ bool Manager::Init()
 #endif
 
 
-    socklen_t addressLen = 0;
     int queueLen = 100;
     int reuse = 1;
     int timeout = 1;
@@ -816,75 +833,143 @@ bool Manager::Init()
     if (m_stManagerInfo.strHostForClient.size() > 0 && m_stManagerInfo.iPortForClient > 0)
     {
         // 接入节点才需要监听客户端连接
-        struct sockaddr_in stAddrOuter;
-        struct sockaddr *pAddrOuter;
-        stAddrOuter.sin_family = AF_INET;
-        stAddrOuter.sin_port = htons(m_stManagerInfo.iPortForClient);
-        stAddrOuter.sin_addr.s_addr = inet_addr(m_stManagerInfo.strHostForClient.c_str());
-        pAddrOuter = (struct sockaddr*)&stAddrOuter;
-        addressLen = sizeof(struct sockaddr);
-        m_stManagerInfo.iC2SListenFd = socket(pAddrOuter->sa_family, SOCK_STREAM, 0);
-        if (m_stManagerInfo.iC2SListenFd < 0)
+        struct addrinfo stAddrHints;
+        struct addrinfo* pAddrResult;
+        struct addrinfo* pAddrCurrent;
+        memset(&stAddrHints, 0, sizeof(struct addrinfo));
+	    stAddrHints.ai_family = AF_UNSPEC;              /* Allow IPv4 or IPv6 */
+	    stAddrHints.ai_socktype = SOCK_STREAM;
+	    stAddrHints.ai_protocol = IPPROTO_IP;
+        stAddrHints.ai_flags = AI_PASSIVE;              /* For wildcard IP address */
+        int iCode = getaddrinfo(m_stManagerInfo.strHostForClient.c_str(),
+                std::to_string(m_stManagerInfo.iPortForClient).c_str(), &stAddrHints, &pAddrResult);
+        if (0 != iCode)
         {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-            int iErrno = errno;
-            exit(iErrno);
+            LOG4_ERROR("getaddrinfo(\"%s\", \"%d\") error %d: %s",
+                    m_stManagerInfo.strHostForClient.c_str(),
+                    m_stManagerInfo.iPortForClient, iCode, gai_strerror(iCode));
+            exit(errno);
         }
-        reuse = 1;
-        timeout = 1;
-        ::setsockopt(m_stManagerInfo.iC2SListenFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-        ::setsockopt(m_stManagerInfo.iC2SListenFd, IPPROTO_TCP, TCP_DEFER_ACCEPT, &timeout, sizeof(int));
-        if (bind(m_stManagerInfo.iC2SListenFd, pAddrOuter, addressLen) < 0)
+        for (pAddrCurrent = pAddrResult;
+                pAddrCurrent != NULL; pAddrCurrent = pAddrCurrent->ai_next)
         {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-            close(m_stManagerInfo.iC2SListenFd);
-            m_stManagerInfo.iC2SListenFd = -1;
-            int iErrno = errno;
-            exit(iErrno);
+            m_stManagerInfo.iC2SListenFd = socket(pAddrCurrent->ai_family,
+                    pAddrCurrent->ai_socktype, pAddrCurrent->ai_protocol);
+            if (-1 == m_stManagerInfo.iC2SListenFd)
+            {
+                continue;
+            }
+            if (-1 == ::setsockopt(m_stManagerInfo.iC2SListenFd,
+                        SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)))
+            {
+                close(m_stManagerInfo.iC2SListenFd);
+                m_stManagerInfo.iC2SListenFd = -1;
+                continue;
+            }
+            if (-1 == ::setsockopt(m_stManagerInfo.iC2SListenFd,
+                        IPPROTO_TCP, TCP_DEFER_ACCEPT, &timeout, sizeof(int)))
+            {
+                close(m_stManagerInfo.iC2SListenFd);
+                m_stManagerInfo.iC2SListenFd = -1;
+                continue;
+            }
+            if (-1 == bind(m_stManagerInfo.iC2SListenFd,
+                        pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen))
+            {
+                close(m_stManagerInfo.iC2SListenFd);
+                m_stManagerInfo.iC2SListenFd = -1;
+                continue;
+            }
+            if (-1 == listen(m_stManagerInfo.iC2SListenFd, queueLen))
+            {
+                close(m_stManagerInfo.iC2SListenFd);
+                m_stManagerInfo.iC2SListenFd = -1;
+                continue;
+            }
+
+            break;
         }
-        if (listen(m_stManagerInfo.iC2SListenFd, queueLen) < 0)
+        freeaddrinfo(pAddrResult);           /* No longer needed */
+
+        /* No address succeeded */
+        if (-1 == m_stManagerInfo.iC2SListenFd)
         {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-            close(m_stManagerInfo.iC2SListenFd);
-            m_stManagerInfo.iC2SListenFd = -1;
-            int iErrno = errno;
-            exit(iErrno);
+            LOG4_ERROR("Could not bind to \"%s:%d\", error %d: %s",
+                    m_stManagerInfo.strHostForClient.c_str(),
+                    m_stManagerInfo.iPortForClient,
+                    errno, strerror_r(errno, m_szErrBuff, 1024));
+            exit(errno);
         }
     }
 
-    struct sockaddr_in stAddrInner;
-    struct sockaddr *pAddrInner;
-    stAddrInner.sin_family = AF_INET;
-    stAddrInner.sin_port = htons(m_stManagerInfo.iPortForServer);
-    stAddrInner.sin_addr.s_addr = inet_addr(m_stManagerInfo.strHostForServer.c_str());
-    pAddrInner = (struct sockaddr*)&stAddrInner;
-    addressLen = sizeof(struct sockaddr);
-    m_stManagerInfo.iS2SListenFd = socket(pAddrInner->sa_family, SOCK_STREAM, 0);
-    if (m_stManagerInfo.iS2SListenFd < 0)
+    struct addrinfo stAddrHints;
+    struct addrinfo* pAddrResult;
+    struct addrinfo* pAddrCurrent;
+    memset(&stAddrHints, 0, sizeof(struct addrinfo));
+	stAddrHints.ai_family = AF_UNSPEC;              /* Allow IPv4 or IPv6 */
+	stAddrHints.ai_socktype = SOCK_STREAM;
+	stAddrHints.ai_protocol = IPPROTO_IP;
+    stAddrHints.ai_flags = AI_PASSIVE;              /* For wildcard IP address */
+    stAddrHints.ai_canonname = NULL;
+    stAddrHints.ai_addr = NULL;
+    stAddrHints.ai_next = NULL;
+    int iCode = getaddrinfo(m_stManagerInfo.strHostForServer.c_str(),
+            std::to_string(m_stManagerInfo.iPortForServer).c_str(), &stAddrHints, &pAddrResult);
+    if (0 != iCode)
     {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-        int iErrno = errno;
-        exit(iErrno);
+        LOG4_ERROR("getaddrinfo(\"%s\", \"%d\") error %d: %s",
+                m_stManagerInfo.strHostForServer.c_str(),
+                m_stManagerInfo.iPortForServer, iCode, gai_strerror(iCode));
+        exit(errno);
     }
-    reuse = 1;
-    timeout = 1;
-    ::setsockopt(m_stManagerInfo.iS2SListenFd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
-    ::setsockopt(m_stManagerInfo.iS2SListenFd, IPPROTO_TCP, TCP_DEFER_ACCEPT, &timeout, sizeof(int));
-    if (bind(m_stManagerInfo.iS2SListenFd, pAddrInner, addressLen) < 0)
+    for (pAddrCurrent = pAddrResult;
+            pAddrCurrent != NULL; pAddrCurrent = pAddrCurrent->ai_next)
     {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-        close(m_stManagerInfo.iS2SListenFd);
-        m_stManagerInfo.iS2SListenFd = -1;
-        int iErrno = errno;
-        exit(iErrno);
+        m_stManagerInfo.iS2SListenFd = socket(pAddrCurrent->ai_family,
+               pAddrCurrent->ai_socktype, pAddrCurrent->ai_protocol);
+        if (-1 == m_stManagerInfo.iS2SListenFd)
+        {
+            continue;
+        }
+        if (-1 == ::setsockopt(m_stManagerInfo.iS2SListenFd,
+                SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(int)))
+        {
+            close(m_stManagerInfo.iS2SListenFd);
+            m_stManagerInfo.iS2SListenFd = -1;
+            continue;
+        }
+        if (-1 == ::setsockopt(m_stManagerInfo.iS2SListenFd,
+                IPPROTO_TCP, TCP_DEFER_ACCEPT, &timeout, sizeof(int)))
+        {
+            close(m_stManagerInfo.iS2SListenFd);
+            m_stManagerInfo.iS2SListenFd = -1;
+            continue;
+        }
+        if (-1 == bind(m_stManagerInfo.iS2SListenFd,
+                pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen))
+        {
+            m_stManagerInfo.iS2SListenFd = -1;
+            continue;
+        }
+        if (-1 == listen(m_stManagerInfo.iS2SListenFd, queueLen))
+        {
+            close(m_stManagerInfo.iS2SListenFd);
+            m_stManagerInfo.iS2SListenFd = -1;
+            continue;
+        }
+
+        break;
     }
-    if (listen(m_stManagerInfo.iS2SListenFd, queueLen) < 0)
+    freeaddrinfo(pAddrResult);           /* No longer needed */
+
+    /* No address succeeded */
+    if (-1 == m_stManagerInfo.iS2SListenFd)
     {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
-        close(m_stManagerInfo.iS2SListenFd);
-        m_stManagerInfo.iS2SListenFd = -1;
-        int iErrno = errno;
-        exit(iErrno);
+        LOG4_ERROR("Could not bind to \"%s:%d\", error %d: %s",
+                m_stManagerInfo.strHostForServer.c_str(),
+                m_stManagerInfo.iPortForServer,
+                errno, strerror_r(errno, m_szErrBuff, 1024));
+        exit(errno);
     }
 
     // 创建到beacon的连接信息
@@ -1624,7 +1709,7 @@ bool Manager::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dT
     }
 }
 
-bool Manager::AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout)
+bool Manager::AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout)
 {
     LOG4_TRACE(" ");
     ev_timer* timeout_watcher = new ev_timer();
@@ -1642,7 +1727,7 @@ bool Manager::AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout)
     }
     ev_timer_init (timeout_watcher, ClientConnFrequencyTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
     pData->pLabor = this;
-    pData->iAddr = iAddr;
+    snprintf(pData->pAddr, gc_iAddrLen, "%s", pAddr);
     timeout_watcher->data = (void*)pData;
     ev_timer_start (m_loop, timeout_watcher);
     return(true);
@@ -1762,7 +1847,7 @@ bool Manager::OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const
             if (iWorkerIndex == worker_iter->second.iWorkerIndex)
             {
                 int iErrno = SocketChannel::SendChannelFd(
-                    worker_iter->second.iDataFd, pChannel->m_pImpl->GetFd(), (int)pChannel->m_pImpl->GetCodecType(), m_pLogger);
+                    worker_iter->second.iDataFd, pChannel->m_pImpl->GetFd(), m_stManagerInfo.iS2SFamily, (int)pChannel->m_pImpl->GetCodecType(), m_pLogger);
                 if (iErrno != 0)
                 {
                     DiscardSocketChannel(pChannel);

@@ -60,7 +60,7 @@ const std::string& SocketChannel::GetClientData() const
     return(m_pImpl->GetClientData());
 }
 
-int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std::shared_ptr<NetLogger> pLogger)
+int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger)
 {
     ssize_t             n;
     struct iovec        iov[1];
@@ -69,6 +69,7 @@ int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std
     int iError = 0;
 
     stCh.iFd = iSendFd;
+    stCh.iAiFamily = iAiFamily;
     stCh.iCodecType = iCodecType;
 
     union
@@ -119,7 +120,7 @@ int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std
     return(ERR_OK);
 }
 
-int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iCodecType, std::shared_ptr<NetLogger> pLogger)
+int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType, std::shared_ptr<NetLogger> pLogger)
 {
     ssize_t             n;
     struct iovec        iov[1];
@@ -189,6 +190,7 @@ int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iCodecType, s
     }
 
     iRecvFd = stCh.iFd;
+    iAiFamily = stCh.iAiFamily;
     iCodecType = stCh.iCodecType;
 
     return(ERR_OK);

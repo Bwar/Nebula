@@ -24,14 +24,15 @@ public:
     struct tagChannelCtx
     {
         int iFd;
+        int iAiFamily;        // AF_INET  or   AF_INET6
         int iCodecType;
     };
 
     SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl = false, ev_tstamp dKeepAlive = 0.0);
     virtual ~SocketChannel();
     
-    static int SendChannelFd(int iSocketFd, int iSendFd, int iCodecType, std::shared_ptr<NetLogger> pLogger);
-    static int RecvChannelFd(int iSocketFd, int& iRecvFd, int& iCodecType, std::shared_ptr<NetLogger> pLogger);
+    static int SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger);
+    static int RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType, std::shared_ptr<NetLogger> pLogger);
 
 
     const std::string& GetIdentify() const;

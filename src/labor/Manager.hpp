@@ -73,11 +73,18 @@ class Manager: public Labor
 public:
     struct tagClientConnWatcherData
     {
-        in_addr_t iAddr;
+        char* pAddr;
         Labor* pLabor;     // 不在结构体析构时回收
 
-        tagClientConnWatcherData() : iAddr(0), pLabor(NULL)
+        tagClientConnWatcherData() : pAddr(NULL), pLabor(NULL)
         {
+            pAddr = (char*)malloc(gc_iAddrLen);
+        }
+
+        ~tagClientConnWatcherData()
+        {
+            free(pAddr);
+            pAddr = NULL;
         }
     };
 
@@ -92,7 +99,9 @@ public:
         int32 iAddrPermitNum;                 ///< IP地址统计时间内允许连接次数
         int iWorkerBeat;                      ///< worker进程心跳，若大于此心跳未收到worker进程上报，则重启worker进程
         int iS2SListenFd;                     ///< Server to Server监听文件描述符（Server与Server之间的连接较少，但每个Server的每个Worker均与其他Server的每个Worker相连）
+        int iS2SFamily;                       ///< 
         int iC2SListenFd;                     ///< Client to Server监听文件描述符（Client与Server之间的连接较多，但每个Client只需连接某个Server的某个Worker）
+        int iC2SFamily;                       ///< 
         ev_tstamp dIoTimeout;                 ///< IO超时配置
         ev_tstamp dAddrStatInterval;          ///< IP地址数据统计时间间隔
         std::string strWorkPath;              ///< 工作路径
@@ -269,10 +278,10 @@ protected:
     void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
-    bool AddClientConnFrequencyTimeout(in_addr_t iAddr, ev_tstamp dTimeout = 60.0);
+    bool AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout = 60.0);
     std::shared_ptr<SocketChannel> CreateChannel(int iFd, E_CODEC_TYPE eCodecType);
     bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel);
-    bool FdTransfer(int iFd);
+    bool FdTransfer(int iFd, int iFamily = AF_INET);
     bool AcceptServerConn(int iFd);
     bool DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
     bool OnWorkerData(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
@@ -301,7 +310,7 @@ private:
 
     std::unordered_map<std::string, std::shared_ptr<SocketChannel> > m_mapNamedSocketChannel;
     std::unordered_map<int, std::shared_ptr<SocketChannel> > m_mapSocketChannel;                   ///< 通信通道
-    std::unordered_map<in_addr_t, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
+    std::unordered_map<std::string, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
 
     std::vector<int> m_vecFreeWorkerIdx;            ///< 空闲进程编号
 };
