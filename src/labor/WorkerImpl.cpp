@@ -372,7 +372,7 @@ bool WorkerImpl::FdTransfer()
                 z = getpeername(iAcceptFd, (struct sockaddr *)&stClientAddr, &iClientAddrSize);
                 if (z == 0)
                 {
-                    inet_ntop(AF_INET, &stClientAddr, szClientAddr, sizeof(szClientAddr));
+                    inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
                     LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
                     pChannel->m_pImpl->SetRemoteAddr(std::string(szClientAddr));
                 }
@@ -390,7 +390,7 @@ bool WorkerImpl::FdTransfer()
                 z = getpeername(iAcceptFd, (struct sockaddr *)&stClientAddr, &iClientAddrSize);
                 if (z == 0)
                 {
-                    inet_ntop(AF_INET6, &stClientAddr, szClientAddr, sizeof(szClientAddr));
+                    inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
                     LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
                     pChannel->m_pImpl->SetRemoteAddr(std::string(szClientAddr));
                 }

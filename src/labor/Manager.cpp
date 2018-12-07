@@ -206,7 +206,8 @@ bool Manager::FdTransfer(int iFd, int iFamily)
             LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
             return(false);
         }
-        inet_ntop(AF_INET, &stClientAddr, szClientAddr, sizeof(szClientAddr));
+        inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
+        LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }
     else    // AF_INET6
     {
@@ -218,7 +219,8 @@ bool Manager::FdTransfer(int iFd, int iFamily)
             LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_szErrBuff, 1024));
             return(false);
         }
-        inet_ntop(AF_INET6, &stClientAddr, szClientAddr, sizeof(szClientAddr));
+        inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
+        LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }
 
     auto iter = m_mapClientConnFrequency.find(std::string(szClientAddr));
@@ -887,6 +889,7 @@ bool Manager::Init()
                 continue;
             }
 
+            m_stManagerInfo.iC2SFamily = pAddrCurrent->ai_family;
             break;
         }
         freeaddrinfo(pAddrResult);           /* No longer needed */
@@ -958,6 +961,7 @@ bool Manager::Init()
             continue;
         }
 
+        m_stManagerInfo.iS2SFamily = pAddrCurrent->ai_family;
         break;
     }
     freeaddrinfo(pAddrResult);           /* No longer needed */
