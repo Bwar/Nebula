@@ -104,11 +104,15 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 
 <a name="TODO"></a>
 ## 开发任务
-   - 增加ipv6支持
-   - 增加协程支持
+   - NebulaBeacon增加节点状态信息查询，注册中心主从仲裁
+   - NebulaMydis数据代理服务
+   - 应用Nebula开发IM项目
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v0.5
+   - 增加worker进程意外终止并被Manager重新拉起时的节点信息下发
+   - 增加ipv6支持
 #### v0.4
    - 分布式日志服务测试通过
    - 增加https支持

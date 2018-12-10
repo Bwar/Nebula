@@ -117,11 +117,15 @@ A simple testing can be start with a NebulaInterface only, but you need to devel
 
 <a name="TODO"></a>
 ## Todo list 
-   - ipv6 support
-   - coroutine support.
+   - NebulaBeacon adds node status information query, registration center master-slave arbitration.
+   - NebulaMydis Data Agency Service.
+   - Developing an IM with the Nebula.
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v0.5
+   - add node info to worker the worker process terminated unexpectedly and restarted by the Manager.
+   - ipv6 support.
 #### v0.4
    - distributed log service test passing.
    - add https support.
