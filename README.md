@@ -114,6 +114,7 @@ A simple testing can be start with a NebulaInterface only, but you need to devel
    * [NebulaLogger](https://github.com/Bwar/NebulaLogger)
    * [NebulaAccess](https://github.com/Bwar/NebulaAccess)
    * [NebulaDynamic](https://github.com/Bwar/NebulaDynamic)
+   * [Nebcli](https://github.com/Bwar/Nebcli)
 
 <a name="TODO"></a>
 ## Todo list 

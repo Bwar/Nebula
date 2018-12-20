@@ -101,6 +101,7 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
    * [NebulaLogger](https://github.com/Bwar/NebulaLogger) Nebula集群分布式日志服务
    * [NebulaAccess](https://github.com/Bwar/NebulaAccess) Nebula集群私有应用协议接入服务
    * [NebulaDynamic](https://github.com/Bwar/NebulaDynamic) Nebula集群动态加载插件
+   * [Nebcli](https://github.com/Bwar/Nebcli) Nebula集群命令行管理工具
 
 <a name="TODO"></a>
 ## 开发任务
