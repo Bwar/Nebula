@@ -45,7 +45,7 @@ enum E_CMD
     CMD_RSP_REFRESH_NODE_ID             = 18,   ///< 更新节点ID应答（一般无须应答）
     CMD_REQ_DISCONNECT                  = 19,   ///< 连接断开（由框架层触发通知并以Cmd的形式通知到系统Cmd，断开原因有error、timeout之类）
     CMD_RSP_DISCONNECT                  = 20,   ///< 连接断开应答（无效CMD）
-    CMD_REQ_SERVER_CONFIG               = 21,   ///< Center通知配置到节点服务器
+    CMD_REQ_SERVER_CONFIG               = 21,   ///< BEACON通知配置到节点服务器
     CMD_RSP_SERVER_CONFIG               = 22,   ///< 节点服务器得到通知配置应答Center
     CMD_REQ_SERVER_DATA_STATUS_REPORT   = 25,   ///< 服务器数据状态上报请求
     CMD_RSP_SERVER_DATA_STATUS_REPORT   = 26,   ///< 服务器数据状态上报应答
@@ -55,8 +55,10 @@ enum E_CMD
     CMD_RSP_SET_LOG_LEVEL               = 30,   ///< 设置日志级别响应（无须响应）
     CMD_REQ_RELOAD_SO                   = 31,   ///< 重新加载so请求（manager to worker）
     CMD_RSP_RELOAD_SO                   = 32,   ///< 重新加载so响应（无须响应）
-    CMD_REQ_LOG4_TRACE                   = 33,   ///< 分布式网络日志请求
-    CMD_RSP_LOG4_TRACE                   = 34,   ///< 分布式网络日志响应（无须响应）
+    CMD_REQ_LOG4_TRACE                  = 33,   ///< 分布式网络日志请求
+    CMD_RSP_LOG4_TRACE                  = 34,   ///< 分布式网络日志响应（无须响应）
+    CMD_REQ_LEADER_ELECTION             = 35,   ///< 分布式leader选举请求
+    CMD_RSP_LEADER_ELECTION             = 36,   ///< 分布式leader选举响应（通过心跳结合优先权选举，无须响应）
 
     // 接入层转发命令字，如客户端数据转发给Logic，Logic数据转发给客户端等
     CMD_REQ_FROM_CLIENT                 = 501,     ///< 客户端发送过来需由接入层转发的数据，传输的MsgHead里的Cmd不会被改变（无业务逻辑直接转发的场景，如登录等接入层有业务逻辑的场景不适用）
