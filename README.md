@@ -84,9 +84,13 @@ MIT License
 
 The server should have started successfully now, startup.sh will print the server that had been started, If not, check logs for reason. Notice that the default configuration file of Nebula limits the number of connections per IP in a period. If you have a large amount of testing, you should check the configuration limit. If the server has been successfully started, testing with postman or curl.
 ```
+# testing start with NebulaInterface only.
 curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello
+
+# testing start with NebulaInterface,NebulaLogic and NebulaBeacon.
+curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello_nebula
 ```
-A simple testing can be start with a NebulaInterface only, but you need to develop your own plugins. NebulaBootstrap provided the a cluster HelloWorld, the testing will launch NebulaBeacon, NebulaInterface and NebulaLogic. This is a diagram of the cluster architecture:
+A simple testing can be start with a NebulaInterface only, and also can be start with NebulaBootstrap. NebulaBootstrap provided the a cluster HelloWorld, the testing will launch NebulaBeacon, NebulaInterface and NebulaLogic. This is a diagram of the cluster architecture:
 
 ![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/blob/master/image/nebula_cluster.png?raw=true)
 
@@ -117,12 +121,14 @@ A simple testing can be start with a NebulaInterface only, but you need to devel
 
 <a name="TODO"></a>
 ## Todo list 
-   - NebulaBeacon adds node status information query, registration center master-slave arbitration.
    - NebulaMydis Data Agency Service.
    - Developing an IM with the Nebula.
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v0.6
+   - NebulaBeacon adds node status information query, registration center leader-fllower arbitration.
+   - NebulaInterface adds hello demo.
 #### v0.5
    - add node info to worker the worker process terminated unexpectedly and restarted by the Manager.
    - ipv6 support.

@@ -71,9 +71,13 @@ Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建�
 ```
 &emsp;&emsp;server应该已经启动成功了，startup.sh会打印已启动的server。如果没有启动成功，可以到log目录查看原因。执行grep "ERROR" log/*和grep "FATAL" log/* 先看看是否有错误，再到具体日志文件查看错误详情。注意，Nebula的默认配置文件对IP单位时间连接次数做了限制，如果在测试量较大发生莫名奇妙的问题，可以修改配置限制，通过查看日志中的WARNING信息通常有助于定位这种不是错误的“错误”。如果server已启动成功，那么可以用postman、curl等做测试，看看结果。
 ```
+# 只启动NebulaInterface即可完成http的hello测试
 curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello
+
+# 启动NebulaInterface、NebulaLogic和NebulaBeacon完成分布式服务http的hello测试。
+curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello_nebula
 ```
-&emsp;&emsp;这个简单的测试可以只启动一个NebulaInterface即可完成，不过这需要自己开发插件。NebulaBootstrap提供的HelloWorld是基于集群的，启动了NebulaBeacon、NebulaInterface、NebulaLogic三个server。下面是一张集群架构图：
+&emsp;&emsp;这个简单的测试可以只启动一个NebulaInterface即可完成，也可以启动分布式服务完成。NebulaBootstrap提供基于集群和单个Server的HelloWorld，基于集群的HelloWorld启动了NebulaBeacon、NebulaInterface、NebulaLogic三个server。下面是一张集群架构图：
 
 ![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/blob/master/image/nebula_cluster.png?raw=true)
 
@@ -104,12 +108,14 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 
 <a name="TODO"></a>
 ## 开发任务
-   - NebulaBeacon增加节点状态信息查询，注册中心主从仲裁
    - NebulaMydis数据代理服务
    - 应用Nebula开发IM项目
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v0.6
+   - NebulaBeacon增加节点状态信息查询，注册中心主从仲裁
+   - NebulaInterface提供HelloWorld示例。
 #### v0.5
    - 增加worker进程意外终止并被Manager重新拉起时的节点信息下发
    - 增加ipv6支持
