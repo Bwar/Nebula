@@ -130,9 +130,9 @@ bool Actor::SendTo(const std::string& strHost, int iPort)
     return(m_pWorker->SendTo(strHost, iPort, this));
 }
 
-bool Actor::SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendPolling(strNodeType, iCmd, uiSeq, oMsgBody, this));
+    return(m_pWorker->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)

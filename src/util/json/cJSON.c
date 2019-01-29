@@ -32,6 +32,12 @@
 #include <ctype.h>
 #include "cJSON.h"
 
+#ifndef INT_MAX
+#define INT_MAX 2147483647
+#define INT_MIN (-INT_MAX - 1)
+#define UINT_MAX   4294967295U
+#endif
+
 static const char *ep;
 
 const char *cJSON_GetErrorPtr()
@@ -183,7 +189,7 @@ static char *print_int(cJSON *item)
     {
         if (item->sign == -1)
         {
-            if (item->valueint <= (int64)INT_MAX && item->valueint >= (int64)INT_MIN)
+            if ((int64)item->valueint <= (int64)INT_MAX && (int64)item->valueint >= (int64)INT_MIN)
             {
                 sprintf(str, "%d", (int32)item->valueint);
             }

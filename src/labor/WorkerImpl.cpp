@@ -1099,7 +1099,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
     }
 }
 
-bool WorkerImpl::SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
@@ -1165,7 +1165,7 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, int32 iCmd, uint32
         }
         else
         {
-            return(SendPolling(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
+            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
         }
     }
     else

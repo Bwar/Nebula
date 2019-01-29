@@ -127,7 +127,7 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 <a name="ChangeLog"></a>
 ## Change log 
 #### v0.6
-   - NebulaBeacon adds node status information query, registration center leader-fllower arbitration.
+   - NebulaBeacon adds node status information query, registration center leader-fllower election.
    - NebulaInterface adds hello demo.
 #### v0.5
    - add node info to worker the worker process terminated unexpectedly and restarted by the Manager.

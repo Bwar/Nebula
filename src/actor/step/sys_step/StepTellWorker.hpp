@@ -37,7 +37,7 @@ public:
     virtual E_CMD_STATUS Timeout();
 
 private:
-    std::shared_ptr<SocketChannel> m_pUpstreamChannel;
+    std::shared_ptr<SocketChannel> m_pChannel;
 };
 
 } /* namespace neb */

@@ -561,7 +561,7 @@ bool Manager::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, c
     }
 }
 
-bool Manager::SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Manager::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
@@ -620,7 +620,7 @@ bool Manager::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 ui
         }
         else
         {
-            return(SendPolling(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
+            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
         }
     }
     else

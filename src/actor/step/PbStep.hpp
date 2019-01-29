@@ -21,10 +21,6 @@ class PbStep: public Step
 {
 public:
     PbStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
-    PbStep(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq,
-                    std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
-    PbStep(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oReqMsgBody,
-                    std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     PbStep(const PbStep&) = delete;
     PbStep& operator=(const PbStep&) = delete;
     virtual ~PbStep();
@@ -44,12 +40,6 @@ public:
             const MsgHead& oMsgHead,
             const MsgBody& oMsgBody,
             void* data = NULL) = 0;
-
-protected:  // 请求端的上下文信息，通过Step构造函数初始化，若调用的是不带参数的构造函数Step()，则这几个成员不会被初始化
-    std::shared_ptr<SocketChannel> m_pChannel;
-    int32 m_iReqCmd;
-    uint32 m_uiReqSeq;
-    MsgBody m_oReqMsgBody;
 
 private:
     friend class WorkerImpl;

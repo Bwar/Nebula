@@ -13,7 +13,7 @@ namespace neb
 {
 
 StepTellWorker::StepTellWorker(std::shared_ptr<SocketChannel> pChannel)
-    : m_pUpstreamChannel(pChannel)
+    : m_pChannel(pChannel)
 {
 }
 
@@ -33,7 +33,7 @@ E_CMD_STATUS StepTellWorker::Emit(
     oOutMsgBody.mutable_rsp_result()->set_code(0);
     oOutMsgBody.mutable_rsp_result()->set_msg("OK");
     oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
-    Step::SendTo(m_pUpstreamChannel, CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
+    Step::SendTo(m_pChannel, CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
     return(CMD_STATUS_RUNNING);
 }
 

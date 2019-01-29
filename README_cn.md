@@ -114,7 +114,7 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 <a name="ChangeLog"></a>
 ## 版本历史
 #### v0.6
-   - NebulaBeacon增加节点状态信息查询，注册中心主从仲裁
+   - NebulaBeacon增加节点状态信息查询，注册中心主从高可用选举
    - NebulaInterface提供HelloWorld示例。
 #### v0.5
    - 增加worker进程意外终止并被Manager重新拉起时的节点信息下发

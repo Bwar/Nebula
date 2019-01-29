@@ -48,7 +48,7 @@ public:
      * @return 是否处理成功
      */
     virtual bool AnyMessage(
-                    std::shared_ptr<SocketChannel> pUpstreamChannel,
+                    std::shared_ptr<SocketChannel> pChannel,
                     const HttpMsg& oHttpMsg) = 0;
 
 protected:

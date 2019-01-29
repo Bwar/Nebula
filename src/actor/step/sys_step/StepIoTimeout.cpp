@@ -14,7 +14,7 @@ namespace neb
 {
 
 StepIoTimeout::StepIoTimeout(std::shared_ptr<SocketChannel> pChannel)
-    : m_pUpstreamChannel(pChannel)
+    : m_pChannel(pChannel)
 {
 }
 
@@ -26,7 +26,7 @@ E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
         void* data)
 {
     MsgBody oOutMsgBody;
-    if (SendTo(m_pUpstreamChannel, CMD_REQ_BEAT, GetSequence(), oOutMsgBody))
+    if (SendTo(m_pChannel, CMD_REQ_BEAT, GetSequence(), oOutMsgBody))
     {
         return(CMD_STATUS_RUNNING);
     }
@@ -45,7 +45,7 @@ E_CMD_STATUS StepIoTimeout::Callback(std::shared_ptr<SocketChannel> pChannel,
 
 E_CMD_STATUS StepIoTimeout::Timeout()
 {
-    GetWorkerImpl(this)->Disconnect(m_pUpstreamChannel);
+    GetWorkerImpl(this)->Disconnect(m_pChannel);
     return(CMD_STATUS_FAULT);
 }
 
