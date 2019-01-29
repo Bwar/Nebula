@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     Step.cpp
+ * @file     PbStep.cpp
  * @brief 
  * @author   Bwar
  * @date:    2016年8月12日
@@ -17,9 +17,15 @@ PbStep::PbStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
 {
 }
 
-PbStep::PbStep(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
+PbStep::PbStep(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
     : Step(Actor::ACT_PB_STEP, pNextStep, dTimeout),
-      m_pUpstreamChannel(pChannel), m_oReqMsgHead(oReqMsgHead), m_oReqMsgBody(oReqMsgBody)
+      m_pChannel(pChannel), m_iReqCmd(iCmd), m_uiReqSeq(uiSeq)
+{
+}
+
+PbStep::PbStep(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oReqMsgBody, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
+    : Step(Actor::ACT_PB_STEP, pNextStep, dTimeout),
+      m_pChannel(pChannel), m_iReqCmd(iCmd), m_uiReqSeq(uiSeq), m_oReqMsgBody(oReqMsgBody)
 {
 }
 

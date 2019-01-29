@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     Step.hpp
+ * @file     PbStep.hpp
  * @brief 
  * @author   Bwar
  * @date:    2016年8月12日
@@ -21,7 +21,9 @@ class PbStep: public Step
 {
 public:
     PbStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
-    PbStep(std::shared_ptr<SocketChannel> pUpstreamChannel, const MsgHead& oReqMsgHead, const MsgBody& oReqMsgBody,
+    PbStep(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq,
+                    std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    PbStep(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oReqMsgBody,
                     std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     PbStep(const PbStep&) = delete;
     PbStep& operator=(const PbStep&) = delete;
@@ -32,21 +34,21 @@ public:
      * @note 满足某个条件，比如监控某个文件描述符fd的EPOLLIN事件和EPOLLERR事件，当这个fd的
      * 这两类事件中的任意一类到达时则会调用Callback()。具体使用到哪几个参数与业务逻辑有关，前三个
      * 参数的使用概率高。
-     * @param stCtx 消息来源上下文，回调可通过消息外壳原路回复消息，若消息不是来源于网络IO，则
-     * 消息外壳为空
+     * @param pChannel 消息来源通信通道
      * @param oMsgHead 消息头
      * @param oMsgBody 消息体
-     * @param data 数据指针，基本网络IO时为空，有专用数据时使用，比如redis的reply。
+     * @param data 数据指针
      */
     virtual E_CMD_STATUS Callback(
-            std::shared_ptr<SocketChannel> pUpstreamChannel,
+            std::shared_ptr<SocketChannel> pChannel,
             const MsgHead& oMsgHead,
             const MsgBody& oMsgBody,
             void* data = NULL) = 0;
 
 protected:  // 请求端的上下文信息，通过Step构造函数初始化，若调用的是不带参数的构造函数Step()，则这几个成员不会被初始化
-    std::shared_ptr<SocketChannel> m_pUpstreamChannel;
-    MsgHead m_oReqMsgHead;
+    std::shared_ptr<SocketChannel> m_pChannel;
+    int32 m_iReqCmd;
+    uint32 m_uiReqSeq;
     MsgBody m_oReqMsgBody;
 
 private:
