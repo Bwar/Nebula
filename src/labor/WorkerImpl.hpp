@@ -205,6 +205,8 @@ public:     // about worker
 
 public:     // about channel
     virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
+
+    // SendTo() for nebula socket
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
@@ -212,14 +214,19 @@ public:     // about channel
     virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+
+    // SendTo() for http
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
+    virtual bool AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
+
+    // SendTo() for redis
     virtual bool SendTo(std::shared_ptr<RedisChannel> pRedisChannel, Actor* pSender);
     virtual bool SendTo(const std::string& strIdentify, Actor* pSender);
     virtual bool SendTo(const std::string& strHost, int iPort, Actor* pSender);
-    virtual bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool AutoRedisCmd(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep);
+
     virtual bool Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
     virtual bool Disconnect(const std::string& strIdentify, bool bChannelNotice = true);
     virtual bool DiscardNamedChannel(const std::string& strIdentify);

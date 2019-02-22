@@ -12,10 +12,9 @@
 namespace neb
 {
 
-RedisChannel::RedisChannel()
-    : bIsReady(false), m_pRedisCtx(NULL)
+RedisChannel::RedisChannel(redisAsyncContext *c)
+    : bIsReady(false), m_pRedisCtx(c)
 {
-    
 }
 
 RedisChannel::~RedisChannel()

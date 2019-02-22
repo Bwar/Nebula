@@ -19,7 +19,7 @@ namespace neb
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : m_eActorType(eActorType),
       m_ulSequence(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
-      m_pWorker(nullptr), m_pTimerWatcher(NULL)
+      m_pWorker(nullptr), m_pTimerWatcher(NULL), m_pContext(nullptr)
 {
 }
 
@@ -31,7 +31,8 @@ Actor::~Actor()
 
 uint32 Actor::GetSequence()
 {
-    if (0 == m_ulSequence)
+    if ((ACT_CMD == m_eActorType || ACT_MODULE == m_eActorType) // Cmd和Module总是获取最新Seq
+        || 0 == m_ulSequence)
     {
         if (nullptr != m_pWorker)
         {
@@ -88,6 +89,16 @@ std::shared_ptr<Session> Actor::GetSession(uint32 uiSessionId)
 std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId)
 {
     return(m_pWorker->GetSession(strSessionId));
+}
+
+std::shared_ptr<Context> Actor::GetContext()
+{
+    return(m_pContext);
+}
+
+void Actor::SetContext(std::shared_ptr<Context> pContext)
+{
+    m_pContext = pContext;
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel)

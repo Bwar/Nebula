@@ -1563,15 +1563,15 @@ bool WorkerImpl::AutoRedisCmd(const std::string& strHost, int iPort, std::shared
     redisAsyncContext *c = redisAsyncConnect(strHost.c_str(), iPort);
     if (c->err)
     {
-        /* Let *c leak for now... */
         LOG4_ERROR("error: %s", c->errstr);
+        redisAsyncFree(c);
         return(false);
     }
-    c->data = this;
+    c->data = m_pWorker;
     std::shared_ptr<RedisChannel> pRedisChannel = nullptr;
     try
     {
-        pRedisChannel = std::make_shared<RedisChannel>();
+        pRedisChannel = std::make_shared<RedisChannel>(c);
     }
     catch(std::bad_alloc& e)
     {

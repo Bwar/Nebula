@@ -43,6 +43,7 @@ class Cmd;
 class Module;
 class Session;
 class Timer;
+class Context;
 class Step;
 
 class Actor: public std::enable_shared_from_this<Actor>
@@ -84,6 +85,8 @@ protected:
 
     std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     std::shared_ptr<Session> GetSession(const std::string& strSessionId);
+    std::shared_ptr<Context> GetContext();
+    void SetContext(std::shared_ptr<Context> pContext);
 
 protected:
     /**
@@ -225,6 +228,7 @@ private:
     Worker* m_pWorker;
     ev_timer* m_pTimerWatcher;
     std::string m_strTraceId;       // for log trace
+    std::shared_ptr<Context> m_pContext;
 
     friend class WorkerImpl;
     friend class WorkerFriend;
