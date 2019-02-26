@@ -85,6 +85,7 @@ protected:
 
     std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     std::shared_ptr<Session> GetSession(const std::string& strSessionId);
+    bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
     std::shared_ptr<Context> GetContext();
     void SetContext(std::shared_ptr<Context> pContext);
 

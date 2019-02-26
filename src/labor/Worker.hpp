@@ -47,6 +47,7 @@ public:
     virtual uint32 GetSequence() const;
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
+    virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
 
     // 获取worker信息相关方法
     virtual uint32 GetNodeId() const;

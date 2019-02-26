@@ -1903,6 +1903,20 @@ std::shared_ptr<Session> WorkerImpl::GetSession(const std::string& strSessionId)
     }
 }
 
+bool WorkerImpl::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
+{
+    auto iter = m_mapCallbackStep.find(uiStepSeq);
+    if (iter == m_mapCallbackStep.end())
+    {
+        return(false);
+    }
+    else
+    {
+        iter->second->Emit(iErrno, strErrMsg, data);
+        return(true);
+    }
+}
+
 std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsClient, bool bWithSsl)
 {
     LOG4_DEBUG("iFd %d, codec_type %d, with_ssl = %d", iFd, eCodecType, bWithSsl);

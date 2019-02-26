@@ -49,6 +49,11 @@ std::shared_ptr<Session> Worker::GetSession(const std::string& strSessionId)
     return(m_pImpl->GetSession(strSessionId));
 }
 
+bool Worker::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
+{
+    return(m_pImpl->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
+}
+
 uint32 Worker::GetNodeId() const
 {
     return(m_pImpl->GetWorkerInfo().uiNodeId);

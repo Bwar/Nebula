@@ -29,4 +29,17 @@ StepModel::~StepModel()
     m_setPreStepSeq.clear();
 }
 
+void StepModel::NextStep(int iErrno, const std::string& strErrMsg, void* data)
+{
+    if (iErrno != ERR_OK)
+    {
+        return;
+    }
+
+    for (auto it = m_setNextStepSeq.begin(); it != m_setNextStepSeq.end(); ++it)
+    {
+        ExecStep(*it);
+    }
+}
+
 } /* namespace neb */

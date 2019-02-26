@@ -91,6 +91,11 @@ std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId)
     return(m_pWorker->GetSession(strSessionId));
 }
 
+bool Actor::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
+{
+    return(m_pWorker->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
+}
+
 std::shared_ptr<Context> Actor::GetContext()
 {
     return(m_pContext);
