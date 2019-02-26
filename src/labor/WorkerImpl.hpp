@@ -205,29 +205,40 @@ public:     // about worker
 
 public:     // about channel
     virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
+
+    // SendTo() for nebula socket
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
     virtual bool Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
+    virtual bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+
+    // SendTo() for http
     virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
+    virtual bool AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
+
+    // SendTo() for redis
     virtual bool SendTo(std::shared_ptr<RedisChannel> pRedisChannel, Actor* pSender);
     virtual bool SendTo(const std::string& strIdentify, Actor* pSender);
     virtual bool SendTo(const std::string& strHost, int iPort, Actor* pSender);
-    virtual bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual bool AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
     virtual bool AutoRedisCmd(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep);
+
     virtual bool Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
     virtual bool Disconnect(const std::string& strIdentify, bool bChannelNotice = true);
     virtual bool DiscardNamedChannel(const std::string& strIdentify);
     virtual bool SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType);
 
-public:     // about session
+public:     
+    // about session
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
+
+    // about step
+    virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
 
 public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worker自身的初始化和更新）
     virtual bool SetProcessName(const CJsonObject& oJsonConf);

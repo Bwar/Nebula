@@ -19,7 +19,7 @@ namespace neb
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : m_eActorType(eActorType),
       m_ulSequence(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
-      m_pWorker(nullptr), m_pTimerWatcher(NULL)
+      m_pWorker(nullptr), m_pTimerWatcher(NULL), m_pContext(nullptr)
 {
 }
 
@@ -31,7 +31,8 @@ Actor::~Actor()
 
 uint32 Actor::GetSequence()
 {
-    if (0 == m_ulSequence)
+    if ((ACT_CMD == m_eActorType || ACT_MODULE == m_eActorType) // Cmd和Module总是获取最新Seq
+        || 0 == m_ulSequence)
     {
         if (nullptr != m_pWorker)
         {
@@ -90,6 +91,21 @@ std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId)
     return(m_pWorker->GetSession(strSessionId));
 }
 
+bool Actor::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
+{
+    return(m_pWorker->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
+}
+
+std::shared_ptr<Context> Actor::GetContext()
+{
+    return(m_pContext);
+}
+
+void Actor::SetContext(std::shared_ptr<Context> pContext)
+{
+    m_pContext = pContext;
+}
+
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
     return(m_pWorker->SendTo(pChannel));
@@ -130,9 +146,9 @@ bool Actor::SendTo(const std::string& strHost, int iPort)
     return(m_pWorker->SendTo(strHost, iPort, this));
 }
 
-bool Actor::SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendPolling(strNodeType, iCmd, uiSeq, oMsgBody, this));
+    return(m_pWorker->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)

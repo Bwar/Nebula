@@ -49,6 +49,11 @@ std::shared_ptr<Session> Worker::GetSession(const std::string& strSessionId)
     return(m_pImpl->GetSession(strSessionId));
 }
 
+bool Worker::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
+{
+    return(m_pImpl->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
+}
+
 uint32 Worker::GetNodeId() const
 {
     return(m_pImpl->GetWorkerInfo().uiNodeId);
@@ -124,9 +129,9 @@ bool Worker::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, co
     return(m_pImpl->SendTo(strIdentify, iCmd, uiSeq, oMsgBody, pSender));
 }
 
-bool Worker::SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Worker::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
-    return(m_pImpl->SendPolling(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
+    return(m_pImpl->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
 }
 
 bool Worker::SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)

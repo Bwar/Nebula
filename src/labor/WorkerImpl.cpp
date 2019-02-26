@@ -1099,7 +1099,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
     }
 }
 
-bool WorkerImpl::SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool WorkerImpl::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
@@ -1165,7 +1165,7 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, int32 iCmd, uint32
         }
         else
         {
-            return(SendPolling(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
+            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
         }
     }
     else
@@ -1563,15 +1563,15 @@ bool WorkerImpl::AutoRedisCmd(const std::string& strHost, int iPort, std::shared
     redisAsyncContext *c = redisAsyncConnect(strHost.c_str(), iPort);
     if (c->err)
     {
-        /* Let *c leak for now... */
         LOG4_ERROR("error: %s", c->errstr);
+        redisAsyncFree(c);
         return(false);
     }
-    c->data = this;
+    c->data = m_pWorker;
     std::shared_ptr<RedisChannel> pRedisChannel = nullptr;
     try
     {
-        pRedisChannel = std::make_shared<RedisChannel>();
+        pRedisChannel = std::make_shared<RedisChannel>(c);
     }
     catch(std::bad_alloc& e)
     {
@@ -1900,6 +1900,20 @@ std::shared_ptr<Session> WorkerImpl::GetSession(const std::string& strSessionId)
     {
         id_iter->second->SetActiveTime(ev_now(m_loop));
         return(id_iter->second);
+    }
+}
+
+bool WorkerImpl::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
+{
+    auto iter = m_mapCallbackStep.find(uiStepSeq);
+    if (iter == m_mapCallbackStep.end())
+    {
+        return(false);
+    }
+    else
+    {
+        iter->second->Emit(iErrno, strErrMsg, data);
+        return(true);
     }
 }
 

@@ -26,7 +26,7 @@ class RedisStep;
 class RedisChannel: public Channel
 {
 public:
-    RedisChannel();
+    RedisChannel(redisAsyncContext *c);
     virtual ~RedisChannel();
 
     const std::string& GetIdentify()

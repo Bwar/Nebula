@@ -18,6 +18,8 @@ Nebula是一个C\+\+语言开发的事件驱动型的TCP协议网络框架，支
 
 Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建集群才能真正体现其价值。为了能快速搭建分布式服务集群，开发了包括各种类型服务的NebulaBootstrap集群解决方案。关于NebulaBootstrap的详细说明请参考[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)。
 
+Nebula从一个从2016年5月至今在生产环境稳定运行的IM底层框架Starship发展而来。Nebula跟Starship框架（也是Bwar一人独立开发）有20%左右的结构相似度，是基于Starship经验全新开发，可以认为Nebula(C++14)是Starship(C++03)的一个高级进化版本，具有Starship的所有优点，没有Starship的所有已发现的缺点，同时提供了更多高级功能。基于Nebula的第一个应用Nebio（埋点数据采集和实时分析项目）在2018年7月底上线并稳定运行，Bwar还准备开发基于Nebula的IM应用Nebim。
+
 <a name="License"></a>
 ## 许可证
 > Copyright（c）2018 Bwar
@@ -115,7 +117,7 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 <a name="ChangeLog"></a>
 ## 版本历史
 #### v0.6
-   - NebulaBeacon增加节点状态信息查询，注册中心主从仲裁
+   - NebulaBeacon增加节点状态信息查询，注册中心主从高可用选举
    - NebulaInterface提供HelloWorld示例。
 #### v0.5
    - 增加worker进程意外终止并被Manager重新拉起时的节点信息下发

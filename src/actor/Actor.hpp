@@ -43,6 +43,7 @@ class Cmd;
 class Module;
 class Session;
 class Timer;
+class Context;
 class Step;
 
 class Actor: public std::enable_shared_from_this<Actor>
@@ -84,6 +85,9 @@ protected:
 
     std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     std::shared_ptr<Session> GetSession(const std::string& strSessionId);
+    bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
+    std::shared_ptr<Context> GetContext();
+    void SetContext(std::shared_ptr<Context> pContext);
 
 protected:
     /**
@@ -175,7 +179,7 @@ protected:
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendPolling(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 以取模方式选择发送到同一类型节点
@@ -225,6 +229,7 @@ private:
     Worker* m_pWorker;
     ev_timer* m_pTimerWatcher;
     std::string m_strTraceId;       // for log trace
+    std::shared_ptr<Context> m_pContext;
 
     friend class WorkerImpl;
     friend class WorkerFriend;

@@ -22,7 +22,7 @@ public:
     CmdBeat(int32 iCmd);
     virtual ~CmdBeat();
     virtual bool AnyMessage(
-                    std::shared_ptr<SocketChannel> pUpstreamChannel,
+                    std::shared_ptr<SocketChannel> pChannel,
                     const MsgHead& oInMsgHead,
                     const MsgBody& oInMsgBody);
 };
