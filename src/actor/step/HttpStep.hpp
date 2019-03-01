@@ -20,7 +20,6 @@ class HttpStep: public Step
 {
 public:
     HttpStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
-    HttpStep(std::shared_ptr<SocketChannel> pChannel, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     HttpStep(const HttpStep&) = delete;
     HttpStep& operator=(const HttpStep&) = delete;
     virtual ~HttpStep();
@@ -35,8 +34,6 @@ public:
 
 protected:
     bool HttpRequest(const HttpMsg& oHttpMsg);
-
-    std::shared_ptr<SocketChannel> m_pChannel;
 };
 
 } /* namespace neb */

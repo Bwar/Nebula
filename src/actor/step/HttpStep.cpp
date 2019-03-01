@@ -18,12 +18,6 @@ HttpStep::HttpStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
 {
 }
 
-HttpStep::HttpStep(std::shared_ptr<SocketChannel> pChannel, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
-    : Step(ACT_HTTP_STEP, pNextStep, dTimeout),
-      m_pChannel(pChannel)
-{
-}
-
 HttpStep::~HttpStep()
 {
 }
