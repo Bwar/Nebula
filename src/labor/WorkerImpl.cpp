@@ -1873,6 +1873,18 @@ bool WorkerImpl::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp
     }
 }
 
+bool WorkerImpl::SetWorkerConf(const CJsonObject& oJsonConf)
+{
+    m_oWorkerConf = oJsonConf;
+    return(true);
+}
+
+bool WorkerImpl::SetCustomConf(const CJsonObject& oJsonConf)
+{
+    m_oCustomConf = oJsonConf;
+    return(m_oWorkerConf.Replace("custom", oJsonConf));
+}
+
 std::shared_ptr<Session> WorkerImpl::GetSession(uint32 uiSessionId)
 {
     std::ostringstream oss;
