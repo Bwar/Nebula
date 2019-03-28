@@ -48,6 +48,7 @@ extern "C" {
 #include <unordered_set>
 #include <list>
 #include <sstream>
+#include <fstream>
 
 #include "pb/msg.pb.h"
 #include "pb/http.pb.h"
@@ -260,6 +261,7 @@ public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worke
         return(m_oWorkerConf);
     }
     bool SetCustomConf(const CJsonObject& oJsonConf);
+    bool ReloadCmdConf();
 
 protected:
     bool Init(CJsonObject& oJsonConf);

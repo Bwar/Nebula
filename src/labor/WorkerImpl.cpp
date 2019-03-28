@@ -864,6 +864,9 @@ void WorkerImpl::LoadSysCmd()
     MakeSharedCmd(nullptr, "neb::CmdUpdateNodeId", (int)CMD_REQ_REFRESH_NODE_ID);
     MakeSharedCmd(nullptr, "neb::CmdNodeNotice", (int)CMD_REQ_NODE_NOTICE);
     MakeSharedCmd(nullptr, "neb::CmdBeat", (int)CMD_REQ_BEAT);
+    MakeSharedCmd(nullptr, "neb::CmdSetServerConf", (int)CMD_REQ_SET_SERVER_CONFIG);
+    MakeSharedCmd(nullptr, "neb::CmdSetServerCustomConf", (int)CMD_REQ_SET_SERVER_CUSTOM_CONFIG);
+    MakeSharedCmd(nullptr, "neb::CmdReloadCustomConf", (int)CMD_REQ_RELOAD_CUSTOM_CONFIG);
 #if __cplusplus >= 201401L
     m_pSessionNode = std::make_unique<SessionNode>();
 #else
@@ -1883,6 +1886,19 @@ bool WorkerImpl::SetCustomConf(const CJsonObject& oJsonConf)
 {
     m_oCustomConf = oJsonConf;
     return(m_oWorkerConf.Replace("custom", oJsonConf));
+}
+
+bool WorkerImpl::ReloadCmdConf()
+{
+    for (auto cmd_iter = m_mapCmd.begin(); cmd_iter != m_mapCmd.end(); ++cmd_iter)
+    {
+        cmd_iter->second->Init();
+    }
+    for (auto module_iter = m_mapModule.begin(); module_iter != m_mapModule.end(); ++module_iter)
+    {
+        module_iter->second->Init();
+    }
+    return(true);
 }
 
 std::shared_ptr<Session> WorkerImpl::GetSession(uint32 uiSessionId)

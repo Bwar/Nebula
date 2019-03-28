@@ -1896,94 +1896,60 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
     LOG4_DEBUG("cmd %u, seq %u", oInMsgHead.cmd(), oInMsgHead.seq());
     if (gc_uiCmdReq & oInMsgHead.cmd())    // 新请求，直接转发给Worker，并回复beacon已收到请求
     {
-        if (CMD_REQ_BEAT == oInMsgHead.cmd())   // beacon发过来的心跳包
-        {
-            MsgBody oOutMsgBody = oInMsgBody;
-            E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
-            if (CODEC_STATUS_OK == eCodecStatus)
-            {
-                RemoveIoWriteEvent(pChannel);
-            }
-            else if (CODEC_STATUS_PAUSE == eCodecStatus)
-            {
-                AddIoWriteEvent(pChannel);
-            }
-            else
-            {
-                DiscardSocketChannel(pChannel);
-                return(false);
-            }
-            return(true);
-        }
-        else if (CMD_REQ_TELL_WORKER == oInMsgHead.cmd()) 
-        {
-            MsgBody oOutMsgBody;
-            TargetWorker oInTargetWorker;
-            TargetWorker oOutTargetWorker;
-            if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
-            {
-                LOG4_DEBUG("AddNodeIdentify(%s, %s)!", oInTargetWorker.node_type().c_str(),
-                                oInTargetWorker.worker_identify().c_str());
-                AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
-                AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
-                oOutTargetWorker.set_worker_identify(GetNodeIdentify());
-                oOutTargetWorker.set_node_type(m_stManagerInfo.strNodeType);
-                oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
-                oOutMsgBody.mutable_rsp_result()->set_msg("OK");
-            }
-            else
-            {
-                oOutTargetWorker.set_worker_identify("unknow");
-                oOutTargetWorker.set_node_type(m_stManagerInfo.strNodeType);
-                oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
-                oOutMsgBody.mutable_rsp_result()->set_msg("WorkerLoad ParseFromString error!");
-                LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
-            }
-            oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
-
-            E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(CMD_RSP_TELL_WORKER, oInMsgHead.seq(), oOutMsgBody);
-            if (CODEC_STATUS_OK == eCodecStatus)
-            {
-                eCodecStatus = pChannel->m_pImpl->Send();
-            }
-            if (CODEC_STATUS_OK == eCodecStatus)
-            {
-                RemoveIoWriteEvent(pChannel);
-            }
-            else if (CODEC_STATUS_PAUSE == eCodecStatus)
-            {
-                AddIoWriteEvent(pChannel);
-            }
-            else
-            {
-                DiscardSocketChannel(pChannel);
-                return(false);
-            }
-            return(true);
-        }
-        SendToWorker(oInMsgHead.cmd(), oInMsgHead.seq(), oInMsgBody);
-        if (oInMsgHead.cmd() == CMD_REQ_NODE_NOTICE)
-        {
-            OnNodeNotify(oInMsgBody);
-        }
         MsgBody oOutMsgBody;
-        oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
-        oOutMsgBody.mutable_rsp_result()->set_msg("OK");
+        switch (oInMsgHead.cmd())
+        {
+            case CMD_REQ_BEAT:
+                OnBeat(oInMsgBody, oOutMsgBody);
+                break;
+            case CMD_REQ_TELL_WORKER:
+                OnTellWorker(pChannel, oInMsgBody, oOutMsgBody);
+                break;
+            case CMD_REQ_NODE_NOTICE:
+                OnNodeNotify(oInMsgBody, oOutMsgBody);
+                break;
+            case CMD_REQ_SET_SERVER_CONFIG:
+                OnSetServerConf(oInMsgBody, oOutMsgBody);
+                break;
+            case CMD_REQ_GET_SERVER_CONFIG:
+                OnGetServerConf(oInMsgBody, oOutMsgBody);
+                break;
+            case CMD_REQ_SET_SERVER_CUSTOM_CONFIG:
+                OnSetServerCustomConf(oInMsgBody, oOutMsgBody);
+                break;
+            case CMD_REQ_GET_SERVER_CUSTOM_CONFIG:
+                OnGetServerCustomConf(oInMsgBody, oOutMsgBody);
+                break;
+            case CMD_REQ_SET_CUSTOM_CONFIG:
+                OnSetCustomConf(oInMsgBody, oOutMsgBody);
+                break;
+            case CMD_REQ_GET_CUSTOM_CONFIG:
+                OnGetCustomConf(oInMsgBody, oOutMsgBody);
+                break;
+            case CMD_REQ_RELOAD_CUSTOM_CONFIG:
+                OnReloadCustomConf(oInMsgBody, oOutMsgBody);
+                break;
+            default:
+                oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
+                oOutMsgBody.mutable_rsp_result()->set_msg("unknow cmd!");
+        }
+
         E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
         if (CODEC_STATUS_OK == eCodecStatus)
         {
             RemoveIoWriteEvent(pChannel);
+            return(true);
         }
         else if (CODEC_STATUS_PAUSE == eCodecStatus)
         {
             AddIoWriteEvent(pChannel);
+            return(true);
         }
         else
         {
             DiscardSocketChannel(pChannel);
             return(false);
         }
-        return(true);
     }
     else    // 回调
     {
@@ -2051,14 +2017,49 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
     return(true);
 }
 
-bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
+bool Manager::OnBeat(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+{
+    oOutMsgBody = oInMsgBody;
+    return(true);
+}
+
+bool Manager::OnTellWorker(std::shared_ptr<SocketChannel> pChannel, const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+{
+    TargetWorker oInTargetWorker;
+    TargetWorker oOutTargetWorker;
+    if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
+    {
+        LOG4_DEBUG("AddNodeIdentify(%s, %s)!", oInTargetWorker.node_type().c_str(),
+                 oInTargetWorker.worker_identify().c_str());
+        AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
+        AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
+        oOutTargetWorker.set_worker_identify(GetNodeIdentify());
+        oOutTargetWorker.set_node_type(m_stManagerInfo.strNodeType);
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+        oOutMsgBody.mutable_rsp_result()->set_msg("OK");
+        oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
+        return(true);
+    }
+    else
+    {
+        LOG4_ERROR("error %d: WorkerLoad ParseFromString error!", ERR_PARASE_PROTOBUF);
+        oOutTargetWorker.set_worker_identify("unknow");
+        oOutTargetWorker.set_node_type(m_stManagerInfo.strNodeType);
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
+        oOutMsgBody.mutable_rsp_result()->set_msg("WorkerLoad ParseFromString error!");
+        return(false);
+    }
+}
+
+bool Manager::OnNodeNotify(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
 {
     CJsonObject oJson;
-    if (!oJson.Parse(oMsgBody.data()))
+    if (!oJson.Parse(oInMsgBody.data()))
     {
         LOG4_ERROR("failed to parse msgbody content!");
         return(false);
     }
+    SendToWorker(CMD_REQ_NODE_NOTICE, GetSequence(), oInMsgBody);
     std::ostringstream oss;
     std::string strIdentify;
     std::string strNodeType;
@@ -2127,6 +2128,206 @@ bool Manager::OnNodeNotify(const MsgBody& oMsgBody)
             }
         }
     }
+    return(true);
+}
+
+bool Manager::OnSetServerConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+{
+    ConfigInfo oConfigInfo;
+    if (oConfigInfo.ParseFromString(oInMsgBody.data()))
+    {
+        CJsonObject oJsonData;
+        if (oJsonData.Parse(oConfigInfo.file_content()))
+        {
+            // some data can not be set by beacon.
+            oJsonData.Replace("node_type", m_oCurrentConf("node_type"));
+            oJsonData.Replace("access_host", m_oCurrentConf("access_host"));
+            oJsonData.Replace("access_port", m_oCurrentConf("access_port"));
+            oJsonData.Replace("access_codec", m_oCurrentConf("access_codec"));
+            oJsonData.Replace("host", m_oCurrentConf("host"));
+            oJsonData.Replace("port", m_oCurrentConf("port"));
+            oJsonData.Replace("server_name", m_oCurrentConf("server_name"));
+            oJsonData.Replace("process_num", m_oCurrentConf("process_num"));
+            std::ofstream fout(m_stManagerInfo.strConfFile.c_str());
+            if (fout.good())
+            {
+                std::string strNewConfData = oJsonData.ToFormattedString();
+                fout.write(strNewConfData.c_str(), strNewConfData.size());
+                fout.close();
+                oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+                oOutMsgBody.mutable_rsp_result()->set_msg("success");
+                SendToWorker(CMD_REQ_SET_SERVER_CONFIG, GetSequence(), oInMsgBody);
+                return(true);
+            }
+            return(false);
+        }
+        else
+        {
+            oOutMsgBody.mutable_rsp_result()->set_code(ERR_BODY_JSON);
+            oOutMsgBody.mutable_rsp_result()->set_msg("the server config must be in json format!");
+            return(false);
+        }
+    }
+    else
+    {
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
+        oOutMsgBody.mutable_rsp_result()->set_msg("ConfigInfo.ParseFromString() failed.");
+        return(false);
+    }
+}
+
+bool Manager::OnGetServerConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+{
+    ConfigInfo oConfigInfo;
+    oConfigInfo.set_file_name(m_stManagerInfo.strConfFile);
+    oConfigInfo.set_file_content(m_oCurrentConf.ToString());
+    oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
+    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+    oOutMsgBody.mutable_rsp_result()->set_msg("success");
+    return(true);
+}
+
+bool Manager::OnSetServerCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+{
+    ConfigInfo oConfigInfo;
+    if (oConfigInfo.ParseFromString(oInMsgBody.data()))
+    {
+        CJsonObject oJsonData;
+        if (oJsonData.Parse(oConfigInfo.file_content()))
+        {
+            m_oCurrentConf.Replace("custom", oJsonData);
+            std::ofstream fout(m_stManagerInfo.strConfFile.c_str());
+            if (fout.good())
+            {
+                std::string strNewConfData = m_oCurrentConf.ToFormattedString();
+                fout.write(strNewConfData.c_str(), strNewConfData.size());
+                fout.close();
+                oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+                oOutMsgBody.mutable_rsp_result()->set_msg("success");
+                SendToWorker(CMD_REQ_SET_SERVER_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
+                return(true);
+            }
+            return(false);
+        }
+        else
+        {
+            oOutMsgBody.mutable_rsp_result()->set_code(ERR_BODY_JSON);
+            oOutMsgBody.mutable_rsp_result()->set_msg("the server custom config must be in json format!");
+            return(false);
+        }
+    }
+    else
+    {
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
+        oOutMsgBody.mutable_rsp_result()->set_msg("ConfigInfo.ParseFromString() failed.");
+        return(false);
+    }
+}
+
+bool Manager::OnGetServerCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+{
+    ConfigInfo oConfigInfo;
+    oConfigInfo.set_file_name(m_stManagerInfo.strConfFile);
+    oConfigInfo.set_file_content(m_oCurrentConf["custom"].ToString());
+    oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
+    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+    oOutMsgBody.mutable_rsp_result()->set_msg("success");
+    return(true);
+}
+
+bool Manager::OnSetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+{
+    ConfigInfo oConfigInfo;
+    if (oConfigInfo.ParseFromString(oInMsgBody.data()))
+    {
+        std::stringstream ssConfFile;
+        if (oConfigInfo.file_path().size() > 0)
+        {
+            ssConfFile << m_stManagerInfo.strWorkPath
+                << "/conf/" << oConfigInfo.file_path()
+                << "/" << oConfigInfo.file_name();
+        }
+        else
+        {
+            ssConfFile << m_stManagerInfo.strWorkPath
+                << "/conf/" << oConfigInfo.file_name();
+        }
+
+        std::ofstream fout(ssConfFile.str().c_str());
+        if (fout.good())
+        {
+            fout.write(oConfigInfo.file_content().c_str(), oConfigInfo.file_content().size());
+            fout.close();
+            oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+            oOutMsgBody.mutable_rsp_result()->set_msg("success");
+            SendToWorker(CMD_REQ_SET_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
+            return(true);
+        }
+        else
+        {
+            oOutMsgBody.mutable_rsp_result()->set_code(ERR_FILE_NOT_EXIST);
+            oOutMsgBody.mutable_rsp_result()->set_msg("file \"" + ssConfFile.str() + "\" not exist!");
+            return(false);
+        }
+    }
+    else
+    {
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
+        oOutMsgBody.mutable_rsp_result()->set_msg("ConfigInfo.ParseFromString() failed.");
+        return(false);
+    }
+}
+
+bool Manager::OnGetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+{
+    ConfigInfo oConfigInfo;
+    if (oConfigInfo.ParseFromString(oInMsgBody.data()))
+    {
+        std::stringstream ssConfFile;
+        if (oConfigInfo.file_path().size() > 0)
+        {
+            ssConfFile << m_stManagerInfo.strWorkPath
+                << "/conf/" << oConfigInfo.file_path()
+                << "/" << oConfigInfo.file_name();
+        }
+        else
+        {
+            ssConfFile << m_stManagerInfo.strWorkPath
+                << "/conf/" << oConfigInfo.file_name();
+        }
+
+        std::ifstream fin(ssConfFile.str().c_str());
+        if (fin.good())
+        {
+            std::stringstream ssContent;
+            ssContent << fin.rdbuf();
+            oConfigInfo.set_file_content(ssContent.str());
+            oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
+            oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+            oOutMsgBody.mutable_rsp_result()->set_msg("success");
+            fin.close();
+            return(true);
+        }
+        else
+        {
+            oOutMsgBody.mutable_rsp_result()->set_code(ERR_FILE_NOT_EXIST);
+            oOutMsgBody.mutable_rsp_result()->set_msg("file \"" + ssConfFile.str() + "\" not exist!");
+            return(false);
+        }
+    }
+    else
+    {
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_PARASE_PROTOBUF);
+        oOutMsgBody.mutable_rsp_result()->set_msg("ConfigInfo.ParseFromString() failed.");
+        return(false);
+    }
+}
+
+bool Manager::OnReloadCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+{
+    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+    oOutMsgBody.mutable_rsp_result()->set_msg("success");
+    SendToWorker(CMD_REQ_RELOAD_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
     return(true);
 }
 

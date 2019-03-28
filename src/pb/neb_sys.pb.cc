@@ -48,9 +48,10 @@ void protobuf_AssignDesc_neb_5fsys_2eproto() {
       "neb_sys.proto");
   GOOGLE_CHECK(file != NULL);
   ConfigInfo_descriptor_ = file->message_type(0);
-  static const int ConfigInfo_offsets_[2] = {
+  static const int ConfigInfo_offsets_[3] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigInfo, file_name_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigInfo, file_content_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ConfigInfo, file_path_),
   };
   ConfigInfo_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -181,17 +182,18 @@ void protobuf_AddDesc_neb_5fsys_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\rneb_sys.proto\022\003neb\"5\n\nConfigInfo\022\021\n\tfi"
-    "le_name\030\001 \001(\t\022\024\n\014file_content\030\002 \001(\t\"\'\n\nW"
-    "orkerLoad\022\013\n\003pid\030\001 \001(\005\022\014\n\004load\030\002 \001(\005\":\n\014"
-    "TargetWorker\022\027\n\017worker_identify\030\001 \001(\t\022\021\n"
-    "\tnode_type\030\002 \001(\t\"4\n\010LogLevel\022\021\n\tlog_leve"
-    "l\030\001 \001(\005\022\025\n\rnet_log_level\030\002 \001(\005\"\265\001\n\010Trace"
-    "Log\022\020\n\010log_time\030\001 \001(\t\022\021\n\tnode_type\030\002 \001(\t"
-    "\022\025\n\rnode_identify\030\003 \001(\t\022\021\n\tlog_level\030\004 \001"
-    "(\t\022\026\n\016code_file_name\030\005 \001(\t\022\026\n\016code_file_"
-    "line\030\006 \001(\r\022\025\n\rcode_function\030\007 \001(\t\022\023\n\013log"
-    "_content\030\010 \001(\014b\006proto3", 422);
+    "\n\rneb_sys.proto\022\003neb\"H\n\nConfigInfo\022\021\n\tfi"
+    "le_name\030\001 \001(\t\022\024\n\014file_content\030\002 \001(\t\022\021\n\tf"
+    "ile_path\030\003 \001(\t\"\'\n\nWorkerLoad\022\013\n\003pid\030\001 \001("
+    "\005\022\014\n\004load\030\002 \001(\005\":\n\014TargetWorker\022\027\n\017worke"
+    "r_identify\030\001 \001(\t\022\021\n\tnode_type\030\002 \001(\t\"4\n\010L"
+    "ogLevel\022\021\n\tlog_level\030\001 \001(\005\022\025\n\rnet_log_le"
+    "vel\030\002 \001(\005\"\265\001\n\010TraceLog\022\020\n\010log_time\030\001 \001(\t"
+    "\022\021\n\tnode_type\030\002 \001(\t\022\025\n\rnode_identify\030\003 \001"
+    "(\t\022\021\n\tlog_level\030\004 \001(\t\022\026\n\016code_file_name\030"
+    "\005 \001(\t\022\026\n\016code_file_line\030\006 \001(\r\022\025\n\rcode_fu"
+    "nction\030\007 \001(\t\022\023\n\013log_content\030\010 \001(\014b\006proto"
+    "3", 441);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "neb_sys.proto", &protobuf_RegisterTypes);
   ConfigInfo::default_instance_ = new ConfigInfo();
@@ -219,6 +221,7 @@ struct StaticDescriptorInitializer_neb_5fsys_2eproto {
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ConfigInfo::kFileNameFieldNumber;
 const int ConfigInfo::kFileContentFieldNumber;
+const int ConfigInfo::kFilePathFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ConfigInfo::ConfigInfo()
@@ -245,6 +248,7 @@ void ConfigInfo::SharedCtor() {
   _cached_size_ = 0;
   file_name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   file_content_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  file_path_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 ConfigInfo::~ConfigInfo() {
@@ -255,6 +259,7 @@ ConfigInfo::~ConfigInfo() {
 void ConfigInfo::SharedDtor() {
   file_name_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   file_content_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  file_path_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
   }
 }
@@ -288,6 +293,7 @@ void ConfigInfo::Clear() {
 // @@protoc_insertion_point(message_clear_start:neb.ConfigInfo)
   file_name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   file_content_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  file_path_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 
 bool ConfigInfo::MergePartialFromCodedStream(
@@ -326,6 +332,23 @@ bool ConfigInfo::MergePartialFromCodedStream(
             this->file_content().data(), this->file_content().length(),
             ::google::protobuf::internal::WireFormatLite::PARSE,
             "neb.ConfigInfo.file_content"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_file_path;
+        break;
+      }
+
+      // optional string file_path = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_file_path:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_file_path()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->file_path().data(), this->file_path().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "neb.ConfigInfo.file_path"));
         } else {
           goto handle_unusual;
         }
@@ -377,6 +400,16 @@ void ConfigInfo::SerializeWithCachedSizes(
       2, this->file_content(), output);
   }
 
+  // optional string file_path = 3;
+  if (this->file_path().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->file_path().data(), this->file_path().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.ConfigInfo.file_path");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      3, this->file_path(), output);
+  }
+
   // @@protoc_insertion_point(serialize_end:neb.ConfigInfo)
 }
 
@@ -405,6 +438,17 @@ void ConfigInfo::SerializeWithCachedSizes(
         2, this->file_content(), target);
   }
 
+  // optional string file_path = 3;
+  if (this->file_path().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->file_path().data(), this->file_path().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.ConfigInfo.file_path");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        3, this->file_path(), target);
+  }
+
   // @@protoc_insertion_point(serialize_to_array_end:neb.ConfigInfo)
   return target;
 }
@@ -425,6 +469,13 @@ int ConfigInfo::ByteSize() const {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->file_content());
+  }
+
+  // optional string file_path = 3;
+  if (this->file_path().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->file_path());
   }
 
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
@@ -463,6 +514,10 @@ void ConfigInfo::MergeFrom(const ConfigInfo& from) {
 
     file_content_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.file_content_);
   }
+  if (from.file_path().size() > 0) {
+
+    file_path_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.file_path_);
+  }
 }
 
 void ConfigInfo::CopyFrom(const ::google::protobuf::Message& from) {
@@ -491,6 +546,7 @@ void ConfigInfo::Swap(ConfigInfo* other) {
 void ConfigInfo::InternalSwap(ConfigInfo* other) {
   file_name_.Swap(&other->file_name_);
   file_content_.Swap(&other->file_content_);
+  file_path_.Swap(&other->file_path_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -592,6 +648,50 @@ void ConfigInfo::clear_file_content() {
   }
   file_content_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), file_content);
   // @@protoc_insertion_point(field_set_allocated:neb.ConfigInfo.file_content)
+}
+
+// optional string file_path = 3;
+void ConfigInfo::clear_file_path() {
+  file_path_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& ConfigInfo::file_path() const {
+  // @@protoc_insertion_point(field_get:neb.ConfigInfo.file_path)
+  return file_path_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void ConfigInfo::set_file_path(const ::std::string& value) {
+  
+  file_path_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.ConfigInfo.file_path)
+}
+ void ConfigInfo::set_file_path(const char* value) {
+  
+  file_path_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.ConfigInfo.file_path)
+}
+ void ConfigInfo::set_file_path(const char* value, size_t size) {
+  
+  file_path_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.ConfigInfo.file_path)
+}
+ ::std::string* ConfigInfo::mutable_file_path() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.ConfigInfo.file_path)
+  return file_path_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* ConfigInfo::release_file_path() {
+  // @@protoc_insertion_point(field_release:neb.ConfigInfo.file_path)
+  
+  return file_path_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void ConfigInfo::set_allocated_file_path(::std::string* file_path) {
+  if (file_path != NULL) {
+    
+  } else {
+    
+  }
+  file_path_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), file_path);
+  // @@protoc_insertion_point(field_set_allocated:neb.ConfigInfo.file_path)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

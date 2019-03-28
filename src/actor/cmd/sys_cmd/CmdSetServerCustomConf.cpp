@@ -1,27 +1,27 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     CmdSetServerConf.cpp
+ * @file     CmdSetServerCustomConf.cpp
  * @brief 
  * @author   Bwar
- * @date:    2019年3月24日
+ * @date:    2019年3月28日
  * @note
  * Modify history:
  ******************************************************************************/
-#include "actor/cmd/sys_cmd/CmdSetServerConf.hpp"
+#include "actor/cmd/sys_cmd/CmdSetServerCustomConf.hpp"
 
 namespace neb
 {
 
-CmdSetServerConf::CmdSetServerConf(int32 iCmd)
+CmdSetServerCustomConf::CmdSetServerCustomConf(int32 iCmd)
     : Cmd(iCmd)
 {
 }
 
-CmdSetServerConf::~CmdSetServerConf()
+CmdSetServerCustomConf::~CmdSetServerCustomConf()
 {
 }
 
-bool CmdSetServerConf::AnyMessage(
+bool CmdSetServerCustomConf::AnyMessage(
         std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
@@ -32,7 +32,7 @@ bool CmdSetServerConf::AnyMessage(
         CJsonObject oConf;
         if (oConf.Parse(oConfigInfo.file_content()))
         {
-            return(GetWorkerImpl(this)->SetWorkerConf(oConf));
+            return(GetWorkerImpl(this)->SetCustomConf(oConf));
         }
     }
     return(false);
