@@ -1,14 +1,14 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     CmdSetServerCustomConf.hpp
+ * @file     CmdSetNodeCustomConf.hpp
  * @brief 
  * @author   Bwar
  * @date:    2019年3月28日
  * @note
  * Modify history:
  ******************************************************************************/
-#ifndef SRC_ACTOR_CMD_SYS_CMD_CMDSETSERVERCUSTOMCONF_HPP_
-#define SRC_ACTOR_CMD_SYS_CMD_CMDSETSERVERCUSTOMCONF_HPP_
+#ifndef SRC_ACTOR_CMD_SYS_CMD_CMDSETNODECUSTOMCONF_HPP_
+#define SRC_ACTOR_CMD_SYS_CMD_CMDSETNODECUSTOMCONF_HPP_
 
 #include "actor/cmd/Cmd.hpp"
 #include "labor/WorkerFriend.hpp"
@@ -16,11 +16,11 @@
 namespace neb
 {
 
-class CmdSetServerCustomConf: public Cmd, public DynamicCreator<CmdSetServerCustomConf, int32>, public WorkerFriend
+class CmdSetNodeCustomConf: public Cmd, public DynamicCreator<CmdSetNodeCustomConf, int32>, public WorkerFriend
 {
 public:
-    CmdSetServerCustomConf(int32 iCmd);
-    virtual ~CmdSetServerCustomConf();
+    CmdSetNodeCustomConf(int32 iCmd);
+    virtual ~CmdSetNodeCustomConf();
     virtual bool AnyMessage(
                     std::shared_ptr<SocketChannel> pChannel,
                     const MsgHead& oInMsgHead,
@@ -29,4 +29,4 @@ public:
 
 } /* namespace neb */
 
-#endif /* SRC_ACTOR_CMD_SYS_CMD_CMDSETSERVERCUSTOMCONF_HPP_ */
+#endif /* SRC_ACTOR_CMD_SYS_CMD_CMDSETNODECUSTOMCONF_HPP_ */

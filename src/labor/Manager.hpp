@@ -290,10 +290,10 @@ protected:
     bool OnBeat(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
     bool OnTellWorker(std::shared_ptr<SocketChannel> pChannel, const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
     bool OnNodeNotify(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
-    bool OnSetServerConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
-    bool OnGetServerConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
-    bool OnSetServerCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
-    bool OnGetServerCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnSetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnGetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnSetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnGetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
     bool OnSetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
     bool OnGetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
     bool OnReloadCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);

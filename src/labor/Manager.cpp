@@ -1909,16 +1909,16 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
                 OnNodeNotify(oInMsgBody, oOutMsgBody);
                 break;
             case CMD_REQ_SET_SERVER_CONFIG:
-                OnSetServerConf(oInMsgBody, oOutMsgBody);
+                OnSetNodeConf(oInMsgBody, oOutMsgBody);
                 break;
             case CMD_REQ_GET_SERVER_CONFIG:
-                OnGetServerConf(oInMsgBody, oOutMsgBody);
+                OnGetNodeConf(oInMsgBody, oOutMsgBody);
                 break;
             case CMD_REQ_SET_SERVER_CUSTOM_CONFIG:
-                OnSetServerCustomConf(oInMsgBody, oOutMsgBody);
+                OnSetNodeCustomConf(oInMsgBody, oOutMsgBody);
                 break;
             case CMD_REQ_GET_SERVER_CUSTOM_CONFIG:
-                OnGetServerCustomConf(oInMsgBody, oOutMsgBody);
+                OnGetNodeCustomConf(oInMsgBody, oOutMsgBody);
                 break;
             case CMD_REQ_SET_CUSTOM_CONFIG:
                 OnSetCustomConf(oInMsgBody, oOutMsgBody);
@@ -2131,7 +2131,7 @@ bool Manager::OnNodeNotify(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
     return(true);
 }
 
-bool Manager::OnSetServerConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+bool Manager::OnSetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
 {
     ConfigInfo oConfigInfo;
     if (oConfigInfo.ParseFromString(oInMsgBody.data()))
@@ -2176,7 +2176,7 @@ bool Manager::OnSetServerConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
     }
 }
 
-bool Manager::OnGetServerConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+bool Manager::OnGetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
 {
     ConfigInfo oConfigInfo;
     oConfigInfo.set_file_name(m_stManagerInfo.strConfFile);
@@ -2187,7 +2187,7 @@ bool Manager::OnGetServerConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
     return(true);
 }
 
-bool Manager::OnSetServerCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+bool Manager::OnSetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
 {
     ConfigInfo oConfigInfo;
     if (oConfigInfo.ParseFromString(oInMsgBody.data()))
@@ -2224,7 +2224,7 @@ bool Manager::OnSetServerCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgB
     }
 }
 
-bool Manager::OnGetServerCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
+bool Manager::OnGetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
 {
     ConfigInfo oConfigInfo;
     oConfigInfo.set_file_name(m_stManagerInfo.strConfFile);

@@ -1,27 +1,27 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     CmdSetServerCustomConf.cpp
+ * @file     CmdSetNodeCustomConf.cpp
  * @brief 
  * @author   Bwar
  * @date:    2019年3月28日
  * @note
  * Modify history:
  ******************************************************************************/
-#include "actor/cmd/sys_cmd/CmdSetServerCustomConf.hpp"
+#include "actor/cmd/sys_cmd/CmdSetNodeCustomConf.hpp"
 
 namespace neb
 {
 
-CmdSetServerCustomConf::CmdSetServerCustomConf(int32 iCmd)
+CmdSetNodeCustomConf::CmdSetNodeCustomConf(int32 iCmd)
     : Cmd(iCmd)
 {
 }
 
-CmdSetServerCustomConf::~CmdSetServerCustomConf()
+CmdSetNodeCustomConf::~CmdSetNodeCustomConf()
 {
 }
 
-bool CmdSetServerCustomConf::AnyMessage(
+bool CmdSetNodeCustomConf::AnyMessage(
         std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
