@@ -42,6 +42,7 @@ enum E_ERROR_NO
     ERR_SSL_HANDSHAKE                   = 10018,    ///< 建立SSL连接错误
     ERR_SSL_SHUTDOWN                    = 10019,    ///< 关闭SSL连接错误
     ERR_FILE_NOT_EXIST                  = 10020,    ///< 文件不存在
+    ERR_CONNECTION                      = 10021,    ///< 连接错误
 
     /* 存储代理错误码段  11000~11999 */
     ERR_INCOMPLET_DATAPROXY_DATA        = 11001,    ///< DataProxy请求数据包不完整

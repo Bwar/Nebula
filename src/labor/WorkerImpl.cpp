@@ -864,8 +864,8 @@ void WorkerImpl::LoadSysCmd()
     MakeSharedCmd(nullptr, "neb::CmdUpdateNodeId", (int)CMD_REQ_REFRESH_NODE_ID);
     MakeSharedCmd(nullptr, "neb::CmdNodeNotice", (int)CMD_REQ_NODE_NOTICE);
     MakeSharedCmd(nullptr, "neb::CmdBeat", (int)CMD_REQ_BEAT);
-    MakeSharedCmd(nullptr, "neb::CmdSetNodeConf", (int)CMD_REQ_SET_SERVER_CONFIG);
-    MakeSharedCmd(nullptr, "neb::CmdSetNodeCustomConf", (int)CMD_REQ_SET_SERVER_CUSTOM_CONFIG);
+    MakeSharedCmd(nullptr, "neb::CmdSetNodeConf", (int)CMD_REQ_SET_NODE_CONFIG);
+    MakeSharedCmd(nullptr, "neb::CmdSetNodeCustomConf", (int)CMD_REQ_SET_NODE_CUSTOM_CONFIG);
     MakeSharedCmd(nullptr, "neb::CmdReloadCustomConf", (int)CMD_REQ_RELOAD_CUSTOM_CONFIG);
 #if __cplusplus >= 201401L
     m_pSessionNode = std::make_unique<SessionNode>();

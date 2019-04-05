@@ -1908,16 +1908,16 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
             case CMD_REQ_NODE_NOTICE:
                 OnNodeNotify(oInMsgBody, oOutMsgBody);
                 break;
-            case CMD_REQ_SET_SERVER_CONFIG:
+            case CMD_REQ_SET_NODE_CONFIG:
                 OnSetNodeConf(oInMsgBody, oOutMsgBody);
                 break;
-            case CMD_REQ_GET_SERVER_CONFIG:
+            case CMD_REQ_GET_NODE_CONFIG:
                 OnGetNodeConf(oInMsgBody, oOutMsgBody);
                 break;
-            case CMD_REQ_SET_SERVER_CUSTOM_CONFIG:
+            case CMD_REQ_SET_NODE_CUSTOM_CONFIG:
                 OnSetNodeCustomConf(oInMsgBody, oOutMsgBody);
                 break;
-            case CMD_REQ_GET_SERVER_CUSTOM_CONFIG:
+            case CMD_REQ_GET_NODE_CUSTOM_CONFIG:
                 OnGetNodeCustomConf(oInMsgBody, oOutMsgBody);
                 break;
             case CMD_REQ_SET_CUSTOM_CONFIG:
@@ -2156,7 +2156,7 @@ bool Manager::OnSetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
                 fout.close();
                 oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
                 oOutMsgBody.mutable_rsp_result()->set_msg("success");
-                SendToWorker(CMD_REQ_SET_SERVER_CONFIG, GetSequence(), oInMsgBody);
+                SendToWorker(CMD_REQ_SET_NODE_CONFIG, GetSequence(), oInMsgBody);
                 return(true);
             }
             return(false);
@@ -2204,7 +2204,7 @@ bool Manager::OnSetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBod
                 fout.close();
                 oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
                 oOutMsgBody.mutable_rsp_result()->set_msg("success");
-                SendToWorker(CMD_REQ_SET_SERVER_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
+                SendToWorker(CMD_REQ_SET_NODE_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
                 return(true);
             }
             return(false);

@@ -54,14 +54,14 @@ enum E_CMD
     CMD_REQ_LEADER_ELECTION             = 113,  ///< 分布式leader选举请求
     CMD_RSP_LEADER_ELECTION             = 114,  ///< 分布式leader选举响应（通过心跳结合优先权选举，无须响应）
 
-    CMD_REQ_SET_SERVER_CONFIG           = 201,  ///< 更新框架配置文件请求
-    CMD_RSP_SET_SERVER_CONFIG           = 202,  ///< 更新框架配置文件应答
-    CMD_REQ_GET_SERVER_CONFIG           = 203,  ///< 获取框架配置文件请求
-    CMD_RSP_GET_SERVER_CONFIG           = 204,  ///< 获取框架配置文件应答
-    CMD_REQ_SET_SERVER_CUSTOM_CONFIG    = 205,  ///< 更新框架配置文件中自定义部分配置请求
-    CMD_RSP_SET_SERVER_CUSTOM_CONFIG    = 206,  ///< 更新框架配置文件中自定义部分配置应答
-    CMD_REQ_GET_SERVER_CUSTOM_CONFIG    = 207,  ///< 获取框架配置文件中自定义部分配置请求
-    CMD_RSP_GET_SERVER_CUSTOM_CONFIG    = 208,  ///< 获取框架配置文件中自定义部分配置应答
+    CMD_REQ_SET_NODE_CONFIG             = 201,  ///< 更新框架配置文件请求
+    CMD_RSP_SET_NODE_CONFIG             = 202,  ///< 更新框架配置文件应答
+    CMD_REQ_GET_NODE_CONFIG             = 203,  ///< 获取框架配置文件请求
+    CMD_RSP_GET_NODE_CONFIG             = 204,  ///< 获取框架配置文件应答
+    CMD_REQ_SET_NODE_CUSTOM_CONFIG      = 205,  ///< 更新框架配置文件中自定义部分配置请求
+    CMD_RSP_SET_NODE_CUSTOM_CONFIG      = 206,  ///< 更新框架配置文件中自定义部分配置应答
+    CMD_REQ_GET_NODE_CUSTOM_CONFIG      = 207,  ///< 获取框架配置文件中自定义部分配置请求
+    CMD_RSP_GET_NODE_CUSTOM_CONFIG      = 208,  ///< 获取框架配置文件中自定义部分配置应答
     CMD_REQ_SET_CUSTOM_CONFIG           = 209,  ///< 更新自定义配置文件请求
     CMD_RSP_SET_CUSTOM_CONFIG           = 210,  ///< 更新自定义配置文件响应
     CMD_REQ_GET_CUSTOM_CONFIG           = 211,  ///< 获取自定义配置文件请求
