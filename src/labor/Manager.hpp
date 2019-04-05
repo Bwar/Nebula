@@ -287,7 +287,16 @@ protected:
     bool OnWorkerData(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnDataAndTransferFd(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
     bool OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oInMsgHead, const MsgBody& oInMsgBody);
-    bool OnNodeNotify(const MsgBody& oMsgBody);
+    bool OnBeat(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnTellWorker(std::shared_ptr<SocketChannel> pChannel, const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnNodeNotify(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnSetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnGetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnSetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnGetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnSetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnGetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
+    bool OnReloadCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
 
 private:
     mutable uint32 m_uiSequence;

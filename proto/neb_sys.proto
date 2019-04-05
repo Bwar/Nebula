@@ -4,12 +4,13 @@ package neb;
 
 /**
  * @brief 更新配置文件
- * @note 要更新的配置文件信息，对应系统命令字CMD_REQ_UPDATE_CONFIG_FILE
+ * @note 要更新的配置文件信息，接收来自Beacon的配置下发，更新指定配置文件内容
  */
 message ConfigInfo
 {
     string file_name      = 1;    ///< 配置文件名
     string file_content   = 2;    ///< 配置文件内容（所有配置文件内容均必须是标准JSON结构）
+    string file_path      = 3;    ///< 配置文件相对于${NEBULA_HOME}/conf的路径，默认为空，即配置文件存储于${NEBULA_HOME}/conf
 }
 
 /**

@@ -48,6 +48,7 @@ extern "C" {
 #include <unordered_set>
 #include <list>
 #include <sstream>
+#include <fstream>
 
 #include "pb/msg.pb.h"
 #include "pb/http.pb.h"
@@ -253,6 +254,14 @@ public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worke
     virtual void SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData);
 
     bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
+
+    bool SetWorkerConf(const CJsonObject& oJsonConf);
+    const CJsonObject& GetWorkerConf() const
+    {
+        return(m_oWorkerConf);
+    }
+    bool SetCustomConf(const CJsonObject& oJsonConf);
+    bool ReloadCmdConf();
 
 protected:
     bool Init(CJsonObject& oJsonConf);

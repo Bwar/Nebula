@@ -126,6 +126,17 @@ class ConfigInfo : public ::google::protobuf::Message /* @@protoc_insertion_poin
   ::std::string* release_file_content();
   void set_allocated_file_content(::std::string* file_content);
 
+  // optional string file_path = 3;
+  void clear_file_path();
+  static const int kFilePathFieldNumber = 3;
+  const ::std::string& file_path() const;
+  void set_file_path(const ::std::string& value);
+  void set_file_path(const char* value);
+  void set_file_path(const char* value, size_t size);
+  ::std::string* mutable_file_path();
+  ::std::string* release_file_path();
+  void set_allocated_file_path(::std::string* file_path);
+
   // @@protoc_insertion_point(class_scope:neb.ConfigInfo)
  private:
 
@@ -133,6 +144,7 @@ class ConfigInfo : public ::google::protobuf::Message /* @@protoc_insertion_poin
   bool _is_default_instance_;
   ::google::protobuf::internal::ArenaStringPtr file_name_;
   ::google::protobuf::internal::ArenaStringPtr file_content_;
+  ::google::protobuf::internal::ArenaStringPtr file_path_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_neb_5fsys_2eproto();
   friend void protobuf_AssignDesc_neb_5fsys_2eproto();
@@ -678,6 +690,50 @@ inline void ConfigInfo::set_allocated_file_content(::std::string* file_content) 
   }
   file_content_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), file_content);
   // @@protoc_insertion_point(field_set_allocated:neb.ConfigInfo.file_content)
+}
+
+// optional string file_path = 3;
+inline void ConfigInfo::clear_file_path() {
+  file_path_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& ConfigInfo::file_path() const {
+  // @@protoc_insertion_point(field_get:neb.ConfigInfo.file_path)
+  return file_path_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ConfigInfo::set_file_path(const ::std::string& value) {
+  
+  file_path_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.ConfigInfo.file_path)
+}
+inline void ConfigInfo::set_file_path(const char* value) {
+  
+  file_path_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.ConfigInfo.file_path)
+}
+inline void ConfigInfo::set_file_path(const char* value, size_t size) {
+  
+  file_path_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.ConfigInfo.file_path)
+}
+inline ::std::string* ConfigInfo::mutable_file_path() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.ConfigInfo.file_path)
+  return file_path_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ConfigInfo::release_file_path() {
+  // @@protoc_insertion_point(field_release:neb.ConfigInfo.file_path)
+  
+  return file_path_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ConfigInfo::set_allocated_file_path(::std::string* file_path) {
+  if (file_path != NULL) {
+    
+  } else {
+    
+  }
+  file_path_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), file_path);
+  // @@protoc_insertion_point(field_set_allocated:neb.ConfigInfo.file_path)
 }
 
 // -------------------------------------------------------------------
