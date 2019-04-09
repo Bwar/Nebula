@@ -296,7 +296,6 @@ protected:
     bool OnGetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
     bool OnSetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
     bool OnGetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
-    bool OnReloadCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody);
 
 private:
     mutable uint32 m_uiSequence;

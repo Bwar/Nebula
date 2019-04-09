@@ -1926,9 +1926,6 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
             case CMD_REQ_GET_CUSTOM_CONFIG:
                 OnGetCustomConf(oInMsgBody, oOutMsgBody);
                 break;
-            case CMD_REQ_RELOAD_CUSTOM_CONFIG:
-                OnReloadCustomConf(oInMsgBody, oOutMsgBody);
-                break;
             default:
                 oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
                 oOutMsgBody.mutable_rsp_result()->set_msg("unknow cmd!");
@@ -2180,7 +2177,7 @@ bool Manager::OnGetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
 {
     ConfigInfo oConfigInfo;
     oConfigInfo.set_file_name(m_stManagerInfo.strConfFile);
-    oConfigInfo.set_file_content(m_oCurrentConf.ToString());
+    oConfigInfo.set_file_content(m_oCurrentConf.ToFormattedString());
     oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
     oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
     oOutMsgBody.mutable_rsp_result()->set_msg("success");
@@ -2228,7 +2225,7 @@ bool Manager::OnGetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBod
 {
     ConfigInfo oConfigInfo;
     oConfigInfo.set_file_name(m_stManagerInfo.strConfFile);
-    oConfigInfo.set_file_content(m_oCurrentConf["custom"].ToString());
+    oConfigInfo.set_file_content(m_oCurrentConf["custom"].ToFormattedString());
     oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
     oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
     oOutMsgBody.mutable_rsp_result()->set_msg("success");
@@ -2261,6 +2258,7 @@ bool Manager::OnSetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
             oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
             oOutMsgBody.mutable_rsp_result()->set_msg("success");
             SendToWorker(CMD_REQ_SET_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
+            SendToWorker(CMD_REQ_RELOAD_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
             return(true);
         }
         else
@@ -2321,14 +2319,6 @@ bool Manager::OnGetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
         oOutMsgBody.mutable_rsp_result()->set_msg("ConfigInfo.ParseFromString() failed.");
         return(false);
     }
-}
-
-bool Manager::OnReloadCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
-{
-    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
-    oOutMsgBody.mutable_rsp_result()->set_msg("success");
-    SendToWorker(CMD_REQ_RELOAD_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
-    return(true);
 }
 
 } /* namespace neb */
