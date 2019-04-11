@@ -116,6 +116,8 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v0.7
+   - 添加配置管理，NebulaBeacon为配置中心，使用说明见命令行管理工具[Nebcli](https://github.com/Bwar/Nebcli)的get和set命令。
 #### v0.6
    - NebulaBeacon增加节点状态信息查询，注册中心主从高可用选举
    - NebulaInterface提供HelloWorld示例。

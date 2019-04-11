@@ -127,6 +127,8 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v0.7
+   - add configuration management(check [Nebcli](https://github.com/Bwar/Nebcli) for detail).
 #### v0.6
    - NebulaBeacon adds node status information query, registration center leader-fllower election.
    - NebulaInterface adds hello demo.
