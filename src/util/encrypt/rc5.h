@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Project:  loss
+* Project:  nebula
 * @file     rc5.h
 * @brief    rc5 Operations, Terminology and Notation
 * @author   lbh
