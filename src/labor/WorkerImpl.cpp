@@ -1876,6 +1876,11 @@ bool WorkerImpl::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp
     }
 }
 
+void WorkerImpl::AddAssemblyLine(std::shared_ptr<Session> pSession)
+{
+    m_setAssemblyLine.insert(pSession);
+}
+
 bool WorkerImpl::SetWorkerConf(const CJsonObject& oJsonConf)
 {
     m_oWorkerConf = oJsonConf;
@@ -2236,6 +2241,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
                     Remove(step_iter->second);
                 }
             }
+            ExecAssemblyLine(pChannel, oMsgHead, oMsgBody);
         }
         else
         {
@@ -2307,6 +2313,31 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
         }
     }
     return(true);
+}
+
+void WorkerImpl::ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+{
+    for (auto session_iter = m_setAssemblyLine.begin(); session_iter != m_setAssemblyLine.end(); ++session_iter)
+    {
+        uint32 uiStepSeq = 0;
+        do
+        {
+            uiStepSeq = (*session_iter)->PopWaitingStep();
+            auto step_iter = m_mapCallbackStep.find(uiStepSeq);
+            if (step_iter != m_mapCallbackStep.end())
+            {
+                E_CMD_STATUS eResult;
+                step_iter->second->SetActiveTime(ev_now(m_loop));
+                eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(pChannel, oMsgHead, oMsgBody);
+                if (CMD_STATUS_RUNNING != eResult)
+                {
+                    Remove(step_iter->second);
+                }
+            }
+        }
+        while(uiStepSeq > 0);
+    }
+    m_setAssemblyLine.clear();
 }
 
 } /* namespace neb */

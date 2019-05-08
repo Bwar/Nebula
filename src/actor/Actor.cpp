@@ -106,6 +106,11 @@ void Actor::SetContext(std::shared_ptr<Context> pContext)
     m_pContext = pContext;
 }
 
+void Actor::AddAssemblyLine(std::shared_ptr<Session> pSession)
+{
+    m_pWorker->AddAssemblyLine(pSession);
+}
+
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
     return(m_pWorker->SendTo(pChannel));

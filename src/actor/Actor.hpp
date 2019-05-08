@@ -88,6 +88,7 @@ protected:
     bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
     std::shared_ptr<Context> GetContext();
     void SetContext(std::shared_ptr<Context> pContext);
+    void AddAssemblyLine(std::shared_ptr<Session> pSession);
 
 protected:
     /**
@@ -123,8 +124,8 @@ protected:
 
     /**
      * @brief 发送数据
-     * @note 指定连接标识符将数据发送。此函数先查找与strIdentify匹配的stMsgShell，如果找到就调用
-     * SendTo(const tagMsgShell& stMsgShell, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+     * @note 指定连接标识符将数据发送。此函数先查找与strIdentify匹配的Channel，如果找到就调用
+     * SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
      * 发送，如果未找到则调用SendToWithAutoConnect(const std::string& strIdentify,
      * uint32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)连接后再发送。
      * @param strIdentify 连接标识符(IP:port.worker_index, e.g 192.168.11.12:3001.1)

@@ -28,8 +28,8 @@ public:
     /**
      * @brief 步骤回调函数
      * @note 满足某个条件，比如监控某个文件描述符fd的EPOLLIN事件和EPOLLERR事件，当这个fd的
-     * 这两类事件中的任意一类到达时则会调用Callback()。具体使用到哪几个参数与业务逻辑有关，前三个
-     * 参数的使用概率高。
+     * 这两类事件中的任意一类到达时则会调用Callback()。具体使用到哪几个参数与业务逻辑有关，第四个
+     * 参数一般不需要用到。
      * @param pChannel 消息来源通信通道
      * @param oMsgHead 消息头
      * @param oMsgBody 消息体

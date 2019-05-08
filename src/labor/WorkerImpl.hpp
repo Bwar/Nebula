@@ -254,6 +254,7 @@ public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worke
     virtual void SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData);
 
     bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
+    void AddAssemblyLine(std::shared_ptr<Session> pSession);
 
     bool SetWorkerConf(const CJsonObject& oJsonConf);
     const CJsonObject& GetWorkerConf() const
@@ -292,7 +293,7 @@ protected:
      * false则应退出解析数据包循环体。处理过程或处理完成后，如需回复对端，则直接使用pSendBuff
      * 回复数据即可。
      * </pre>
-     * @param[in] stMsgShell 数据包来源消息通道
+     * @param[in] pChannel 数据包来源消息通道
      * @param[in] oMsgHead 接收的数据包头
      * @param[in] oMsgBody 接收的数据包体
      * @return 是否正常处理
@@ -301,11 +302,13 @@ protected:
 
     /**
      * @brief 收到完整的hhtp包后处理
-     * @param stMsgShell 数据包来源消息通道
+     * @param pChannel 数据包来源消息通道
      * @param oHttpMsg 接收的HTTP包
      * @return 是否正常处理
      */
     bool Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
+
+    void ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
 
     void BootLoadCmd(CJsonObject& oCmdConf);
     void DynamicLoadCmd(CJsonObject& oCmdConf);
@@ -335,6 +338,7 @@ private:
     // Step and Session
     std::unordered_map<uint32, std::shared_ptr<Step> > m_mapCallbackStep;
     std::unordered_map<std::string, std::shared_ptr<Session> > m_mapCallbackSession;
+    std::unordered_set<std::shared_ptr<Session> > m_setAssemblyLine;   ///< 资源就绪后执行队列
 
     // Channel
     std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapSocketChannel;

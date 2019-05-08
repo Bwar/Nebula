@@ -54,6 +54,11 @@ bool Worker::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg
     return(m_pImpl->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
 }
 
+void Worker::AddAssemblyLine(std::shared_ptr<Session> pSession)
+{
+    m_pImpl->AddAssemblyLine(pSession);
+}
+
 uint32 Worker::GetNodeId() const
 {
     return(m_pImpl->GetWorkerInfo().uiNodeId);
