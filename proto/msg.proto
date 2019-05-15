@@ -17,7 +17,7 @@ message MsgHead
 
 /**
  * @brief 消息体
- * @note 消息体主体是content，所有业务逻辑内容均放在content里。req_target是请求目标，用于
+ * @note 消息体主体是data，所有业务逻辑内容均放在data里。req_target是请求目标，用于
  * 服务端接入路由，请求包必须填充。rsp_result是响应结果，响应包必须填充。
  */
 message MsgBody
@@ -30,7 +30,7 @@ message MsgBody
     bytes data                  = 3;			///< 消息体主体
     bytes add_on                = 4;			///< 服务端接入层附加在请求包的数据（客户端无须理会）
     string trace_id             = 5;            ///< for log trace
-    // google.protobuf.Any content          = 3;
+    // google.protobuf.Any data             = 3;
     // google.protobuf.Any add_on           = 4;
 
     message Request
@@ -42,6 +42,7 @@ message MsgBody
     message Response
     {
         int32 code            = 1;           ///< 错误码
-        bytes msg           = 2;           ///< 错误信息
+        bytes msg             = 2;           ///< 错误信息
     }
 }
+
