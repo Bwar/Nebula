@@ -30,6 +30,9 @@ FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
     : m_iLogLevel(iLogLev), m_uiMaxFileSize(uiMaxFileSize),
       m_uiMaxRollFileIndex(uiMaxRollFileIndex), m_strLogFileBase(strLogFile)
 {
+#if __GNUC__ < 5
+    m_szTime = (char*)malloc(20);
+#endif
     m_fp = NULL;
     OpenLogFile(strLogFile);
     WriteLog(Logger::NOTICE, __FILE__, __LINE__, __FUNCTION__, "new log instance.");
@@ -37,6 +40,9 @@ FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
 
 int FileLogger::OpenLogFile(const std::string strLogFile)
 {
+#if __GNUC__ < 5
+    free(m_szTime);
+#endif
     m_fp = fopen(strLogFile.c_str(), "a+" );
     if(NULL == m_fp)
     {
@@ -164,9 +170,18 @@ int FileLogger::Vappend(int iLev, const char* szFileName, unsigned int uiFileLin
     auto duration_in_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_now.time_since_epoch());
     auto t = std::chrono::system_clock::to_time_t(time_now);
     std::ostringstream oss;
+// There is a bug: The std::get_time and std::put_time manipulators are still missing in gcc 4.9.
+// See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54354
+#if __GNUC__ >= 5
     oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S") << ","
-                    << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
-                    << szFileName << ":" << uiFileLine << "][" << szFunction << "] ";
+        << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
+        << szFileName << ":" << uiFileLine << "][" << szFunction << "] ";
+#else
+    strftime(m_szTime, 20, "%Y-%m-%d %H:%M:%S", std::localtime(&t));
+    oss << "[" << m_szTime << ","
+        << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
+        << szFileName << ":" << uiFileLine << "][" << szFunction << "] ";
+#endif
     fprintf(m_fp, oss.str().c_str());
     //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
     vfprintf(m_fp, szLogStr, ap);
@@ -202,9 +217,16 @@ int FileLogger::Vappend(const std::string& strTraceId, int iLev, const char* szF
     auto duration_in_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_now.time_since_epoch());
     auto t = std::chrono::system_clock::to_time_t(time_now);
     std::ostringstream oss;
+#if __GNUC__ >= 5
     oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S") << ","
-                    << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
-                    << szFileName << ":" << uiFileLine << "][" << szFunction << "][" << strTraceId << "] ";
+        << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
+        << szFileName << ":" << uiFileLine << "][" << szFunction << "][" << strTraceId << "] ";
+#else
+    strftime(m_szTime, 20, "%Y-%m-%d %H:%M:%S", std::localtime(&t));
+    oss << "[" << m_szTime << ","
+        << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
+        << szFileName << ":" << uiFileLine << "][" << szFunction << "][" << strTraceId << "] ";
+#endif
     fprintf(m_fp, oss.str().c_str());
     //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
     vfprintf(m_fp, szLogStr, ap);

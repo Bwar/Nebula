@@ -59,6 +59,9 @@ private:
 
     static FileLogger* m_pInstance;
 
+#if __GNUC__ < 5
+    char* m_szTime;
+#endif
     FILE* m_fp;
     int m_iLogLevel;
     unsigned int m_uiMaxFileSize;       // 日志文件大小

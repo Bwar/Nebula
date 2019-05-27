@@ -545,7 +545,6 @@ bool WorkerImpl::OnStepTimeout(std::shared_ptr<Step> pStep)
 
 bool WorkerImpl::OnSessionTimeout(std::shared_ptr<Session> pSession)
 {
-    LOG4_TRACE("CHECK pSession = 0x%x", pSession);
     ev_timer* watcher = pSession->MutableTimerWatcher();
     LOG4_TRACE("CHECK watchar = 0x%x", watcher);
     ev_tstamp after = pSession->GetActiveTime() - ev_now(m_loop) + pSession->GetTimeout();
@@ -2232,9 +2231,9 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
             {
                 E_CMD_STATUS eResult;
                 step_iter->second->SetActiveTime(ev_now(m_loop));
-                LOG4_TRACE("cmd %u, seq %u, step_seq %u, step addr 0x%x, active_time %lf",
+                LOG4_TRACE("cmd %u, seq %u, step_seq %u, active_time %lf",
                                 oMsgHead.cmd(), oMsgHead.seq(), step_iter->second->GetSequence(),
-                                step_iter->second, step_iter->second->GetActiveTime());
+                                step_iter->second->GetActiveTime());
                 eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(pChannel, oMsgHead, oMsgBody);
                 if (CMD_STATUS_RUNNING != eResult)
                 {
