@@ -32,9 +32,7 @@ Nebula从一个从2016年5月至今在生产环境稳定运行的IM底层框架S
 
 <a name="GettingStart"></a>
 ## 开始
-&emsp;&emsp;Nebula以C++11/C++14标准开发，编译器必须完全支持C++11(部分C++14的特性在遇到较低版本的编译器时有预编译开关控制使用C++11标准替代),最低要求gcc4.8.2，建议使用5以上gcc版本，推荐使用gcc6。Nebula目前只有Linux版本，暂无支持Linux之外的其他类UNIX系统的时间表。
-
-&emsp;&emsp;Nebula在centos6.5（需升级binutils到2.22之后版本）和centos7.4上用gcc6.4编译和测试通过。同时Nebula也在[Travis CI](https://travis-ci.org/Bwar/Nebula)持续集成构建项目，构建结果可以直接通过项目首页的[![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula)跳转过去查看。Travis CI的系统是Ubuntu，编译器是gcc6。
+&emsp;&emsp;Nebula以C++11/C++14标准开发，编译器必须完全支持C++11(部分C++14的特性在遇到较低版本的编译器时有预编译开关控制使用C++11标准替代),最低要求gcc4.8.2，建议使用5以上gcc版本。Nebula目前只有Linux版本，暂无支持Linux之外的其他类UNIX系统的时间表。
 
 &emsp;&emsp;Nebula是个较大型项目（因为要构建一个生产用的分布式集群），有一些外部[依赖](#DependOn)，鉴于外部依赖的存在和框架本身较难测试，提供了[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)，让开发者可以快速部署和体验Nebula。相信部署和体验之后，你会对Nebula产生兴趣，这将会是一个可以广泛应用的框架，基于NebulaBootstrap提供的分布式解决方案可以很方便地用C++开发微服务应用。
 

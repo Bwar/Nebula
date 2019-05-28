@@ -795,7 +795,7 @@ bool Manager::GetConf()
         m_oCurrentConf.Get("io_timeout", m_stManagerInfo.dIoTimeout);
         if (m_oLastConf.ToString().length() == 0)
         {
-            m_stManagerInfo.uiWorkerNum = strtoul(m_oCurrentConf("process_num").c_str(), NULL, 10);
+            m_stManagerInfo.uiWorkerNum = strtoul(m_oCurrentConf("worker_num").c_str(), NULL, 10);
             m_oCurrentConf.Get("node_type", m_stManagerInfo.strNodeType);
             m_oCurrentConf.Get("host", m_stManagerInfo.strHostForServer);
             m_oCurrentConf.Get("port", m_stManagerInfo.iPortForServer);
@@ -2144,7 +2144,7 @@ bool Manager::OnSetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
             oJsonData.Replace("host", m_oCurrentConf("host"));
             oJsonData.Replace("port", m_oCurrentConf("port"));
             oJsonData.Replace("server_name", m_oCurrentConf("server_name"));
-            oJsonData.Replace("process_num", m_oCurrentConf("process_num"));
+            oJsonData.Replace("worker_num", m_oCurrentConf("worker_num"));
             std::ofstream fout(m_stManagerInfo.strConfFile.c_str());
             if (fout.good())
             {
