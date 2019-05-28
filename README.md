@@ -45,10 +45,9 @@ MIT License
 
 <a name="GettingStart"></a>
 ## Getting Start
-   Nebula was developed with C++11/C++14 standard, and the compiler must fully support C++11(some C++14 features are replaced by C++11 standard when encountering a lower version of the compiler).
-   Nebula was builded passing with gcc6 on centos6.5(upgrade binutils to 2.22 or later) and centos7.4.  
+   Nebula was developed with C++11/C++14 standard, requires a compiler capable of the C++11-standard and at least gcc4.8(some C++14 features are replaced by C++11 standard when encountering a lower version of the compiler).
    We provides [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap), which allows developers to build and deploy Nebula quickly. Nebula will be a framework that be widely used. A distributed solution based on NebulaBootstrap will make it easy to develop micro-service applications in C++.
-   You must ensure that your system is installed with a fully C++11 compiler(gcc4.8.2 or above) before you build, and all dependencies will be automatically resolved in the following build steps.
+   All dependencies will be automatically resolved in the following build steps.
 
    build step：
 1. wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip

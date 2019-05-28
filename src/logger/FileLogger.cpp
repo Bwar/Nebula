@@ -40,9 +40,6 @@ FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
 
 int FileLogger::OpenLogFile(const std::string strLogFile)
 {
-#if __GNUC__ < 5
-    free(m_szTime);
-#endif
     m_fp = fopen(strLogFile.c_str(), "a+" );
     if(NULL == m_fp)
     {

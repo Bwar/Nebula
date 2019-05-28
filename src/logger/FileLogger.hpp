@@ -27,6 +27,9 @@ public:
             unsigned int uiMaxRollFileIndex = neb::gc_uiMaxRollLogFileIndex);
     virtual ~FileLogger()
     {
+#if __GNUC__ < 5
+        free(m_szTime);
+#endif
         fclose(m_fp);
     }
 
