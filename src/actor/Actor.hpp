@@ -67,6 +67,16 @@ public:
     Actor& operator=(const Actor&) = delete;
     virtual ~Actor();
 
+    ACTOR_TYPE GetActorType() const
+    {
+        return(m_eActorType);
+    }
+
+    const std::string& GetActorName() const
+    {
+        return(m_strActorName);
+    }
+
 protected:
     uint32 GetSequence();
     uint32 GetNodeId() const;
@@ -212,15 +222,12 @@ protected:
         return(m_dTimeout);
     }
 
-    ACTOR_TYPE GetActorType() const
-    {
-        return(m_eActorType);
-    }
-
 private:
     void SetWorker(Worker* pWorker);
 
     ev_timer* MutableTimerWatcher();
+
+    void SetActorName(const std::string& strActorName);
 
 private:
     ACTOR_TYPE m_eActorType;
@@ -229,6 +236,7 @@ private:
     ev_tstamp m_dTimeout;
     Worker* m_pWorker;
     ev_timer* m_pTimerWatcher;
+    std::string m_strActorName;
     std::string m_strTraceId;       // for log trace
     std::shared_ptr<Context> m_pContext;
 

@@ -17,6 +17,8 @@
     "server_name": "AsyncServer",
     "//worker_num": "进程数量",
     "worker_num": 10,
+    "//cpu_affinity":"是否设置进程CPU亲和度（绑定CPU）",
+    "cpu_affinity":false,
     "//worker_capacity": "子进程最大工作负荷",
     "worker_capacity": 1000000,
     "//config_path": "配置文件路径（相对路径）",
@@ -73,7 +75,9 @@
             "module": [
                 { "path": "im/user/login", "class": "neb::ModuleLogin" },
                 { "path": "im/user/logout", "class": "neb::ModuleLogout" }
-            ]
+            ],
+            "session":["im::SessionUser", "im::SessionGroup"],
+            "step":["im::StepLogin", "im::StepLogout", "im::StepP2pChat"]
         },
         {
             "so_path": "plugins/ChatMsg.so",
@@ -82,7 +86,9 @@
             "cmd": [
                 { "cmd": 2001, "class": "neb::CmdChat" }
             ],
-            "module": []
+            "module": [],
+            "session":[],
+            "step":[]
         }
     ],
     "//custom": "自定义配置，用于通过框架层带给业务",

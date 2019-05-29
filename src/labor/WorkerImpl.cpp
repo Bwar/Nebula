@@ -10,6 +10,7 @@
 
 //#include <mcheck.h>
 #include <algorithm>
+#include <sched.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -319,7 +320,7 @@ bool WorkerImpl::FdTransfer()
     {
         if (iErrno == ERR_CHANNEL_EOF)
         {
-            LOG4_ERROR("recv_fd from m_iManagerDataFd %d error %d", m_stWorkerInfo.iManagerDataFd, errno);
+            LOG4_WARNING("recv_fd from m_iManagerDataFd %d error %d", m_stWorkerInfo.iManagerDataFd, errno);
             Destroy();
             exit(2); // manager与worker通信fd已关闭，worker进程退出
         }
@@ -764,6 +765,22 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
     {
         return(false);
     }
+
+    bool bCpuAffinity = false;
+    oJsonConf.Get("cpu_affinity", bCpuAffinity);
+    if (bCpuAffinity)
+    {
+        /* get logical cpu number */
+        int iCpuNum = sysconf(_SC_NPROCESSORS_CONF);;                               ///< cpu数量
+        cpu_set_t stCpuMask;                                                        ///< cpu set
+        CPU_ZERO(&stCpuMask);
+        CPU_SET(m_stWorkerInfo.iWorkerIndex % iCpuNum, &stCpuMask);
+        if (sched_setaffinity(0, sizeof(cpu_set_t), &stCpuMask) == -1)
+        {
+            LOG4_WARNING("sched_setaffinity failed.");
+        }
+    }
+
     if (oJsonConf["with_ssl"]("config_path").length() > 0)
     {
 #ifdef WITH_OPENSSL

@@ -40,6 +40,7 @@ std::shared_ptr<Step> WorkerImpl::MakeSharedStep(Actor* pCreator, const std::str
 
     pStepAlias->SetWorker(m_pWorker);
     pStepAlias->SetActiveTime(ev_now(m_loop));
+    pStepAlias->SetActorName(strStepName);
     if (nullptr != pCreator)
     {
         pStepAlias->SetContext(pCreator->GetContext());
@@ -116,6 +117,7 @@ std::shared_ptr<Session> WorkerImpl::MakeSharedSession(Actor* pCreator, const st
 
     pSessionAlias->SetWorker(m_pWorker);
     pSessionAlias->SetActiveTime(ev_now(m_loop));
+    pSessionAlias->SetActorName(strSessionName);
     if (nullptr != pCreator)
     {
         pSessionAlias->SetContext(pCreator->GetContext());
@@ -164,6 +166,7 @@ std::shared_ptr<Cmd> WorkerImpl::MakeSharedCmd(Actor* pCreator, const std::strin
 
     pCmdAlias->SetWorker(m_pWorker);
     pCmdAlias->SetActiveTime(ev_now(m_loop));
+    pCmdAlias->SetActorName(strCmdName);
     if (nullptr != pCreator)
     {
         pCmdAlias->SetContext(pCreator->GetContext());
@@ -197,6 +200,7 @@ std::shared_ptr<Module> WorkerImpl::MakeSharedModule(Actor* pCreator, const std:
 
     pModuleAlias->SetWorker(m_pWorker);
     pModuleAlias->SetActiveTime(ev_now(m_loop));
+    pModuleAlias->SetActorName(strModuleName);
     if (nullptr != pCreator)
     {
         pModuleAlias->SetContext(pCreator->GetContext());

@@ -330,10 +330,16 @@ private:
     std::unique_ptr<SessionNode> m_pSessionNode;
     std::shared_ptr<SessionLogger> m_pSessionLogger;
 
+    // dynamic load，use for load and unload.
+    std::unordered_map<std::string, tagSo*> m_mapLoadedSo;
+    std::unordered_map<std::string, int32> m_mapLoadedCmd;
+    std::unordered_map<std::string, std::string> m_mapLoadedModule;
+    std::unordered_map<std::string, uint32> m_mapLoadedStep;
+    std::unordered_map<std::string, std::string> m_mapLoadedSession;
+
     // Cmd and Module
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;
     std::unordered_map<std::string, std::shared_ptr<Module> > m_mapModule;
-    std::unordered_map<std::string, tagSo*> m_mapLoadedSo;
 
     // Step and Session
     std::unordered_map<uint32, std::shared_ptr<Step> > m_mapCallbackStep;

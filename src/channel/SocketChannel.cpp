@@ -153,7 +153,7 @@ int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, in
     }
 
     if (n == 0) {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "recvmsg() return zero, errno %d", errno);
+        pLogger->WriteLog(neb::Logger::WARNING, __FILE__, __LINE__, __FUNCTION__, "recvmsg() return zero, errno %d", errno);
         iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
         return(ERR_CHANNEL_EOF);
     }

@@ -185,4 +185,9 @@ ev_timer* Actor::MutableTimerWatcher()
     return(m_pTimerWatcher);
 }
 
+void Actor::SetActorName(const std::string& strActorName)
+{
+    m_strActorName = strActorName;
+}
+
 } /* namespace neb */
