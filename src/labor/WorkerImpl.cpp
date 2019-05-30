@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     Worker.cpp
+ * @file     WorkerImpl.cpp
  * @brief
  * @author   Bwar
  * @date:    2018年3月27日
@@ -172,7 +172,7 @@ void WorkerImpl::Run()
     }
     LoadSysCmd();
     BootLoadCmd(m_oWorkerConf["boot_load"]);
-    DynamicLoadCmd(m_oWorkerConf["dynamic_loading"]);
+    DynamicLoad(m_oWorkerConf["dynamic_loading"]);
 
     //mtrace();
     ev_run (m_loop, 0);
@@ -1678,13 +1678,11 @@ void WorkerImpl::BootLoadCmd(CJsonObject& oCmdConf)
     }
 }
 
-void WorkerImpl::DynamicLoadCmd(CJsonObject& oDynamicLoadingConf)
+void WorkerImpl::DynamicLoad(CJsonObject& oDynamicLoadingConf)
 {
     LOG4_TRACE(" ");
     int iVersion = 0;
     bool bIsload = false;
-    int32 iCmd = 0;
-    std::string strUrlPath;
     std::string strSoPath;
     std::unordered_map<std::string, tagSo*>::iterator so_iter;
     tagSo* pSo = nullptr;
@@ -1698,59 +1696,63 @@ void WorkerImpl::DynamicLoadCmd(CJsonObject& oDynamicLoadingConf)
                 so_iter = m_mapLoadedSo.find(strSoPath);
                 if (so_iter == m_mapLoadedSo.end())
                 {
-                    strSoPath = m_stWorkerInfo.strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
-                    pSo = LoadSo(strSoPath, iVersion);
+                    std::string strSoFile = m_stWorkerInfo.strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
+                    if (0 != access(strSoFile.c_str(), F_OK))
+                    {
+                        LOG4_WARNING("%s not exist!", strSoFile.c_str());
+                        continue;
+                    }
+                    pSo = LoadSo(strSoFile, iVersion);
                     if (pSo != nullptr)
                     {
                         LOG4_INFO("succeed in loading %s", strSoPath.c_str());
                         m_mapLoadedSo.insert(std::make_pair(strSoPath, pSo));
-                        for (int j = 0; j < oDynamicLoadingConf[i]["cmd"].GetArraySize(); ++j)
-                        {
-                            oDynamicLoadingConf[i]["cmd"][j].Get("cmd", iCmd);
-                            MakeSharedCmd(nullptr, oDynamicLoadingConf[i]["cmd"][j]("class"), iCmd);
-                        }
-                        for (int k = 0; k < oDynamicLoadingConf[i]["module"].GetArraySize(); ++k)
-                        {
-                            oDynamicLoadingConf[i]["module"][k].Get("path", strUrlPath);
-                            MakeSharedModule(nullptr, oDynamicLoadingConf[i]["module"][k]("class"), strUrlPath);
-                        }
+                        LoadDynamicSymbol(oDynamicLoadingConf[i]);
                     }
                 }
-                /*
                 else
                 {
-                    if (iVersion != so_iter->second->iVersion)
+                    if (iVersion != so_iter->second->iVersion)  // 版本升级，先卸载再加载
                     {
-                        strSoPath = m_stWorkerInfo.strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
-                        if (0 != access(strSoPath.c_str(), F_OK))
+                        std::string strSoFile = m_stWorkerInfo.strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
+                        if (0 != access(strSoFile.c_str(), F_OK))
                         {
-                            LOG4_WARNING("%s not exist!", strSoPath.c_str());
+                            LOG4_WARNING("%s not exist!", strSoFile.c_str());
                             continue;
                         }
-                        pSo = LoadSo(strSoPath, iVersion);
-                        LOG4_TRACE("%s:%d after LoadSoAndGetCmd", __FILE__, __LINE__);
+                        UnloadDynamicSymbol(oDynamicLoadingConf[i]);
+                        dlclose(so_iter->second->pSoHandle);
+                        delete so_iter->second;
+                        pSo = LoadSo(strSoFile, iVersion);
                         if (pSo != nullptr)
                         {
                             LOG4_INFO("succeed in loading %s", strSoPath.c_str());
-                            delete so_iter->second;
                             so_iter->second = pSo;
+                            LoadDynamicSymbol(oDynamicLoadingConf[i]);
+                        }
+                        else
+                        {
+                            m_mapLoadedSo.erase(so_iter);
                         }
                     }
                 }
-                */
             }
         }
-        /*
         else        // 卸载动态库
         {
-            if (oDynamicLoadingConf[i].Get("cmd", iCmd))
+            if (oDynamicLoadingConf[i].Get("so_path", strSoPath))
             {
-                strSoPath = m_stWorkerInfo.strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
-                UnloadSoAndDeleteCmd(iCmd);
-                LOG4_INFO("unload %s", strSoPath.c_str());
+                so_iter = m_mapLoadedSo.find(strSoPath);
+                if (so_iter != m_mapLoadedSo.end())
+                {
+                    UnloadDynamicSymbol(oDynamicLoadingConf[i]);
+                    dlclose(so_iter->second->pSoHandle);
+                    delete so_iter->second;
+                    m_mapLoadedSo.erase(so_iter);
+                    LOG4_INFO("unload %s", strSoPath.c_str());
+                }
             }
         }
-        */
     }
 }
 
@@ -1778,6 +1780,111 @@ WorkerImpl::tagSo* WorkerImpl::LoadSo(const std::string& strSoPath, int iVersion
     pSo->pSoHandle = pHandle;
     pSo->iVersion = iVersion;
     return(pSo);
+}
+
+void WorkerImpl::LoadDynamicSymbol(CJsonObject& oOneSoConf)
+{
+    int32 iCmd = 0;
+    std::string strUrlPath;
+    for (int i = 0; i < oOneSoConf["cmd"].GetArraySize(); ++i)
+    {
+        std::unordered_set<int32> setCmd;
+        m_mapLoadedCmd.insert(std::make_pair(oOneSoConf["cmd"][i]("class"), setCmd));
+        oOneSoConf["cmd"][i].Get("cmd", iCmd);
+        MakeSharedCmd(nullptr, oOneSoConf["cmd"][i]("class"), iCmd);
+    }
+    for (int j = 0; j < oOneSoConf["module"].GetArraySize(); ++j)
+    {
+        std::unordered_set<std::string> setModule;
+        m_mapLoadedModule.insert(std::make_pair(oOneSoConf["module"][j]("class"), setModule));
+        oOneSoConf["module"][j].Get("path", strUrlPath);
+        MakeSharedModule(nullptr, oOneSoConf["module"][j]("class"), strUrlPath);
+    }
+    for (int k = 0; k < oOneSoConf["session"].GetArraySize(); ++k)
+    {
+        std::unordered_set<std::string> setSession;
+        m_mapLoadedSession.insert(std::make_pair(oOneSoConf["session"](k), setSession));
+    }
+    for (int l = 0; l < oOneSoConf["step"].GetArraySize(); ++l)
+    {
+        std::unordered_set<uint32> setStep;
+        m_mapLoadedStep.insert(std::make_pair(oOneSoConf["step"](l), setStep));
+    }
+}
+
+void WorkerImpl::UnloadDynamicSymbol(CJsonObject& oOneSoConf)
+{
+    for (int i = 0; i < oOneSoConf["cmd"].GetArraySize(); ++i)
+    {
+        auto class_iter = m_mapLoadedCmd.find(oOneSoConf["cmd"][i]("class"));
+        if (class_iter != m_mapLoadedCmd.end())
+        {
+            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
+            {
+                auto cmd_iter = m_mapCmd.find(*id_iter);
+                if (cmd_iter != m_mapCmd.end())
+                {
+                    m_mapCmd.erase(cmd_iter);
+                }
+            }
+            class_iter->second.clear();
+            m_mapLoadedCmd.erase(class_iter);
+        }
+    }
+    for (int j = 0; j < oOneSoConf["module"].GetArraySize(); ++j)
+    {
+        auto class_iter = m_mapLoadedModule.find(oOneSoConf["module"][j]("class"));
+        if (class_iter != m_mapLoadedModule.end())
+        {
+            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
+            {
+                auto module_iter = m_mapModule.find(*id_iter);
+                if (module_iter != m_mapModule.end())
+                {
+                    m_mapModule.erase(module_iter);
+                }
+            }
+            class_iter->second.clear();
+            m_mapLoadedModule.erase(class_iter);
+        }
+    }
+    for (int k = 0; k < oOneSoConf["session"].GetArraySize(); ++k)
+    {
+        auto class_iter = m_mapLoadedSession.find(oOneSoConf["session"](k));
+        if (class_iter != m_mapLoadedSession.end())
+        {
+            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
+            {
+                auto session_iter = m_mapCallbackSession.find(*id_iter);
+                if (session_iter != m_mapCallbackSession.end())
+                {
+                    m_mapCallbackSession.erase(session_iter);
+                }
+            }
+            class_iter->second.clear();
+            m_mapLoadedSession.erase(class_iter);
+        }
+    }
+    for (int l = 0; l < oOneSoConf["step"].GetArraySize(); ++l)
+    {
+        auto class_iter = m_mapLoadedStep.find(oOneSoConf["step"](l));
+        if (class_iter != m_mapLoadedStep.end())
+        {
+            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
+            {
+                auto step_iter = m_mapCallbackStep.find(*id_iter);
+                if (step_iter != m_mapCallbackStep.end())
+                {
+                    step_iter->second->Timeout();
+                    m_mapCallbackStep.erase(step_iter);
+                }
+            }
+            class_iter->second.clear();
+            m_mapLoadedStep.erase(class_iter);
+        }
+        std::unordered_set<uint32> setStep;
+        m_mapLoadedStep.insert(std::make_pair(oOneSoConf["step"](l), setStep));
+    }
 }
 
 bool WorkerImpl::AddPeriodicTaskEvent()
@@ -2158,8 +2265,15 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
             }
             else if (CMD_REQ_RELOAD_SO == oMsgHead.cmd())
             {
-                CJsonObject oSoConfJson;         // TODO So config
-                DynamicLoadCmd(oSoConfJson);
+                CJsonObject oSoConfJson;
+                if (oSoConfJson.Parse(oMsgBody.data()))
+                {
+                    DynamicLoad(oSoConfJson);
+                }
+                else
+                {
+                    LOG4_ERROR("json parse string error: \"%s\"");
+                }
             }
             else
             {

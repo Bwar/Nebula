@@ -311,8 +311,10 @@ protected:
     void ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
 
     void BootLoadCmd(CJsonObject& oCmdConf);
-    void DynamicLoadCmd(CJsonObject& oCmdConf);
+    void DynamicLoad(CJsonObject& oSoConf);
     tagSo* LoadSo(const std::string& strSoPath, int iVersion);
+    void LoadDynamicSymbol(CJsonObject& oOneSoConf);
+    void UnloadDynamicSymbol(CJsonObject& oOneSoConf);
 
 private:
     mutable uint32 m_ulSequence = 0;
@@ -332,10 +334,10 @@ private:
 
     // dynamic load，use for load and unload.
     std::unordered_map<std::string, tagSo*> m_mapLoadedSo;
-    std::unordered_map<std::string, int32> m_mapLoadedCmd;
-    std::unordered_map<std::string, std::string> m_mapLoadedModule;
-    std::unordered_map<std::string, uint32> m_mapLoadedStep;
-    std::unordered_map<std::string, std::string> m_mapLoadedSession;
+    std::unordered_map<std::string, std::unordered_set<int32> > m_mapLoadedCmd;             //key为CmdClassName，value为iCmd集合
+    std::unordered_map<std::string, std::unordered_set<std::string> > m_mapLoadedModule;    //key为ModuleClassName，value为strModulePath集合
+    std::unordered_map<std::string, std::unordered_set<uint32> > m_mapLoadedStep;           //key为StepClassName，value为uiSeq集合
+    std::unordered_map<std::string, std::unordered_set<std::string> > m_mapLoadedSession;   //key为SessionClassName，value为strSessionId集合
 
     // Cmd and Module
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;

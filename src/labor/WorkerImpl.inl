@@ -94,6 +94,11 @@ std::shared_ptr<Step> WorkerImpl::MakeSharedStep(Actor* pCreator, const std::str
         }
         LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pStepAlias->GetSequence(), pStepAlias->GetActiveTime(), pStepAlias->GetTimeout());
+        auto step_class_iter = m_mapLoadedStep.find(pStepAlias->GetActorName());
+        if (step_class_iter != m_mapLoadedStep.end())
+        {
+            step_class_iter->second.insert(pStepAlias->GetSequence());
+        }
         return(pSharedStep);
     }
     else
@@ -142,6 +147,11 @@ std::shared_ptr<Session> WorkerImpl::MakeSharedSession(Actor* pCreator, const st
         }
         LOG4_TRACE("Session(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pSessionAlias->GetSequence(), pSessionAlias->GetActiveTime(), pSessionAlias->GetTimeout());
+        auto session_class_iter = m_mapLoadedSession.find(pSessionAlias->GetActorName());
+        if (session_class_iter != m_mapLoadedSession.end())
+        {
+            session_class_iter->second.insert(pSessionAlias->GetSessionId());
+        }
         return(pSharedSession);
     }
     else
@@ -179,6 +189,11 @@ std::shared_ptr<Cmd> WorkerImpl::MakeSharedCmd(Actor* pCreator, const std::strin
     {
         if (pCmdAlias->Init())
         {
+            auto cmd_class_iter = m_mapLoadedCmd.find(pCmdAlias->GetActorName());
+            if (cmd_class_iter != m_mapLoadedCmd.end())
+            {
+                cmd_class_iter->second.insert(pCmdAlias->GetCmd());
+            }
             return(pSharedCmd);
         }
     }
@@ -213,6 +228,11 @@ std::shared_ptr<Module> WorkerImpl::MakeSharedModule(Actor* pCreator, const std:
     {
         if (pModuleAlias->Init())
         {
+            auto module_class_iter = m_mapLoadedModule.find(pModuleAlias->GetActorName());
+            if (module_class_iter != m_mapLoadedModule.end())
+            {
+                module_class_iter->second.insert(pModuleAlias->GetModulePath());
+            }
             return(pSharedModule);
         }
     }
