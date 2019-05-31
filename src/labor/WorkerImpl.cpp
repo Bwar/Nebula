@@ -2181,6 +2181,15 @@ void WorkerImpl::Remove(std::shared_ptr<Step> pStep)
             return;
         }
     }
+    auto class_iter = m_mapLoadedStep.find(pStep->GetActorName());
+    if (class_iter != m_mapLoadedStep.end())
+    {
+        auto id_iter = class_iter->second.find(pStep->GetSequence());
+        if (id_iter != class_iter->second.end())
+        {
+            class_iter->second.erase(id_iter);
+        }
+    }
     if (pStep->MutableTimerWatcher() != NULL)
     {
         ev_timer_stop (m_loop, pStep->MutableTimerWatcher());
@@ -2198,6 +2207,15 @@ void WorkerImpl::Remove(std::shared_ptr<Session> pSession)
     if (nullptr == pSession)
     {
         return;
+    }
+    auto class_iter = m_mapLoadedSession.find(pSession->GetActorName());
+    if (class_iter != m_mapLoadedSession.end())
+    {
+        auto id_iter = class_iter->second.find(pSession->GetSessionId());
+        if (id_iter != class_iter->second.end())
+        {
+            class_iter->second.erase(id_iter);
+        }
     }
     if (pSession->MutableTimerWatcher() != NULL)
     {
