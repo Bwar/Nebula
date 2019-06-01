@@ -14,11 +14,15 @@
 <a name="Overview"></a>
 ## 概述 
 
-Nebula是一个C\+\+语言开发的事件驱动型的TCP协议网络框架，支持包括proto3、http、https、websocket多种应用层通信协议。开发Nebula框架的目的是提供一种基于C\+\+快速构建一个高性能的分布式服务集群。Nebula自身核心代码只有万行左右（不计算proto文件生成的代码）。
+&emsp;&emsp;Nebula是一个C\+\+语言开发的事件驱动型的TCP协议网络框架，支持包括proto3、http、https、websocket多种应用层通信协议。开发Nebula框架的目的是提供一种基于C\+\+快速构建一个高性能的分布式服务集群。Nebula自身核心代码只有万行左右（不计算proto文件生成的代码）。
 
-Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建集群才能真正体现其价值。为了能快速搭建分布式服务集群，开发了包括各种类型服务的NebulaBootstrap集群解决方案。
+&emsp;&emsp;Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建集群才能真正体现其价值。为了能快速搭建分布式服务集群，开发了包括各种类型服务的NebulaBootstrap集群解决方案。
 
-Nebula从一个从2016年5月至今在生产环境稳定运行的IM底层框架Starship发展而来。Nebula跟Starship框架（也是Bwar一人独立开发）有20%左右的结构相似度，是基于Starship经验全新开发，可以认为Nebula(C++14)是Starship(C++03)的一个高级进化版本，具有Starship的所有优点，没有Starship的所有已发现的缺点，同时提供了更多高级功能。基于Nebula的第一个应用Nebio（埋点数据采集和实时分析项目）在2018年7月底上线并稳定运行，Bwar还准备开发基于Nebula的IM应用Nebim。
+&emsp;&emsp;Nebula是一个产线级的框架和分布式解决方案项目，适用于即时通讯、数据采集、实时计算、消息推送等应用场景，也适用于web后台服务。Nebula已有即时通讯、埋点数据采集及实时分析的生产应用案例，很快将有一个面向庞大用户群的推荐引擎产线应用案例。
+
+&emsp;&emsp;把Nebula用于玩具级项目，用于学习交流也不错，Bwar欢迎更多有兴趣的开发者加入到Nebula这个项目中来，Bwar也乐意解答项目中遇到的问题。Nebula是个proactor模式开发框架，不错，是proactor不是reactor（框架层实现的proactor而不是操作系统支持），应用于IO密集型的项目可以达到非常好的性能。Nebula现在不支持同步调用不支持rpc，以后也应该不会支持rpc，做全异步的通信框架目标不变。对了解异步回调编程方式的开发者，Nebula是个非常简单的框架，比写常见的异步回调写法要简单多了。Nebula网络框架的技术分享和交流见[C++网络框架Nebula](https://zhuanlan.zhihu.com/c_216558336)
+
+&emsp;&emsp;Nebula从一个从2016年5月至今在生产环境稳定运行的IM底层框架Starship发展而来。Nebula跟Starship框架（也是Bwar一人独立开发）有20%左右的结构相似度，是基于Starship经验全新开发，可以认为Nebula(C++14)是Starship(C++03)的一个高级进化版本，具有Starship的所有优点，没有Starship的所有已发现的缺点，同时提供了更多高级功能。基于Nebula的第一个应用Nebio（埋点数据采集和实时分析项目）在2018年7月底上线并稳定运行，Bwar还准备开发基于Nebula的IM应用Nebim。
 
 <a name="License"></a>
 ## 许可证
@@ -114,8 +118,12 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v0.8
+   - 兼容gcc4.8编译器（从这个版本起无须另行安装5以上gcc版本，可以无障碍无等待地在个人机器上部署和测试，也为应用于生产铺平道路。之前Bwar的埋>
+   - 增加CPU亲和度设置以支持将Worker进程绑定CPU功能。(有人测试过繁忙的多核服务器，绑定CPU比不绑定CPU有20%左右的性能提升，现在Nebua可以让开发
+   - 增加动态库（业务插件）卸载功能。（支持不停服务升级的重要功能）
 #### v0.7
-   - 添加配置管理，NebulaBeacon为配置中心，使用说明见命令行管理工具[Nebcli](https://github.com/Bwar/Nebcli)的get和set命令。
+   - 增加配置管理，NebulaBeacon为配置中心，使用说明见命令行管理工具[Nebcli](https://github.com/Bwar/Nebcli)的get和set命令。
 #### v0.6
    - NebulaBeacon增加节点状态信息查询，注册中心主从高可用选举
    - NebulaInterface提供HelloWorld示例。

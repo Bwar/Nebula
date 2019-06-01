@@ -16,6 +16,8 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 Nebula is an event-driven TCP protocol network framework developed in C++ language. It supports multiple application layer communication protocols including proto3, http, https, and websocket. The purpose of developing the Nebula framework is to provide a fast and high-performance distributed service cluster based on C++.
 
+Nebula is a production level framework and distributed solution project for instant messaging, data collection, real-time computing, message push and other applications, as well as web api services. There were production applications for instant messaging, data acquisition and real-time analysis on line now, and a recommendation engine application for a large user base will be born soon. By the way, using Nebula for toy-level projects is also good for learning network communication. Bwar welcomes more developers to join the Nebula project. Nebula is a proactor development framework(a framework-implemented proactor, not an operating system support). The IO-intensive application on nebula with be good performance.
+
 Nebula can be used as a single high-performance TCP server, but building a cluster based on Nebula will be truly reflect its value. In order to build distributed service clusters quickly, Nebula Bootstrap cluster solutions including various types of services have been developed. 
 
 <a name="License"></a>
@@ -126,6 +128,10 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v0.8
+   - compatible with gcc4.8 compiler.
+   - add cpu affinity inorder to support cpu binding.
+   - add dynamic library unload.
 #### v0.7
    - add configuration management(check [Nebcli](https://github.com/Bwar/Nebcli) for detail).
 #### v0.6
