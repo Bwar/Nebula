@@ -10,13 +10,14 @@
 6. [相关项目](#RelatedProject)
 7. [开发任务](#TODO)
 8. [版本历史](#ChangeLog)
+9. [交流与反馈](#Exchange)
 
 <a name="Overview"></a>
 ## 概述 
 
-&emsp;&emsp;Nebula是一个C\+\+语言开发的事件驱动型的TCP协议网络框架，支持包括proto3、http、https、websocket多种应用层通信协议。开发Nebula框架的目的是提供一种基于C\+\+快速构建一个高性能的分布式服务集群。Nebula自身核心代码只有万行左右（不计算proto文件生成的代码）。
+&emsp;&emsp;Nebula是一个C\+\+语言开发的事件驱动型的TCP协议分布式网络框架，支持包括proto3、http、https、websocket多种应用层通信协议。开发Nebula框架的目的是提供一种基于C\+\+快速构建高性能的分布式服务。Nebula自身核心代码只有2万行左右（不计算proto文件生成的代码）。
 
-&emsp;&emsp;Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建集群才能真正体现其价值。为了能快速搭建分布式服务集群，开发了包括各种类型服务的NebulaBootstrap集群解决方案。
+&emsp;&emsp;Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建分布式服务才能真正体现其价值。为了能快速搭建分布式服务，开发了包括各种类型服务的NebulaBootstrap解决方案。
 
 &emsp;&emsp;Nebula是一个产线级的框架和分布式解决方案项目，适用于即时通讯、数据采集、实时计算、消息推送等应用场景，也适用于web后台服务。Nebula已有即时通讯、埋点数据采集及实时分析的生产应用案例，很快将有一个面向庞大用户群的推荐引擎产线应用案例。
 
@@ -119,8 +120,8 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 <a name="ChangeLog"></a>
 ## 版本历史
 #### v0.8
-   - 兼容gcc4.8编译器（从这个版本起无须另行安装5以上gcc版本，可以无障碍无等待地在个人机器上部署和测试，也为应用于生产铺平道路。之前Bwar的埋>
-   - 增加CPU亲和度设置以支持将Worker进程绑定CPU功能。(有人测试过繁忙的多核服务器，绑定CPU比不绑定CPU有20%左右的性能提升，现在Nebua可以让开发
+   - 兼容gcc4.8编译器（从这个版本起无须另行安装5以上gcc版本，可以无障碍无等待地在个人机器上部署和测试，也为应用于生产铺平道路。之前Bwar的埋点数据采集和实时分析的生产项目Nebio是在服务器上安装了gcc6才部署的。）
+   - 增加CPU亲和度设置以支持将Worker进程绑定CPU功能。(有人测试过繁忙的多核服务器，绑定CPU比不绑定CPU有20%左右的性能提升，现在Nebua可以让开发者自行选择是否绑定CPU)
    - 增加动态库（业务插件）卸载功能。（支持不停服务升级的重要功能）
 #### v0.7
    - 增加配置管理，NebulaBeacon为配置中心，使用说明见命令行管理工具[Nebcli](https://github.com/Bwar/Nebcli)的get和set命令。
@@ -145,4 +146,7 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
    - 第一个可运行并http测试通过的版本
 <br/>
 
+<a name="Exchange"></a>
+## 交流与反馈
+&emsp;&emsp;Bug、修改建议、疑惑都欢迎提在issue中，或加入qq群[809075299](点击链接加入群聊【Nebula框架技术交流】：https://jq.qq.com/?_wv=1027&k=5qL2ZKt)交流。
 

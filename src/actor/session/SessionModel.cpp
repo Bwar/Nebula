@@ -29,7 +29,6 @@ SessionModel::SessionModel(const std::string& strSessionId, ev_tstamp dSessionTi
 
 SessionModel::~SessionModel()
 {
-    // TODO Auto-generated destructor stub
 }
 
 } /* namespace neb */

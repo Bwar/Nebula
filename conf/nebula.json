@@ -91,6 +91,13 @@
             "step":[]
         }
     ],
+    "runtime":{
+        "engines":[],
+        "chains":[
+            "chain_1":["step1", "engine1", ["step2A", "step2B", "step2C"], "step3", "engine2"],
+            "chain_2":[]
+        ]
+    }
     "//custom": "自定义配置，用于通过框架层带给业务",
     "custom": {}
 }

@@ -25,11 +25,11 @@ class ActorFactory
 public:
     static ActorFactory* Instance()
     {
-        if (nullptr == m_pActorFactory)
+        if (nullptr == s_pActorFactory)
         {
-            m_pActorFactory = new ActorFactory();
+            s_pActorFactory = new ActorFactory();
         }
-        return(m_pActorFactory);
+        return(s_pActorFactory);
     }
 
     virtual ~ActorFactory(){};
@@ -39,13 +39,13 @@ public:
 
 private:
     ActorFactory(){};
-    static ActorFactory<Targs...>* m_pActorFactory;
+    static ActorFactory<Targs...>* s_pActorFactory;
     std::unordered_map<std::string, std::function<Actor*(Targs&&...)> > m_mapCreateFunction;
 };
 
 
 template<typename ...Targs>
-ActorFactory<Targs...>* ActorFactory<Targs...>::m_pActorFactory = nullptr;
+ActorFactory<Targs...>* ActorFactory<Targs...>::s_pActorFactory = nullptr;
 
 template<typename ...Targs>
 bool ActorFactory<Targs...>::Regist(const std::string& strTypeName, std::function<Actor*(Targs&&... args)> pFunc)

@@ -45,6 +45,8 @@ class Session;
 class Timer;
 class Context;
 class Step;
+class Engine;
+class Chain;
 
 class Actor: public std::enable_shared_from_this<Actor>
 {
@@ -59,6 +61,8 @@ public:
         ACT_PB_STEP             = 5,        ///< Step步骤对象，处理pb请求或响应
         ACT_HTTP_STEP           = 6,        ///< Step步骤对象，处理http请求或响应
         ACT_REDIS_STEP          = 7,        ///< Step步骤对象，处理redis请求或响应
+        ACT_ENGINE              = 8,        ///< Engine链块对象，Engine（IO无关）与Step（异步IO相关）共同构成功能链
+        ACT_CHAIN               = 9,        ///< Chain链对象，用于将Engine和Step组合成功能链
     };
 
 public:
@@ -222,6 +226,11 @@ protected:
         return(m_dTimeout);
     }
 
+    uint32 GetChainId() const
+    {
+        return(m_uiChainId);
+    }
+
 private:
     void SetWorker(Worker* pWorker);
 
@@ -229,9 +238,12 @@ private:
 
     void SetActorName(const std::string& strActorName);
 
+    void SetChainId(uint32 uiChainId);
+
 private:
     ACTOR_TYPE m_eActorType;
-    uint32 m_ulSequence;
+    uint32 m_uiSequence;
+    uint32 m_uiChainId;
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
     Worker* m_pWorker;
@@ -244,8 +256,10 @@ private:
     friend class WorkerFriend;
     friend class Cmd;
     friend class Module;
-    friend class Step;
     friend class Session;
+    friend class Step;
+    friend class Engine;
+    friend class Chain;
 };
 
 

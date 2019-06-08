@@ -193,6 +193,9 @@ public:     // about worker
         void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
     template <typename ...Targs>
+    std::shared_ptr<Actor> MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs... args);
+
+    template <typename ...Targs>
     std::shared_ptr<Step> MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args);
 
     template <typename ...Targs>
@@ -342,6 +345,11 @@ private:
     // Cmd and Module
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;
     std::unordered_map<std::string, std::shared_ptr<Module> > m_mapModule;
+
+    // Chain and Engine
+    std::unordered_map<std::string, std::vector<std::string> > m_mapChainConf;              //key为Chain的类名，value为由Engine类名和Step类名构成的ChainBlock链
+    std::unordered_map<uint32, std::shared_ptr<Chain> > m_mapChain;                         //key为Chain的Sequence
+    std::unordered_map<uint32, std::shared_ptr<Engine> > m_mapEngine;                       //key为Engine的Sequence
 
     // Step and Session
     std::unordered_map<uint32, std::shared_ptr<Step> > m_mapCallbackStep;
