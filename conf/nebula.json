@@ -77,7 +77,9 @@
                 { "path": "im/user/logout", "class": "neb::ModuleLogout" }
             ],
             "session":["im::SessionUser", "im::SessionGroup"],
-            "step":["im::StepLogin", "im::StepLogout", "im::StepP2pChat"]
+            "step":["im::StepLogin", "im::StepLogout", "im::StepP2pChat"],
+            "matrix":[],
+            "chain":[]
         },
         {
             "so_path": "plugins/ChatMsg.so",
@@ -88,13 +90,14 @@
             ],
             "module": [],
             "session":[],
-            "step":[]
+            "step":[],
+            "matrix":[],
+            "chain":[]
         }
     ],
     "runtime":{
-        "engines":[],
         "chains":[
-            "chain_1":["step1", "engine1", ["step2A", "step2B", "step2C"], "step3", "engine2"],
+            "chain_1":["step1", "matrix1", ["step2A", "step2B", "step2C"], "step3", "matrix2"],
             "chain_2":[]
         ]
     }

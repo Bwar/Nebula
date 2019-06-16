@@ -28,6 +28,8 @@ extern "C" {
 #include "actor/step/PbStep.hpp"
 #include "actor/step/RedisStep.hpp"
 #include "actor/step/Step.hpp"
+#include "actor/matrix/Matrix.hpp"
+#include "actor/chain/Chain.hpp"
 #include "actor/session/sys_session/SessionLogger.hpp"
 
 namespace neb
@@ -110,6 +112,15 @@ void WorkerImpl::SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher,
     {
         Session* pSession = (Session*)watcher->data;
         ((Worker*)pSession->m_pWorker)->m_pImpl->OnSessionTimeout(std::dynamic_pointer_cast<Session>(pSession->shared_from_this()));
+    }
+}
+
+void WorkerImpl::ChainTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
+{
+    if (watcher->data != NULL)
+    {
+        Chain* pChain = (Chain*)watcher->data;
+        ((Worker*)pChain->m_pWorker)->m_pImpl->OnChainTimeout(std::dynamic_pointer_cast<Chain>(pChain->shared_from_this()));
     }
 }
 
@@ -538,6 +549,7 @@ bool WorkerImpl::OnStepTimeout(std::shared_ptr<Step> pStep)
         }
         else
         {
+            Remove(pStep->GetChainId());
             Remove(pStep);
             return(true);
         }
@@ -574,6 +586,35 @@ bool WorkerImpl::OnSessionTimeout(std::shared_ptr<Session> pSession)
     }
 }
 
+bool WorkerImpl::OnChainTimeout(std::shared_ptr<Chain> pChain)
+{
+    ev_timer* watcher = pChain->MutableTimerWatcher();
+    LOG4_TRACE("CHECK watchar = 0x%x", watcher);
+    ev_tstamp after = pChain->GetActiveTime() - ev_now(m_loop) + pChain->GetTimeout();
+    if (after > 0)    // 定时时间内被重新刷新过，重新设置定时器
+    {
+        ev_timer_stop (m_loop, watcher);
+        ev_timer_set (watcher, after + ev_time() - ev_now(m_loop), 0);
+        ev_timer_start (m_loop, watcher);
+        return(true);
+    }
+    else    // 会话已超时
+    {
+        if (CMD_STATUS_RUNNING == pChain->Timeout())
+        {
+            ev_timer_stop (m_loop, watcher);
+            ev_timer_set (watcher, pChain->GetTimeout() + ev_time() - ev_now(m_loop), 0);
+            ev_timer_start (m_loop, watcher);
+            return(true);
+        }
+        else
+        {
+            Remove(pChain->GetSequence());
+            return(true);
+        }
+    }
+}
+
 bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
 {
     LOG4_TRACE(" ");
@@ -605,24 +646,37 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
                 }
                 else
                 {
+                    E_CMD_STATUS eResult;
+                    uint32 uiChainId;
                     auto interrupt_step_iter = step_iter;
                     for (; step_iter != channel_iter->second->listPipelineStep.end(); ++step_iter)
                     {
-                        (*step_iter)->Callback(c, status, nullptr);
+                        eResult = (*step_iter)->Callback(c, status, nullptr);
+                        uiChainId = (*step_iter)->GetChainId();
                         Remove(*step_iter);
-                    }
-                    if (step_iter == channel_iter->second->listPipelineStep.begin())    // 第一个命令就发送失败
-                    {
-                        channel_iter->second->listPipelineStep.clear();
-                    }
-                    else
-                    {
-                        for (auto erase_step_iter = interrupt_step_iter;
-                                        erase_step_iter != channel_iter->second->listPipelineStep.end();)
+                        if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
                         {
-                            channel_iter->second->listPipelineStep.erase(erase_step_iter++);
+                            if (0 != uiChainId)
+                            {
+	                            auto chain_iter = m_mapChain.find(uiChainId);
+	                            if (chain_iter != m_mapChain.end())
+	                            {
+                                    chain_iter->second->SetActiveTime(ev_now(m_loop));
+		                            chain_iter->second->NextBlock();
+	                            }
+                            }
+                        }
+                        else
+                        {
+                            Remove(uiChainId);
                         }
                     }
+                    for (auto erase_step_iter = interrupt_step_iter;
+                                   erase_step_iter != channel_iter->second->listPipelineStep.end();)
+                    {
+                        Remove((*erase_step_iter)->GetChainId());
+                    }
+                    channel_iter->second->listPipelineStep.clear();
                     DelNamedRedisChannel(channel_iter->second->GetIdentify());
                     m_mapRedisChannel.erase(channel_iter);
                 }
@@ -634,6 +688,7 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
                             step_iter != channel_iter->second->listPipelineStep.end(); ++step_iter)
             {
                 (*step_iter)->Callback(c, status, nullptr);
+                Remove((*step_iter)->GetChainId());
                 Remove(*step_iter);
             }
             channel_iter->second->listPipelineStep.clear();
@@ -656,6 +711,7 @@ bool WorkerImpl::OnRedisDisconnected(const redisAsyncContext *c, int status)
             LOG4_ERROR("RedisDisconnect callback error %d of redis cmd: %s",
                             c->err, (*step_iter)->CmdToString().c_str());
             (*step_iter)->Callback(c, c->err, nullptr);
+            Remove((*step_iter)->GetChainId());
             Remove(std::dynamic_pointer_cast<Step>(*step_iter));
         }
         channel_iter->second->listPipelineStep.clear();
@@ -687,6 +743,8 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
             {
                 LOG4_ERROR("callback error %d of redis cmd: %s", c->err, (*step_iter)->CmdToString().c_str());
                 (*step_iter)->Callback(c, c->err, (redisReply*)reply);
+                Remove((*step_iter)->GetChainId());
+                Remove(*step_iter);
             }
             channel_iter->second->listPipelineStep.clear();
 
@@ -698,8 +756,21 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
             if (step_iter != channel_iter->second->listPipelineStep.end())
             {
                 LOG4_TRACE("callback of redis cmd: %s", (*step_iter)->CmdToString().c_str());
-                (*step_iter)->Callback(c, REDIS_OK, (redisReply*)reply);
+                E_CMD_STATUS eResult = (*step_iter)->Callback(c, REDIS_OK, (redisReply*)reply);
                 channel_iter->second->listPipelineStep.erase(step_iter);
+                if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
+                {
+                    uint32 uiChainId = (*step_iter)->GetChainId();
+                    if (0 != uiChainId)
+                    {
+	                    auto chain_iter = m_mapChain.find(uiChainId);
+	                    if (chain_iter != m_mapChain.end())
+	                    {
+                            chain_iter->second->SetActiveTime(ev_now(m_loop));
+		                    chain_iter->second->NextBlock();
+	                    }
+                    }
+                }
                 //freeReplyObject(reply);
             }
             else
@@ -714,15 +785,201 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
     return(true);
 }
 
+bool WorkerImpl::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
+{
+    pSharedActor->m_dTimeout = (0 == pSharedActor->m_dTimeout) ? m_stWorkerInfo.dStepTimeout : pSharedActor->m_dTimeout;
+    ev_timer* timer_watcher = pSharedActor->MutableTimerWatcher();
+    if (NULL == timer_watcher)
+    {
+        return(false);
+    }
+
+    if (nullptr != pCreator)
+    {
+        pSharedActor->m_strTraceId = pCreator->m_strTraceId;
+    }
+
+    std::shared_ptr<Step> pSharedStep = std::dynamic_pointer_cast<Step>(pSharedActor);
+    for (auto iter = pSharedStep->m_setNextStepSeq.begin(); iter != pSharedStep->m_setNextStepSeq.end(); ++iter)
+    {
+        auto callback_iter = m_mapCallbackStep.find(*iter);
+        if (callback_iter != m_mapCallbackStep.end())
+        {
+            callback_iter->second->m_setPreStepSeq.insert(pSharedStep->GetSequence());
+        }
+    }
+
+    auto ret = m_mapCallbackStep.insert(std::make_pair(pSharedStep->GetSequence(), pSharedStep));
+    if (ret.second)
+    {
+        if (gc_dNoTimeout != pSharedStep->m_dTimeout)
+        {
+            ev_timer_init (timer_watcher, StepTimeoutCallback, pSharedStep->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
+            ev_timer_start (m_loop, timer_watcher);
+        }
+        LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
+                        pSharedStep->GetSequence(), pSharedStep->GetActiveTime(), pSharedStep->GetTimeout());
+        auto step_class_iter = m_mapLoadedStep.find(pSharedStep->GetActorName());
+        if (step_class_iter != m_mapLoadedStep.end())
+        {
+            step_class_iter->second.insert(pSharedStep->GetSequence());
+        }
+        return(true);
+    }
+    else
+    {
+        return(false);
+    }
+}
+
+bool WorkerImpl::TransformToSharedSession(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
+{
+    ev_timer* timer_watcher = pSharedActor->MutableTimerWatcher();
+    if (NULL == timer_watcher)
+    {
+        return(false);
+    }
+
+    if (nullptr != pCreator)
+    {
+        std::ostringstream oss;
+        oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << pSharedActor->GetSequence();
+        pSharedActor->m_strTraceId = std::move(oss.str());
+    }
+    std::shared_ptr<Session> pSharedSession = std::dynamic_pointer_cast<Session>(pSharedActor);
+    auto ret = m_mapCallbackSession.insert(std::make_pair(pSharedSession->GetSessionId(), pSharedSession));
+    if (ret.second)
+    {
+        if (gc_dNoTimeout != pSharedSession->m_dTimeout)
+        {
+            ev_timer_init (timer_watcher, SessionTimeoutCallback, pSharedSession->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
+            ev_timer_start (m_loop, timer_watcher);
+        }
+        auto session_class_iter = m_mapLoadedSession.find(pSharedSession->GetActorName());
+        if (session_class_iter != m_mapLoadedSession.end())
+        {
+            session_class_iter->second.insert(pSharedSession->GetSessionId());
+        }
+        return(true);
+    }
+    else
+    {
+        return(false);
+    }
+}
+
+bool WorkerImpl::TransformToSharedCmd(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
+{
+    if (nullptr != pCreator)
+    {
+        pSharedActor->m_strTraceId = pCreator->m_strTraceId;
+    }
+    std::shared_ptr<Cmd> pSharedCmd = std::dynamic_pointer_cast<Cmd>(pSharedActor);
+    auto ret = m_mapCmd.insert(std::make_pair(pSharedCmd->GetCmd(), pSharedCmd));
+    if (ret.second)
+    {
+        if (pSharedCmd->Init())
+        {
+            auto cmd_class_iter = m_mapLoadedCmd.find(pSharedCmd->GetActorName());
+            if (cmd_class_iter != m_mapLoadedCmd.end())
+            {
+                cmd_class_iter->second.insert(pSharedCmd->GetCmd());
+            }
+            return(true);
+        }
+    }
+    return(false);
+}
+
+bool WorkerImpl::TransformToSharedModule(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
+{
+    if (nullptr != pCreator)
+    {
+        pSharedActor->m_strTraceId = pCreator->m_strTraceId;
+    }
+
+    std::shared_ptr<Module> pSharedModule = std::dynamic_pointer_cast<Module>(pSharedActor);
+    auto ret = m_mapModule.insert(std::make_pair(pSharedModule->GetModulePath(), pSharedModule));
+    if (ret.second)
+    {
+        if (pSharedModule->Init())
+        {
+            auto module_class_iter = m_mapLoadedModule.find(pSharedModule->GetActorName());
+            if (module_class_iter != m_mapLoadedModule.end())
+            {
+                module_class_iter->second.insert(pSharedModule->GetModulePath());
+            }
+            return(true);
+        }
+    }
+    return(false);
+}
+
+bool WorkerImpl::TransformToSharedMatrix(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
+{
+    std::shared_ptr<Matrix> pSharedMatrix = std::dynamic_pointer_cast<Matrix>(pSharedActor);
+    auto ret = m_mapMatrix.insert(std::make_pair(pSharedMatrix->GetActorName(), pSharedMatrix));
+    if (ret.second)
+    {
+        if (pSharedMatrix->Init())
+        {
+            return(true);
+        }
+    }
+    return(false);
+}
+
+bool WorkerImpl::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
+{
+    ev_timer* timer_watcher = pSharedActor->MutableTimerWatcher();
+    if (NULL == timer_watcher)
+    {
+        return(false);
+    }
+
+    if (nullptr != pCreator)
+    {
+        pSharedActor->m_strTraceId = pCreator->m_strTraceId;
+    }
+
+    std::shared_ptr<Chain> pSharedChain = std::dynamic_pointer_cast<Chain>(pSharedActor);
+    auto chain_conf_iter = m_mapChainConf.find(pSharedActor->GetActorName());
+    if (chain_conf_iter == m_mapChainConf.end())
+    {
+        LOG4_ERROR("no chain block config for \"%s\"", pSharedActor->GetActorName().c_str());
+        return(false);
+    }
+    else
+    {
+        pSharedChain->InitChainBlock(chain_conf_iter->second);
+    }
+    auto ret = m_mapChain.insert(std::make_pair(pSharedChain->GetSequence(), pSharedChain));
+    if (ret.second)
+    {
+        if (gc_dNoTimeout != pSharedChain->m_dTimeout)
+        {
+            ev_timer_init (timer_watcher, ChainTimeoutCallback, pSharedChain->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
+            ev_timer_start (m_loop, timer_watcher);
+        }
+        auto chain_class_iter = m_mapLoadedChain.find(pSharedChain->GetActorName());
+        if (chain_class_iter != m_mapLoadedChain.end())
+        {
+            chain_class_iter->second.insert(pSharedChain->GetSequence());
+        }
+        return(true);
+    }
+    return(false);
+}
+
 time_t WorkerImpl::GetNowTime() const
 {
     return((time_t)ev_now(m_loop));
 }
 
-bool WorkerImpl::ResetTimeout(std::shared_ptr<Actor> pActor)
+bool WorkerImpl::ResetTimeout(std::shared_ptr<Actor> pSharedActor)
 {
-    ev_timer* watcher = pActor->MutableTimerWatcher();
-    ev_tstamp after = ev_now(m_loop) + pActor->GetTimeout();
+    ev_timer* watcher = pSharedActor->MutableTimerWatcher();
+    ev_tstamp after = ev_now(m_loop) + pSharedActor->GetTimeout();
     ev_timer_stop (m_loop, watcher);
     ev_timer_set (watcher, after + ev_time() - ev_now(m_loop), 0);
     ev_timer_start (m_loop, watcher);
@@ -1810,6 +2067,11 @@ void WorkerImpl::LoadDynamicSymbol(CJsonObject& oOneSoConf)
         std::unordered_set<uint32> setStep;
         m_mapLoadedStep.insert(std::make_pair(oOneSoConf["step"](l), setStep));
     }
+    for (int l = 0; l < oOneSoConf["chain"].GetArraySize(); ++l)
+    {
+        std::unordered_set<uint32> setChain;
+        m_mapLoadedChain.insert(std::make_pair(oOneSoConf["chain"](l), setChain));
+    }
 }
 
 void WorkerImpl::UnloadDynamicSymbol(CJsonObject& oOneSoConf)
@@ -1884,6 +2146,31 @@ void WorkerImpl::UnloadDynamicSymbol(CJsonObject& oOneSoConf)
         }
         std::unordered_set<uint32> setStep;
         m_mapLoadedStep.insert(std::make_pair(oOneSoConf["step"](l), setStep));
+    }
+    for (int k = 0; k < oOneSoConf["matrix"].GetArraySize(); ++k)
+    {
+        auto class_iter = m_mapMatrix.find(oOneSoConf["matrix"](k));
+        if (class_iter != m_mapMatrix.end())
+        {
+            m_mapMatrix.erase(class_iter);
+        }
+    }
+    for (int k = 0; k < oOneSoConf["chain"].GetArraySize(); ++k)
+    {
+        auto class_iter = m_mapLoadedChain.find(oOneSoConf["chain"](k));
+        if (class_iter != m_mapLoadedChain.end())
+        {
+            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
+            {
+                auto chain_iter = m_mapChain.find(*id_iter);
+                if (chain_iter != m_mapChain.end())
+                {
+                    m_mapChain.erase(chain_iter);
+                }
+            }
+            class_iter->second.clear();
+            m_mapLoadedChain.erase(class_iter);
+        }
     }
 }
 
@@ -2073,6 +2360,19 @@ bool WorkerImpl::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strEr
     }
 }
 
+std::shared_ptr<Matrix> WorkerImpl::GetMatrix(const std::string& strMatrixName)
+{
+    auto iter = m_mapMatrix.find(strMatrixName);
+    if (iter == m_mapMatrix.end())
+    {
+        return(nullptr);
+    }
+    else
+    {
+        return(iter->second);
+    }
+}
+
 std::shared_ptr<SocketChannel> WorkerImpl::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsClient, bool bWithSsl)
 {
     LOG4_DEBUG("iFd %d, codec_type %d, with_ssl = %d", iFd, eCodecType, bWithSsl);
@@ -2226,6 +2526,29 @@ void WorkerImpl::Remove(std::shared_ptr<Session> pSession)
     {
         LOG4_TRACE("erase session(session_id %s)", pSession->GetSessionId().c_str());
         m_mapCallbackSession.erase(iter);
+    }
+}
+
+void WorkerImpl::Remove(uint32 uiChainId)
+{
+    auto chain_iter = m_mapChain.find(uiChainId);
+    if (chain_iter != m_mapChain.end())
+    {
+        std::shared_ptr<Chain> pChain = chain_iter->second;
+        auto class_iter = m_mapLoadedChain.find(pChain->GetActorName());
+        if (class_iter != m_mapLoadedChain.end())
+        {
+            auto id_iter = class_iter->second.find(pChain->GetSequence());
+            if (id_iter != class_iter->second.end())
+            {
+                class_iter->second.erase(id_iter);
+            }
+        }
+        if (pChain->MutableTimerWatcher() != NULL)
+        {
+            ev_timer_stop (m_loop, pChain->MutableTimerWatcher());
+        }
+        m_mapChain.erase(chain_iter);
     }
 }
 
@@ -2384,9 +2707,19 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
                                 oMsgHead.cmd(), oMsgHead.seq(), step_iter->second->GetSequence(),
                                 step_iter->second->GetActiveTime());
                 eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(pChannel, oMsgHead, oMsgBody);
-                if (CMD_STATUS_RUNNING != eResult)
+                if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
                 {
+                    uint32 uiChainId = step_iter->second->GetChainId();
                     Remove(step_iter->second);
+                    if (0 != uiChainId)
+                    {
+                        auto chain_iter = m_mapChain.find(uiChainId);
+                        if (chain_iter != m_mapChain.end())
+                        {
+                            chain_iter->second->SetActiveTime(ev_now(m_loop));
+                            chain_iter->second->NextBlock();
+                        }
+                    }
                 }
             }
             ExecAssemblyLine(pChannel, oMsgHead, oMsgBody);
@@ -2452,11 +2785,21 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
             E_CMD_STATUS eResult;
             http_step_iter->second->SetActiveTime(ev_now(m_loop));
             eResult = (std::dynamic_pointer_cast<HttpStep>(http_step_iter->second))->Callback(pChannel, oHttpMsg);
-            if (CMD_STATUS_RUNNING != eResult)
+            if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
             {
+                uint32 uiChainId = http_step_iter->second->GetChainId();
                 Remove(http_step_iter->second);
                 pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED, 0);
                 AddNamedSocketChannel(pChannel->m_pImpl->GetIdentify(), pChannel);       // push back to named socket channel pool.
+                if (0 != uiChainId)
+                {
+                    auto chain_iter = m_mapChain.find(uiChainId);
+                    if (chain_iter != m_mapChain.end())
+                    {
+                        chain_iter->second->SetActiveTime(ev_now(m_loop));
+                        chain_iter->second->NextBlock();
+                    }
+                }
             }
         }
     }
@@ -2477,9 +2820,19 @@ void WorkerImpl::ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const
                 E_CMD_STATUS eResult;
                 step_iter->second->SetActiveTime(ev_now(m_loop));
                 eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(pChannel, oMsgHead, oMsgBody);
-                if (CMD_STATUS_RUNNING != eResult)
+                if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
                 {
+                    uint32 uiChainId = step_iter->second->GetChainId();
                     Remove(step_iter->second);
+                    if (0 != uiChainId)
+                    {
+                        auto chain_iter = m_mapChain.find(uiChainId);
+                        if (chain_iter != m_mapChain.end())
+                        {
+                            chain_iter->second->SetActiveTime(ev_now(m_loop));
+                            chain_iter->second->NextBlock();
+                        }
+                    }
                 }
             }
         }

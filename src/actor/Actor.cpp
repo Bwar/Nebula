@@ -96,6 +96,11 @@ bool Actor::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg,
     return(m_pWorker->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
 }
 
+std::shared_ptr<Matrix> Actor::GetMatrix(const std::string& strMatrixName)
+{
+    return(m_pWorker->GetMatrix(strMatrixName));
+}
+
 std::shared_ptr<Context> Actor::GetContext()
 {
     return(m_pContext);
@@ -188,11 +193,6 @@ ev_timer* Actor::MutableTimerWatcher()
 void Actor::SetActorName(const std::string& strActorName)
 {
     m_strActorName = strActorName;
-}
-
-void Actor::SetChainId(uint32 uiChainId)
-{
-    m_uiChainId = uiChainId;
 }
 
 } /* namespace neb */

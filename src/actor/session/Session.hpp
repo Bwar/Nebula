@@ -13,12 +13,12 @@
 #include <queue>
 #include "labor/Worker.hpp"
 #include "actor/DynamicCreator.hpp"
-#include "SessionModel.hpp"
+#include "actor/ActorWithCreation.hpp"
 
 namespace neb
 {
 
-class Session: public SessionModel
+class Session: public ActorWithCreation
 {
 public:
     Session(uint32 ulSessionId, ev_tstamp dSessionTimeout = 60.0);
@@ -31,6 +31,11 @@ public:
      * @brief 会话超时回调
      */
     virtual E_CMD_STATUS Timeout() = 0;
+
+    const std::string& GetSessionId() const
+    {
+        return(m_strSessionId);
+    }
 
     /**
      * @brief 检查Session内数据是否已加载
@@ -52,11 +57,6 @@ public:
     bool IsLoading();
     void SetLoading(); 
 
-protected:
-    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs... args);
-
 private:
     uint32 PopWaitingStep();
 
@@ -64,26 +64,9 @@ private:
     friend class WorkerImpl;
     bool m_bDataReady;
     bool m_bDataLoading;
+    std::string m_strSessionId;
     std::queue<uint32> m_vecWaitingStep;
 };
-
-template <typename ...Targs>
-void Session::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
-{
-    m_pWorker->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
-}
-
-template <typename ...Targs>
-std::shared_ptr<Step> Session::MakeSharedStep(const std::string& strStepName, Targs... args)
-{
-    return(m_pWorker->MakeSharedStep(this, strStepName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Session> Session::MakeSharedSession(const std::string& strSessionName, Targs... args)
-{
-    return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs>(args)...));
-}
 
 } /* namespace neb */
 

@@ -12,16 +12,17 @@
 
 #include "codec/CodecHttp.hpp"
 #include "labor/Worker.hpp"
-#include "ModuleModel.hpp"
+#include "actor/ActorWithCreation.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
-class Module: public ModuleModel
+class Module: public ActorWithCreation
 {
 public:
     Module(const std::string& strModulePath)
-        : ModuleModel(strModulePath)
+        : ActorWithCreation(Actor::ACT_MODULE, gc_dNoTimeout),
+          m_strModulePath(strModulePath)
     {
     }
     Module(const Module&) = delete;
@@ -52,28 +53,15 @@ public:
                     const HttpMsg& oHttpMsg) = 0;
 
 protected:
-    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs... args);
+    const std::string& GetModulePath() const
+    {
+        return(m_strModulePath);
+    }
+
+private:
+    std::string m_strModulePath;
+    friend class WorkerImpl;
 };
-
-template <typename ...Targs>
-void Module::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
-{
-    m_pWorker->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
-}
-
-template <typename ...Targs>
-std::shared_ptr<Step> Module::MakeSharedStep(const std::string& strStepName, Targs... args)
-{
-    return(m_pWorker->MakeSharedStep(this, strStepName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Session> Module::MakeSharedSession(const std::string& strSessionName, Targs... args)
-{
-    return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs>(args)...));
-}
 
 } /* namespace neb */
 

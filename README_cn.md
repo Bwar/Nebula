@@ -45,10 +45,8 @@
 
 构建步骤：
 1. wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip
-2. unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap
-3. cd NebulaBootstrap
-4. chmod u+x deploy.sh
-5. ./deploy.sh
+2. unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap; cd NebulaBootstrap; chmod u+x deploy.sh
+3. ./deploy.sh
 
 &emsp;&emsp;执行deploy脚本后即完成了Nebula及NebulaBootstrap分布式服务的编译和部署，Nebula的依赖也由deploy在构建Nebula前自动从网上下载并编译部署。虽然不像autoconf、automake那样众所周知，但deploy脚本完成的不止是autoconf、automake的工作。deploy之后的目录结构如下：
 * NebulaBootstrap

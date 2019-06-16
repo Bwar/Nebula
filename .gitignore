@@ -13,3 +13,4 @@ aclocal.m4
 compile
 install-sh
 missing
+*.swp

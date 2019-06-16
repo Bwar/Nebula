@@ -53,10 +53,8 @@ MIT License
 
    build step：
 1. wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip
-2. unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap
-3. cd NebulaBootstrap
-4. chmod u+x deploy.sh
-5. ./deploy.sh
+2. unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap; chmod u+x deploy.sh; chmod u+x deploy.sh
+3. ./deploy.sh
 
    Run deploy.sh, the NebulaBootstrap distributed services were build completed. The reliance of Nebula was also automatically downloaded and compiled by deploy from the Internet before the construction of Nebula. The deploy path as follows:
 * NebulaBootstrap

@@ -38,14 +38,14 @@ class WorkerFriend;
 
 class SocketChannel;
 class RedisChannel;
-class ActorCreator;
+class ActorWithCreation;
 class Cmd;
 class Module;
 class Session;
 class Timer;
 class Context;
 class Step;
-class Engine;
+class Matrix;
 class Chain;
 
 class Actor: public std::enable_shared_from_this<Actor>
@@ -58,11 +58,12 @@ public:
         ACT_MODULE              = 2,        ///< Module对象，处理带url path的http请求
         ACT_SESSION             = 3,        ///< Session会话对象
         ACT_TIMER               = 4,        ///< 定时器对象
-        ACT_PB_STEP             = 5,        ///< Step步骤对象，处理pb请求或响应
-        ACT_HTTP_STEP           = 6,        ///< Step步骤对象，处理http请求或响应
-        ACT_REDIS_STEP          = 7,        ///< Step步骤对象，处理redis请求或响应
-        ACT_ENGINE              = 8,        ///< Engine链块对象，Engine（IO无关）与Step（异步IO相关）共同构成功能链
-        ACT_CHAIN               = 9,        ///< Chain链对象，用于将Engine和Step组合成功能链
+        ACT_CONTEXT             = 5,        ///< 会话上下文对象
+        ACT_PB_STEP             = 6,        ///< Step步骤对象，处理pb请求或响应
+        ACT_HTTP_STEP           = 7,        ///< Step步骤对象，处理http请求或响应
+        ACT_REDIS_STEP          = 8,        ///< Step步骤对象，处理redis请求或响应
+        ACT_MATRIX              = 9,        ///< Matrix模型对象，Matrix（IO无关）与Step（异步IO相关）共同构成功能链
+        ACT_CHAIN               = 10,       ///< Chain链对象，用于将Matrix和Step组合成功能链
     };
 
 public:
@@ -81,8 +82,9 @@ public:
         return(m_strActorName);
     }
 
-protected:
     uint32 GetSequence();
+
+protected:
     uint32 GetNodeId() const;
     uint32 GetWorkerIndex() const;
     ev_tstamp GetDefaultTimeout() const;
@@ -100,6 +102,7 @@ protected:
     std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     std::shared_ptr<Session> GetSession(const std::string& strSessionId);
     bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
+    std::shared_ptr<Matrix> GetMatrix(const std::string& strMatrixName);
     std::shared_ptr<Context> GetContext();
     void SetContext(std::shared_ptr<Context> pContext);
     void AddAssemblyLine(std::shared_ptr<Session> pSession);
@@ -226,11 +229,6 @@ protected:
         return(m_dTimeout);
     }
 
-    uint32 GetChainId() const
-    {
-        return(m_uiChainId);
-    }
-
 private:
     void SetWorker(Worker* pWorker);
 
@@ -238,12 +236,9 @@ private:
 
     void SetActorName(const std::string& strActorName);
 
-    void SetChainId(uint32 uiChainId);
-
 private:
     ACTOR_TYPE m_eActorType;
     uint32 m_uiSequence;
-    uint32 m_uiChainId;
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
     Worker* m_pWorker;
@@ -254,11 +249,7 @@ private:
 
     friend class WorkerImpl;
     friend class WorkerFriend;
-    friend class Cmd;
-    friend class Module;
-    friend class Session;
-    friend class Step;
-    friend class Engine;
+    friend class ActorWithCreation;
     friend class Chain;
 };
 

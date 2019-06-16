@@ -15,14 +15,18 @@ namespace neb
 {
 
 Session::Session(uint32 ulSessionId, ev_tstamp dSessionTimeout)
-    : SessionModel(ulSessionId, dSessionTimeout),
+    : ActorWithCreation(Actor::ACT_SESSION, dSessionTimeout),
       m_bDataReady(false), m_bDataLoading(false)
 {
+    std::ostringstream oss;
+    oss << ulSessionId;
+    m_strSessionId = std::move(oss.str());
 }
 
 Session::Session(const std::string& strSessionId, ev_tstamp dSessionTimeout)
-    : SessionModel(strSessionId, dSessionTimeout),
-      m_bDataReady(false), m_bDataLoading(false)
+    : ActorWithCreation(Actor::ACT_SESSION, dSessionTimeout),
+      m_bDataReady(false), m_bDataLoading(false),
+      m_strSessionId(strSessionId)
 {
 }
 

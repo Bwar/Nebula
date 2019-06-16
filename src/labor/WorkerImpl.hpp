@@ -62,10 +62,6 @@ extern "C" {
 
 #include "actor/Actor.hpp"
 #include "actor/ActorFactory.hpp"
-#include "actor/cmd/CmdModel.hpp"
-#include "actor/cmd/ModuleModel.hpp"
-#include "actor/session/SessionModel.hpp"
-#include "actor/step/StepModel.hpp"
 #include "actor/session/sys_session/SessionNode.hpp"
 
 namespace neb
@@ -78,9 +74,12 @@ class Cmd;
 class Module;
 class Session;
 class Timer;
+class Context;
 class Step;
 class RedisStep;
 class HttpStep;
+class Matrix;
+class Chain;
 
 class SessionLogger;
 
@@ -138,6 +137,7 @@ public:
     static void PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
+    static void ChainTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void RedisConnectCallback(const redisAsyncContext *c, int status);
     static void RedisDisconnectCallback(const redisAsyncContext *c, int status);
     static void RedisCmdCallback(redisAsyncContext *c, void *reply, void *privdata);
@@ -157,6 +157,7 @@ public:
     bool OnIoTimeout(std::shared_ptr<SocketChannel> pChannel);
     bool OnStepTimeout(std::shared_ptr<Step> pStep);
     bool OnSessionTimeout(std::shared_ptr<Session> pSession);
+    bool OnChainTimeout(std::shared_ptr<Chain> pChain);
     bool OnRedisConnected(const redisAsyncContext *c, int status);
     bool OnRedisDisconnected(const redisAsyncContext *c, int status);
     bool OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privdata);
@@ -185,7 +186,7 @@ public:     // about worker
     }
 
     virtual time_t GetNowTime() const;
-    virtual bool ResetTimeout(std::shared_ptr<Actor> pActor);
+    virtual bool ResetTimeout(std::shared_ptr<Actor> pSharedActor);
 
     template <typename ...Targs>
         void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
@@ -197,15 +198,27 @@ public:     // about worker
 
     template <typename ...Targs>
     std::shared_ptr<Step> MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args);
+    bool TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
     template <typename ...Targs>
     std::shared_ptr<Session> MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
+    bool TransformToSharedSession(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
     template <typename ...Targs>
     std::shared_ptr<Cmd> MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
+    bool TransformToSharedCmd(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
     template <typename ...Targs>
     std::shared_ptr<Module> MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
+    bool TransformToSharedModule(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
+
+    template <typename ...Targs>
+    std::shared_ptr<Matrix> MakeSharedMatrix(Actor* pCreator, const std::string& strMatrixName, Targs... args);
+    bool TransformToSharedMatrix(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
+
+    template <typename ...Targs>
+    std::shared_ptr<Chain> MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs... args);
+    bool TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
 public:     // about channel
     virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
@@ -244,6 +257,9 @@ public:
     // about step
     virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
 
+    // about matrix
+    virtual std::shared_ptr<Matrix> GetMatrix(const std::string& strMatrixName);
+
 public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worker自身的初始化和更新）
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
     virtual bool AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel);
@@ -281,6 +297,7 @@ protected:
     bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
     void Remove(std::shared_ptr<Step> pStep);
     void Remove(std::shared_ptr<Session> pSession);
+    void Remove(uint32 uiChainId);
     void ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const std::string& strClientData);
 
     /**
@@ -341,15 +358,16 @@ private:
     std::unordered_map<std::string, std::unordered_set<std::string> > m_mapLoadedModule;    //key为ModuleClassName，value为strModulePath集合
     std::unordered_map<std::string, std::unordered_set<uint32> > m_mapLoadedStep;           //key为StepClassName，value为uiSeq集合
     std::unordered_map<std::string, std::unordered_set<std::string> > m_mapLoadedSession;   //key为SessionClassName，value为strSessionId集合
+    std::unordered_map<std::string, std::unordered_set<uint32> > m_mapLoadedChain;          //key为ChainClassName，value为uiSeq集合
 
     // Cmd and Module
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;
     std::unordered_map<std::string, std::shared_ptr<Module> > m_mapModule;
 
-    // Chain and Engine
-    std::unordered_map<std::string, std::vector<std::string> > m_mapChainConf;              //key为Chain的类名，value为由Engine类名和Step类名构成的ChainBlock链
+    // Chain and Matrix
+    std::unordered_map<std::string, std::vector<std::string> > m_mapChainConf;              //key为Chain的类名，value为由Matrix类名和Step类名构成的ChainBlock链
     std::unordered_map<uint32, std::shared_ptr<Chain> > m_mapChain;                         //key为Chain的Sequence
-    std::unordered_map<uint32, std::shared_ptr<Engine> > m_mapEngine;                       //key为Engine的Sequence
+    std::unordered_map<std::string, std::shared_ptr<Matrix> > m_mapMatrix;                  //key为Matrix类名
 
     // Step and Session
     std::unordered_map<uint32, std::shared_ptr<Step> > m_mapCallbackStep;
