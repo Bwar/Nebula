@@ -96,11 +96,11 @@
         }
     ],
     "runtime":{
-        "chains":[
+        "chains":{
             "chain_1":["step1", "matrix1", ["step2A", "step2B", "step2C"], "step3", "matrix2"],
             "chain_2":[]
-        ]
-    }
+        }
+    },
     "//custom": "自定义配置，用于通过框架层带给业务",
     "custom": {}
 }

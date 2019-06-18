@@ -15,8 +15,9 @@
 namespace neb
 {
 
-Chain::Chain(ev_tstamp dChainTimeout)
-    : ActorWithCreation(Actor::ACT_CHAIN, dChainTimeout)
+Chain::Chain(const std::string& strChainId, ev_tstamp dChainTimeout)
+    : ActorWithCreation(Actor::ACT_CHAIN, dChainTimeout),
+      m_strChainId(strChainId)
 {
 }
 
@@ -24,53 +25,77 @@ Chain::~Chain()
 {
 }
 
-void Chain::InitChainBlock(const std::vector<std::string>& vecChainBlock)
+void Chain::Init(const std::queue<std::unordered_set<std::string> >& queChainBlock)
 {
-    m_vecChainBlock = vecChainBlock;
+    m_queChainBlock = queChainBlock;
 }
 
 E_CMD_STATUS Chain::NextBlock()
 {
-    auto iter = m_vecChainBlock.begin();
-    LOG4_TRACE("(%s)", (*iter).c_str());
-    std::shared_ptr<Matrix> pSharedMatrix = GetMatrix(*iter);
-    if (pSharedMatrix == nullptr)
+    if (m_queChainBlock.empty())
     {
-        std::shared_ptr<Actor> pSharedActor = m_pWorker->MakeSharedActor(this, *iter);
-        // pSharedMatrix->SetContext(GetContext()); it had been set in MakeSharedActor().
-        m_vecChainBlock.erase(iter);
-        if (Actor::ACT_MATRIX == pSharedActor->GetActorType())
+        return(CMD_STATUS_COMPLETED);
+    }
+    bool bStepInBlock = false;     ///< 当前链块存在Step
+    E_CMD_STATUS eResult = CMD_STATUS_START;
+    std::unordered_set<std::string>& setTurnBlocks = m_queChainBlock.front();
+    for (auto iter = setTurnBlocks.begin(); iter != setTurnBlocks.end(); ++iter)
+    {
+        LOG4_TRACE("(%s)", (*iter).c_str());
+        std::shared_ptr<Matrix> pSharedMatrix = GetMatrix(*iter);
+        if (pSharedMatrix == nullptr)
         {
-            if (CMD_STATUS_FAULT
-                    == (std::dynamic_pointer_cast<Matrix>(pSharedActor))->Launch())
+            std::shared_ptr<Actor> pSharedActor = m_pWorker->MakeSharedActor(this, *iter);
+            // pSharedMatrix->SetContext(GetContext()); it had been set in MakeSharedActor().
+            if (Actor::ACT_MATRIX == pSharedActor->GetActorType())
             {
+                pSharedMatrix = std::dynamic_pointer_cast<Matrix>(pSharedActor);
+                eResult = pSharedMatrix->Submit();
+                pSharedMatrix->SetContext(nullptr);
+                if (CMD_STATUS_FAULT == eResult)
+                {
+                    return(CMD_STATUS_FAULT);
+                }
+            }
+            else if (Actor::ACT_PB_STEP == pSharedActor->GetActorType()
+                    || Actor::ACT_HTTP_STEP == pSharedActor->GetActorType()
+                    || Actor::ACT_REDIS_STEP == pSharedActor->GetActorType())
+            {
+                bStepInBlock = true;
+                std::shared_ptr<Step> pSharedStep = std::dynamic_pointer_cast<Step>(pSharedActor);
+                pSharedStep->SetChainId(GetSequence());
+                eResult = pSharedStep->Emit();
+                if (CMD_STATUS_FAULT == eResult)
+                {
+                    return(CMD_STATUS_FAULT);
+                }
+            }
+            else
+            {
+                LOG4_ERROR("\"%s\" is not a Matrix or Step, only Matrix and Step can be a Chain block.",
+                        pSharedActor->GetActorName().c_str());
                 return(CMD_STATUS_FAULT);
             }
-            return(NextBlock());
-        }
-        else if (Actor::ACT_PB_STEP == pSharedActor->GetActorType()
-                || Actor::ACT_HTTP_STEP == pSharedActor->GetActorType()
-                || Actor::ACT_REDIS_STEP == pSharedActor->GetActorType())
-        {
-            std::shared_ptr<Step> pSharedStep = std::dynamic_pointer_cast<Step>(pSharedActor);
-            pSharedStep->SetChainId(GetSequence());
-            return(pSharedStep->Emit());
         }
         else
         {
-            LOG4_ERROR("\"%s\" is not a Matrix or Step, only Matrix and Step can be a Chain block.",
-                    pSharedActor->GetActorName().c_str());
-            return(CMD_STATUS_FAULT);
+            pSharedMatrix->SetContext(GetContext());
+            eResult = pSharedMatrix->Submit();
+            pSharedMatrix->SetContext(nullptr);
+            if (CMD_STATUS_FAULT == eResult)
+            {
+                return(CMD_STATUS_FAULT);
+            }
         }
     }
-    else
+
+    m_queChainBlock.pop();
+    if (bStepInBlock)
     {
-        m_vecChainBlock.erase(iter);
-        pSharedMatrix->SetContext(GetContext());
-        if (CMD_STATUS_FAULT == pSharedMatrix->Launch())
-        {
-            return(CMD_STATUS_FAULT);
-        }
+        return(CMD_STATUS_RUNNING);
+    }
+    else   // 只有Matrix的链块（无IO回调），执行完当前链块后立即执行下一个链块
+    {
         return(NextBlock());
     }
 }

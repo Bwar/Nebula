@@ -10,7 +10,8 @@
 #ifndef SRC_ACTOR_CHAIN_CHAIN_HPP_
 #define SRC_ACTOR_CHAIN_CHAIN_HPP_
 
-#include <vector>
+#include <queue>
+#include <unordered_set>
 #include "labor/Worker.hpp"
 #include "actor/ActorWithCreation.hpp"
 #include "actor/DynamicCreator.hpp"
@@ -18,25 +19,32 @@
 namespace neb
 {
 
-class Chain: public ActorWithCreation
+class Chain final: public ActorWithCreation
 {
 public:
-    Chain(ev_tstamp dChainTimeout = 60.0);
+    Chain(const std::string& strChainId, ev_tstamp dChainTimeout = 60.0);
     Chain(const Chain&) = delete;
     Chain& operator=(const Chain&) = delete;
     virtual ~Chain();
 
+    void Init(const std::queue<std::unordered_set<std::string> >& queChainBlock);
     /**
-     * @brief 会话超时回调
+     * @brief 调用链超时回调
      */
     virtual E_CMD_STATUS Timeout() = 0;
 
+    const std::string& GetChainId() const
+    {
+        return(m_strChainId);
+    }
+
 private:
-    void InitChainBlock(const std::vector<std::string>& vecChainBlock);
     E_CMD_STATUS NextBlock();
 
 private:
-    std::vector<std::string> m_vecChainBlock;
+    std::string m_strChainId;
+    // queue的每个元素称为链块（std::unordered_set<std::string>）
+    std::queue<std::unordered_set<std::string> > m_queChainBlock;
 
     friend class WorkerImpl;
 };

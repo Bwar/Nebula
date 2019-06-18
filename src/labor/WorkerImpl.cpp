@@ -943,15 +943,15 @@ bool WorkerImpl::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> 
     }
 
     std::shared_ptr<Chain> pSharedChain = std::dynamic_pointer_cast<Chain>(pSharedActor);
-    auto chain_conf_iter = m_mapChainConf.find(pSharedActor->GetActorName());
+    auto chain_conf_iter = m_mapChainConf.find(pSharedChain->GetChainId());
     if (chain_conf_iter == m_mapChainConf.end())
     {
-        LOG4_ERROR("no chain block config for \"%s\"", pSharedActor->GetActorName().c_str());
+        LOG4_ERROR("no chain block config for \"%s\"", pSharedChain->GetChainId().c_str());
         return(false);
     }
     else
     {
-        pSharedChain->InitChainBlock(chain_conf_iter->second);
+        pSharedChain->Init(chain_conf_iter->second);
     }
     auto ret = m_mapChain.insert(std::make_pair(pSharedChain->GetSequence(), pSharedChain));
     if (ret.second)
@@ -960,11 +960,6 @@ bool WorkerImpl::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> 
         {
             ev_timer_init (timer_watcher, ChainTimeoutCallback, pSharedChain->m_dTimeout + ev_time() - ev_now(m_loop), 0.);
             ev_timer_start (m_loop, timer_watcher);
-        }
-        auto chain_class_iter = m_mapLoadedChain.find(pSharedChain->GetActorName());
-        if (chain_class_iter != m_mapLoadedChain.end())
-        {
-            chain_class_iter->second.insert(pSharedChain->GetSequence());
         }
         return(true);
     }
@@ -2067,11 +2062,6 @@ void WorkerImpl::LoadDynamicSymbol(CJsonObject& oOneSoConf)
         std::unordered_set<uint32> setStep;
         m_mapLoadedStep.insert(std::make_pair(oOneSoConf["step"](l), setStep));
     }
-    for (int l = 0; l < oOneSoConf["chain"].GetArraySize(); ++l)
-    {
-        std::unordered_set<uint32> setChain;
-        m_mapLoadedChain.insert(std::make_pair(oOneSoConf["chain"](l), setChain));
-    }
 }
 
 void WorkerImpl::UnloadDynamicSymbol(CJsonObject& oOneSoConf)
@@ -2153,23 +2143,6 @@ void WorkerImpl::UnloadDynamicSymbol(CJsonObject& oOneSoConf)
         if (class_iter != m_mapMatrix.end())
         {
             m_mapMatrix.erase(class_iter);
-        }
-    }
-    for (int k = 0; k < oOneSoConf["chain"].GetArraySize(); ++k)
-    {
-        auto class_iter = m_mapLoadedChain.find(oOneSoConf["chain"](k));
-        if (class_iter != m_mapLoadedChain.end())
-        {
-            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
-            {
-                auto chain_iter = m_mapChain.find(*id_iter);
-                if (chain_iter != m_mapChain.end())
-                {
-                    m_mapChain.erase(chain_iter);
-                }
-            }
-            class_iter->second.clear();
-            m_mapLoadedChain.erase(class_iter);
         }
     }
 }
@@ -2535,15 +2508,6 @@ void WorkerImpl::Remove(uint32 uiChainId)
     if (chain_iter != m_mapChain.end())
     {
         std::shared_ptr<Chain> pChain = chain_iter->second;
-        auto class_iter = m_mapLoadedChain.find(pChain->GetActorName());
-        if (class_iter != m_mapLoadedChain.end())
-        {
-            auto id_iter = class_iter->second.find(pChain->GetSequence());
-            if (id_iter != class_iter->second.end())
-            {
-                class_iter->second.erase(id_iter);
-            }
-        }
         if (pChain->MutableTimerWatcher() != NULL)
         {
             ev_timer_stop (m_loop, pChain->MutableTimerWatcher());

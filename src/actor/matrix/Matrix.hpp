@@ -46,7 +46,7 @@ public:
     /**
      * @brief 提交
      */
-    virtual E_CMD_STATUS Launch() = 0;
+    virtual E_CMD_STATUS Submit() = 0;
 
 private:
     friend class WorkerImpl;

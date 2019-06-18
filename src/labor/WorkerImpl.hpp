@@ -47,6 +47,7 @@ extern "C" {
 #include <unordered_map>
 #include <unordered_set>
 #include <list>
+#include <queue>
 #include <sstream>
 #include <fstream>
 
@@ -358,14 +359,13 @@ private:
     std::unordered_map<std::string, std::unordered_set<std::string> > m_mapLoadedModule;    //key为ModuleClassName，value为strModulePath集合
     std::unordered_map<std::string, std::unordered_set<uint32> > m_mapLoadedStep;           //key为StepClassName，value为uiSeq集合
     std::unordered_map<std::string, std::unordered_set<std::string> > m_mapLoadedSession;   //key为SessionClassName，value为strSessionId集合
-    std::unordered_map<std::string, std::unordered_set<uint32> > m_mapLoadedChain;          //key为ChainClassName，value为uiSeq集合
 
     // Cmd and Module
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;
     std::unordered_map<std::string, std::shared_ptr<Module> > m_mapModule;
 
     // Chain and Matrix
-    std::unordered_map<std::string, std::vector<std::string> > m_mapChainConf;              //key为Chain的类名，value为由Matrix类名和Step类名构成的ChainBlock链
+    std::unordered_map<std::string, std::queue<std::unordered_set<std::string> > > m_mapChainConf; //key为Chain的配置名，value为由Matrix类名和Step类名构成的ChainBlock链
     std::unordered_map<uint32, std::shared_ptr<Chain> > m_mapChain;                         //key为Chain的Sequence
     std::unordered_map<std::string, std::shared_ptr<Matrix> > m_mapMatrix;                  //key为Matrix类名
 
