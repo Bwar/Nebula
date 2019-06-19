@@ -11,17 +11,17 @@
 #define SRC_ACTOR_CMD_CMD_HPP_
 
 #include "labor/Worker.hpp"
-#include "actor/ActorWithCreation.hpp"
+#include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
 
-class Cmd: public ActorWithCreation
+class Cmd: public Actor
 {
 public:
     Cmd(int32 iCmd)
-        : ActorWithCreation(Actor::ACT_CMD, gc_dNoTimeout),
+        : Actor(Actor::ACT_CMD, gc_dNoTimeout),
           m_iCmd(iCmd)
     {
     }

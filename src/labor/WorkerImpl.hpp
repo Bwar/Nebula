@@ -61,9 +61,7 @@ extern "C" {
 #include "codec/Codec.hpp"
 #include "logger/NetLogger.hpp"
 
-#include "actor/Actor.hpp"
 #include "actor/ActorFactory.hpp"
-#include "actor/session/sys_session/SessionNode.hpp"
 
 namespace neb
 {
@@ -82,6 +80,7 @@ class HttpStep;
 class Matrix;
 class Chain;
 
+class SessionNode;
 class SessionLogger;
 
 class WorkerImpl
@@ -196,31 +195,32 @@ public:     // about worker
 
     template <typename ...Targs>
     std::shared_ptr<Actor> MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs... args);
-    std::shared_ptr<Actor> InitializeSharedActor(Actor* pCreator, std::shared_ptr<Actor> pSharedActor, const std::string& strActorName);
 
     template <typename ...Targs>
     std::shared_ptr<Step> MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args);
-    bool TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
     template <typename ...Targs>
     std::shared_ptr<Session> MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
-    bool TransformToSharedSession(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
     template <typename ...Targs>
     std::shared_ptr<Cmd> MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
-    bool TransformToSharedCmd(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
     template <typename ...Targs>
     std::shared_ptr<Module> MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
-    bool TransformToSharedModule(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
     template <typename ...Targs>
     std::shared_ptr<Matrix> MakeSharedMatrix(Actor* pCreator, const std::string& strMatrixName, Targs... args);
-    bool TransformToSharedMatrix(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
     template <typename ...Targs>
     std::shared_ptr<Chain> MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs... args);
+
+    std::shared_ptr<Actor> InitializeSharedActor(Actor* pCreator, std::shared_ptr<Actor> pSharedActor, const std::string& strActorName);
+    bool TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
+    bool TransformToSharedSession(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
+    bool TransformToSharedCmd(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
+    bool TransformToSharedModule(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
+    bool TransformToSharedMatrix(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
 public:     // about channel
     virtual bool AddNetLogMsg(const MsgBody& oMsgBody);

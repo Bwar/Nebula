@@ -20,6 +20,7 @@ extern "C" {
 }
 #endif
 #include "labor/WorkerImpl.hpp"
+#include "labor/Worker.hpp"
 #include "actor/Actor.hpp"
 #include "actor/cmd/Cmd.hpp"
 #include "actor/cmd/Module.hpp"
@@ -30,6 +31,7 @@ extern "C" {
 #include "actor/step/Step.hpp"
 #include "actor/matrix/Matrix.hpp"
 #include "actor/chain/Chain.hpp"
+#include "actor/session/sys_session/SessionNode.hpp"
 #include "actor/session/sys_session/SessionLogger.hpp"
 
 namespace neb

@@ -16,7 +16,7 @@ namespace neb
 {
 
 Chain::Chain(const std::string& strChainId, ev_tstamp dChainTimeout)
-    : ActorWithCreation(Actor::ACT_CHAIN, dChainTimeout),
+    : Actor(Actor::ACT_CHAIN, dChainTimeout),
       m_strChainId(strChainId)
 {
 }
@@ -45,7 +45,7 @@ E_CMD_STATUS Chain::NextBlock()
         std::shared_ptr<Matrix> pSharedMatrix = GetMatrix(*iter);
         if (pSharedMatrix == nullptr)
         {
-            std::shared_ptr<Actor> pSharedActor = m_pWorker->MakeSharedActor(this, *iter);
+            std::shared_ptr<Actor> pSharedActor = MakeSharedActor(*iter);
             // pSharedMatrix->SetContext(GetContext()); it had been set in MakeSharedActor().
             if (Actor::ACT_MATRIX == pSharedActor->GetActorType())
             {

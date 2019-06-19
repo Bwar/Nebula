@@ -13,7 +13,7 @@ namespace neb
 {
 
 Step::Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
-    : ActorWithCreation(eActorType, dTimeout),
+    : Actor(eActorType, dTimeout),
       m_uiChainId(0)
 {
     if (nullptr != pNextStep)

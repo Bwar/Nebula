@@ -12,16 +12,16 @@
 
 #include "codec/CodecHttp.hpp"
 #include "labor/Worker.hpp"
-#include "actor/ActorWithCreation.hpp"
+#include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
-class Module: public ActorWithCreation
+class Module: public Actor
 {
 public:
     Module(const std::string& strModulePath)
-        : ActorWithCreation(Actor::ACT_MODULE, gc_dNoTimeout),
+        : Actor(Actor::ACT_MODULE, gc_dNoTimeout),
           m_strModulePath(strModulePath)
     {
     }

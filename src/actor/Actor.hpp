@@ -38,7 +38,7 @@ class WorkerFriend;
 
 class SocketChannel;
 class RedisChannel;
-class ActorWithCreation;
+class Actor;
 class Cmd;
 class Module;
 class Session;
@@ -71,6 +71,11 @@ public:
     Actor(const Actor&) = delete;
     Actor& operator=(const Actor&) = delete;
     virtual ~Actor();
+
+    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Actor> MakeSharedActor(const std::string& strActorName, Targs... args);
 
     ACTOR_TYPE GetActorType() const
     {
@@ -249,10 +254,32 @@ private:
 
     friend class WorkerImpl;
     friend class WorkerFriend;
-    friend class ActorWithCreation;
     friend class Chain;
 };
 
+template <typename ...Targs>
+void Actor::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
+{
+    m_pWorker->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
+}
+
+template <typename ...Targs>
+std::shared_ptr<Step> Actor::MakeSharedStep(const std::string& strStepName, Targs... args)
+{
+    return(m_pWorker->MakeSharedStep(this, strStepName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Session> Actor::MakeSharedSession(const std::string& strSessionName, Targs... args)
+{
+    return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Actor> Actor::MakeSharedActor(const std::string& strActorName, Targs... args)
+{
+    return(m_pWorker->MakeSharedActor(this, strActorName, std::forward<Targs>(args)...));
+}
 
 } /* namespace neb */
 

@@ -13,12 +13,12 @@
 #include <queue>
 #include "labor/Worker.hpp"
 #include "actor/DynamicCreator.hpp"
-#include "actor/ActorWithCreation.hpp"
+#include "actor/Actor.hpp"
 
 namespace neb
 {
 
-class Session: public ActorWithCreation
+class Session: public Actor
 {
 public:
     Session(uint32 ulSessionId, ev_tstamp dSessionTimeout = 60.0);

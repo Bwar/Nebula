@@ -15,7 +15,7 @@ namespace neb
 {
 
 Session::Session(uint32 ulSessionId, ev_tstamp dSessionTimeout)
-    : ActorWithCreation(Actor::ACT_SESSION, dSessionTimeout),
+    : Actor(Actor::ACT_SESSION, dSessionTimeout),
       m_bDataReady(false), m_bDataLoading(false)
 {
     std::ostringstream oss;
@@ -24,7 +24,7 @@ Session::Session(uint32 ulSessionId, ev_tstamp dSessionTimeout)
 }
 
 Session::Session(const std::string& strSessionId, ev_tstamp dSessionTimeout)
-    : ActorWithCreation(Actor::ACT_SESSION, dSessionTimeout),
+    : Actor(Actor::ACT_SESSION, dSessionTimeout),
       m_bDataReady(false), m_bDataLoading(false),
       m_strSessionId(strSessionId)
 {

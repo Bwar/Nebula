@@ -11,17 +11,17 @@
 #define SRC_ACTOR_MATRIX_HPP_
 
 #include "labor/Worker.hpp"
-#include "actor/ActorWithCreation.hpp"
+#include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
 
-class Matrix: public ActorWithCreation
+class Matrix: public Actor
 {
 public:
     Matrix()
-        : ActorWithCreation(Actor::ACT_MATRIX, gc_dNoTimeout)
+        : Actor(Actor::ACT_MATRIX, gc_dNoTimeout)
     {
     }
     Matrix(const Matrix&) = delete;

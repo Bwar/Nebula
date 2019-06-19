@@ -11,7 +11,7 @@
 #define SRC_ACTOR_STEP_STEP_HPP_
 
 #include "labor/Worker.hpp"
-#include "actor/ActorWithCreation.hpp"
+#include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
@@ -19,7 +19,7 @@ namespace neb
 
 class Chain;
 
-class Step: public ActorWithCreation
+class Step: public Actor
 {
 public:
     Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);

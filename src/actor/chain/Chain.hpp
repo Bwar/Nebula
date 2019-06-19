@@ -13,13 +13,13 @@
 #include <queue>
 #include <vector>
 #include "labor/Worker.hpp"
-#include "actor/ActorWithCreation.hpp"
+#include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
 
-class Chain final: public ActorWithCreation
+class Chain final: public Actor
 {
 public:
     Chain(const std::string& strChainId, ev_tstamp dChainTimeout = 60.0);
