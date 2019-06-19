@@ -365,7 +365,7 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Module> > m_mapModule;
 
     // Chain and Matrix
-    std::unordered_map<std::string, std::queue<std::unordered_set<std::string> > > m_mapChainConf; //key为Chain的配置名，value为由Matrix类名和Step类名构成的ChainBlock链
+    std::unordered_map<std::string, std::queue<std::vector<std::string> > > m_mapChainConf; //key为Chain的配置名，value为由Matrix类名和Step类名构成的ChainBlock链
     std::unordered_map<uint32, std::shared_ptr<Chain> > m_mapChain;                         //key为Chain的Sequence
     std::unordered_map<std::string, std::shared_ptr<Matrix> > m_mapMatrix;                  //key为Matrix类名
 

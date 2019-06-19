@@ -25,7 +25,7 @@ Chain::~Chain()
 {
 }
 
-void Chain::Init(const std::queue<std::unordered_set<std::string> >& queChainBlock)
+void Chain::Init(const std::queue<std::vector<std::string> >& queChainBlock)
 {
     m_queChainBlock = queChainBlock;
 }
@@ -38,8 +38,8 @@ E_CMD_STATUS Chain::NextBlock()
     }
     bool bStepInBlock = false;     ///< 当前链块存在Step
     E_CMD_STATUS eResult = CMD_STATUS_START;
-    std::unordered_set<std::string>& setTurnBlocks = m_queChainBlock.front();
-    for (auto iter = setTurnBlocks.begin(); iter != setTurnBlocks.end(); ++iter)
+    std::vector<std::string>& vecTurnBlocks = m_queChainBlock.front();
+    for (auto iter = vecTurnBlocks.begin(); iter != vecTurnBlocks.end(); ++iter)
     {
         LOG4_TRACE("(%s)", (*iter).c_str());
         std::shared_ptr<Matrix> pSharedMatrix = GetMatrix(*iter);

@@ -1055,6 +1055,29 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
         }
 #endif
     }
+
+    std::string strChainKey;
+    while (oJsonConf["runtime"]["chains"].GetKey(strChainKey))
+    {
+        std::queue<std::vector<std::string> > queChainBlocks;
+        for (int i = 0; i < oJsonConf["runtime"]["chains"][strChainKey].GetArraySize(); ++i)
+        {
+            std::vector<std::string> vecBlock;
+            if (oJsonConf["runtime"]["chains"][strChainKey][i].IsArray())
+            {
+                for (int j = 0; j < oJsonConf["runtime"]["chains"][strChainKey][i].GetArraySize(); ++j)
+                {
+                    vecBlock.push_back(std::move(oJsonConf["runtime"]["chains"][strChainKey][i](j)));
+                }
+            }
+            else
+            {
+                vecBlock.push_back(std::move(oJsonConf["runtime"]["chains"][strChainKey](i)));
+            }
+            queChainBlocks.push(std::move(vecBlock));
+        }
+        m_mapChainConf.insert(std::make_pair(strChainKey, std::move(queChainBlocks)));
+    }
     return(true);
 }
 

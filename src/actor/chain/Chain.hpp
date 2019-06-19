@@ -11,7 +11,7 @@
 #define SRC_ACTOR_CHAIN_CHAIN_HPP_
 
 #include <queue>
-#include <unordered_set>
+#include <vector>
 #include "labor/Worker.hpp"
 #include "actor/ActorWithCreation.hpp"
 #include "actor/DynamicCreator.hpp"
@@ -27,11 +27,11 @@ public:
     Chain& operator=(const Chain&) = delete;
     virtual ~Chain();
 
-    void Init(const std::queue<std::unordered_set<std::string> >& queChainBlock);
-    /**
-     * @brief 调用链超时回调
-     */
-    virtual E_CMD_STATUS Timeout() = 0;
+    void Init(const std::queue<std::vector<std::string> >& queChainBlock);
+    virtual E_CMD_STATUS Timeout()
+    {
+        return(CMD_STATUS_FAULT);
+    }
 
     const std::string& GetChainId() const
     {
@@ -44,7 +44,7 @@ private:
 private:
     std::string m_strChainId;
     // queue的每个元素称为链块（std::unordered_set<std::string>）
-    std::queue<std::unordered_set<std::string> > m_queChainBlock;
+    std::queue<std::vector<std::string> > m_queChainBlock;
 
     friend class WorkerImpl;
 };
