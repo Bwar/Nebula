@@ -785,6 +785,65 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
     return(true);
 }
 
+std::shared_ptr<Actor> WorkerImpl::InitializeSharedActor(Actor* pCreator, std::shared_ptr<Actor> pSharedActor, const std::string& strActorName)
+{
+    pSharedActor->SetWorker(m_pWorker);
+    pSharedActor->SetActiveTime(ev_now(m_loop));
+    pSharedActor->SetActorName(strActorName);
+    if (nullptr != pCreator)
+    {
+        pSharedActor->SetContext(pCreator->GetContext());
+    }
+    switch (pSharedActor->GetActorType())
+    {
+        case Actor::ACT_PB_STEP:
+        case Actor::ACT_HTTP_STEP:
+        case Actor::ACT_REDIS_STEP:
+            if (TransformToSharedStep(pCreator, pSharedActor))
+            {
+                return(pSharedActor);
+            }
+            break;
+        case Actor::ACT_SESSION:
+        case Actor::ACT_TIMER:
+        case Actor::ACT_CONTEXT:
+            if (TransformToSharedSession(pCreator, pSharedActor))
+            {
+                return(pSharedActor);
+            }
+            break;
+        case Actor::ACT_CMD:
+            if (TransformToSharedCmd(pCreator, pSharedActor))
+            {
+                return(pSharedActor);
+            }
+            break;
+        case Actor::ACT_MODULE:
+            if (TransformToSharedModule(pCreator, pSharedActor))
+            {
+                return(pSharedActor);
+            }
+            break;
+        case Actor::ACT_MATRIX:
+            if (TransformToSharedMatrix(pCreator, pSharedActor))
+            {
+                return(pSharedActor);
+            }
+            break;
+        case Actor::ACT_CHAIN:
+            if (TransformToSharedChain(pCreator, pSharedActor))
+            {
+                return(pSharedActor);
+            }
+            break;
+        default:
+            LOG4_ERROR("\"%s\" must be a Step, a Session, a Matrix, a Cmd or a Module.",
+                    strActorName.c_str());
+            return(nullptr);
+    }
+    return(nullptr);
+}
+
 bool WorkerImpl::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
 {
     pSharedActor->m_dTimeout = (0 == pSharedActor->m_dTimeout) ? m_stWorkerInfo.dStepTimeout : pSharedActor->m_dTimeout;

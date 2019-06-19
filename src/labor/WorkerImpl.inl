@@ -34,64 +34,10 @@ std::shared_ptr<Actor> WorkerImpl::MakeSharedActor(Actor* pCreator, const std::s
         LOG4_ERROR("failed to make shared actor \"%s\"", strActorName.c_str());
         return(nullptr);
     }
-    pActor->SetWorker(m_pWorker);
-    pActor->SetActiveTime(ev_now(m_loop));
-    pActor->SetActorName(strActorName);
-    if (nullptr != pCreator)
-    {
-        pActor->SetContext(pCreator->GetContext());
-    }
     std::shared_ptr<Actor> pSharedActor;
     pSharedActor.reset(pActor);
     pActor = nullptr;
-    switch (pSharedActor->GetActorType())
-    {
-        case Actor::ACT_PB_STEP:
-        case Actor::ACT_HTTP_STEP:
-        case Actor::ACT_REDIS_STEP:
-            if (TransformToSharedStep(pCreator, pSharedActor))
-            {
-                return(pSharedActor);
-            }
-            break;
-        case Actor::ACT_SESSION:
-        case Actor::ACT_TIMER:
-        case Actor::ACT_CONTEXT:
-            if (TransformToSharedSession(pCreator, pSharedActor))
-            {
-                return(pSharedActor);
-            }
-            break;
-        case Actor::ACT_CMD:
-            if (TransformToSharedCmd(pCreator, pSharedActor))
-            {
-                return(pSharedActor);
-            }
-            break;
-        case Actor::ACT_MODULE:
-            if (TransformToSharedModule(pCreator, pSharedActor))
-            {
-                return(pSharedActor);
-            }
-            break;
-        case Actor::ACT_MATRIX:
-            if (TransformToSharedMatrix(pCreator, pSharedActor))
-            {
-                return(pSharedActor);
-            }
-            break;
-        case Actor::ACT_CHAIN:
-            if (TransformToSharedChain(pCreator, pSharedActor))
-            {
-                return(pSharedActor);
-            }
-            break;
-        default:
-            LOG4_ERROR("\"%s\" must be a Step, a Session, a Matrix, a Cmd or a Module.",
-                    strActorName.c_str());
-            return(nullptr);
-    }
-    return(nullptr);
+    return(InitializeSharedActor(pCreator, pSharedActor, strActorName));
 }
 
 template <typename ...Targs>

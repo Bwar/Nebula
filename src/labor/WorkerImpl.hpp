@@ -196,6 +196,7 @@ public:     // about worker
 
     template <typename ...Targs>
     std::shared_ptr<Actor> MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs... args);
+    std::shared_ptr<Actor> InitializeSharedActor(Actor* pCreator, std::shared_ptr<Actor> pSharedActor, const std::string& strActorName);
 
     template <typename ...Targs>
     std::shared_ptr<Step> MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args);
