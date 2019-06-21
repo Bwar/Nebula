@@ -195,4 +195,9 @@ void Actor::SetActorName(const std::string& strActorName)
     m_strActorName = strActorName;
 }
 
+void Actor::SetTraceId(const std::string& strTraceId)
+{
+    m_strTraceId = strTraceId;
+}
+
 } /* namespace neb */

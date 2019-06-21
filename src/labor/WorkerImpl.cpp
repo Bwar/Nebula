@@ -453,7 +453,7 @@ bool WorkerImpl::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
             }
             if (CMD_STATUS_RUNNING != pStepConnectWorker->Emit(ERR_OK))
             {
-                Remove(pStepConnectWorker);
+                RemoveStep(pStepConnectWorker);
             }
             return(true);
         }
@@ -511,7 +511,7 @@ bool WorkerImpl::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
         {
             // 若返回非running状态，则表明发包时已出错，
             // 销毁连接过程在SendTo里已经完成，这里不需要再销毁连接
-            Remove(pStepIoTimeout);
+            RemoveStep(pStepIoTimeout);
         }
     }
     else        // 关闭文件描述符并清理相关资源
@@ -551,8 +551,8 @@ bool WorkerImpl::OnStepTimeout(std::shared_ptr<Step> pStep)
         }
         else
         {
-            Remove(pStep->GetChainId());
-            Remove(pStep);
+            RemoveChain(pStep->GetChainId());
+            RemoveStep(pStep);
             return(true);
         }
     }
@@ -582,7 +582,7 @@ bool WorkerImpl::OnSessionTimeout(std::shared_ptr<Session> pSession)
         }
         else
         {
-            Remove(pSession);
+            RemoveSession(pSession);
             return(true);
         }
     }
@@ -611,7 +611,7 @@ bool WorkerImpl::OnChainTimeout(std::shared_ptr<Chain> pChain)
         }
         else
         {
-            Remove(pChain->GetSequence());
+            RemoveChain(pChain->GetSequence());
             return(true);
         }
     }
@@ -655,7 +655,7 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
                     {
                         eResult = (*step_iter)->Callback(c, status, nullptr);
                         uiChainId = (*step_iter)->GetChainId();
-                        Remove(*step_iter);
+                        RemoveStep(*step_iter);
                         if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
                         {
                             if (0 != uiChainId)
@@ -664,19 +664,23 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
 	                            if (chain_iter != m_mapChain.end())
 	                            {
                                     chain_iter->second->SetActiveTime(ev_now(m_loop));
-		                            chain_iter->second->NextBlock();
+                                    eResult = chain_iter->second->NextBlock();
+                                    if (CMD_STATUS_RUNNING != eResult)
+                                    {
+                                        RemoveChain(uiChainId);
+                                    }
 	                            }
                             }
                         }
                         else
                         {
-                            Remove(uiChainId);
+                            RemoveChain(uiChainId);
                         }
                     }
                     for (auto erase_step_iter = interrupt_step_iter;
                                    erase_step_iter != channel_iter->second->listPipelineStep.end();)
                     {
-                        Remove((*erase_step_iter)->GetChainId());
+                        RemoveChain((*erase_step_iter)->GetChainId());
                     }
                     channel_iter->second->listPipelineStep.clear();
                     DelNamedRedisChannel(channel_iter->second->GetIdentify());
@@ -690,8 +694,8 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
                             step_iter != channel_iter->second->listPipelineStep.end(); ++step_iter)
             {
                 (*step_iter)->Callback(c, status, nullptr);
-                Remove((*step_iter)->GetChainId());
-                Remove(*step_iter);
+                RemoveChain((*step_iter)->GetChainId());
+                RemoveStep(*step_iter);
             }
             channel_iter->second->listPipelineStep.clear();
             DelNamedRedisChannel(channel_iter->second->GetIdentify());
@@ -713,8 +717,8 @@ bool WorkerImpl::OnRedisDisconnected(const redisAsyncContext *c, int status)
             LOG4_ERROR("RedisDisconnect callback error %d of redis cmd: %s",
                             c->err, (*step_iter)->CmdToString().c_str());
             (*step_iter)->Callback(c, c->err, nullptr);
-            Remove((*step_iter)->GetChainId());
-            Remove(std::dynamic_pointer_cast<Step>(*step_iter));
+            RemoveChain((*step_iter)->GetChainId());
+            RemoveStep(std::dynamic_pointer_cast<Step>(*step_iter));
         }
         channel_iter->second->listPipelineStep.clear();
 
@@ -745,8 +749,8 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
             {
                 LOG4_ERROR("callback error %d of redis cmd: %s", c->err, (*step_iter)->CmdToString().c_str());
                 (*step_iter)->Callback(c, c->err, (redisReply*)reply);
-                Remove((*step_iter)->GetChainId());
-                Remove(*step_iter);
+                RemoveChain((*step_iter)->GetChainId());
+                RemoveStep(*step_iter);
             }
             channel_iter->second->listPipelineStep.clear();
 
@@ -769,7 +773,11 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
 	                    if (chain_iter != m_mapChain.end())
 	                    {
                             chain_iter->second->SetActiveTime(ev_now(m_loop));
-		                    chain_iter->second->NextBlock();
+                            eResult = chain_iter->second->NextBlock();
+                            if (CMD_STATUS_RUNNING != eResult)
+                            {
+                                RemoveChain(uiChainId);
+                            }
 	                    }
                     }
                 }
@@ -781,7 +789,7 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
             }
         }
 
-        Remove(std::dynamic_pointer_cast<Step>(*step_iter));
+        RemoveStep(std::dynamic_pointer_cast<Step>(*step_iter));
     }
 
     return(true);
@@ -857,7 +865,7 @@ bool WorkerImpl::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> p
 
     if (nullptr != pCreator)
     {
-        pSharedActor->m_strTraceId = pCreator->m_strTraceId;
+        pSharedActor->SetTraceId(pCreator->GetTraceId());
     }
 
     std::shared_ptr<Step> pSharedStep = std::dynamic_pointer_cast<Step>(pSharedActor);
@@ -905,7 +913,7 @@ bool WorkerImpl::TransformToSharedSession(Actor* pCreator, std::shared_ptr<Actor
     {
         std::ostringstream oss;
         oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << pSharedActor->GetSequence();
-        pSharedActor->m_strTraceId = std::move(oss.str());
+        pSharedActor->SetTraceId(oss.str());
     }
     std::shared_ptr<Session> pSharedSession = std::dynamic_pointer_cast<Session>(pSharedActor);
     auto ret = m_mapCallbackSession.insert(std::make_pair(pSharedSession->GetSessionId(), pSharedSession));
@@ -933,7 +941,7 @@ bool WorkerImpl::TransformToSharedCmd(Actor* pCreator, std::shared_ptr<Actor> pS
 {
     if (nullptr != pCreator)
     {
-        pSharedActor->m_strTraceId = pCreator->m_strTraceId;
+        pSharedActor->SetTraceId(pCreator->GetTraceId());
     }
     std::shared_ptr<Cmd> pSharedCmd = std::dynamic_pointer_cast<Cmd>(pSharedActor);
     auto ret = m_mapCmd.insert(std::make_pair(pSharedCmd->GetCmd(), pSharedCmd));
@@ -956,7 +964,7 @@ bool WorkerImpl::TransformToSharedModule(Actor* pCreator, std::shared_ptr<Actor>
 {
     if (nullptr != pCreator)
     {
-        pSharedActor->m_strTraceId = pCreator->m_strTraceId;
+        pSharedActor->SetTraceId(pCreator->GetTraceId());
     }
 
     std::shared_ptr<Module> pSharedModule = std::dynamic_pointer_cast<Module>(pSharedActor);
@@ -1000,14 +1008,14 @@ bool WorkerImpl::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> 
 
     if (nullptr != pCreator)
     {
-        pSharedActor->m_strTraceId = pCreator->m_strTraceId;
+        pSharedActor->SetTraceId(pCreator->GetTraceId());
     }
 
     std::shared_ptr<Chain> pSharedChain = std::dynamic_pointer_cast<Chain>(pSharedActor);
-    auto chain_conf_iter = m_mapChainConf.find(pSharedChain->GetChainId());
+    auto chain_conf_iter = m_mapChainConf.find(pSharedChain->GetChainFlag());
     if (chain_conf_iter == m_mapChainConf.end())
     {
-        LOG4_ERROR("no chain block config for \"%s\"", pSharedChain->GetChainId().c_str());
+        LOG4_ERROR("no chain block config for \"%s\"", pSharedChain->GetChainFlag().c_str());
         return(false);
     }
     else
@@ -1394,7 +1402,7 @@ bool WorkerImpl::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uin
 {
     if (nullptr != pSender)
     {
-        (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+        (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
     }
     E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
     if (CODEC_STATUS_OK == eStatus)
@@ -1424,7 +1432,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
         LOG4_TRACE("no channel match %s.", strIdentify.c_str());
         if (nullptr != pSender)
         {
-            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
         }
         return(AutoSend(strIdentify, iCmd, uiSeq, oMsgBody));
     }
@@ -1432,7 +1440,7 @@ bool WorkerImpl::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
     {
         if (nullptr != pSender)
         {
-            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
         }
         E_CODEC_STATUS eStatus = (*named_iter->second.begin())->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK == eStatus)
@@ -1462,7 +1470,7 @@ bool WorkerImpl::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint
     {
         if (nullptr != pSender)
         {
-            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
         }
         return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody));
     }
@@ -1481,7 +1489,7 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, unsigned int uiFac
     {
         if (nullptr != pSender)
         {
-            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
         }
         return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody));
     }
@@ -1508,7 +1516,7 @@ bool WorkerImpl::SendOriented(const std::string& strNodeType, int32 iCmd, uint32
             {
                 if (nullptr != pSender)
                 {
-                    (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+                    (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
                 }
                 return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody));
             }
@@ -1538,7 +1546,7 @@ bool WorkerImpl::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 ui
     {
         if (nullptr != pSender)
         {
-            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->m_strTraceId);
+            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
         }
         bool bSendResult = false;
         for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
@@ -2516,7 +2524,7 @@ bool WorkerImpl::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     }
 }
 
-void WorkerImpl::Remove(std::shared_ptr<Step> pStep)
+void WorkerImpl::RemoveStep(std::shared_ptr<Step> pStep)
 {
     if (nullptr == pStep)
     {
@@ -2559,7 +2567,7 @@ void WorkerImpl::Remove(std::shared_ptr<Step> pStep)
     }
 }
 
-void WorkerImpl::Remove(std::shared_ptr<Session> pSession)
+void WorkerImpl::RemoveSession(std::shared_ptr<Session> pSession)
 {
     if (nullptr == pSession)
     {
@@ -2586,7 +2594,7 @@ void WorkerImpl::Remove(std::shared_ptr<Session> pSession)
     }
 }
 
-void WorkerImpl::Remove(uint32 uiChainId)
+void WorkerImpl::RemoveChain(uint32 uiChainId)
 {
     auto chain_iter = m_mapChain.find(uiChainId);
     if (chain_iter != m_mapChain.end())
@@ -2616,7 +2624,7 @@ void WorkerImpl::ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const st
         oMsgHead.set_len(oMsgBody.ByteSize());
         std::ostringstream oss;
         oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
-        cmd_iter->second->m_strTraceId = std::move(oss.str());
+        cmd_iter->second->SetTraceId(oss.str());
         cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
     }
 }
@@ -2633,13 +2641,13 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
         {
             if (oMsgBody.trace_id().length() > 10)
             {
-                cmd_iter->second->m_strTraceId = oMsgBody.trace_id();
+                cmd_iter->second->SetTraceId(oMsgBody.trace_id());
             }
             else
             {
                 std::ostringstream oss;
                 oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
-                cmd_iter->second->m_strTraceId = std::move(oss.str());
+                cmd_iter->second->SetTraceId(oss.str());
             }
             cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
         }
@@ -2673,13 +2681,13 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
                     {
                         if (oMsgBody.trace_id().length() > 10)
                         {
-                            cmd_iter->second->m_strTraceId = oMsgBody.trace_id();
+                            cmd_iter->second->SetTraceId(oMsgBody.trace_id());
                         }
                         else
                         {
                             std::ostringstream oss;
                             oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
-                            cmd_iter->second->m_strTraceId = std::move(oss.str());
+                            cmd_iter->second->SetTraceId(oss.str());
                         }
                         cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
                     }
@@ -2701,13 +2709,13 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
                     {
                         if (oMsgBody.trace_id().length() > 10)
                         {
-                            cmd_iter->second->m_strTraceId = oMsgBody.trace_id();
+                            cmd_iter->second->SetTraceId(oMsgBody.trace_id());
                         }
                         else
                         {
                             std::ostringstream oss;
                             oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
-                            cmd_iter->second->m_strTraceId = std::move(oss.str());
+                            cmd_iter->second->SetTraceId(oss.str());
                         }
                         cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
                     }
@@ -2758,14 +2766,18 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
                 if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
                 {
                     uint32 uiChainId = step_iter->second->GetChainId();
-                    Remove(step_iter->second);
+                    RemoveStep(step_iter->second);
                     if (0 != uiChainId)
                     {
                         auto chain_iter = m_mapChain.find(uiChainId);
                         if (chain_iter != m_mapChain.end())
                         {
                             chain_iter->second->SetActiveTime(ev_now(m_loop));
-                            chain_iter->second->NextBlock();
+                            eResult = chain_iter->second->NextBlock();
+                            if (CMD_STATUS_RUNNING != eResult)
+                            {
+                                RemoveChain(uiChainId);
+                            }
                         }
                     }
                 }
@@ -2807,7 +2819,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
             {
                 std::ostringstream oss;
                 oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
-                module_iter->second->m_strTraceId = std::move(oss.str());
+                module_iter->second->SetTraceId(oss.str());
                 module_iter->second->AnyMessage(pChannel, oHttpMsg);
             }
         }
@@ -2815,7 +2827,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
         {
             std::ostringstream oss;
             oss << m_stWorkerInfo.uiNodeId << "." << GetNowTime() << "." << GetSequence();
-            module_iter->second->m_strTraceId = std::move(oss.str());
+            module_iter->second->SetTraceId(oss.str());
             module_iter->second->AnyMessage(pChannel, oHttpMsg);
         }
     }
@@ -2836,7 +2848,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
             if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
             {
                 uint32 uiChainId = http_step_iter->second->GetChainId();
-                Remove(http_step_iter->second);
+                RemoveStep(http_step_iter->second);
                 pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED, 0);
                 AddNamedSocketChannel(pChannel->m_pImpl->GetIdentify(), pChannel);       // push back to named socket channel pool.
                 if (0 != uiChainId)
@@ -2845,7 +2857,11 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
                     if (chain_iter != m_mapChain.end())
                     {
                         chain_iter->second->SetActiveTime(ev_now(m_loop));
-                        chain_iter->second->NextBlock();
+                        eResult = chain_iter->second->NextBlock();
+                        if (CMD_STATUS_RUNNING != eResult)
+                        {
+                            RemoveChain(uiChainId);
+                        }
                     }
                 }
             }
@@ -2871,14 +2887,18 @@ void WorkerImpl::ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const
                 if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
                 {
                     uint32 uiChainId = step_iter->second->GetChainId();
-                    Remove(step_iter->second);
+                    RemoveStep(step_iter->second);
                     if (0 != uiChainId)
                     {
                         auto chain_iter = m_mapChain.find(uiChainId);
                         if (chain_iter != m_mapChain.end())
                         {
                             chain_iter->second->SetActiveTime(ev_now(m_loop));
-                            chain_iter->second->NextBlock();
+                            eResult = chain_iter->second->NextBlock();
+                            if (CMD_STATUS_RUNNING != eResult)
+                            {
+                                RemoveChain(uiChainId);
+                            }
                         }
                     }
                 }

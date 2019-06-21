@@ -87,6 +87,11 @@ public:
         return(m_strActorName);
     }
 
+    const std::string& GetTraceId() const
+    {
+        return(m_strTraceId);
+    }
+
     uint32 GetSequence();
 
 protected:
@@ -236,10 +241,9 @@ protected:
 
 private:
     void SetWorker(Worker* pWorker);
-
     ev_timer* MutableTimerWatcher();
-
     void SetActorName(const std::string& strActorName);
+    void SetTraceId(const std::string& strTraceId);
 
 private:
     ACTOR_TYPE m_eActorType;

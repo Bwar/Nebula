@@ -22,7 +22,7 @@ namespace neb
 class Chain final: public Actor
 {
 public:
-    Chain(const std::string& strChainId, ev_tstamp dChainTimeout = 60.0);
+    Chain(const std::string& strChainFlag, ev_tstamp dChainTimeout = 60.0);
     Chain(const Chain&) = delete;
     Chain& operator=(const Chain&) = delete;
     virtual ~Chain();
@@ -33,16 +33,16 @@ public:
         return(CMD_STATUS_FAULT);
     }
 
-    const std::string& GetChainId() const
+    const std::string& GetChainFlag() const
     {
-        return(m_strChainId);
+        return(m_strChainFlag);
     }
 
 private:
     E_CMD_STATUS NextBlock();
 
 private:
-    std::string m_strChainId;
+    std::string m_strChainFlag;
     // queue的每个元素称为链块（std::unordered_set<std::string>）
     std::queue<std::vector<std::string> > m_queChainBlock;
 

@@ -15,9 +15,9 @@
 namespace neb
 {
 
-Chain::Chain(const std::string& strChainId, ev_tstamp dChainTimeout)
+Chain::Chain(const std::string& strChainFlag, ev_tstamp dChainTimeout)
     : Actor(Actor::ACT_CHAIN, dChainTimeout),
-      m_strChainId(strChainId)
+      m_strChainFlag(strChainFlag)
 {
 }
 
@@ -52,6 +52,7 @@ E_CMD_STATUS Chain::NextBlock()
                 pSharedMatrix = std::dynamic_pointer_cast<Matrix>(pSharedActor);
                 eResult = pSharedMatrix->Submit();
                 pSharedMatrix->SetContext(nullptr);
+                pSharedMatrix->SetTraceId("");
                 if (CMD_STATUS_FAULT == eResult)
                 {
                     return(CMD_STATUS_FAULT);
@@ -80,8 +81,10 @@ E_CMD_STATUS Chain::NextBlock()
         else
         {
             pSharedMatrix->SetContext(GetContext());
+            pSharedMatrix->SetTraceId(GetTraceId());
             eResult = pSharedMatrix->Submit();
             pSharedMatrix->SetContext(nullptr);
+            pSharedMatrix->SetTraceId("");
             if (CMD_STATUS_FAULT == eResult)
             {
                 return(CMD_STATUS_FAULT);

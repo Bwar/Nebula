@@ -297,9 +297,9 @@ protected:
     bool RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
     std::shared_ptr<SocketChannel> CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsClient = false, bool bWithSsl = false);
     bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
-    void Remove(std::shared_ptr<Step> pStep);
-    void Remove(std::shared_ptr<Session> pSession);
-    void Remove(uint32 uiChainId);
+    void RemoveStep(std::shared_ptr<Step> pStep);
+    void RemoveSession(std::shared_ptr<Session> pSession);
+    void RemoveChain(uint32 uiChainId);
     void ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const std::string& strClientData);
 
     /**
@@ -366,8 +366,8 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Module> > m_mapModule;
 
     // Chain and Matrix
-    std::unordered_map<std::string, std::queue<std::vector<std::string> > > m_mapChainConf; //key为Chain的配置名，value为由Matrix类名和Step类名构成的ChainBlock链
-    std::unordered_map<uint32, std::shared_ptr<Chain> > m_mapChain;                         //key为Chain的Sequence
+    std::unordered_map<std::string, std::queue<std::vector<std::string> > > m_mapChainConf; //key为Chain的配置名(ChainFlag)，value为由Matrix类名和Step类名构成的ChainBlock链
+    std::unordered_map<uint32, std::shared_ptr<Chain> > m_mapChain;                         //key为Chain的Sequence，称为ChainId
     std::unordered_map<std::string, std::shared_ptr<Matrix> > m_mapMatrix;                  //key为Matrix类名
 
     // Step and Session

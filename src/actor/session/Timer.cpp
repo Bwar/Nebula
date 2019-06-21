@@ -14,12 +14,12 @@ namespace neb
 {
 
 Timer::Timer(uint32 ulSessionId, ev_tstamp dSessionTimeout)
-    : Session(ulSessionId, dSessionTimeout)
+    : Session(ACT_TIMER, ulSessionId, dSessionTimeout)
 {
 }
 
 Timer::Timer(const std::string& strSessionId, ev_tstamp dSessionTimeout)
-    : Session(strSessionId, dSessionTimeout)
+    : Session(ACT_TIMER, strSessionId, dSessionTimeout)
 {
 }
 

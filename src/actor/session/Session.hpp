@@ -57,6 +57,11 @@ public:
     bool IsLoading();
     void SetLoading(); 
 
+protected:
+    // 这两个构造函数专为Timer而用，其他Session子类不可使用
+    Session(ACTOR_TYPE eActorType, uint32 ulSessionId, ev_tstamp dSessionTimeout = 60.0);
+    Session(ACTOR_TYPE eActorType, const std::string& strSessionId, ev_tstamp dSessionTimeout = 60.0);
+
 private:
     uint32 PopWaitingStep();
 
