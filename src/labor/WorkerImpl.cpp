@@ -816,11 +816,13 @@ std::shared_ptr<Actor> WorkerImpl::InitializeSharedActor(Actor* pCreator, std::s
             break;
         case Actor::ACT_SESSION:
         case Actor::ACT_TIMER:
-        case Actor::ACT_CONTEXT:
             if (TransformToSharedSession(pCreator, pSharedActor))
             {
                 return(pSharedActor);
             }
+            break;
+        case Actor::ACT_CONTEXT:
+            return(pSharedActor);
             break;
         case Actor::ACT_CMD:
             if (TransformToSharedCmd(pCreator, pSharedActor))

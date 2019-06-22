@@ -10,6 +10,7 @@
 #ifndef SRC_ACTOR_HTTPCONTEXT_HPP_
 #define SRC_ACTOR_HTTPCONTEXT_HPP_
 
+#include "pb/http.pb.h"
 #include "labor/Worker.hpp"
 #include "actor/DynamicCreator.hpp"
 #include "Context.hpp"
@@ -38,7 +39,7 @@ public:
     bool Response(const std::string& strData);
 
 private:
-    HttpMsg m_oHttpMsg;
+    HttpMsg m_oReqHttpMsg;
     friend class WorkerImpl;
 };
 

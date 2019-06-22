@@ -41,6 +41,18 @@ std::shared_ptr<Actor> WorkerImpl::MakeSharedActor(Actor* pCreator, const std::s
 }
 
 template <typename ...Targs>
+std::shared_ptr<Cmd> WorkerImpl::MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
+{
+    return(std::dynamic_pointer_cast<Cmd>(MakeSharedActor(pCreator, strCmdName, std::forward<Targs>(args)...)));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Module> WorkerImpl::MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
+{
+    return(std::dynamic_pointer_cast<Module>(MakeSharedActor(pCreator, strModuleName, std::forward<Targs>(args)...)));
+}
+
+template <typename ...Targs>
 std::shared_ptr<Step> WorkerImpl::MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args)
 {
     return(std::dynamic_pointer_cast<Step>(MakeSharedActor(pCreator, strStepName, std::forward<Targs>(args)...)));
@@ -53,15 +65,9 @@ std::shared_ptr<Session> WorkerImpl::MakeSharedSession(Actor* pCreator, const st
 }
 
 template <typename ...Targs>
-std::shared_ptr<Cmd> WorkerImpl::MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
+std::shared_ptr<Context> WorkerImpl::MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs... args)
 {
-    return(std::dynamic_pointer_cast<Cmd>(MakeSharedActor(pCreator, strCmdName, std::forward<Targs>(args)...)));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Module> WorkerImpl::MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
-{
-    return(std::dynamic_pointer_cast<Module>(MakeSharedActor(pCreator, strModuleName, std::forward<Targs>(args)...)));
+    return(std::dynamic_pointer_cast<Context>(MakeSharedActor(pCreator, strContextName, std::forward<Targs>(args)...)));
 }
 
 template <typename ...Targs>

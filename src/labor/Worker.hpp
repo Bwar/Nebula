@@ -41,6 +41,9 @@ public:
     template <typename ...Targs>
     std::shared_ptr<Session> MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
 
+    template <typename ...Targs>
+    std::shared_ptr<Context> MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs... args);
+
     virtual uint32 GetSequence() const;
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
@@ -109,6 +112,12 @@ template <typename ...Targs>
 std::shared_ptr<Session> Worker::MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs... args)
 {
     return(m_pImpl->MakeSharedSession(pCreator, strSessionName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Context> Worker::MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs... args)
+{
+    return(m_pImpl->MakeSharedContext(pCreator, strContextName, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

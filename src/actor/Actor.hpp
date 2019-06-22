@@ -75,6 +75,7 @@ public:
     template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
     template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs... args);
     template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Context> MakeSharedContext(const std::string& strContextName, Targs... args);
     template <typename ...Targs> std::shared_ptr<Actor> MakeSharedActor(const std::string& strActorName, Targs... args);
 
     ACTOR_TYPE GetActorType() const
@@ -277,6 +278,12 @@ template <typename ...Targs>
 std::shared_ptr<Session> Actor::MakeSharedSession(const std::string& strSessionName, Targs... args)
 {
     return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Context> Actor::MakeSharedContext(const std::string& strContextName, Targs... args)
+{
+    return(m_pWorker->MakeSharedContext(this, strContextName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
