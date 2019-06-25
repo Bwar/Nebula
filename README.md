@@ -3,7 +3,7 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 [![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)<br/>
 
 1. [Overview](#Overview)
-2. [License](#Features)
+2. [Features](#Features)
 3. [Getting Start](#GettingStart)
 4. [Documentation](#Documentation)
 5. [Depend on](#DependOn)

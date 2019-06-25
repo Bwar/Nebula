@@ -3,7 +3,7 @@
 [![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)<br/>
 
 1. [概述](#Overview)
-2. [许可证](#Features)
+2. [功能](#Features)
 3. [开始](#GettingStart)
 4. [文档](#Documentation)
 5. [依赖](#DependOn)
@@ -26,7 +26,7 @@
 &emsp;&emsp;Nebula从一个从2016年5月至今在生产环境稳定运行的IM底层框架Starship发展而来。Nebula跟Starship框架（也是Bwar一人独立开发）有20%左右的结构相似度，是基于Starship经验全新开发，可以认为Nebula(C++14)是Starship(C++03)的一个高级进化版本，具有Starship的所有优点，没有Starship的所有已发现的缺点，同时提供了更多高级功能。基于Nebula的第一个应用Nebio（埋点数据采集和实时分析项目）在2018年7月底上线并稳定运行，Bwar还准备开发基于Nebula的IM应用Nebim。
 
 <a name="Features"></a>
-## Nebula功能
+## 功能
 * 支持http、protobuf、websocket等协议通信
 * 支持ssl连接加密
 * 微服务框架
