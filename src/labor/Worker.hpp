@@ -44,6 +44,9 @@ public:
     template <typename ...Targs>
     std::shared_ptr<Context> MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs... args);
 
+    template <typename ...Targs>
+    std::shared_ptr<Chain> MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs... args);
+
     virtual uint32 GetSequence() const;
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
@@ -118,6 +121,12 @@ template <typename ...Targs>
 std::shared_ptr<Context> Worker::MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs... args)
 {
     return(m_pImpl->MakeSharedContext(pCreator, strContextName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Chain> Worker::MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs... args)
+{
+    return(m_pImpl->MakeSharedChain(pCreator, strChainName, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

@@ -76,6 +76,7 @@ public:
     template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs... args);
     template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs... args);
     template <typename ...Targs> std::shared_ptr<Context> MakeSharedContext(const std::string& strContextName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Chain> MakeSharedChain(const std::string& strChainName, Targs... args);
     template <typename ...Targs> std::shared_ptr<Actor> MakeSharedActor(const std::string& strActorName, Targs... args);
 
     ACTOR_TYPE GetActorType() const
@@ -290,6 +291,12 @@ template <typename ...Targs>
 std::shared_ptr<Actor> Actor::MakeSharedActor(const std::string& strActorName, Targs... args)
 {
     return(m_pWorker->MakeSharedActor(this, strActorName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Chain> Actor::MakeSharedChain(const std::string& strChainName, Targs... args)
+{
+    return(m_pWorker->MakeSharedChain(this, strChainName, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

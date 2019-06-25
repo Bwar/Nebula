@@ -9,6 +9,7 @@
  ******************************************************************************/
 
 #include "Chain.hpp"
+#include "actor/context/Context.hpp"
 #include "actor/step/Step.hpp"
 #include "actor/matrix/Matrix.hpp"
 
@@ -17,7 +18,7 @@ namespace neb
 
 Chain::Chain(const std::string& strChainFlag, ev_tstamp dChainTimeout)
     : Actor(Actor::ACT_CHAIN, dChainTimeout),
-      m_strChainFlag(strChainFlag)
+      m_uiWaitingStep(0), m_strChainFlag(strChainFlag)
 {
 }
 
@@ -32,8 +33,17 @@ void Chain::Init(const std::queue<std::vector<std::string> >& queChainBlock)
 
 E_CMD_STATUS Chain::NextBlock()
 {
+    if (m_uiWaitingStep > 0)
+    {
+        --m_uiWaitingStep;
+        if (m_uiWaitingStep > 0)
+        {
+            return(CMD_STATUS_RUNNING);
+        }
+    }
     if (m_queChainBlock.empty())
     {
+        GetContext()->Done();
         return(CMD_STATUS_COMPLETED);
     }
     bool bStepInBlock = false;     ///< 当前链块存在Step
@@ -69,6 +79,10 @@ E_CMD_STATUS Chain::NextBlock()
                 if (CMD_STATUS_FAULT == eResult)
                 {
                     return(CMD_STATUS_FAULT);
+                }
+                else if (CMD_STATUS_RUNNING == eResult)
+                {
+                    ++m_uiWaitingStep;
                 }
             }
             else

@@ -32,6 +32,10 @@ public:
     PbContext& operator=(const PbContext&) = delete;
     virtual ~PbContext();
 
+    virtual void Done()
+    {
+    }
+
 public:
     /**
      * @brief 给请求方发响应

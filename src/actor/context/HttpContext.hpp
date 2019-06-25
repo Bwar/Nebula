@@ -31,12 +31,21 @@ public:
     HttpContext& operator=(const HttpContext&) = delete;
     virtual ~HttpContext();
 
+    virtual void Done()
+    {
+    }
+
 public:
     /**
      * @brief 给请求方发响应
      * @param strData 响应结果或错误信息
      */
     bool Response(const std::string& strData);
+
+    const HttpMsg& GetHttpMsg() const
+    {
+        return(m_oReqHttpMsg);
+    }
 
 private:
     HttpMsg m_oReqHttpMsg;
