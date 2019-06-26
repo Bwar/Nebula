@@ -122,6 +122,7 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 ## Todo list 
    - NebulaMydis Data Agency Service.
    - Developing an IM with the Nebula.
+   - Complete writing user guide before September 2019.
 
 <a name="ChangeLog"></a>
 ## Change log 

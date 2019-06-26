@@ -134,6 +134,7 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 ## 开发任务
    - NebulaMydis数据代理服务
    - 应用Nebula开发IM项目
+   - 2019年8月底前完成开发指南
 
 <a name="ChangeLog"></a>
 ## 版本历史
