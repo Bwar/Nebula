@@ -81,8 +81,8 @@ private:
     bool m_bIsClientConnection;
     SSL* m_pSslConnection;
 
-    static SSL_CTX* m_pServerSslCtx;
-    static SSL_CTX* m_pClientSslCtx;
+    static SSL_CTX* s_pServerSslCtx;
+    static SSL_CTX* s_pClientSslCtx;
 };
 
 }

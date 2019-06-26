@@ -14,8 +14,8 @@
 namespace neb
 {
 
-SSL_CTX* SocketChannelSslImpl::m_pServerSslCtx = NULL;
-SSL_CTX* SocketChannelSslImpl::m_pClientSslCtx = NULL;
+SSL_CTX* SocketChannelSslImpl::s_pServerSslCtx = NULL;
+SSL_CTX* SocketChannelSslImpl::s_pClientSslCtx = NULL;
 
 SocketChannelSslImpl::SocketChannelSslImpl(
     SocketChannel* pSocketChannel, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
@@ -63,51 +63,51 @@ int SocketChannelSslImpl::SslInit(std::shared_ptr<NetLogger> pLogger)
 int SocketChannelSslImpl::SslServerCtxCreate(std::shared_ptr<NetLogger> pLogger)
 {
     pLogger->WriteLog(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__, " ");
-    m_pServerSslCtx = SSL_CTX_new(TLS_server_method());
+    s_pServerSslCtx = SSL_CTX_new(TLS_server_method());
 
-    if (m_pServerSslCtx == NULL)
+    if (s_pServerSslCtx == NULL)
     {
         pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "SSL_CTX_new() failed");
         return(ERR_SSL_CTX);
     }
 
-    SSL_CTX_set_min_proto_version(m_pServerSslCtx, TLS1_1_VERSION);
+    SSL_CTX_set_min_proto_version(s_pServerSslCtx, TLS1_1_VERSION);
 
 #ifdef SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG
-    SSL_CTX_set_options(m_pServerSslCtx, SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG);
+    SSL_CTX_set_options(s_pServerSslCtx, SSL_OP_SSLREF2_REUSE_CERT_TYPE_BUG);
 #endif
 
 #ifdef SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER
-    SSL_CTX_set_options(m_pServerSslCtx, SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER);
+    SSL_CTX_set_options(s_pServerSslCtx, SSL_OP_MICROSOFT_BIG_SSLV3_BUFFER);
 #endif
 
 #ifdef SSL_OP_TLS_D5_BUG
-    SSL_CTX_set_options(m_pServerSslCtx, SSL_OP_TLS_D5_BUG);
+    SSL_CTX_set_options(s_pServerSslCtx, SSL_OP_TLS_D5_BUG);
 #endif
 
 #ifdef SSL_OP_TLS_BLOCK_PADDING_BUG
-    SSL_CTX_set_options(m_pServerSslCtx, SSL_OP_TLS_BLOCK_PADDING_BUG);
+    SSL_CTX_set_options(s_pServerSslCtx, SSL_OP_TLS_BLOCK_PADDING_BUG);
 #endif
 
 #ifdef SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS
-    SSL_CTX_set_options(m_pServerSslCtx, SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
+    SSL_CTX_set_options(s_pServerSslCtx, SSL_OP_DONT_INSERT_EMPTY_FRAGMENTS);
 #endif
 
-    SSL_CTX_set_options(m_pServerSslCtx, SSL_OP_SINGLE_DH_USE);
+    SSL_CTX_set_options(s_pServerSslCtx, SSL_OP_SINGLE_DH_USE);
 
 #ifdef SSL_OP_NO_COMPRESSION
-    SSL_CTX_set_options(m_pServerSslCtx, SSL_OP_NO_COMPRESSION);
+    SSL_CTX_set_options(s_pServerSslCtx, SSL_OP_NO_COMPRESSION);
 #endif
 
 #ifdef SSL_MODE_RELEASE_BUFFERS
-    SSL_CTX_set_mode(m_pServerSslCtx, SSL_MODE_RELEASE_BUFFERS);
+    SSL_CTX_set_mode(s_pServerSslCtx, SSL_MODE_RELEASE_BUFFERS);
 #endif
 
 #ifdef SSL_MODE_NO_AUTO_CHAIN
-    SSL_CTX_set_mode(m_pServerSslCtx, SSL_MODE_NO_AUTO_CHAIN);
+    SSL_CTX_set_mode(s_pServerSslCtx, SSL_MODE_NO_AUTO_CHAIN);
 #endif
 
-    SSL_CTX_set_read_ahead(m_pServerSslCtx, 1);
+    SSL_CTX_set_read_ahead(s_pServerSslCtx, 1);
 
     return(ERR_OK);
 }
@@ -118,7 +118,7 @@ int SocketChannelSslImpl::SslServerCertificate(std::shared_ptr<NetLogger> pLogge
     pLogger->WriteLog(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
             "SslServerCertificate(%s, %s)", strCertFile.c_str(), strKeyFile.c_str());
     // 加载使用公钥证书
-    if (!SSL_CTX_use_certificate_chain_file(m_pServerSslCtx, strCertFile.c_str()))
+    if (!SSL_CTX_use_certificate_chain_file(s_pServerSslCtx, strCertFile.c_str()))
     {
         pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
             "SSL_CTX_user_certificate_chain_file(\"%s\") failed!", strCertFile.c_str());
@@ -126,7 +126,7 @@ int SocketChannelSslImpl::SslServerCertificate(std::shared_ptr<NetLogger> pLogge
     }
 
     // 加载使用私钥
-    if (!SSL_CTX_use_PrivateKey_file(m_pServerSslCtx, strKeyFile.c_str(), SSL_FILETYPE_PEM))
+    if (!SSL_CTX_use_PrivateKey_file(s_pServerSslCtx, strKeyFile.c_str(), SSL_FILETYPE_PEM))
     {
         pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
             "SSL_CTX_use_PrivateKey_file(\"%s\") failed!", strKeyFile.c_str());
@@ -134,7 +134,7 @@ int SocketChannelSslImpl::SslServerCertificate(std::shared_ptr<NetLogger> pLogge
     }
 
     // 检查私钥与证书是否匹配
-    if (!SSL_CTX_check_private_key(m_pServerSslCtx))  
+    if (!SSL_CTX_check_private_key(s_pServerSslCtx))  
     {  
         pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
             "SSL_CTX_check_private_key() failed: private key does not match the certificate public key!", strKeyFile.c_str());
@@ -145,24 +145,24 @@ int SocketChannelSslImpl::SslServerCertificate(std::shared_ptr<NetLogger> pLogge
 
 void SocketChannelSslImpl::SslFree()
 {
-    if (m_pServerSslCtx)
+    if (s_pServerSslCtx)
     {
-        SSL_CTX_free(m_pServerSslCtx);
-        m_pServerSslCtx = NULL;
+        SSL_CTX_free(s_pServerSslCtx);
+        s_pServerSslCtx = NULL;
     }
-    if (m_pClientSslCtx)
+    if (s_pClientSslCtx)
     {
-        SSL_CTX_free(m_pClientSslCtx);
-        m_pClientSslCtx = NULL;
+        SSL_CTX_free(s_pClientSslCtx);
+        s_pClientSslCtx = NULL;
     }
 }
 
 int SocketChannelSslImpl::SslClientCtxCreate()
 {
-    if (m_pClientSslCtx == NULL)
+    if (s_pClientSslCtx == NULL)
     {
-        m_pClientSslCtx = SSL_CTX_new(TLS_client_method());
-        if (m_pClientSslCtx == NULL)
+        s_pClientSslCtx = SSL_CTX_new(TLS_client_method());
+        if (s_pClientSslCtx == NULL)
         {
             LOG4_ERROR("SSL_CTX_new() failed!");
             return(ERR_SSL_CTX);
@@ -175,11 +175,11 @@ int SocketChannelSslImpl::SslCreateConnection()
 {
     if (m_bIsClientConnection)
     {
-        m_pSslConnection = SSL_new(m_pClientSslCtx);
+        m_pSslConnection = SSL_new(s_pClientSslCtx);
     }
     else
     {
-        m_pSslConnection = SSL_new(m_pServerSslCtx);
+        m_pSslConnection = SSL_new(s_pServerSslCtx);
     }
 
     if (m_pSslConnection == NULL)
@@ -376,11 +376,11 @@ int SocketChannelSslImpl::SslShutdown()
 
     if (m_bIsClientConnection)
     {
-        SSL_CTX_remove_session(m_pClientSslCtx, SSL_get0_session(m_pSslConnection));
+        SSL_CTX_remove_session(s_pClientSslCtx, SSL_get0_session(m_pSslConnection));
     }
     else
     {
-        SSL_CTX_remove_session(m_pServerSslCtx, SSL_get0_session(m_pSslConnection));
+        SSL_CTX_remove_session(s_pServerSslCtx, SSL_get0_session(m_pSslConnection));
     }
 
     SSL_free(m_pSslConnection);

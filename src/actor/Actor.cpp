@@ -18,7 +18,7 @@ namespace neb
 
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : m_eActorType(eActorType),
-      m_ulSequence(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
+      m_uiSequence(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
       m_pWorker(nullptr), m_pTimerWatcher(NULL), m_pContext(nullptr)
 {
 }
@@ -26,20 +26,20 @@ Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
 Actor::~Actor()
 {
     FREE(m_pTimerWatcher);
-    m_pWorker->Logger(m_strTraceId, Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "eActorType %d, seq %u", m_eActorType, m_ulSequence);
+    m_pWorker->Logger(m_strTraceId, Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "eActorType %d, seq %u", m_eActorType, m_uiSequence);
 }
 
 uint32 Actor::GetSequence()
 {
     if ((ACT_CMD == m_eActorType || ACT_MODULE == m_eActorType) // Cmd和Module总是获取最新Seq
-        || 0 == m_ulSequence)
+        || 0 == m_uiSequence)
     {
         if (nullptr != m_pWorker)
         {
-            m_ulSequence = m_pWorker->GetSequence();
+            m_uiSequence = m_pWorker->GetSequence();
         }
     }
-    return(m_ulSequence);
+    return(m_uiSequence);
 }
 
 uint32 Actor::GetNodeId() const
@@ -94,6 +94,11 @@ std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId)
 bool Actor::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
 {
     return(m_pWorker->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
+}
+
+std::shared_ptr<Matrix> Actor::GetMatrix(const std::string& strMatrixName)
+{
+    return(m_pWorker->GetMatrix(strMatrixName));
 }
 
 std::shared_ptr<Context> Actor::GetContext()
@@ -188,6 +193,11 @@ ev_timer* Actor::MutableTimerWatcher()
 void Actor::SetActorName(const std::string& strActorName)
 {
     m_strActorName = strActorName;
+}
+
+void Actor::SetTraceId(const std::string& strTraceId)
+{
+    m_strTraceId = strTraceId;
 }
 
 } /* namespace neb */

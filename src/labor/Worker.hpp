@@ -33,21 +33,25 @@ public:
         void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
 
     template <typename ...Targs>
+    std::shared_ptr<Actor> MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs... args);
+
+    template <typename ...Targs>
     std::shared_ptr<Step> MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args);
 
     template <typename ...Targs>
     std::shared_ptr<Session> MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Cmd> MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args);
+    std::shared_ptr<Context> MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Module> MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args);
+    std::shared_ptr<Chain> MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs... args);
 
     virtual uint32 GetSequence() const;
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
     virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
+    virtual std::shared_ptr<Matrix> GetMatrix(const std::string& strMatrixName);
     virtual void AddAssemblyLine(std::shared_ptr<Session> pSession);
 
     // 获取worker信息相关方法
@@ -96,6 +100,12 @@ void Worker::Logger(const std::string& strTraceId, int iLogLevel, const char* sz
 }
 
 template <typename ...Targs>
+std::shared_ptr<Actor> Worker::MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs... args)
+{
+    return(m_pImpl->MakeSharedActor(pCreator, strActorName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
 std::shared_ptr<Step> Worker::MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs... args)
 {
     return(m_pImpl->MakeSharedStep(pCreator, strStepName, std::forward<Targs>(args)...));
@@ -108,15 +118,15 @@ std::shared_ptr<Session> Worker::MakeSharedSession(Actor* pCreator, const std::s
 }
 
 template <typename ...Targs>
-std::shared_ptr<Cmd> Worker::MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs... args)
+std::shared_ptr<Context> Worker::MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs... args)
 {
-    return(m_pImpl->MakeSharedStep(pCreator, strCmdName, std::forward<Targs>(args)...));
+    return(m_pImpl->MakeSharedContext(pCreator, strContextName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
-std::shared_ptr<Module> Worker::MakeSharedModule(Actor* pCreator, const std::string& strModuleName, Targs... args)
+std::shared_ptr<Chain> Worker::MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs... args)
 {
-    return(m_pImpl->MakeSharedSession(pCreator, strModuleName, std::forward<Targs>(args)...));
+    return(m_pImpl->MakeSharedChain(pCreator, strChainName, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

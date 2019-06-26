@@ -11,22 +11,21 @@
 #define SRC_ACTOR_STEP_STEP_HPP_
 
 #include "labor/Worker.hpp"
-#include "StepModel.hpp"
+#include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
 
-class Step: public StepModel
+class Chain;
+
+class Step: public Actor
 {
 public:
-    Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout)
-        : StepModel(eActorType, pNextStep, dTimeout)
-    {
-    }
+    Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     Step(const Step&) = delete;
     Step& operator=(const Step&) = delete;
-    virtual ~Step(){}
+    virtual ~Step();
 
     /**
      * @brief 提交，发出
@@ -40,46 +39,26 @@ public:
     virtual E_CMD_STATUS Timeout() = 0;
 
 protected:
-    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Cmd> MakeSharedCmd(const std::string& strCmdName, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Module> MakeSharedModule(const std::string& strModuleName, Targs... args);
+    /**
+     * @brief 执行当前步骤接下来的步骤
+     */
+    void NextStep(int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
+
+    uint32 GetChainId() const
+    {
+        return(m_uiChainId);
+    }
 
 private:
+    void SetChainId(uint32 uiChainId);
+
+    uint32 m_uiChainId;
+    std::unordered_set<uint32> m_setNextStepSeq;
+    std::unordered_set<uint32> m_setPreStepSeq;
+
     friend class WorkerImpl;
+    friend class Chain;
 };
-
-template <typename ...Targs>
-void Step::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
-{
-    m_pWorker->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
-}
-
-template <typename ...Targs>
-std::shared_ptr<Step> Step::MakeSharedStep(const std::string& strStepName, Targs... args)
-{
-    return(m_pWorker->MakeSharedStep(this, strStepName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Session> Step::MakeSharedSession(const std::string& strSessionName, Targs... args)
-{
-    return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Cmd> Step::MakeSharedCmd(const std::string& strCmdName, Targs... args)
-{
-    return(m_pWorker->MakeSharedStep(this, strCmdName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Module> Step::MakeSharedModule(const std::string& strModuleName, Targs... args)
-{
-    return(m_pWorker->MakeSharedSession(this, strModuleName, std::forward<Targs>(args)...));
-}
-
 
 } /* namespace neb */
 

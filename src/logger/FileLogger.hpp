@@ -38,11 +38,11 @@ public:
                     unsigned int uiMaxFileSize = neb::gc_uiMaxLogFileSize,
                     unsigned int uiMaxRollFileIndex = neb::gc_uiMaxRollLogFileIndex)
     {
-        if (m_pInstance == nullptr)
+        if (s_pInstance == nullptr)
         {
-            m_pInstance = new FileLogger(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex);
+            s_pInstance = new FileLogger(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex);
         }
-        return(m_pInstance);
+        return(s_pInstance);
     }
 
     void SetLogLevel(int iLev)
@@ -60,7 +60,7 @@ private:
     int Vappend(int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, va_list ap);
     int Vappend(const std::string& strTraceId, int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, va_list ap);
 
-    static FileLogger* m_pInstance;
+    static FileLogger* s_pInstance;
 
 #if __GNUC__ < 5
     char* m_szTime;

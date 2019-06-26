@@ -11,17 +11,18 @@
 #define SRC_ACTOR_CMD_CMD_HPP_
 
 #include "labor/Worker.hpp"
-#include "CmdModel.hpp"
+#include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
 
-class Cmd: public CmdModel
+class Cmd: public Actor
 {
 public:
     Cmd(int32 iCmd)
-        : CmdModel(iCmd)
+        : Actor(Actor::ACT_CMD, gc_dNoTimeout),
+          m_iCmd(iCmd)
     {
     }
     Cmd(const Cmd&) = delete;
@@ -60,42 +61,15 @@ public:
                     const MsgBody& oMsgBody) = 0;
 
 protected:
-    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Cmd> MakeSharedCmd(const std::string& strCmdName, Targs... args);
-    template <typename ...Targs> std::shared_ptr<Module> MakeSharedModule(const std::string& strModuleName, Targs... args);
+    int GetCmd() const
+    {
+        return(m_iCmd);
+    }
+
+private:
+    int32 m_iCmd;
+    friend class WorkerImpl;
 };
-
-template <typename ...Targs>
-void Cmd::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
-{
-    m_pWorker->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
-}
-
-template <typename ...Targs>
-std::shared_ptr<Step> Cmd::MakeSharedStep(const std::string& strStepName, Targs... args)
-{
-    return(m_pWorker->MakeSharedStep(this, strStepName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Session> Cmd::MakeSharedSession(const std::string& strSessionName, Targs... args)
-{
-    return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Cmd> Cmd::MakeSharedCmd(const std::string& strCmdName, Targs... args)
-{
-    return(m_pWorker->MakeSharedStep(this, strCmdName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Module> Cmd::MakeSharedModule(const std::string& strModuleName, Targs... args)
-{
-    return(m_pWorker->MakeSharedSession(this, strModuleName, std::forward<Targs>(args)...));
-}
 
 } /* namespace neb */
 

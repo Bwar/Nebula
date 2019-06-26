@@ -23,7 +23,7 @@
 namespace neb
 {
 
-FileLogger* FileLogger::m_pInstance = nullptr;
+FileLogger* FileLogger::s_pInstance = nullptr;
 
 FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
         unsigned int uiMaxFileSize, unsigned int uiMaxRollFileIndex)

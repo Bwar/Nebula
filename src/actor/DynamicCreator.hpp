@@ -45,7 +45,7 @@ public:
 
     DynamicCreator()
     {
-        m_oRegister.do_nothing();
+        s_oRegister.do_nothing();
     }
     virtual ~DynamicCreator(){};
 
@@ -65,11 +65,11 @@ public:
     }
 
 private:
-    static Register m_oRegister;
+    static Register s_oRegister;
 };
 
 template<typename T, typename ...Targs>
-typename DynamicCreator<T, Targs...>::Register DynamicCreator<T, Targs...>::m_oRegister;
+typename DynamicCreator<T, Targs...>::Register DynamicCreator<T, Targs...>::s_oRegister;
 
 } /* namespace neb */
 

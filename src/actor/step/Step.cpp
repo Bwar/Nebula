@@ -1,20 +1,20 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     StepModel.cpp
+ * @file     Step.cpp
  * @brief 
  * @author   bwar
  * @date:    Apr 4, 2018
  * @note
  * Modify history:
  ******************************************************************************/
-#include "StepModel.hpp"
 #include "Step.hpp"
 
 namespace neb
 {
 
-StepModel::StepModel(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
-    : Actor(eActorType, dTimeout)
+Step::Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
+    : Actor(eActorType, dTimeout),
+      m_uiChainId(0)
 {
     if (nullptr != pNextStep)
     {
@@ -22,14 +22,13 @@ StepModel::StepModel(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextSt
     }
 }
 
-StepModel::~StepModel()
+Step::~Step()
 {
-    // TODO Auto-generated destructor stub
     m_setNextStepSeq.clear();
     m_setPreStepSeq.clear();
 }
 
-void StepModel::NextStep(int iErrno, const std::string& strErrMsg, void* data)
+void Step::NextStep(int iErrno, const std::string& strErrMsg, void* data)
 {
     if (iErrno != ERR_OK)
     {
@@ -40,6 +39,11 @@ void StepModel::NextStep(int iErrno, const std::string& strErrMsg, void* data)
     {
         ExecStep(*it);
     }
+}
+
+void Step::SetChainId(uint32 uiChainId)
+{
+    m_uiChainId = uiChainId;
 }
 
 } /* namespace neb */

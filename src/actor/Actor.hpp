@@ -38,13 +38,15 @@ class WorkerFriend;
 
 class SocketChannel;
 class RedisChannel;
-class ActorCreator;
+class Actor;
 class Cmd;
 class Module;
 class Session;
 class Timer;
 class Context;
 class Step;
+class Matrix;
+class Chain;
 
 class Actor: public std::enable_shared_from_this<Actor>
 {
@@ -56,9 +58,12 @@ public:
         ACT_MODULE              = 2,        ///< Module对象，处理带url path的http请求
         ACT_SESSION             = 3,        ///< Session会话对象
         ACT_TIMER               = 4,        ///< 定时器对象
-        ACT_PB_STEP             = 5,        ///< Step步骤对象，处理pb请求或响应
-        ACT_HTTP_STEP           = 6,        ///< Step步骤对象，处理http请求或响应
-        ACT_REDIS_STEP          = 7,        ///< Step步骤对象，处理redis请求或响应
+        ACT_CONTEXT             = 5,        ///< 会话上下文对象
+        ACT_PB_STEP             = 6,        ///< Step步骤对象，处理pb请求或响应
+        ACT_HTTP_STEP           = 7,        ///< Step步骤对象，处理http请求或响应
+        ACT_REDIS_STEP          = 8,        ///< Step步骤对象，处理redis请求或响应
+        ACT_MATRIX              = 9,        ///< Matrix模型对象，Matrix（IO无关）与Step（异步IO相关）共同构成功能链
+        ACT_CHAIN               = 10,       ///< Chain链对象，用于将Matrix和Step组合成功能链
     };
 
 public:
@@ -66,6 +71,13 @@ public:
     Actor(const Actor&) = delete;
     Actor& operator=(const Actor&) = delete;
     virtual ~Actor();
+
+    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Context> MakeSharedContext(const std::string& strContextName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Chain> MakeSharedChain(const std::string& strChainName, Targs... args);
+    template <typename ...Targs> std::shared_ptr<Actor> MakeSharedActor(const std::string& strActorName, Targs... args);
 
     ACTOR_TYPE GetActorType() const
     {
@@ -77,8 +89,14 @@ public:
         return(m_strActorName);
     }
 
-protected:
+    const std::string& GetTraceId() const
+    {
+        return(m_strTraceId);
+    }
+
     uint32 GetSequence();
+
+protected:
     uint32 GetNodeId() const;
     uint32 GetWorkerIndex() const;
     ev_tstamp GetDefaultTimeout() const;
@@ -96,6 +114,7 @@ protected:
     std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     std::shared_ptr<Session> GetSession(const std::string& strSessionId);
     bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
+    std::shared_ptr<Matrix> GetMatrix(const std::string& strMatrixName);
     std::shared_ptr<Context> GetContext();
     void SetContext(std::shared_ptr<Context> pContext);
     void AddAssemblyLine(std::shared_ptr<Session> pSession);
@@ -224,14 +243,13 @@ protected:
 
 private:
     void SetWorker(Worker* pWorker);
-
     ev_timer* MutableTimerWatcher();
-
     void SetActorName(const std::string& strActorName);
+    void SetTraceId(const std::string& strTraceId);
 
 private:
     ACTOR_TYPE m_eActorType;
-    uint32 m_ulSequence;
+    uint32 m_uiSequence;
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
     Worker* m_pWorker;
@@ -242,12 +260,44 @@ private:
 
     friend class WorkerImpl;
     friend class WorkerFriend;
-    friend class Cmd;
-    friend class Module;
-    friend class Step;
-    friend class Session;
+    friend class Chain;
 };
 
+template <typename ...Targs>
+void Actor::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
+{
+    m_pWorker->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
+}
+
+template <typename ...Targs>
+std::shared_ptr<Step> Actor::MakeSharedStep(const std::string& strStepName, Targs... args)
+{
+    return(m_pWorker->MakeSharedStep(this, strStepName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Session> Actor::MakeSharedSession(const std::string& strSessionName, Targs... args)
+{
+    return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Context> Actor::MakeSharedContext(const std::string& strContextName, Targs... args)
+{
+    return(m_pWorker->MakeSharedContext(this, strContextName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Actor> Actor::MakeSharedActor(const std::string& strActorName, Targs... args)
+{
+    return(m_pWorker->MakeSharedActor(this, strActorName, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
+std::shared_ptr<Chain> Actor::MakeSharedChain(const std::string& strChainName, Targs... args)
+{
+    return(m_pWorker->MakeSharedChain(this, strChainName, std::forward<Targs>(args)...));
+}
 
 } /* namespace neb */
 
