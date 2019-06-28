@@ -76,9 +76,11 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
         ucSecondByte &= (~WEBSOCKET_PAYLOAD_LEN);
         std::string strCompressData;
         std::string strEncryptData;
+        std::string strTmpData;
         if (gc_uiZipBit & oMsgHead.cmd())
         {
-            if (!Zip(oMsgBody.SerializeAsString(), strCompressData))
+            oMsgBody.SerializeToString(&strTmpData);
+            if (!Zip(strTmpData, strCompressData))
             {
                 LOG4_ERROR("zip error!");
                 return (CODEC_STATUS_ERR);
@@ -86,7 +88,8 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
         }
         else if (gc_uiGzipBit & oMsgHead.cmd())
         {
-            if (!Gzip(oMsgBody.SerializeAsString(), strCompressData))
+            oMsgBody.SerializeToString(&strTmpData);
+            if (!Gzip(strTmpData, strCompressData))
             {
                 LOG4_ERROR("gzip error!");
                 return (CODEC_STATUS_ERR);
@@ -104,7 +107,8 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
             }
             else
             {
-                if (!Rc5Encrypt(oMsgBody.SerializeAsString(), strEncryptData))
+                oMsgBody.SerializeToString(&strTmpData);
+                if (!Rc5Encrypt(strTmpData, strEncryptData))
                 {
                     LOG4_ERROR("Rc5Encrypt error!");
                     return (CODEC_STATUS_ERR);
@@ -183,7 +187,8 @@ E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
         else    // 无效的压缩或加密算法，打包原数据
         {
             iNeedWriteLen = oMsgBody.ByteSize();
-            iWriteLen = pBuff->Write(oMsgBody.SerializeAsString().c_str(), oMsgBody.ByteSize());
+            oMsgBody.SerializeToString(&strTmpData);
+            iWriteLen = pBuff->Write(strTmpData.c_str(), oMsgBody.ByteSize());
         }
         if (iWriteLen != iNeedWriteLen)
         {

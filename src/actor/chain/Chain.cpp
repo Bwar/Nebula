@@ -31,7 +31,7 @@ void Chain::Init(const std::queue<std::vector<std::string> >& queChainBlock)
     m_queChainBlock = queChainBlock;
 }
 
-E_CMD_STATUS Chain::NextBlock()
+E_CMD_STATUS Chain::Next()
 {
     if (m_uiWaitingStep > 0)
     {
@@ -113,7 +113,7 @@ E_CMD_STATUS Chain::NextBlock()
     }
     else   // 只有Matrix的链块（无IO回调），执行完当前链块后立即执行下一个链块
     {
-        return(NextBlock());
+        return(Next());
     }
 }
 

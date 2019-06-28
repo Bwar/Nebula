@@ -664,7 +664,7 @@ bool WorkerImpl::OnRedisConnected(const redisAsyncContext *c, int status)
 	                            if (chain_iter != m_mapChain.end())
 	                            {
                                     chain_iter->second->SetActiveTime(ev_now(m_loop));
-                                    eResult = chain_iter->second->NextBlock();
+                                    eResult = chain_iter->second->Next();
                                     if (CMD_STATUS_RUNNING != eResult)
                                     {
                                         RemoveChain(uiChainId);
@@ -773,7 +773,7 @@ bool WorkerImpl::OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privd
 	                    if (chain_iter != m_mapChain.end())
 	                    {
                             chain_iter->second->SetActiveTime(ev_now(m_loop));
-                            eResult = chain_iter->second->NextBlock();
+                            eResult = chain_iter->second->Next();
                             if (CMD_STATUS_RUNNING != eResult)
                             {
                                 RemoveChain(uiChainId);
@@ -2775,7 +2775,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& 
                         if (chain_iter != m_mapChain.end())
                         {
                             chain_iter->second->SetActiveTime(ev_now(m_loop));
-                            eResult = chain_iter->second->NextBlock();
+                            eResult = chain_iter->second->Next();
                             if (CMD_STATUS_RUNNING != eResult)
                             {
                                 RemoveChain(uiChainId);
@@ -2859,7 +2859,7 @@ bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
                     if (chain_iter != m_mapChain.end())
                     {
                         chain_iter->second->SetActiveTime(ev_now(m_loop));
-                        eResult = chain_iter->second->NextBlock();
+                        eResult = chain_iter->second->Next();
                         if (CMD_STATUS_RUNNING != eResult)
                         {
                             RemoveChain(uiChainId);
@@ -2896,7 +2896,7 @@ void WorkerImpl::ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const
                         if (chain_iter != m_mapChain.end())
                         {
                             chain_iter->second->SetActiveTime(ev_now(m_loop));
-                            eResult = chain_iter->second->NextBlock();
+                            eResult = chain_iter->second->Next();
                             if (CMD_STATUS_RUNNING != eResult)
                             {
                                 RemoveChain(uiChainId);

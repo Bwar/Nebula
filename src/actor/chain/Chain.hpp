@@ -29,7 +29,7 @@ public:
     virtual ~Chain();
 
     void Init(const std::queue<std::vector<std::string> >& queChainBlock);
-    E_CMD_STATUS NextBlock();
+    E_CMD_STATUS Next();
 
     virtual E_CMD_STATUS Timeout()
     {

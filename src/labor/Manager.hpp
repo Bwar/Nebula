@@ -301,6 +301,7 @@ private:
     mutable uint32 m_uiSequence;
     CJsonObject m_oLastConf;          ///< 上次加载的配置
     CJsonObject m_oCurrentConf;       ///< 当前加载的配置
+    std::string m_strDataString;
 
     char m_szErrBuff[256];
     std::shared_ptr<NetLogger> m_pLogger = nullptr;

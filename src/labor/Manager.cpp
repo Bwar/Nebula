@@ -1440,7 +1440,9 @@ void Manager::RefreshServer()
             LogLevel oLogLevel;
             oLogLevel.set_log_level(iLogLevel);
             oLogLevel.set_net_log_level(iNetLogLevel);
-            oMsgBody.set_data(oLogLevel.SerializeAsString());
+            //oMsgBody.set_data(oLogLevel.SerializeAsString());
+            oLogLevel.SerializeToString(&m_strDataString);
+            oMsgBody.set_data(m_strDataString);
             SendToWorker(CMD_REQ_SET_LOG_LEVEL, GetSequence(), oMsgBody);
         }
 
@@ -1974,7 +1976,9 @@ bool Manager::OnBeaconData(std::shared_ptr<SocketChannel> pChannel, const MsgHea
             oTargetWorker.set_node_type(m_stManagerInfo.strNodeType);
             oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
             oOutMsgBody.mutable_rsp_result()->set_msg("OK");
-            oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
+            //oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
+            oTargetWorker.SerializeToString(&m_strDataString);
+            oOutMsgBody.set_data(m_strDataString);
             E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
             if (CODEC_STATUS_OK == eCodecStatus)
             {
@@ -2034,7 +2038,9 @@ bool Manager::OnTellWorker(std::shared_ptr<SocketChannel> pChannel, const MsgBod
         oOutTargetWorker.set_node_type(m_stManagerInfo.strNodeType);
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
         oOutMsgBody.mutable_rsp_result()->set_msg("OK");
-        oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
+        //oOutMsgBody.set_data(oOutTargetWorker.SerializeAsString());
+        oOutTargetWorker.SerializeToString(&m_strDataString);
+        oOutMsgBody.set_data(m_strDataString);
         return(true);
     }
     else
@@ -2178,7 +2184,9 @@ bool Manager::OnGetNodeConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
     ConfigInfo oConfigInfo;
     oConfigInfo.set_file_name(m_stManagerInfo.strConfFile);
     oConfigInfo.set_file_content(m_oCurrentConf.ToFormattedString());
-    oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
+    //oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
+    oConfigInfo.SerializeToString(&m_strDataString);
+    oOutMsgBody.set_data(m_strDataString);
     oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
     oOutMsgBody.mutable_rsp_result()->set_msg("success");
     return(true);
@@ -2226,7 +2234,9 @@ bool Manager::OnGetNodeCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBod
     ConfigInfo oConfigInfo;
     oConfigInfo.set_file_name(m_stManagerInfo.strConfFile);
     oConfigInfo.set_file_content(m_oCurrentConf["custom"].ToFormattedString());
-    oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
+    //oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
+    oConfigInfo.SerializeToString(&m_strDataString);
+    oOutMsgBody.set_data(m_strDataString);
     oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
     oOutMsgBody.mutable_rsp_result()->set_msg("success");
     return(true);
@@ -2300,7 +2310,9 @@ bool Manager::OnGetCustomConf(const MsgBody& oInMsgBody, MsgBody& oOutMsgBody)
             std::stringstream ssContent;
             ssContent << fin.rdbuf();
             oConfigInfo.set_file_content(ssContent.str());
-            oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
+            //oOutMsgBody.set_data(oConfigInfo.SerializeAsString());
+            oConfigInfo.SerializeToString(&m_strDataString);
+            oOutMsgBody.set_data(m_strDataString);
             oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
             oOutMsgBody.mutable_rsp_result()->set_msg("success");
             fin.close();

@@ -56,6 +56,7 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
         return(CODEC_STATUS_OK);
     }
     iHadWriteLen += iWriteLen;
+    std::string strTmpData;
     if (stMsgHead.encript == 0)       // 不压缩也不加密
     {
         iWriteLen = pBuff->Write(&stMsgHead, iNeedWriteLen);
@@ -67,7 +68,8 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
             return(CODEC_STATUS_ERR);
         }
         iNeedWriteLen = oMsgBody.ByteSize();
-        iWriteLen = pBuff->Write(oMsgBody.SerializeAsString().c_str(), oMsgBody.ByteSize());
+        oMsgBody.SerializeToString(&strTmpData);
+        iWriteLen = pBuff->Write(strTmpData.c_str(), oMsgBody.ByteSize());
         if (iWriteLen != iNeedWriteLen)
         {
             LOG4_ERROR("buff write head iWriteLen != sizeof(stClientMsgHead)");
@@ -82,7 +84,8 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
         std::string strEncryptData;
         if (gc_uiZipBit & oMsgHead.cmd())
         {
-            if (!Zip(oMsgBody.SerializeAsString(), strCompressData))
+            oMsgBody.SerializeToString(&strTmpData);
+            if (!Zip(strTmpData, strCompressData))
             {
                 LOG4_ERROR("zip error!");
                 return(CODEC_STATUS_ERR);
@@ -90,7 +93,8 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
         }
         else if (gc_uiGzipBit & oMsgHead.cmd())
         {
-            if (!Gzip(oMsgBody.SerializeAsString(), strCompressData))
+            oMsgBody.SerializeToString(&strTmpData);
+            if (!Gzip(strTmpData, strCompressData))
             {
                 LOG4_ERROR("gzip error!");
                 return(CODEC_STATUS_ERR);
@@ -108,7 +112,8 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
             }
             else
             {
-                if (!Rc5Encrypt(oMsgBody.SerializeAsString(), strEncryptData))
+                oMsgBody.SerializeToString(&strTmpData);
+                if (!Rc5Encrypt(strTmpData, strEncryptData))
                 {
                     LOG4_ERROR("Rc5Encrypt error!");
                     return(CODEC_STATUS_ERR);
@@ -170,7 +175,8 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
             }
             iHadWriteLen += iWriteLen;
             iNeedWriteLen = oMsgBody.ByteSize();
-            iWriteLen = pBuff->Write(oMsgBody.SerializeAsString().c_str(), oMsgBody.ByteSize());
+            oMsgBody.SerializeToString(&strTmpData);
+            iWriteLen = pBuff->Write(strTmpData.c_str(), oMsgBody.ByteSize());
             if (iWriteLen != iNeedWriteLen)
             {
                 pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadWriteLen);

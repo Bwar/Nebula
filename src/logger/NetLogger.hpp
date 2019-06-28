@@ -58,6 +58,7 @@ private:
     int m_iNetLogLevel;
     bool m_bEnableNetLogger;
     Labor* m_pLabor;
+    std::string m_strLogData;   ///< 用于提高序列化效率
     std::unique_ptr<neb::FileLogger> m_pLog;
 };
 
