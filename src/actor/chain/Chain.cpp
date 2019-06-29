@@ -11,7 +11,7 @@
 #include "Chain.hpp"
 #include "actor/context/Context.hpp"
 #include "actor/step/Step.hpp"
-#include "actor/matrix/Matrix.hpp"
+#include "actor/model/Model.hpp"
 
 namespace neb
 {
@@ -52,17 +52,17 @@ E_CMD_STATUS Chain::Next()
     for (auto iter = vecTurnBlocks.begin(); iter != vecTurnBlocks.end(); ++iter)
     {
         LOG4_TRACE("(%s)", (*iter).c_str());
-        std::shared_ptr<Matrix> pSharedMatrix = GetMatrix(*iter);
-        if (pSharedMatrix == nullptr)
+        std::shared_ptr<Model> pSharedModel = GetModel(*iter);
+        if (pSharedModel == nullptr)
         {
             std::shared_ptr<Actor> pSharedActor = MakeSharedActor(*iter);
-            // pSharedMatrix->SetContext(GetContext()); it had been set in MakeSharedActor().
-            if (Actor::ACT_MATRIX == pSharedActor->GetActorType())
+            // pSharedModel->SetContext(GetContext()); it had been set in MakeSharedActor().
+            if (Actor::ACT_MODEL == pSharedActor->GetActorType())
             {
-                pSharedMatrix = std::dynamic_pointer_cast<Matrix>(pSharedActor);
-                eResult = pSharedMatrix->Submit();
-                pSharedMatrix->SetContext(nullptr);
-                pSharedMatrix->SetTraceId("");
+                pSharedModel = std::dynamic_pointer_cast<Model>(pSharedActor);
+                eResult = pSharedModel->Submit();
+                pSharedModel->SetContext(nullptr);
+                pSharedModel->SetTraceId("");
                 if (CMD_STATUS_FAULT == eResult)
                 {
                     return(CMD_STATUS_FAULT);
@@ -87,18 +87,18 @@ E_CMD_STATUS Chain::Next()
             }
             else
             {
-                LOG4_ERROR("\"%s\" is not a Matrix or Step, only Matrix and Step can be a Chain block.",
+                LOG4_ERROR("\"%s\" is not a Model or Step, only Model and Step can be a Chain block.",
                         pSharedActor->GetActorName().c_str());
                 return(CMD_STATUS_FAULT);
             }
         }
         else
         {
-            pSharedMatrix->SetContext(GetContext());
-            pSharedMatrix->SetTraceId(GetTraceId());
-            eResult = pSharedMatrix->Submit();
-            pSharedMatrix->SetContext(nullptr);
-            pSharedMatrix->SetTraceId("");
+            pSharedModel->SetContext(GetContext());
+            pSharedModel->SetTraceId(GetTraceId());
+            eResult = pSharedModel->Submit();
+            pSharedModel->SetContext(nullptr);
+            pSharedModel->SetTraceId("");
             if (CMD_STATUS_FAULT == eResult)
             {
                 return(CMD_STATUS_FAULT);
@@ -111,7 +111,7 @@ E_CMD_STATUS Chain::Next()
     {
         return(CMD_STATUS_RUNNING);
     }
-    else   // 只有Matrix的链块（无IO回调），执行完当前链块后立即执行下一个链块
+    else   // 只有Model的链块（无IO回调），执行完当前链块后立即执行下一个链块
     {
         return(Next());
     }

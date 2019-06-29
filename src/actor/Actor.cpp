@@ -96,9 +96,9 @@ bool Actor::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg,
     return(m_pWorker->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
 }
 
-std::shared_ptr<Matrix> Actor::GetMatrix(const std::string& strMatrixName)
+std::shared_ptr<Model> Actor::GetModel(const std::string& strModelName)
 {
-    return(m_pWorker->GetMatrix(strMatrixName));
+    return(m_pWorker->GetModel(strModelName));
 }
 
 std::shared_ptr<Context> Actor::GetContext()

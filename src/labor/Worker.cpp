@@ -54,9 +54,9 @@ bool Worker::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg
     return(m_pImpl->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
 }
 
-std::shared_ptr<Matrix> Worker::GetMatrix(const std::string& strMatrixName)
+std::shared_ptr<Model> Worker::GetModel(const std::string& strModelName)
 {
-    return(m_pImpl->GetMatrix(strMatrixName));
+    return(m_pImpl->GetModel(strModelName));
 }
 
 void Worker::AddAssemblyLine(std::shared_ptr<Session> pSession)

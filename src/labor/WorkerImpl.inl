@@ -71,9 +71,9 @@ std::shared_ptr<Context> WorkerImpl::MakeSharedContext(Actor* pCreator, const st
 }
 
 template <typename ...Targs>
-std::shared_ptr<Matrix> WorkerImpl::MakeSharedMatrix(Actor* pCreator, const std::string& strMatrixName, Targs... args)
+std::shared_ptr<Model> WorkerImpl::MakeSharedModel(Actor* pCreator, const std::string& strModelName, Targs... args)
 {
-    return(std::dynamic_pointer_cast<Matrix>(MakeSharedActor(pCreator, strMatrixName, std::forward<Targs>(args)...)));
+    return(std::dynamic_pointer_cast<Model>(MakeSharedActor(pCreator, strModelName, std::forward<Targs>(args)...)));
 }
 
 template <typename ...Targs>

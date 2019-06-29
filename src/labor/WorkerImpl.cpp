@@ -29,7 +29,7 @@ extern "C" {
 #include "actor/step/PbStep.hpp"
 #include "actor/step/RedisStep.hpp"
 #include "actor/step/Step.hpp"
-#include "actor/matrix/Matrix.hpp"
+#include "actor/model/Model.hpp"
 #include "actor/chain/Chain.hpp"
 #include "actor/session/sys_session/SessionNode.hpp"
 #include "actor/session/sys_session/SessionLogger.hpp"
@@ -836,8 +836,8 @@ std::shared_ptr<Actor> WorkerImpl::InitializeSharedActor(Actor* pCreator, std::s
                 return(pSharedActor);
             }
             break;
-        case Actor::ACT_MATRIX:
-            if (TransformToSharedMatrix(pCreator, pSharedActor))
+        case Actor::ACT_MODEL:
+            if (TransformToSharedModel(pCreator, pSharedActor))
             {
                 return(pSharedActor);
             }
@@ -849,7 +849,7 @@ std::shared_ptr<Actor> WorkerImpl::InitializeSharedActor(Actor* pCreator, std::s
             }
             break;
         default:
-            LOG4_ERROR("\"%s\" must be a Step, a Session, a Matrix, a Cmd or a Module.",
+            LOG4_ERROR("\"%s\" must be a Step, a Session, a Model, a Cmd or a Module.",
                     strActorName.c_str());
             return(nullptr);
     }
@@ -986,13 +986,13 @@ bool WorkerImpl::TransformToSharedModule(Actor* pCreator, std::shared_ptr<Actor>
     return(false);
 }
 
-bool WorkerImpl::TransformToSharedMatrix(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
+bool WorkerImpl::TransformToSharedModel(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
 {
-    std::shared_ptr<Matrix> pSharedMatrix = std::dynamic_pointer_cast<Matrix>(pSharedActor);
-    auto ret = m_mapMatrix.insert(std::make_pair(pSharedMatrix->GetActorName(), pSharedMatrix));
+    std::shared_ptr<Model> pSharedModel = std::dynamic_pointer_cast<Model>(pSharedActor);
+    auto ret = m_mapModel.insert(std::make_pair(pSharedModel->GetActorName(), pSharedModel));
     if (ret.second)
     {
-        if (pSharedMatrix->Init())
+        if (pSharedModel->Init())
         {
             return(true);
         }
@@ -2231,12 +2231,12 @@ void WorkerImpl::UnloadDynamicSymbol(CJsonObject& oOneSoConf)
         std::unordered_set<uint32> setStep;
         m_mapLoadedStep.insert(std::make_pair(oOneSoConf["step"](l), setStep));
     }
-    for (int k = 0; k < oOneSoConf["matrix"].GetArraySize(); ++k)
+    for (int k = 0; k < oOneSoConf["model"].GetArraySize(); ++k)
     {
-        auto class_iter = m_mapMatrix.find(oOneSoConf["matrix"](k));
-        if (class_iter != m_mapMatrix.end())
+        auto class_iter = m_mapModel.find(oOneSoConf["model"](k));
+        if (class_iter != m_mapModel.end())
         {
-            m_mapMatrix.erase(class_iter);
+            m_mapModel.erase(class_iter);
         }
     }
 }
@@ -2427,10 +2427,10 @@ bool WorkerImpl::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strEr
     }
 }
 
-std::shared_ptr<Matrix> WorkerImpl::GetMatrix(const std::string& strMatrixName)
+std::shared_ptr<Model> WorkerImpl::GetModel(const std::string& strModelName)
 {
-    auto iter = m_mapMatrix.find(strMatrixName);
-    if (iter == m_mapMatrix.end())
+    auto iter = m_mapModel.find(strModelName);
+    if (iter == m_mapModel.end())
     {
         return(nullptr);
     }

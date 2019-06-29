@@ -77,7 +77,7 @@ class Context;
 class Step;
 class RedisStep;
 class HttpStep;
-class Matrix;
+class Model;
 class Chain;
 
 class SessionNode;
@@ -212,7 +212,7 @@ public:     // about worker
     std::shared_ptr<Context> MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Matrix> MakeSharedMatrix(Actor* pCreator, const std::string& strMatrixName, Targs... args);
+    std::shared_ptr<Model> MakeSharedModel(Actor* pCreator, const std::string& strModelName, Targs... args);
 
     template <typename ...Targs>
     std::shared_ptr<Chain> MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs... args);
@@ -222,7 +222,7 @@ public:     // about worker
     bool TransformToSharedModule(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedSession(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
-    bool TransformToSharedMatrix(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
+    bool TransformToSharedModel(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
 public:     // about channel
@@ -262,8 +262,8 @@ public:
     // about step
     virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
 
-    // about matrix
-    virtual std::shared_ptr<Matrix> GetMatrix(const std::string& strMatrixName);
+    // about model
+    virtual std::shared_ptr<Model> GetModel(const std::string& strModelName);
 
 public:     // Worker相关设置（由专用Cmd类调用这些方法完成Worker自身的初始化和更新）
     virtual bool SetProcessName(const CJsonObject& oJsonConf);
@@ -368,10 +368,10 @@ private:
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;
     std::unordered_map<std::string, std::shared_ptr<Module> > m_mapModule;
 
-    // Chain and Matrix
-    std::unordered_map<std::string, std::queue<std::vector<std::string> > > m_mapChainConf; //key为Chain的配置名(ChainFlag)，value为由Matrix类名和Step类名构成的ChainBlock链
+    // Chain and Model
+    std::unordered_map<std::string, std::queue<std::vector<std::string> > > m_mapChainConf; //key为Chain的配置名(ChainFlag)，value为由Model类名和Step类名构成的ChainBlock链
     std::unordered_map<uint32, std::shared_ptr<Chain> > m_mapChain;                         //key为Chain的Sequence，称为ChainId
-    std::unordered_map<std::string, std::shared_ptr<Matrix> > m_mapMatrix;                  //key为Matrix类名
+    std::unordered_map<std::string, std::shared_ptr<Model> > m_mapModel;                  //key为Model类名
 
     // Step and Session
     std::unordered_map<uint32, std::shared_ptr<Step> > m_mapCallbackStep;
