@@ -23,7 +23,7 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a name="Overview"></a>
 ## Overview 
 
-Nebula is a business-oriented IoC distributed network framework developed in C++ language. It supports multiple application layer communication protocols including proto3, http, https, and websocket. The purpose of developing the Nebula framework is to provide a fast and high-performance distributed service cluster based on C++.
+Nebula is a flexible, high-performance business-oriented IoC distributed network framework developed in C++ language, designed for production environments. It supports multiple application layer communication protocols including proto3, http, https, and websocket. Nebula makes it easy to deploy a fast and high-performance distributed service with C++, while keeping the same server architecture and APIs. NebulaBootstrap provides out-of-the-box integration with Nebula service, but can be easily extended to serve other types of application.
 
 Nebula is a production level framework and distributed solution project for instant messaging, data collection, real-time computing, message push and other applications, as well as web api services. There were production applications for instant messaging, data acquisition and real-time analysis on line now, and a recommendation engine application for a large user base will be born soon. By the way, using Nebula for toy-level projects is also good for learning network communication. Bwar welcomes more developers to join the Nebula project. Nebula is a proactor development framework(a framework-implemented proactor, not an operating system support). The IO-intensive application on nebula with be good performance.
 
@@ -126,6 +126,12 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v0.9
+   - add Model
+   - add Chain
+   - simplify Context
+   - optimize Actor
+   - change license from MIT to Apache-2.0
 #### v0.8
    - compatible with gcc4.8 compiler.
    - add cpu affinity inorder to support cpu binding.

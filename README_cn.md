@@ -24,7 +24,7 @@
 <a name="Overview"></a>
 ## 概述 
 
-&emsp;&emsp;Nebula是一个面向业务的IoC分布式网络框架，以C\+\+语言开发基于事件驱动型的TCP协议，支持包括proto3、http、https、websocket多种应用层通信协议。开发Nebula框架的目的是提供一种基于C\+\+快速构建高性能的分布式服务。Nebula自身核心代码只有2万行左右（不计算proto文件生成的代码）。
+&emsp;&emsp;Nebula是一个灵活，高性能的面向业务的IoC分布式网络框架，专为生产环境而设计。Nebula以C\+\+语言开发基于事件驱动型的TCP协议，支持包括proto3、http、https、websocket多种应用层通信协议。开发Nebula框架的目的是提供一种基于C\+\+快速构建高性能的分布式服务。Nebula自身核心代码只有2万行左右（不计算proto文件生成的代码）。
 
 &emsp;&emsp;Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建分布式服务才能真正体现其价值。为了能快速搭建分布式服务，开发了包括各种类型服务的NebulaBootstrap解决方案。
 
@@ -138,6 +138,12 @@ Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)�
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v0.9
+   - 增加Model模型组件
+   - 增加Chain调用链组件
+   - 简化Context上下文组件
+   - 减少Actor继承层次，优化Actor相关代码
+   - 将开源许可证从MIT修改为Apache-2.0
 #### v0.8
    - 兼容gcc4.8编译器（从这个版本起无须另行安装5以上gcc版本，可以无障碍无等待地在个人机器上部署和测试，也为应用于生产铺平道路。之前Bwar的埋点数据采集和实时分析的生产项目Nebio是在服务器上安装了gcc6才部署的。）
    - 增加CPU亲和度设置以支持将Worker进程绑定CPU功能。(有人测试过繁忙的多核服务器，绑定CPU比不绑定CPU有20%左右的性能提升，现在Nebua可以让开发者自行选择是否绑定CPU)
