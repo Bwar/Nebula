@@ -94,7 +94,7 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="Documentation"></a>
 ## Documentation 
-   The complete documentation for Nebula is available: [Nebula documentation](https://bwar.github.io/Nebula) and [Nebula wiki](https://github.com/Bwar/Nebula/wiki)
+   The complete documentation for Nebula is available: [Nebula class reference](https://bwar.gitee.io/nebula) and [Nebula wiki](https://github.com/Bwar/Nebula/wiki)
     
 <a name="DependOn"></a>
 ## Depend on 

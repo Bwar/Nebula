@@ -106,7 +106,7 @@ curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address"
 
 <a name="Documentation"></a>
 ## 文档
-Nebula 完成的文档在 [Nebula documentation](https://bwar.github.io/Nebula)和[Nebula wiki](https://github.com/Bwar/Nebula/wiki)，持续更新中。
+Nebula 完成的文档在 [Nebula类参考](https://bwar.gitee.io/nebula)和[Nebula wiki](https://github.com/Bwar/Nebula/wiki)，持续更新中。
 
 <a name="DependOn"></a>
 ## 依赖 
