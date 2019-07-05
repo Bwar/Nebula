@@ -9,7 +9,7 @@
 ```
 
 # Nebula : 事件驱动型网络框架
-[![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)<br/>
+[![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)<br/>
 
 1. [概述](#Overview)
 2. [功能](#Features)
@@ -132,9 +132,9 @@ Nebula 完成的文档在 [Nebula类参考](https://bwar.gitee.io/nebula)和[Neb
 
 <a name="TODO"></a>
 ## 开发任务
+   - 2019年8月底前完成开发指南
    - NebulaMydis数据代理服务
    - 应用Nebula开发IM项目
-   - 2019年8月底前完成开发指南
 
 <a name="ChangeLog"></a>
 ## 版本历史
@@ -143,7 +143,6 @@ Nebula 完成的文档在 [Nebula类参考](https://bwar.gitee.io/nebula)和[Neb
    - 增加Chain调用链组件
    - 简化Context上下文组件
    - 减少Actor继承层次，优化Actor相关代码
-   - 将开源许可证从MIT修改为Apache-2.0
 #### v0.8
    - 兼容gcc4.8编译器（从这个版本起无须另行安装5以上gcc版本，可以无障碍无等待地在个人机器上部署和测试，也为应用于生产铺平道路。之前Bwar的埋点数据采集和实时分析的生产项目Nebio是在服务器上安装了gcc6才部署的。）
    - 增加CPU亲和度设置以支持将Worker进程绑定CPU功能。(有人测试过繁忙的多核服务器，绑定CPU比不绑定CPU有20%左右的性能提升，现在Nebua可以让开发者自行选择是否绑定CPU)

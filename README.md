@@ -9,7 +9,7 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 ```
 # Nebula : An event driven asynchronous C++ framework
-[![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](LICENSE)<br/>
+[![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)<br/>
 
 1. [Overview](#Overview)
 2. [Features](#Features)
@@ -120,9 +120,9 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="TODO"></a>
 ## Todo list 
+   - Complete writing user guide before September 2019.
    - NebulaMydis Data Agency Service.
    - Developing an IM with the Nebula.
-   - Complete writing user guide before September 2019.
 
 <a name="ChangeLog"></a>
 ## Change log 
@@ -131,7 +131,6 @@ A simple testing can be start with a NebulaInterface only, and also can be start
    - add Chain
    - simplify Context
    - optimize Actor
-   - change license from MIT to Apache-2.0
 #### v0.8
    - compatible with gcc4.8 compiler.
    - add cpu affinity inorder to support cpu binding.

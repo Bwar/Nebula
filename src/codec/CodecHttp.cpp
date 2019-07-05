@@ -779,7 +779,7 @@ int CodecHttp::OnUrl(http_parser *parser, const char *at, size_t len)
             std::string strQuery;
             strQuery.assign(at+stUrl.field_data[UF_QUERY].off, stUrl.field_data[UF_QUERY].len);
             std::map<std::string, std::string> mapParam;
-            EncodeParameter(mapParam, strQuery);
+            DecodeParameter(strQuery, mapParam);
             for (auto it = mapParam.begin(); it != mapParam.end(); ++it)
             {
                 (*pHttpMsg->mutable_params())[it->first] = it->second;
