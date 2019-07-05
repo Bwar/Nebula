@@ -8,7 +8,7 @@
 /_/ |_/\___/_.___/\__,_/_/\__,_/
 ```
 
-# Nebula : 事件驱动型网络框架
+# Nebula : 一个强大的IoC网络框架，用于以C++快速构建高度并发，分布式和弹性的消息驱动应用程序。
 [![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)<br/>
 
 1. [概述](#Overview)
@@ -106,7 +106,7 @@ curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address"
 
 <a name="Documentation"></a>
 ## 文档
-Nebula 完成的文档在 [Nebula类参考](https://bwar.gitee.io/nebula)和[Nebula wiki](https://github.com/Bwar/Nebula/wiki)，持续更新中。
+Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="DependOn"></a>
 ## 依赖 
