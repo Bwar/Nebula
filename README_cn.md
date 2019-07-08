@@ -6,6 +6,7 @@
   /  |/ / _ \/ __ \/ / / / / __ `/
  / /|  /  __/ /_/ / /_/ / / /_/ /
 /_/ |_/\___/_.___/\__,_/_/\__,_/
+                                真正一键安装部署
 ```
 
 # Nebula : 一个强大的IoC网络框架，用于以C++快速构建高度并发，分布式和弹性的消息驱动应用程序。
@@ -57,11 +58,9 @@
 
 <a name="GettingStart"></a>
 ## 开始
-&emsp;&emsp;Nebula以C++11/C++14标准开发，编译器必须完全支持C++11(部分C++14的特性在遇到较低版本的编译器时有预编译开关控制使用C++11标准替代),最低要求gcc4.8.2，建议使用5以上gcc版本。Nebula目前只有Linux版本，暂无支持Linux之外的其他类UNIX系统的时间表。
+&emsp;&emsp;Nebula是个较大型项目，也是一个你难得一见的依赖很少的项目，并且提供了一键安装脚本，[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)，让开发者可以快速部署和体验Nebula。相信部署和体验之后，你会对Nebula产生兴趣，这将会是一个可以广泛应用的框架，基于NebulaBootstrap提供的分布式解决方案可以很方便地用C++开发微服务应用。
 
-&emsp;&emsp;Nebula是个较大型项目（因为要构建一个生产用的分布式集群），有一些外部[依赖](#DependOn)，鉴于外部依赖的存在和框架本身较难测试，提供了[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)，让开发者可以快速部署和体验Nebula。相信部署和体验之后，你会对Nebula产生兴趣，这将会是一个可以广泛应用的框架，基于NebulaBootstrap提供的分布式解决方案可以很方便地用C++开发微服务应用。
-
-&emsp;&emsp;构建前必须保证你的系统已安装好完全支持C++11的编译器，除此之外的所有依赖都会在以下构建步骤中自动解决。
+[高并发单机Server示例](docs/cn/nebula_server_demo.md)
 
 构建步骤：
 1. wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip

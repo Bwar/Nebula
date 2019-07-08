@@ -6,7 +6,7 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
   /  |/ / _ \/ __ \/ / / / / __ `/
  / /|  /  __/ /_/ / /_/ / / /_/ /
 /_/ |_/\___/_.___/\__,_/_/\__,_/
-
+                                one-click installation 
 ```
 # Nebula : a powerful framwork for building highly concurrent, distributed, and resilient message-driven applications for C++.
 [![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)<br/>
