@@ -60,46 +60,12 @@
 ## 开始
 &emsp;&emsp;Nebula是个较大型项目，也是一个你难得一见的依赖很少的项目，并且提供了一键安装脚本，[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)，让开发者可以快速部署和体验Nebula。相信部署和体验之后，你会对Nebula产生兴趣，这将会是一个可以广泛应用的框架，基于NebulaBootstrap提供的分布式解决方案可以很方便地用C++开发微服务应用。
 
-[高并发单机Server示例](docs/cn/nebula_server_demo.md)
+* [高并发单机Server示例](docs/cn/nebula_server_demo.md)
+* [分布式服务示例](docs/cn/nebula_distributed_demo.md)
 
-构建步骤：
-1. wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip
-2. unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap; cd NebulaBootstrap; chmod u+x deploy.sh
-3. ./deploy.sh
+* [安装部署说明](docs/cn/install.md)
+* [配置说明](docs/cn/configuration.md)
 
-&emsp;&emsp;执行deploy脚本后即完成了Nebula及NebulaBootstrap分布式服务的编译和部署，Nebula的依赖也由deploy在构建Nebula前自动从网上下载并编译部署。虽然不像autoconf、automake那样众所周知，但deploy脚本完成的不止是autoconf、automake的工作。deploy之后的目录结构如下：
-* NebulaBootstrap
-  + bin &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp; server的bin文件存放路径。
-  + build &emsp;&emsp;&emsp;&emsp;&emsp;&nbsp; 构建路径，由deploy.sh生成，如果部署完后不需要再构建，可以直接删掉(可选)。
-  + conf &emsp;&emsp;&emsp;&emsp;&emsp;&emsp; 配置文件存放路径。
-  + data &emsp;&emsp;&emsp;&emsp;&emsp;&emsp; 数据文件存放路径，比如基于Nebula开发的页面埋点数据采集和实时分析[Nebio](https://github.com/Bwar/Nebio)项目，将采集的数据落地到这个路径（可选）。
-  + lib &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp; 运行所需的库文件存放路径。
-  + log &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&nbsp; 程序日志存放路径。
-  + plugins &emsp;&emsp;&emsp;&emsp;&nbsp; 插件（动态加载的业务逻辑so）存放路径。
-    - logic &emsp;&emsp;&emsp;&emsp;&nbsp; 逻辑Server插件存放路径，插件按server存放只是为了好区分，也可直接存放在plugins下，具体规则可自定义（可选）。
-  + script &emsp;&emsp;&emsp;&emsp;&emsp; 脚本库存放路径，deploy.sh startup.sh shutdown.sh等脚本都需要依赖这个路径。
-  + temp &emsp;&emsp;&emsp;&emsp;&emsp;&emsp; 临时文件存放路径(可选)。
-  - configure.sh &emsp;&emsp;&emsp; 配置脚本，deploy之后第一次启动server之前先执行该脚本做简单的配置修改，也可以逐个配置文件打开直接修改。
-  - deploy.sh &emsp;&emsp;&emsp;&emsp; 自动构建和部署脚本，自动下载并安装依赖，自动构建和部署，执行./deploy.sh --help查看帮助。
-  - shutdown.sh &emsp;&emsp;&emsp;&nbsp; 关闭server，可以指定关闭一个或多个server，也可关闭所有server，不带参数时关闭所有server（需用户确认）。
-  - startup.sh &emsp;&emsp;&emsp;&emsp; 启动server，可以指定启动一个或多个server，也可启动所有server。
-  - README_cn.md              
-  - README.md              
-
-&emsp;&emsp;构建完成后，可以开始启动server了：
-```
-./configure.sh
-./startup.sh
-```
-&emsp;&emsp;server应该已经启动成功了，startup.sh会打印已启动的server。如果没有启动成功，可以到log目录查看原因。执行grep "ERROR" log/*和grep "FATAL" log/* 先看看是否有错误，再到具体日志文件查看错误详情。注意，Nebula的默认配置文件对IP单位时间连接次数做了限制，如果在测试量较大发生莫名奇妙的问题，可以修改配置限制，通过查看日志中的WARNING信息通常有助于定位这种不是错误的“错误”。如果server已启动成功，那么可以用postman、curl等做测试，看看结果。
-```
-# 只启动NebulaInterface即可完成http的hello测试
-curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello
-
-# 启动NebulaInterface、NebulaLogic和NebulaBeacon完成分布式服务http的hello测试。
-curl -H "Content-Type:application/json" -X POST -d '{"name": "Nebula", "address":"https://github.com/Bwar/Nebula"}' http://${your_ip}:16003/hello_nebula
-```
-&emsp;&emsp;这个简单的测试可以只启动一个NebulaInterface即可完成，也可以启动分布式服务完成。NebulaBootstrap提供基于集群和单个Server的HelloWorld，基于集群的HelloWorld启动了NebulaBeacon、NebulaInterface、NebulaLogic三个server。下面是一张集群架构图：
 
 ![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/blob/master/image/nebula_cluster.png?raw=true)
 

@@ -2,7 +2,6 @@
 docs/html
 *.o
 *.so
-config*
 include/
 lib/
 *.cache
