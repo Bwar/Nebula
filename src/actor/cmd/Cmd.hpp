@@ -47,10 +47,10 @@ public:
     /**
      * @brief 命令处理入口
      * @note 框架层成功解析数据包后，根据MsgHead里的Cmd找到对应的Cmd类实例调用将数据包及
-     * 数据包来源tagChannelContext传给AnyMessage处理。若处理过程不涉及网络IO之类需异步处
+     * 数据包来源pChannel传给AnyMessage处理。若处理过程不涉及网络IO之类需异步处
      * 理的耗时调用，则无需新创建Step类实例来处理。若处理过程涉及耗时异步调用，则应创建Step
-     * 类实例，并向框架层注册Step类实例，调用Step.Start()后即返回。
-     * @param stCtx 消息来源上下文
+     * 类实例，并向框架层注册Step类实例，调用Step.Emit()后即返回。
+     * @param pChannel 消息来源通道
      * @param oMsgHead 数据包头
      * @param oMsgBody 数据包体
      * @return 命令是否处理成功

@@ -6,10 +6,10 @@
   /  |/ / _ \/ __ \/ / / / / __ `/
  / /|  /  __/ /_/ / /_/ / / /_/ /
 /_/ |_/\___/_.___/\__,_/_/\__,_/
-                                真正一键安装部署
+                                一键安装部署
 ```
 
-# Nebula : 一个强大的IoC网络框架，用于以C++快速构建高度并发，分布式和弹性的消息驱动应用程序。
+# Nebula : 一个强大的IoC网络框架，用于以C++快速构建高并发、分布式和弹性的消息驱动应用程序。
 [![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)<br/>
 
 1. [概述](#Overview)
@@ -65,6 +65,16 @@
 
 * [安装部署说明](docs/cn/install.md)
 * [配置说明](docs/cn/configuration.md)
+* [协议说明](docs/cn/protocol.md)
+* [开发组件说明]
+  * [Actor组件概述](docs/cn/actor_overview.md)
+  * [Cmd和Module组件](docs/cn/cmd_and_module.md)
+  * Step组件
+  * Session组件
+  * Context组件
+  * Model组件
+  * Chain组件
+  * Actor类
 
 
 ![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/blob/master/image/nebula_cluster.png?raw=true)

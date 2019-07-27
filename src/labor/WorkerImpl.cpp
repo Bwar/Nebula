@@ -1093,6 +1093,7 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
     oJsonConf.Get("cpu_affinity", bCpuAffinity);
     if (bCpuAffinity)
     {
+#ifndef __CYGWIN__
         /* get logical cpu number */
         int iCpuNum = sysconf(_SC_NPROCESSORS_CONF);;                               ///< cpu数量
         cpu_set_t stCpuMask;                                                        ///< cpu set
@@ -1102,6 +1103,7 @@ bool WorkerImpl::Init(CJsonObject& oJsonConf)
         {
             LOG4_WARNING("sched_setaffinity failed.");
         }
+#endif
     }
 
     if (oJsonConf["with_ssl"]("config_path").length() > 0)
