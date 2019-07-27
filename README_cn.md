@@ -66,7 +66,7 @@
 * [安装部署说明](docs/cn/install.md)
 * [配置说明](docs/cn/configuration.md)
 * [协议说明](docs/cn/protocol.md)
-* [开发组件说明]
+* 开发组件说明
   * [Actor组件概述](docs/cn/actor_overview.md)
   * [Cmd和Module组件](docs/cn/cmd_and_module.md)
   * Step组件
