@@ -27,6 +27,11 @@ public:
     Session& operator=(const Session&) = delete;
     virtual ~Session();
 
+    virtual bool Init()
+    {
+        return(true);
+    }
+
     /**
      * @brief 会话超时回调
      */
