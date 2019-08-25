@@ -69,7 +69,7 @@
 * 开发组件说明
   * [Actor组件概述](docs/cn/actor_overview.md)
   * [Cmd和Module组件](docs/cn/cmd_and_module.md)
-  * Step组件
+  * [Step组件](docs/cn/step.md)
   * Session组件
   * Context组件
   * Model组件

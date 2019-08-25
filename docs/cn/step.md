@@ -82,3 +82,258 @@ RedisStep(std::shared_ptr<Step> pNextStep = nullptr);
 ```
 
 &emsp;&emsp;Step的构造函数有三个参数，因派生类是从PbStep、HttpStep、RedisStep其中之一派生，所以只关注这三个构造函数即可，Step构造函数的第一个参数是PbStep、HttpStep、RedisStep自动填充的。PbStep和HttpStep都有两个带缺省值的参数：pNextStep用于指定当前Step执行完之后将执行的Step；dTimeout用于指定当前Step的等待响应的超时时间。如果pNextStep不为空，意味着在构造当前Step时已经存在pNextStep这样一个实例，需要在正在构造的当前Step的Callback()函数里（return语句之前，这时当前Step事实上已经完成但尚未退出）显式调用NextStep()。NextStep()只用于静态调用链显式执行NextStep的Emit()，无论什么情况框架都不会自动调用NextStep()。pNextStep的缺省值为nullptr，因为很多情况下是用不到pNextStep的，对静态调用链而言当前Step的Callback()调用完是知道该调用哪个Step的，在需要调用时才创建，创建完立刻调用新Step的Emit()会更好更节省资源。dTimeout参数是Step等待响应的超时时间，只在有特殊需要时会用到，使用缺省值gc_dDefaultTimeout，实际上是在节点配置文件里step_timeout配置的值。RedisStep只有一个参数值，是因为RedisStep不需要作超时处理。
+
+
+### 静态调用链应用
+
+&emsp;&emsp;Step提高并发量，并且能以多种巧妙的组合方式满足个各种业务需求。
+
+#### 即时创建Step并调用
+
+&emsp;&emsp;即时创建Step是最简单和最直接的组合方式，同时也是最节省资源的。
+
+![创建Step和调用](../image/static_chain.png)
+
+&emsp;&emsp;按需即时创建Step即在需要发出一个IO请求时创建一个Step1并调用Step1->Emit()发出IO请求，得到响应后Step1的Callback()会被框架自动调用。当收到并处理完一个响应后，还需要发出下一个IO请求时，在第一个Step1的Callback()函数里创建Step2并调用Step2->Emit()。依次类推，每个Step都是这样创建和调用，直到完成整个业务逻辑。Step的Emit()和Callback()函数里都可以按需要操作Context或Session里的数据，Context和Session会在后续章节里说明。
+
+&emsp;&emsp;即时创建Step的时序如下图：
+
+![即时创建Step顺序调用](../image/step_create_on_need.png)
+
+&emsp;&emsp;即时创建Step可以通过给Step构造函数传递参数的方式准备Step所需的上下文数据也可以通过Context或Session准备Step所需上下文数据。即时创建Step的伪代码：
+
+```C++
+// 即时创建Step
+class Cmd : public Actor
+{
+    bool AnyMessage(...)
+    {
+        Step_1 = MakeSharedStep("neb::StepOne", nullptr);
+        Step_1->Emit();
+    }
+};
+
+// 顺序调用
+class StepOne : public Actor
+{
+    E_CMD_STATUS Emit(...){...}
+    E_CMD_STATUS Callback(...)
+    {
+        Step_2 = MakeSharedStep("neb::StepTwo", nullptr);
+        Step_2->Emit();
+    }
+    E_CMD_STATUS Timeout(){...}
+};
+
+class StepTwo : public Actor
+{
+    E_CMD_STATUS Emit(...){...}
+    E_CMD_STATUS Callback(...)
+    {
+        Step_3 = MakeSharedStep("neb::StepThree", nullptr);
+        Step_3->Emit();
+    }
+    E_CMD_STATUS Timeout(){...}
+};
+
+class StepThree : public Actor
+{
+    E_CMD_STATUS Emit(...){...}
+    E_CMD_STATUS Callback(...)
+    {
+        Response();
+    }
+    E_CMD_STATUS Timeout(){...}
+};
+```
+
+#### 预先创建Step以next_step依次顺序调用
+
+&emsp;&emsp;预先创建Step以next_step依次调用是先将Step创建好，执行完一个Step再执行下一个Step，这样做的好处是一开始就给出了清晰的业务逻辑链，不过这种方式占用资源比即时创建Step要大。
+
+![预先创建Step顺序调用](../image/create_step_and_call_serial.png)
+
+&emsp;&emsp;预先创建Step以next_step依次调用时序：
+
+![预先创建Step顺序调用时序](../image/step_create_before_and_call_serial.png)
+
+&emsp;&emsp;预先创建Step以next_step依次调用的方式因Step已经预先创建好，不能再通过Step构造函数传递上下文，只能通过Context或Session准备Step所需上下文数据。
+
+&emsp;&emsp;预先创建Step以next_step依次调用伪代码：
+
+```C++
+// 预先创建Step
+class Cmd : public Actor
+{
+    bool AnyMessage(...)
+    {
+        Step_4 = MakeSharedStep("neb::StepFour", nullptr);
+        Step_3 = MakeSharedStep("neb::StepThree", Step_4);
+        Step_2 = MakeSharedStep("neb::StepTwo", Step_3);
+        Step_1 = MakeSharedStep("neb::StepOne", Step_2);
+        Step_1->Emit();
+    }
+};
+
+// 顺序调用
+class StepOne : public Actor
+{
+    E_CMD_STATUS Emit(...){...}
+    E_CMD_STATUS Callback(...)
+    {
+        next_step->Emit();
+    }
+    E_CMD_STATUS Timeout(){...}
+};
+```
+
+#### 预先创建Step以next_step归并调用
+
+&emsp;&emsp;上述预先创建Step以next_step顺序调用的方式其实并没有即时创建Step的方式优，Nebula之所以会支持预先创建Step方式是因为预先创建Step的归并调用可以高效优雅地实现某些业务逻辑。
+
+![Step归并调用链](../image/merging_step_call.png)
+
+&emsp;&emsp;举个例子说明一下归并调用的好处：类似朋友圈这种应用场景，朋友圈消息是以发朋友圈的用户视角分布式存储的，而查看朋友圈消息多是以接收者视角去拉取各个好友的最新朋友圈消息。朋友圈消息内容不可能按每个接收者存储一份，在接收者那里往往只有一个消息ID，具体内容还是要到各存储发送者消息内容的地方去拉取的。消息的分布式存储意味着服务端不可能通过一次请求获取到若干好友若干消息去满足客户端的一次拉取朋友圈请求所需要的内容，依次发送多个读取存储请求必然会让处理时间变长而可能导致客户端等待超时。预先创建Step归并调用就可以让多个读取朋友圈内容的同时发出，读到内容后再回到同一个Step里处理统一给客户端响应。
+
+![预先创建Step以next_step归并调用](../image/step_create_before_and_call_merging.png)
+
+&emsp;&emsp;预先创建Step以next_step依次调用伪代码：
+
+```C++
+// 预先创建Step
+class Cmd : public Actor
+{
+    bool AnyMessage(...)
+    {
+        Step_4 = MakeSharedStep("neb::StepFour", nullptr);
+        Step_3 = MakeSharedStep("neb::StepThree", Step_4);
+        Step_2 = MakeSharedStep("neb::StepTwo", Step_4);
+        Step_1 = MakeSharedStep("neb::StepOne", Step_4);
+        Step_1->Emit();
+        Step_2->Emit();
+        Step_3->Emit();
+    }
+};
+
+// 顺序调用
+class StepOne : public Actor
+{
+    E_CMD_STATUS Emit(...){...}
+    E_CMD_STATUS Callback(...)
+    {
+        next_step->Emit();
+    }
+    E_CMD_STATUS Timeout(){...}
+};
+
+class StepTwo : public Actor
+{
+    E_CMD_STATUS Emit(...){...}
+    E_CMD_STATUS Callback(...)
+    {
+        next_step->Emit();
+    }
+    E_CMD_STATUS Timeout(){...}
+};
+
+class StepThree : public Actor
+{
+    E_CMD_STATUS Emit(...){...}
+    E_CMD_STATUS Callback(...)
+    {
+        next_step->Emit();
+    }
+    E_CMD_STATUS Timeout(){...}
+};
+```
+
+&emsp;&emsp;拉取朋友圈消息这个例子适合用预先创建Step归并调用的方式来解决，下面这段伪代码是预先创建Step归并调用的一种演变，比上面那种多个Step的方式更适合于朋友圈这种类似业务逻辑。
+
+```C++
+
+class StepMerge : public Actor
+{
+public:
+    E_CMD_STATUS Emit(...)
+    {
+        SendTo(Channel_1, ...);
+        ++m_iEmitNum;
+        SendTo(Channel_2, ...);
+        ++m_iEmitNum;
+        SendTo(Channel_3, ...);
+        ++m_iEmitNum;
+    }
+    E_CMD_STATUS Callback(...)
+    {
+        ++m_iCallbackNum;
+        if (m_iCallbackNum == m_iEmitNum)
+        {
+            Response();
+        }
+        else
+        {
+            return CMD_STATUS_RUNNING;
+        }
+    }
+    E_CMD_STATUS Timeout(){...}
+    
+private:
+    int m_iEmitNum = 0;
+    int m_iCallbackNum = 0;
+};
+
+```
+
+#### 单个Step递归调用
+
+&emsp;&emsp;单个Step递归调用，严格而言不是Step调用链，而且这也是Nebula所不推荐的一种应用方式。但如果有需要，并且不会造成业务逻辑混乱的情况下可以适当使用。这种方式是只创建一个Step，在Step的Callback()里再调用自己的Emit()，什么时候结束完全由Step在自身决定。伪代码如下：
+
+```C++
+class StepOne : public Actor
+{
+public:
+    E_CMD_STATUS Emit(...)
+    {
+        ++m_iEmitNo;
+        switch (m_iEmitNo)
+        {
+        case 1:
+            return EmitFirst();
+        case 2:
+            return EmitSecond();
+        case 3:
+            return EmitThird();
+        }
+    }
+    E_CMD_STATUS Callback(...)
+    {
+        switch (m_iEmitNo)
+        {
+        case 1:
+            CallbackFirst(...);
+            return Emit();
+        case 2:
+            CallbackSecond(...);
+            return Emit();
+        case 3:
+            return CallbackThird(...);
+        }
+    }
+    E_CMD_STATUS Timeout(){...}
+    
+protected:
+    E_CMD_STATUS EmitFirst();
+    E_CMD_STATUS CallbackFirst(...);
+    E_CMD_STATUS EmitSecond();
+    E_CMD_STATUS CallbackSecond(...);
+    E_CMD_STATUS EmitThird();
+    E_CMD_STATUS CallbackThird(...);
+    
+private:
+    int m_iEmitNo = 0;
+};
+```
+
+### Step调用链小结
+
+&emsp;&emsp;Step设计比较巧妙，有多种组合方式，上述调用链是Nebula所建议的方式，也可能还有其他组合方式开发者可以向Nebula官方建议。另外，Step调用链的动态组合方式会在Chain章节描述。
