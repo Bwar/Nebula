@@ -1,10 +1,9 @@
 ### Step定义
-&emsp;&emsp;Step是最为核心的Actor组件，Nebula高性能的关键在于Step，IO密集型应用的逻辑都是围绕Step展开，暂且先把Step理解为一个操作步骤。Step起到C语言中异步回调函数的作用，却又比异步回调函数适用要简单得多。首先来看一下Step类图：
+&emsp;&emsp;Step是最为核心的Actor组件，Nebula高性能的关键在于Step，IO密集型应用的逻辑都是围绕Step展开，暂且先把Step理解为一个操作步骤。Step起到C语言中异步回调函数的作用，却又比异步回调函数使用要简单得多。首先来看一下Step类图：
 
 ![Step类定义](../image/step.png)
 
 &emsp;&emsp;如图所示，Step类分为三种PbStep、HttpStep和RedisStep，分别用在需要Nebula通信协议、Http通信协议和Redis通信协议的场景，其中PbStep应用最多，文档中的Step示例以PbStep为主。
-
 
 Step.hpp:
 
@@ -18,7 +17,7 @@ namespace neb
 
 class Chain;
 
-class Step: public Actor
+class Step
 {
 public:
     Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
@@ -104,7 +103,7 @@ RedisStep(std::shared_ptr<Step> pNextStep = nullptr);
 
 ```C++
 // 即时创建Step
-class Cmd : public Actor
+class Cmd
 {
     bool AnyMessage(...)
     {
@@ -114,7 +113,7 @@ class Cmd : public Actor
 };
 
 // 顺序调用
-class StepOne : public Actor
+class StepOne
 {
     E_CMD_STATUS Emit(...){...}
     E_CMD_STATUS Callback(...)
@@ -125,7 +124,7 @@ class StepOne : public Actor
     E_CMD_STATUS Timeout(){...}
 };
 
-class StepTwo : public Actor
+class StepTwo
 {
     E_CMD_STATUS Emit(...){...}
     E_CMD_STATUS Callback(...)
@@ -136,7 +135,7 @@ class StepTwo : public Actor
     E_CMD_STATUS Timeout(){...}
 };
 
-class StepThree : public Actor
+class StepThree
 {
     E_CMD_STATUS Emit(...){...}
     E_CMD_STATUS Callback(...)
@@ -163,7 +162,7 @@ class StepThree : public Actor
 
 ```C++
 // 预先创建Step
-class Cmd : public Actor
+class Cmd
 {
     bool AnyMessage(...)
     {
@@ -176,7 +175,7 @@ class Cmd : public Actor
 };
 
 // 顺序调用
-class StepOne : public Actor
+class StepOne
 {
     E_CMD_STATUS Emit(...){...}
     E_CMD_STATUS Callback(...)
@@ -201,7 +200,7 @@ class StepOne : public Actor
 
 ```C++
 // 预先创建Step
-class Cmd : public Actor
+class Cmd
 {
     bool AnyMessage(...)
     {
@@ -216,7 +215,7 @@ class Cmd : public Actor
 };
 
 // 顺序调用
-class StepOne : public Actor
+class StepOne
 {
     E_CMD_STATUS Emit(...){...}
     E_CMD_STATUS Callback(...)
@@ -226,7 +225,7 @@ class StepOne : public Actor
     E_CMD_STATUS Timeout(){...}
 };
 
-class StepTwo : public Actor
+class StepTwo
 {
     E_CMD_STATUS Emit(...){...}
     E_CMD_STATUS Callback(...)
@@ -236,7 +235,7 @@ class StepTwo : public Actor
     E_CMD_STATUS Timeout(){...}
 };
 
-class StepThree : public Actor
+class StepThree
 {
     E_CMD_STATUS Emit(...){...}
     E_CMD_STATUS Callback(...)
@@ -251,7 +250,7 @@ class StepThree : public Actor
 
 ```C++
 
-class StepMerge : public Actor
+class StepMerge
 {
 public:
     E_CMD_STATUS Emit(...)
@@ -289,7 +288,7 @@ private:
 &emsp;&emsp;单个Step递归调用，严格而言不是Step调用链，而且这也是Nebula所不推荐的一种应用方式。但如果有需要，并且不会造成业务逻辑混乱的情况下可以适当使用。这种方式是只创建一个Step，在Step的Callback()里再调用自己的Emit()，什么时候结束完全由Step在自身决定。伪代码如下：
 
 ```C++
-class StepOne : public Actor
+class StepOne
 {
 public:
     E_CMD_STATUS Emit(...)

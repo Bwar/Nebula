@@ -1,7 +1,7 @@
 
 * [开始](getting_start.md)
-* [高并发单机Server示例](independent_service.md)
-* [分布式服务示例](distributed_service.md)
+* [高并发单机Server示例](nebula_server_demo.md)
+* [分布式服务示例](nebula_distributed_demo.md)
 * [Nebula工作原理](how_nebula_works.md)
 * [Nebula分布式服务简析](nebula_cluster.md)
 * [快速开发组件](actor_components.md)
@@ -18,6 +18,7 @@
     * [会话](session.md)
   * [Model计算模型](model.md)
   * [Chain调用链](chain.md)
+* [安装部署说明](docs/cn/install.md)
 * [通信方式](way_of_communication.md)
 * [配置说明](configuration.md)
 * [通信协议](protocol.md)
