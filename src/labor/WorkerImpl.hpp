@@ -194,7 +194,7 @@ public:     // about worker
         void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Actor> MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs&&... args);
+    std::shared_ptr<Actor> MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs... args);
 
     template <typename ...Targs>
     std::shared_ptr<Cmd> MakeSharedCmd(Actor* pCreator, const std::string& strCmdName, Targs&&... args);

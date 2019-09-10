@@ -96,37 +96,37 @@ private:
 template <typename ...Targs>
 void Worker::Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args)
 {
-    m_pImpl->Logger(strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs&&>(args)...);
+    m_pImpl->Logger(strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }
 
 template <typename ...Targs>
 std::shared_ptr<Actor> Worker::MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs&&... args)
 {
-    return(m_pImpl->MakeSharedActor(pCreator, strActorName, std::forward<Targs&&>(args)...));
+    return(m_pImpl->MakeSharedActor(pCreator, strActorName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Step> Worker::MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs&&... args)
 {
-    return(m_pImpl->MakeSharedStep(pCreator, strStepName, std::forward<Targs&&>(args)...));
+    return(m_pImpl->MakeSharedStep(pCreator, strStepName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Session> Worker::MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs&&... args)
 {
-    return(m_pImpl->MakeSharedSession(pCreator, strSessionName, std::forward<Targs&&>(args)...));
+    return(m_pImpl->MakeSharedSession(pCreator, strSessionName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Context> Worker::MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs&&... args)
 {
-    return(m_pImpl->MakeSharedContext(pCreator, strContextName, std::forward<Targs&&>(args)...));
+    return(m_pImpl->MakeSharedContext(pCreator, strContextName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Chain> Worker::MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs&&... args)
 {
-    return(m_pImpl->MakeSharedChain(pCreator, strChainName, std::forward<Targs&&>(args)...));
+    return(m_pImpl->MakeSharedChain(pCreator, strChainName, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

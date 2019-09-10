@@ -266,37 +266,37 @@ private:
 template <typename ...Targs>
 void Actor::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args)
 {
-    m_pWorker->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs&&>(args)...);
+    m_pWorker->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }
 
 template <typename ...Targs>
 std::shared_ptr<Step> Actor::MakeSharedStep(const std::string& strStepName, Targs&&... args)
 {
-    return(m_pWorker->MakeSharedStep(this, strStepName, std::forward<Targs&&>(args)...));
+    return(m_pWorker->MakeSharedStep(this, strStepName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Session> Actor::MakeSharedSession(const std::string& strSessionName, Targs&&... args)
 {
-    return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs&&>(args)...));
+    return(m_pWorker->MakeSharedSession(this, strSessionName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Context> Actor::MakeSharedContext(const std::string& strContextName, Targs&&... args)
 {
-    return(m_pWorker->MakeSharedContext(this, strContextName, std::forward<Targs&&>(args)...));
+    return(m_pWorker->MakeSharedContext(this, strContextName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Actor> Actor::MakeSharedActor(const std::string& strActorName, Targs&&... args)
 {
-    return(m_pWorker->MakeSharedActor(this, strActorName, std::forward<Targs&&>(args)...));
+    return(m_pWorker->MakeSharedActor(this, strActorName, std::forward<Targs>(args)...));
 }
 
 template <typename ...Targs>
 std::shared_ptr<Chain> Actor::MakeSharedChain(const std::string& strChainName, Targs&&... args)
 {
-    return(m_pWorker->MakeSharedChain(this, strChainName, std::forward<Targs&&>(args)...));
+    return(m_pWorker->MakeSharedChain(this, strChainName, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */
