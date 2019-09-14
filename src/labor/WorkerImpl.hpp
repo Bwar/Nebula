@@ -122,7 +122,7 @@ public:
     struct tagSo
     {
         void* pSoHandle;
-        int iVersion;
+        std::string strVersion;
         std::vector<int> vecCmd;
         std::vector<std::string> vecPath;
         tagSo(){};
@@ -217,6 +217,8 @@ public:     // about worker
     template <typename ...Targs>
     std::shared_ptr<Chain> MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs&&... args);
 
+protected:
+    template <typename ...Targs> Actor* NewActor(const std::string& strActorName, Targs... args);
     std::shared_ptr<Actor> InitializeSharedActor(Actor* pCreator, std::shared_ptr<Actor> pSharedActor, const std::string& strActorName);
     bool TransformToSharedCmd(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedModule(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
@@ -256,7 +258,7 @@ public:     // about channel
 
 public:     
     // about session
-    virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
+    virtual std::shared_ptr<Session> GetSession(uint64 ullSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
 
     // about step
@@ -337,7 +339,7 @@ protected:
 
     void BootLoadCmd(CJsonObject& oCmdConf);
     void DynamicLoad(CJsonObject& oSoConf);
-    tagSo* LoadSo(const std::string& strSoPath, int iVersion);
+    tagSo* LoadSo(const std::string& strSoPath, std::string strVersion);
     void LoadDynamicSymbol(CJsonObject& oOneSoConf);
     void UnloadDynamicSymbol(CJsonObject& oOneSoConf);
 

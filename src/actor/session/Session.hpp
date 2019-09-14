@@ -21,7 +21,7 @@ namespace neb
 class Session: public Actor
 {
 public:
-    Session(uint32 ulSessionId, ev_tstamp dSessionTimeout = 60.0);
+    Session(uint64 ullSessionId, ev_tstamp dSessionTimeout = 60.0);
     Session(const std::string& strSessionId, ev_tstamp dSessionTimeout = 60.0);
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;

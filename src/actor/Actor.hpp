@@ -111,7 +111,7 @@ protected:
      */
     const CJsonObject& GetCustomConf() const;
 
-    std::shared_ptr<Session> GetSession(uint32 uiSessionId);
+    std::shared_ptr<Session> GetSession(uint64 ullSessionId);
     std::shared_ptr<Session> GetSession(const std::string& strSessionId);
     bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
     std::shared_ptr<Model> GetModel(const std::string& strModelName);

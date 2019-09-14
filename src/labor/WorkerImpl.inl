@@ -31,8 +31,17 @@ std::shared_ptr<Actor> WorkerImpl::MakeSharedActor(Actor* pCreator, const std::s
     Actor* pActor = ActorFactory<Targs...>::Instance()->Create(strActorName, std::forward<Targs>(args)...);
     if (nullptr == pActor)
     {
-        LOG4_ERROR("failed to make shared actor \"%s\"", strActorName.c_str());
-        return(nullptr);
+        /**
+         * @brief 为兼容&&参数推导差异导致ActorFactory<Targs...>未Regist进而导致
+         * ActorFactory<Targs...>::Instance()->Create()调用不到对应的创建函数而增加。
+         * NewActor()参数将按值传递，如果调用到NewActor()才new成功，代价会相对大些。
+         */
+        pActor = NewActor(strActorName, std::forward<Targs>(args)...);
+        if (nullptr == pActor)
+        {
+            LOG4_ERROR("failed to make shared actor \"%s\"", strActorName.c_str());
+            return(nullptr);
+        }
     }
     std::shared_ptr<Actor> pSharedActor;
     pSharedActor.reset(pActor);
@@ -80,6 +89,13 @@ template <typename ...Targs>
 std::shared_ptr<Chain> WorkerImpl::MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs&&... args)
 {
     return(std::dynamic_pointer_cast<Chain>(MakeSharedActor(pCreator, strChainName, std::forward<Targs>(args)...)));
+}
+
+template <typename ...Targs>
+Actor* WorkerImpl::NewActor(const std::string& strActorName, Targs... args)
+{
+    LOG4_TRACE("%s() called by MakeSharedActor().", __FUNCTION__);
+    return(ActorFactory<Targs...>::Instance()->Create(strActorName, std::forward<Targs>(args)...));
 }
 
 }

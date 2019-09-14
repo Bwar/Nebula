@@ -81,9 +81,9 @@ const CJsonObject& Actor::GetCustomConf() const
 {
     return(m_pWorker->GetCustomConf());
 }
-std::shared_ptr<Session> Actor::GetSession(uint32 uiSessionId)
+std::shared_ptr<Session> Actor::GetSession(uint64 ullSessionId)
 {
-    return(m_pWorker->GetSession(uiSessionId));
+    return(m_pWorker->GetSession(ullSessionId));
 }
 
 std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId)

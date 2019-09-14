@@ -39,9 +39,9 @@ uint32 Worker::GetSequence() const
     return(m_pImpl->GetSequence());
 }
 
-std::shared_ptr<Session> Worker::GetSession(uint32 uiSessionId)
+std::shared_ptr<Session> Worker::GetSession(uint64 ullSessionId)
 {
-    return(m_pImpl->GetSession(uiSessionId));
+    return(m_pImpl->GetSession(ullSessionId));
 }
 
 std::shared_ptr<Session> Worker::GetSession(const std::string& strSessionId)

@@ -67,7 +67,7 @@
     "dynamic_loading": [{
             "so_path": "plugins/User.so",
             "load": false,
-            "version": 1,
+            "version": "1.0",
             "cmd": [
                 { "cmd": 2001, "class": "neb::CmdUserLogin" },
                 { "cmd": 2003, "class": "neb::CmdUserLogout" }
@@ -84,7 +84,7 @@
         {
             "so_path": "plugins/ChatMsg.so",
             "load": false,
-            "version": 1,
+            "version": "1.0",
             "cmd": [
                 { "cmd": 2001, "class": "neb::CmdChat" }
             ],

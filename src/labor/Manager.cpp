@@ -645,7 +645,7 @@ bool Manager::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq
     }
     else
     {
-        LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
+        LOG4_WARNING("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
     }
 }

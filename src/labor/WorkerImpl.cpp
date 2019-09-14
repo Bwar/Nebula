@@ -2029,7 +2029,7 @@ void WorkerImpl::BootLoadCmd(CJsonObject& oCmdConf)
 void WorkerImpl::DynamicLoad(CJsonObject& oDynamicLoadingConf)
 {
     LOG4_TRACE(" ");
-    int iVersion = 0;
+    std::string strVersion = "1.0";
     bool bIsload = false;
     std::string strSoPath;
     std::unordered_map<std::string, tagSo*>::iterator so_iter;
@@ -2039,42 +2039,52 @@ void WorkerImpl::DynamicLoad(CJsonObject& oDynamicLoadingConf)
         oDynamicLoadingConf[i].Get("load", bIsload);
         if (bIsload)
         {
-            if (oDynamicLoadingConf[i].Get("so_path", strSoPath) && oDynamicLoadingConf[i].Get("version", iVersion))
+            if (oDynamicLoadingConf[i].Get("so_path", strSoPath) && oDynamicLoadingConf[i].Get("version", strVersion))
             {
                 so_iter = m_mapLoadedSo.find(strSoPath);
                 if (so_iter == m_mapLoadedSo.end())
                 {
-                    std::string strSoFile = m_stWorkerInfo.strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
+                    std::string strSoFile = m_stWorkerInfo.strWorkPath + std::string("/")
+                        + oDynamicLoadingConf[i]("so_path") + std::string(".") + oDynamicLoadingConf[i]("version");
                     if (0 != access(strSoFile.c_str(), F_OK))
                     {
-                        LOG4_WARNING("%s not exist!", strSoFile.c_str());
-                        continue;
+                        strSoFile = m_stWorkerInfo.strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
+                        if (0 != access(strSoFile.c_str(), F_OK))
+                        {
+                            LOG4_WARNING("%s not exist!", strSoFile.c_str());
+                            continue;
+                        }
                     }
-                    pSo = LoadSo(strSoFile, iVersion);
+                    pSo = LoadSo(strSoFile, strVersion);
                     if (pSo != nullptr)
                     {
-                        LOG4_INFO("succeed in loading %s", strSoPath.c_str());
+                        LOG4_INFO("succeed in loading %s", strSoFile.c_str());
                         m_mapLoadedSo.insert(std::make_pair(strSoPath, pSo));
                         LoadDynamicSymbol(oDynamicLoadingConf[i]);
                     }
                 }
                 else
                 {
-                    if (iVersion != so_iter->second->iVersion)  // 版本升级，先卸载再加载
+                    if (strVersion != so_iter->second->strVersion)  // 版本升级，先卸载再加载
                     {
-                        std::string strSoFile = m_stWorkerInfo.strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
+                        std::string strSoFile = m_stWorkerInfo.strWorkPath + std::string("/")
+                            + oDynamicLoadingConf[i]("so_path") + std::string(".") + oDynamicLoadingConf[i]("version");
                         if (0 != access(strSoFile.c_str(), F_OK))
                         {
-                            LOG4_WARNING("%s not exist!", strSoFile.c_str());
-                            continue;
+                            strSoFile = m_stWorkerInfo.strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
+                            if (0 != access(strSoFile.c_str(), F_OK))
+                            {
+                                LOG4_WARNING("%s not exist!", strSoFile.c_str());
+                                continue;
+                            }
                         }
                         UnloadDynamicSymbol(oDynamicLoadingConf[i]);
                         dlclose(so_iter->second->pSoHandle);
                         delete so_iter->second;
-                        pSo = LoadSo(strSoFile, iVersion);
+                        pSo = LoadSo(strSoFile, strVersion);
                         if (pSo != nullptr)
                         {
-                            LOG4_INFO("succeed in loading %s", strSoPath.c_str());
+                            LOG4_INFO("succeed in loading %s", strSoFile.c_str());
                             so_iter->second = pSo;
                             LoadDynamicSymbol(oDynamicLoadingConf[i]);
                         }
@@ -2097,14 +2107,15 @@ void WorkerImpl::DynamicLoad(CJsonObject& oDynamicLoadingConf)
                     dlclose(so_iter->second->pSoHandle);
                     delete so_iter->second;
                     m_mapLoadedSo.erase(so_iter);
-                    LOG4_INFO("unload %s", strSoPath.c_str());
+                    LOG4_INFO("unload %s.%s", strSoPath.c_str(),
+                            oDynamicLoadingConf[i]("version").c_str());
                 }
             }
         }
     }
 }
 
-WorkerImpl::tagSo* WorkerImpl::LoadSo(const std::string& strSoPath, int iVersion)
+WorkerImpl::tagSo* WorkerImpl::LoadSo(const std::string& strSoPath, std::string strVersion)
 {
     LOG4_TRACE(" ");
     tagSo* pSo = new tagSo();
@@ -2126,7 +2137,7 @@ WorkerImpl::tagSo* WorkerImpl::LoadSo(const std::string& strSoPath, int iVersion
         return(nullptr);
     }
     pSo->pSoHandle = pHandle;
-    pSo->iVersion = iVersion;
+    pSo->strVersion = strVersion;
     return(pSo);
 }
 
@@ -2385,10 +2396,10 @@ bool WorkerImpl::ReloadCmdConf()
     return(true);
 }
 
-std::shared_ptr<Session> WorkerImpl::GetSession(uint32 uiSessionId)
+std::shared_ptr<Session> WorkerImpl::GetSession(uint64 ullSessionId)
 {
     std::ostringstream oss;
-    oss << uiSessionId;
+    oss << ullSessionId;
     auto id_iter = m_mapCallbackSession.find(oss.str());
     if (id_iter == m_mapCallbackSession.end())
     {
