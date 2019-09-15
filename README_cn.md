@@ -33,7 +33,7 @@
 
 &emsp;&emsp;把Nebula用于学习交流也不错，Bwar欢迎更多有兴趣的开发者加入到Nebula这个项目中来。Nebula是个proactor模式开发框架，不错，是proactor不是reactor（框架层实现的proactor而不是操作系统支持），应用于IO密集型的项目可以达到非常好的性能。对用惯了RPC框架的人而言，Nebula跟RPC很不一样，不过使用起来并不会比RPC复杂多少，但比RPC性能要高很多；对了解异步回调编程方式的开发者，Nebula是个非常简单的框架，比写常见的异步回调写法要简单多了。Nebula网络框架的技术分享和交流见[C++网络框架Nebula](https://zhuanlan.zhihu.com/c_216558336)
 
-&emsp;&emsp;Nebula从一个从2016年5月至今在生产环境稳定运行的IM底层框架Starship发展而来。Nebula跟Starship框架（也是Bwar一人独立开发）有20%左右的结构相似度，是基于Starship经验全新开发，可以认为Nebula(C++14)是Starship(C++03)的一个高级进化版本，具有Starship的所有优点，没有Starship的所有已发现的缺点，同时提供了更多高级功能。基于Nebula的第一个应用Nebio（埋点数据采集和实时分析项目）在2018年7月底上线并稳定运行，Bwar还准备开发基于Nebula的IM应用Nebim。
+&emsp;&emsp;Nebula从一个从2016年5月至今在生产环境稳定运行的IM底层框架Starship发展而来。Nebula跟Starship框架（也是Bwar一人独立开发）有20%左右的结构相似度，是基于Starship经验全新开发，可以认为Nebula(C++14)是Starship(C++03)的一个高级进化版本，具有Starship的所有优点，没有Starship的所有已发现的缺点，同时提供了更多高级功能。基于Nebula的应用Nebio（埋点数据采集和实时分析项目）在2018年7月底上线并稳定运行。
 
 <a name="Features"></a>
 ## 功能
@@ -71,11 +71,11 @@
   * [Actor组件概述](docs/cn/actor_overview.md)
   * [Cmd和Module组件](docs/cn/cmd_and_module.md)
   * [Step组件](docs/cn/step.md)
-  * Session组件
+  * [Session组件](docs/cn/session.md)
   * Context组件
   * Model组件
   * Chain组件
-  * Actor类
+  * [Actor类](docs/cn/actor.md)
 
 
 ![nebula_cluster](https://github.com/Bwar/NebulaBootstrap/blob/master/image/nebula_cluster.png?raw=true)

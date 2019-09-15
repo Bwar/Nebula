@@ -538,7 +538,7 @@ bool WorkerImpl::OnStepTimeout(std::shared_ptr<Step> pStep)
     }
     else    // 步骤已超时
     {
-        LOG4_TRACE("seq %lu: active_time %lf, now_time %lf, lifetime %lf",
+        LOG4_TRACE("seq %u: active_time %lf, now_time %lf, lifetime %lf",
                         pStep->GetSequence(), pStep->GetActiveTime(), ev_now(m_loop), pStep->GetTimeout());
         E_CMD_STATUS eResult = pStep->Timeout();
         if (CMD_STATUS_RUNNING == eResult)
@@ -2646,7 +2646,7 @@ void WorkerImpl::ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const st
 
 bool WorkerImpl::Handle(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
 {
-    LOG4_DEBUG("cmd %u, seq %lu", oMsgHead.cmd(), oMsgHead.seq());
+    LOG4_DEBUG("cmd %u, seq %u", oMsgHead.cmd(), oMsgHead.seq());
     if (gc_uiCmdReq & oMsgHead.cmd())    // 新请求
     {
         MsgHead oOutMsgHead;

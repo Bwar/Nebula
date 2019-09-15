@@ -404,7 +404,7 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
         }
         else
         {
-            LOG4_ERROR("cmd[%u], seq[%lu] oMsgBody.ParseFromArray() error!",
+            LOG4_ERROR("cmd[%u], seq[%u] oMsgBody.ParseFromArray() error!",
                     oMsgHead.cmd(), oMsgHead.seq());
             return (CODEC_STATUS_ERR);
         }

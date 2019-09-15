@@ -10,7 +10,7 @@
 
 &emsp;&emsp;Actor类的ACTOR_TYPE枚举定义了Nebula框架支持的所有Actor组件类型，Cmd、Module、Step、Session等组件会自动填充ACTOR_TYPE，从这些组件派生的业务类无需关注ACTOR_TYPE，ACTOR_TYPE主要是Nebula框架管理组件用的。
 
-&emsp;&emsp;Logger()模板函数是写日志用的，但并不需要直接调用Logger()函数写日志，调用LOG4_INFO()/LOG4_ERROR()等相关宏写日志即可，实际上这些宏就是调用Logger()函数写的日志，宏会自动填充一些文件名、函数名之类参数，比直接调用Logger()函数简单。Logger()函数的实现更是无须关注，小小提示一下，Nebula提供不需要开发者做任何额外工作的日志跟踪服务，其原理就在Logger()函数的实现里，这也是令人惊喜的有用且强大的功能之一。
+&emsp;&emsp;Logger()模板函数是写日志用的，但并不需要直接调用Logger()函数写日志，调用LOG4_INFO()/LOG4_ERROR()等相关宏写日志即可，实际上这些宏就是调用Logger()函数写的日志，宏会自动填充一些文件名、函数名之类参数，比直接调用Logger()函数简单。Logger()函数的实现更是无须关注，提示一下，Nebula提供不需要开发者做任何额外工作的日志跟踪服务，其原理就在Logger()函数的实现里，这也是令人惊喜的有用且强大的功能之一。
 
 &emsp;&emsp;MakeSharedStep()/MakeSharedSession()等相关模板函数用于通过类名反射动态创建具体业务逻辑类，动态创建具体Actor实例的同时会初始化并向框架进行注册，还有一些上下文信息的传递也会在动态创建的过程中完成传递。GetActorName()、GetTraceId()、GetSequence()、GetContext()等用起来觉得很方便很神奇，这些都是MakeShared相关模板函数默默地做了许多复杂的事情，把简单都留给用户。所以，切记不要自己去调用new来创建Actor的各种派生类，都调用MakeSharedStep/MakeSharedSession()等相关模板函数。至于非Actor组件派生类和用户自己的数据结构，MakeShared相关模板函数是不支持的，也没必要支持。
 
