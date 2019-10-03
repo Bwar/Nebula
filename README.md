@@ -126,6 +126,9 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v0.10
+   - the plugin version control dynamically unloads and loads the instant validation feature.
+   - optimize reflection dynamic creation of Actor.
 #### v0.9
    - add Model
    - add Chain
