@@ -1,7 +1,7 @@
 
 /*******************************************************************************
  * Project:  Nebula
- * @file     SessionNode.cpp
+ * @file     Nodes.cpp
  * @brief 
  * @author   bwar
  * @date:    2016-3-19
@@ -11,22 +11,22 @@
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 #include "cryptopp/md5.h"
 //#include "cryptopp/hex.h"
-#include "actor/session/sys_session/SessionNode.hpp"
+#include "Nodes.hpp"
 
 namespace neb
 {
 
-SessionNode::SessionNode(int iHashAlgorithm, int iVirtualNodeNum, ev_tstamp dSessionTimeout)
+Nodes::Nodes(int iHashAlgorithm, int iVirtualNodeNum, ev_tstamp dSessionTimeout)
     : m_iHashAlgorithm(iHashAlgorithm), m_iVirtualNodeNum(iVirtualNodeNum)
 {
 }
 
-SessionNode::~SessionNode()
+Nodes::~Nodes()
 {
     m_mapNode.clear();
 }
 
-bool SessionNode::GetNode(const std::string& strNodeType, const std::string& strHashKey, std::string& strNodeIdentify)
+bool Nodes::GetNode(const std::string& strNodeType, const std::string& strHashKey, std::string& strNodeIdentify)
 {
     uint32 uiKeyHash = 0;
     if (HASH_fnv1_64 == m_iHashAlgorithm)
@@ -62,7 +62,7 @@ bool SessionNode::GetNode(const std::string& strNodeType, const std::string& str
     }
 }
 
-bool SessionNode::GetNode(const std::string& strNodeType, uint32 uiHash, std::string& strNodeIdentify)
+bool Nodes::GetNode(const std::string& strNodeType, uint32 uiHash, std::string& strNodeIdentify)
 {
     auto node_type_iter = m_mapNode.find(strNodeType);
     if (node_type_iter == m_mapNode.end())
@@ -84,7 +84,7 @@ bool SessionNode::GetNode(const std::string& strNodeType, uint32 uiHash, std::st
     }
 }
 
-bool SessionNode::GetNode(const std::string& strNodeType, std::string& strNodeIdentify)
+bool Nodes::GetNode(const std::string& strNodeType, std::string& strNodeIdentify)
 {
     auto node_type_iter = m_mapNode.find(strNodeType);
     if (node_type_iter == m_mapNode.end())
@@ -103,7 +103,7 @@ bool SessionNode::GetNode(const std::string& strNodeType, std::string& strNodeId
     }
 }
 
-bool SessionNode::GetNode(const std::string& strNodeType, std::unordered_set<std::string>& setNodeIdentify)
+bool Nodes::GetNode(const std::string& strNodeType, std::unordered_set<std::string>& setNodeIdentify)
 {
     auto node_type_iter = m_mapNode.find(strNodeType);
     if (node_type_iter == m_mapNode.end())
@@ -120,7 +120,7 @@ bool SessionNode::GetNode(const std::string& strNodeType, std::unordered_set<std
     }
 }
 
-void SessionNode::AddNode(const std::string& strNodeType, const std::string& strNodeIdentify)
+void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeIdentify)
 {
     auto node_type_iter = m_mapNode.find(strNodeType);
     if (node_type_iter == m_mapNode.end())
@@ -179,7 +179,7 @@ void SessionNode::AddNode(const std::string& strNodeType, const std::string& str
     }
 }
 
-void SessionNode::DelNode(const std::string& strNodeType, const std::string& strNodeIdentify)
+void Nodes::DelNode(const std::string& strNodeType, const std::string& strNodeIdentify)
 {
     auto node_type_iter = m_mapNode.find(strNodeType);
     if (node_type_iter != m_mapNode.end())
@@ -203,7 +203,7 @@ void SessionNode::DelNode(const std::string& strNodeType, const std::string& str
     }
 }
 
-bool SessionNode::IsNodeType(const std::string& strNodeIdentify, const std::string& strNodeType)
+bool Nodes::IsNodeType(const std::string& strNodeIdentify, const std::string& strNodeType)
 {
     auto node_type_iter = m_mapNode.find(strNodeType);
     if (node_type_iter != m_mapNode.end())
@@ -217,7 +217,7 @@ bool SessionNode::IsNodeType(const std::string& strNodeIdentify, const std::stri
     return(false);
 }
 
-uint32 SessionNode::hash_fnv1_64(const char *key, size_t key_length)
+uint32 Nodes::hash_fnv1_64(const char *key, size_t key_length)
 {
     uint64_t hash = FNV_64_INIT;
     size_t x;
@@ -230,7 +230,7 @@ uint32 SessionNode::hash_fnv1_64(const char *key, size_t key_length)
     return (uint32_t)hash;
 }
 
-uint32 SessionNode::hash_fnv1a_64(const char *key, size_t key_length)
+uint32 Nodes::hash_fnv1a_64(const char *key, size_t key_length)
 {
     uint32_t hash = (uint32_t) FNV_64_INIT;
     size_t x;
@@ -244,7 +244,7 @@ uint32 SessionNode::hash_fnv1a_64(const char *key, size_t key_length)
     return hash;
 }
 
-uint32_t SessionNode::murmur3_32(const char *key, uint32_t len, uint32_t seed)
+uint32_t Nodes::murmur3_32(const char *key, uint32_t len, uint32_t seed)
 {
     static const uint32_t c1 = 0xcc9e2d51;
     static const uint32_t c2 = 0x1b873593;

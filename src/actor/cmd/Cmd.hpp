@@ -10,12 +10,13 @@
 #ifndef SRC_ACTOR_CMD_CMD_HPP_
 #define SRC_ACTOR_CMD_CMD_HPP_
 
-#include "labor/Worker.hpp"
 #include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
+
+class ActorBuilder;
 
 class Cmd: public Actor
 {
@@ -68,7 +69,7 @@ protected:
 
 private:
     int32 m_iCmd;
-    friend class WorkerImpl;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */

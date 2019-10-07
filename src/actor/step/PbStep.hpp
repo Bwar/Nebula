@@ -15,7 +15,7 @@
 namespace neb
 {
 
-class WorkerImpl;
+class ActorBuilder;
 
 class PbStep: public Step
 {
@@ -42,7 +42,7 @@ public:
             void* data = NULL) = 0;
 
 private:
-    friend class WorkerImpl;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */

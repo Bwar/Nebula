@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include <actor/step/sys_step/StepTellWorker.hpp>
+#include "ios/Dispatcher.hpp"
 
 namespace neb
 {
@@ -49,8 +50,8 @@ E_CMD_STATUS StepTellWorker::Callback(
         if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
         {
             LOG4_DEBUG("AddNodeIdentify(%s)!", oInTargetWorker.worker_identify().c_str());
-            GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
-            GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
+            GetLabor(this)->GetDispatcher()->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
+            GetLabor(this)->GetDispatcher()->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
             SendTo(pChannel);
             return(CMD_STATUS_COMPLETED);
         }

@@ -10,15 +10,35 @@
 #ifndef SRC_LABOR_WORKER_HPP_
 #define SRC_LABOR_WORKER_HPP_
 
-#include "Labor.hpp"
-#include "WorkerImpl.hpp"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdlib.h>
+#include <netdb.h>
+#include <errno.h>
+#include <unistd.h>
+#include <signal.h>
+
+#ifdef __cplusplus
+}
+#endif
+
+#include <memory>
+
+#include "util/CBuffer.hpp"
+#include "labor/Labor.hpp"
+#include "channel/SocketChannel.hpp"
+#include "channel/RedisChannel.hpp"
+#include "codec/Codec.hpp"
+#include "logger/NetLogger.hpp"
+#include "NodeInfo.hpp"
 
 namespace neb
 {
 
-class Manager;
-class WorkerImpl;
-class Actor;
+class Dispatcher;
+class ActorBuilder;
 
 class Worker: public Labor
 {
@@ -28,106 +48,78 @@ public:
     Worker& operator=(const Worker&) = delete;
     virtual ~Worker();
 
-    // actor操作相关方法
-    template <typename ...Targs>
-        void Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
+    // timeout，worker进程无响应或与Manager通信通道异常，被manager进程终止时返回
+    void OnTerminated(struct ev_signal* watcher);
+    bool CheckParent();
 
-    template <typename ...Targs>
-    std::shared_ptr<Actor> MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs&&... args);
-
-    template <typename ...Targs>
-    std::shared_ptr<Step> MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs&&... args);
-
-    template <typename ...Targs>
-    std::shared_ptr<Session> MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs&&... args);
-
-    template <typename ...Targs>
-    std::shared_ptr<Context> MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs&&... args);
-
-    template <typename ...Targs>
-    std::shared_ptr<Chain> MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs&&... args);
-
-    virtual uint32 GetSequence() const;
-    virtual std::shared_ptr<Session> GetSession(uint64 ullSessionId);
-    virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
-    virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
-    virtual std::shared_ptr<Model> GetModel(const std::string& strModelName);
-    virtual void AddAssemblyLine(std::shared_ptr<Session> pSession);
-
-    // 获取worker信息相关方法
-    virtual uint32 GetNodeId() const;
-    virtual int GetWorkerIndex() const;
-    virtual ev_tstamp GetDefaultTimeout() const;
-    virtual int GetClientBeatTime() const;
-    virtual const std::string& GetNodeType() const;
-    virtual int GetPortForServer() const;
-    virtual const std::string& GetHostForServer() const;
-    virtual const std::string& GetWorkPath() const;
-    virtual const std::string& GetNodeIdentify() const;
-    virtual const CJsonObject& GetCustomConf() const;
-
-    virtual time_t GetNowTime() const;
-
-    // 网络IO相关方法
-    virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
-    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
-    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
-    virtual bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
-    virtual bool SendTo(std::shared_ptr<RedisChannel> pChannel, Actor* pSender);
-    virtual bool SendTo(const std::string& strIdentify, Actor* pSender);
-    virtual bool SendTo(const std::string& strHost, int iPort, Actor* pSender);
-
-private:
     void Run();
 
+public:     // about worker
+    virtual Dispatcher* GetDispatcher()
+    {
+        return(m_pDispatcher);
+    }
+
+    virtual ActorBuilder* GetActorBuilder()
+    {
+        return(m_pActorBuilder);
+    }
+
+    virtual uint32 GetSequence() const
+    {
+        ++m_ulSequence;
+        if (0 == m_ulSequence)
+        {
+            ++m_ulSequence;
+        }
+        return(m_ulSequence);
+    }
+
+    virtual time_t GetNowTime() const;
+    virtual const CJsonObject& GetNodeConf() const;
+    virtual void SetNodeConf(const CJsonObject& oJsonConf);
+    virtual const NodeInfo& GetNodeInfo() const;
+    virtual void SetNodeId(uint32 uiNodeId);
+    virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
+    const WorkerInfo& GetWorkerInfo() const;
+    const CJsonObject& GetCustomConf() const;
+    bool SetCustomConf(const CJsonObject& oJsonConf);
+    bool WithSsl();
+
+    template <typename ...Targs>
+        void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
+
+protected:
+    bool Init(CJsonObject& oJsonConf);
+    bool InitLogger(const CJsonObject& oJsonConf);
+    bool InitDispatcher();
+    bool InitActorBuilder();
+    bool CreateEvents();
+    void Destroy();
+    bool AddPeriodicTaskEvent();
+
 private:
-    WorkerImpl* m_pImpl;
-    friend class WorkerImpl;
-    friend class WorkerFriend;
-    friend class Manager;
+    char* m_pErrBuff = NULL;
+    mutable uint32 m_ulSequence = 0;
+    Dispatcher* m_pDispatcher = nullptr;
+    ActorBuilder* m_pActorBuilder = nullptr;
+
+    CJsonObject m_oNodeConf;
+    CJsonObject m_oCustomConf;    ///< 自定义配置
+    NodeInfo m_stNodeInfo;
+    WorkerInfo m_stWorkerInfo;
+
+    std::shared_ptr<NetLogger> m_pLogger = nullptr;
+    std::shared_ptr<SocketChannel> m_pManagerControlChannel = nullptr;
+    std::shared_ptr<SocketChannel> m_pManagerDataChannel = nullptr;
 };
 
 template <typename ...Targs>
-void Worker::Logger(const std::string& strTraceId, int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args)
+void Worker::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args)
 {
-    m_pImpl->Logger(strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
+    m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }
 
-template <typename ...Targs>
-std::shared_ptr<Actor> Worker::MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs&&... args)
-{
-    return(m_pImpl->MakeSharedActor(pCreator, strActorName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Step> Worker::MakeSharedStep(Actor* pCreator, const std::string& strStepName, Targs&&... args)
-{
-    return(m_pImpl->MakeSharedStep(pCreator, strStepName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Session> Worker::MakeSharedSession(Actor* pCreator, const std::string& strSessionName, Targs&&... args)
-{
-    return(m_pImpl->MakeSharedSession(pCreator, strSessionName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Context> Worker::MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs&&... args)
-{
-    return(m_pImpl->MakeSharedContext(pCreator, strContextName, std::forward<Targs>(args)...));
-}
-
-template <typename ...Targs>
-std::shared_ptr<Chain> Worker::MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs&&... args)
-{
-    return(m_pImpl->MakeSharedChain(pCreator, strChainName, std::forward<Targs>(args)...));
-}
 
 } /* namespace neb */
 

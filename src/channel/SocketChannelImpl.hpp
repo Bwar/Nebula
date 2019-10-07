@@ -35,8 +35,7 @@ namespace neb
 {
 
 class Labor;
-class WorkerImpl;
-class Manager;
+class Dispatcher;
 class NetLogger;
 class SocketChannel;
 
@@ -219,8 +218,7 @@ private:
     std::shared_ptr<NetLogger> m_pLogger;
 
 
-    friend class WorkerImpl;
-    friend class Manager;
+    friend class Dispatcher;
 };
 
 template <typename ...Targs>

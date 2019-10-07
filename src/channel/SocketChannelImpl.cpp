@@ -8,7 +8,6 @@
  * Modify history:
  ******************************************************************************/
 #include <cstring>
-#include "labor/WorkerImpl.hpp"
 #include "codec/CodecProto.hpp"
 #include "codec/CodecPrivate.hpp"
 #include "codec/CodecHttp.hpp"

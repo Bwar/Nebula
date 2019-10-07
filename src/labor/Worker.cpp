@@ -7,181 +7,373 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#include "labor/Worker.hpp"
-#include "labor/WorkerImpl.hpp"
+#include <algorithm>
+#include <sched.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "util/process_helper.h"
+#include "util/proctitle_helper.h"
+#ifdef __cplusplus
+}
+#endif
+#include "Worker.hpp"
+#include "ios/Dispatcher.hpp"
+#include "actor/ActorBuilder.hpp"
 
 namespace neb
 {
 
-/*****************************************************************************/
-/*****************************************************************************/
-/*****************************************************************************/
-
 Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf)
-    : m_pImpl(nullptr)
+    : Labor(LABOR_WORKER)
 {
-    // C++14: m_Impl = std::make_unique<WorkerImpl>(strWorkPath, iControlFd, iDataFd, iWorkerIndex, oJsonConf);
-    m_pImpl = new WorkerImpl(this, strWorkPath, iControlFd, iDataFd, iWorkerIndex, oJsonConf);
+    m_stWorkerInfo.iControlFd = iControlFd;
+    m_stWorkerInfo.iDataFd = iDataFd;
+    m_stWorkerInfo.iWorkerIndex = iWorkerIndex;
+    m_stWorkerInfo.iWorkerPid = getpid();
+    m_stNodeInfo.strWorkPath = strWorkPath;
+    m_pErrBuff = (char*)malloc(gc_iErrBuffLen);
+    if (!Init(oJsonConf))
+    {
+        exit(3);
+    }
+    m_oNodeConf = oJsonConf;
 }
 
 Worker::~Worker()
 {
-    DELETE(m_pImpl);
+    Destroy();
 }
 
 void Worker::Run()
 {
-    m_pImpl->Run();
+    LOG4_DEBUG("%s:%d", __FILE__, __LINE__);
+
+    if (!CreateEvents())
+    {
+        Destroy();
+        exit(-2);
+    }
+
+    m_pDispatcher->EeventRun();
 }
 
-uint32 Worker::GetSequence() const
+void Worker::OnTerminated(struct ev_signal* watcher)
 {
-    return(m_pImpl->GetSequence());
+    int iSignum = watcher->signum;
+    delete watcher;
+    LOG4_FATAL("terminated by signal %d!", iSignum);
+    m_pDispatcher->EvBreak();
+    Destroy();
+    exit(iSignum);
 }
 
-std::shared_ptr<Session> Worker::GetSession(uint64 ullSessionId)
+bool Worker::CheckParent()
 {
-    return(m_pImpl->GetSession(ullSessionId));
+    pid_t iParentPid = getppid();
+    if (iParentPid == 1)    // manager进程已不存在
+    {
+        LOG4_INFO("no manager process exist, worker %d exit.", m_stWorkerInfo.iWorkerIndex);
+        Destroy();
+        exit(0);
+    }
+    MsgBody oMsgBody;
+    CJsonObject oJsonLoad;
+    m_stWorkerInfo.iConnect = m_pDispatcher->GetConnectionNum();
+    m_stWorkerInfo.iClientNum = m_pDispatcher->GetClientNum();
+    oJsonLoad.Add("load", int32(m_stWorkerInfo.iConnect + m_pActorBuilder->GetStepNum()));
+    oJsonLoad.Add("connect", m_stWorkerInfo.iConnect);
+    oJsonLoad.Add("recv_num", m_stWorkerInfo.iRecvNum);
+    oJsonLoad.Add("recv_byte", m_stWorkerInfo.iRecvByte);
+    oJsonLoad.Add("send_num", m_stWorkerInfo.iSendNum);
+    oJsonLoad.Add("send_byte", m_stWorkerInfo.iSendByte);
+    oJsonLoad.Add("client", m_stWorkerInfo.iClientNum);
+    oMsgBody.set_data(oJsonLoad.ToString());
+    LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
+    m_pDispatcher->SendTo(m_pManagerControlChannel, CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
+    m_stWorkerInfo.iRecvNum = 0;
+    m_stWorkerInfo.iRecvByte = 0;
+    m_stWorkerInfo.iSendNum = 0;
+    m_stWorkerInfo.iSendByte = 0;
+    return(true);
 }
 
-std::shared_ptr<Session> Worker::GetSession(const std::string& strSessionId)
+bool Worker::Init(CJsonObject& oJsonConf)
 {
-    return(m_pImpl->GetSession(strSessionId));
+    char szProcessName[64] = {0};
+    snprintf(szProcessName, sizeof(szProcessName), "%s_W%d", oJsonConf("server_name").c_str(), m_stWorkerInfo.iWorkerIndex);
+    ngx_setproctitle(szProcessName);
+    oJsonConf.Get("io_timeout", m_stNodeInfo.dIoTimeout);
+    if (!oJsonConf.Get("step_timeout", m_stNodeInfo.dStepTimeout))
+    {
+        m_stNodeInfo.dStepTimeout = 0.5;
+    }
+    oJsonConf.Get("node_type", m_stNodeInfo.strNodeType);
+    oJsonConf.Get("host", m_stNodeInfo.strHostForServer);
+    oJsonConf.Get("port", m_stNodeInfo.iPortForServer);
+    m_oCustomConf = oJsonConf["custom"];
+    std::ostringstream oss;
+    oss << m_stNodeInfo.strHostForServer << ":" << m_stNodeInfo.iPortForServer << "." << m_stWorkerInfo.iWorkerIndex;
+    m_stNodeInfo.strNodeIdentify = std::move(oss.str());
+
+    if (oJsonConf("access_host").size() > 0 && oJsonConf("access_port").size() > 0)
+    {
+        m_stNodeInfo.bIsAccess = true;
+        oJsonConf["permission"]["uin_permit"].Get("stat_interval", m_stNodeInfo.dMsgStatInterval);
+        oJsonConf["permission"]["uin_permit"].Get("permit_num", m_stNodeInfo.iMsgPermitNum);
+    }
+    if (!InitLogger(oJsonConf))
+    {
+        return(false);
+    }
+
+    bool bCpuAffinity = false;
+    oJsonConf.Get("cpu_affinity", bCpuAffinity);
+    if (bCpuAffinity)
+    {
+#ifndef __CYGWIN__
+        /* get logical cpu number */
+        int iCpuNum = sysconf(_SC_NPROCESSORS_CONF);;                               ///< cpu数量
+        cpu_set_t stCpuMask;                                                        ///< cpu set
+        CPU_ZERO(&stCpuMask);
+        CPU_SET(m_stWorkerInfo.iWorkerIndex % iCpuNum, &stCpuMask);
+        if (sched_setaffinity(0, sizeof(cpu_set_t), &stCpuMask) == -1)
+        {
+            LOG4_WARNING("sched_setaffinity failed.");
+        }
+#endif
+    }
+
+    if (oJsonConf["with_ssl"]("config_path").length() > 0)
+    {
+#ifdef WITH_OPENSSL
+        if (ERR_OK != SocketChannelSslImpl::SslInit(m_pLogger))
+        {
+            LOG4_FATAL("SslInit() failed!");
+            return(false);
+        }
+        if (ERR_OK != SocketChannelSslImpl::SslServerCtxCreate(m_pLogger))
+        {
+            LOG4_FATAL("SslServerCtxCreate() failed!");
+            return(false);
+        }
+        std::string strCertFile = m_stNodeInfo.strWorkPath + "/" + oJsonConf["with_ssl"]("config_path") + "/" + oJsonConf["with_ssl"]("cert_file");
+        std::string strKeyFile = m_stNodeInfo.strWorkPath + "/" + oJsonConf["with_ssl"]("config_path") + "/" + oJsonConf["with_ssl"]("key_file");
+        if (ERR_OK != SocketChannelSslImpl::SslServerCertificate(m_pLogger, strCertFile, strKeyFile))
+        {
+            LOG4_FATAL("SslServerCertificate() failed!");
+            return(false);
+        }
+#endif
+    }
+
+    if (!InitDispatcher() || !InitActorBuilder())
+    {
+        return(false);
+    }
+
+    std::string strChainKey;
+    while (oJsonConf["runtime"]["chains"].GetKey(strChainKey))
+    {
+        std::queue<std::vector<std::string> > queChainBlocks;
+        for (int i = 0; i < oJsonConf["runtime"]["chains"][strChainKey].GetArraySize(); ++i)
+        {
+            std::vector<std::string> vecBlock;
+            if (oJsonConf["runtime"]["chains"][strChainKey][i].IsArray())
+            {
+                for (int j = 0; j < oJsonConf["runtime"]["chains"][strChainKey][i].GetArraySize(); ++j)
+                {
+                    vecBlock.push_back(std::move(oJsonConf["runtime"]["chains"][strChainKey][i](j)));
+                }
+            }
+            else
+            {
+                vecBlock.push_back(std::move(oJsonConf["runtime"]["chains"][strChainKey](i)));
+            }
+            queChainBlocks.push(std::move(vecBlock));
+        }
+        m_pActorBuilder->AddChainConf(strChainKey, std::move(queChainBlocks));
+    }
+    return(true);
 }
 
-bool Worker::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
+bool Worker::InitLogger(const CJsonObject& oJsonConf)
 {
-    return(m_pImpl->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
+    if (nullptr != m_pLogger)  // 已经被初始化过，只修改日志级别
+    {
+        int32 iLogLevel = 0;
+        int32 iNetLogLevel = 0;
+        oJsonConf.Get("log_level", iLogLevel);
+        oJsonConf.Get("net_log_level", iNetLogLevel);
+        m_pLogger->SetLogLevel(iLogLevel);
+        m_pLogger->SetNetLogLevel(iNetLogLevel);
+        return(true);
+    }
+    else
+    {
+        int32 iMaxLogFileSize = 0;
+        int32 iMaxLogFileNum = 0;
+        int32 iLogLevel = 0;
+        int32 iNetLogLevel = 0;
+        std::string strLogname = m_stNodeInfo.strWorkPath + std::string("/") + oJsonConf("log_path")
+                        + std::string("/") + getproctitle() + std::string(".log");
+        std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
+        oJsonConf.Get("max_log_file_size", iMaxLogFileSize);
+        oJsonConf.Get("max_log_file_num", iMaxLogFileNum);
+        oJsonConf.Get("net_log_level", iNetLogLevel);
+        oJsonConf.Get("log_level", iLogLevel);
+        m_pLogger = std::make_shared<neb::NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, this);
+        m_pLogger->SetNetLogLevel(iNetLogLevel);
+        LOG4_NOTICE("%s program begin...", getproctitle());
+        return(true);
+    }
 }
 
-std::shared_ptr<Model> Worker::GetModel(const std::string& strModelName)
+bool Worker::InitDispatcher()
 {
-    return(m_pImpl->GetModel(strModelName));
+    try
+    {
+        m_pDispatcher = new Dispatcher(this, m_pLogger);
+    }
+    catch(std::bad_alloc& e)
+    {
+        LOG4_ERROR("new Dispatcher error: %s", e.what());
+        return(false);
+    }
+    return(m_pDispatcher->Init());
 }
 
-void Worker::AddAssemblyLine(std::shared_ptr<Session> pSession)
+bool Worker::InitActorBuilder()
 {
-    m_pImpl->AddAssemblyLine(pSession);
+    try
+    {
+        m_pActorBuilder = new ActorBuilder(this, m_pLogger);
+    }
+    catch(std::bad_alloc& e)
+    {
+        LOG4_ERROR("new ActorBuilder error: %s", e.what());
+        return(false);
+    }
+    if (!m_pActorBuilder->Init(m_oNodeConf["boot_load"], m_oNodeConf["dynamic_loading"]))
+    {
+        LOG4_ERROR("ActorBuilder->Init() failed!");
+        return(false);
+    }
+    return(true);
 }
 
-uint32 Worker::GetNodeId() const
+bool Worker::CreateEvents()
 {
-    return(m_pImpl->GetWorkerInfo().uiNodeId);
+    signal(SIGPIPE, SIG_IGN);
+    // 注册信号事件
+    ev_signal* signal_watcher = (ev_signal*)malloc(sizeof(ev_signal));
+    signal_watcher->data = (void*)this;
+    m_pDispatcher->AddEvent(signal_watcher, Dispatcher::SignalCallback, SIGINT);
+    AddPeriodicTaskEvent();
+
+    // 注册网络IO事件
+    m_pManagerDataChannel = m_pDispatcher->CreateSocketChannel(m_stWorkerInfo.iDataFd, CODEC_NEBULA);
+    m_pDispatcher->SetChannelStatus(m_pManagerDataChannel, CHANNEL_STATUS_ESTABLISHED);
+    m_pManagerControlChannel = m_pDispatcher->CreateSocketChannel(m_stWorkerInfo.iControlFd, CODEC_NEBULA);
+    m_pDispatcher->SetChannelStatus(m_pManagerControlChannel, CHANNEL_STATUS_ESTABLISHED);
+    m_pDispatcher->AddIoReadEvent(m_pManagerDataChannel);
+    m_pDispatcher->AddIoReadEvent(m_pManagerControlChannel);
+    return(true);
 }
 
-int Worker::GetWorkerIndex() const
+void Worker::Destroy()
 {
-    return(m_pImpl->GetWorkerInfo().iWorkerIndex);
+    LOG4_TRACE(" ");
+
+#ifdef WITH_OPENSSL
+    SocketChannelSslImpl::SslFree();
+#endif
+    if (m_pDispatcher != nullptr)
+    {
+        delete m_pDispatcher;
+        m_pDispatcher = nullptr;
+    }
+    if (m_pActorBuilder != nullptr)
+    {
+        delete m_pActorBuilder;
+        m_pActorBuilder = nullptr;
+    }
+    if (m_pErrBuff != nullptr)
+    {
+        free(m_pErrBuff);
+        m_pErrBuff = nullptr;
+    }
 }
 
-ev_tstamp Worker::GetDefaultTimeout() const
+bool Worker::AddPeriodicTaskEvent()
 {
-    return((m_pImpl->GetWorkerInfo().dStepTimeout));
-}
-
-int Worker::GetClientBeatTime() const
-{
-    return((int)(m_pImpl->GetWorkerInfo().dIoTimeout));
-}
-
-const std::string& Worker::GetNodeType() const
-{
-    return(m_pImpl->GetWorkerInfo().strNodeType);
-}
-
-int Worker::GetPortForServer() const
-{
-    return(m_pImpl->GetWorkerInfo().iPortForServer);
-}
-
-const std::string& Worker::GetHostForServer() const
-{
-    return(m_pImpl->GetWorkerInfo().strHostForServer);
-}
-
-const std::string& Worker::GetWorkPath() const
-{
-    return(m_pImpl->GetWorkerInfo().strWorkPath);
-}
-
-const std::string& Worker::GetNodeIdentify() const
-{
-    return(m_pImpl->GetWorkerInfo().strWorkerIdentify);
-}
-
-const CJsonObject& Worker::GetCustomConf() const
-{
-    return(m_pImpl->GetCustomConf());
+    LOG4_TRACE(" ");
+    ev_timer* timeout_watcher = (ev_timer*)malloc(sizeof(ev_timer));
+    if (timeout_watcher == NULL)
+    {
+        LOG4_ERROR("malloc timeout_watcher error!");
+        return(false);
+    }
+    timeout_watcher->data = (void*)this;
+    m_pDispatcher->AddEvent(timeout_watcher, Dispatcher::PeriodicTaskCallback, NODE_BEAT);
+    return(true);
 }
 
 time_t Worker::GetNowTime() const
 {
-    return(m_pImpl->GetNowTime());
+    return(m_pDispatcher->GetNowTime());
 }
 
-bool Worker::AddNetLogMsg(const MsgBody& oMsgBody) 
+const CJsonObject& Worker::GetNodeConf() const
 {
-    return(m_pImpl->AddNetLogMsg(oMsgBody));
+    return(m_oNodeConf);
 }
 
-bool Worker::SendTo(std::shared_ptr<SocketChannel> pChannel)
+void Worker::SetNodeConf(const CJsonObject& oJsonConf)
 {
-    return(m_pImpl->SendTo(pChannel));
+    m_oNodeConf = oJsonConf;
 }
 
-bool Worker::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+const NodeInfo& Worker::GetNodeInfo() const
 {
-    return(m_pImpl->SendTo(pChannel, iCmd, uiSeq, oMsgBody, pSender));
+    return(m_stNodeInfo);
 }
 
-bool Worker::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+void Worker::SetNodeId(uint32 uiNodeId)
 {
-    return(m_pImpl->SendTo(strIdentify, iCmd, uiSeq, oMsgBody, pSender));
+    m_stNodeInfo.uiNodeId = uiNodeId;
 }
 
-bool Worker::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Worker::AddNetLogMsg(const MsgBody& oMsgBody)
 {
-    return(m_pImpl->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
+    // 此函数不能写日志，不然可能会导致写日志函数与此函数无限递归
+    m_pActorBuilder->AddNetLogMsg(oMsgBody);
+    return(true);
 }
 
-bool Worker::SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+const WorkerInfo& Worker::GetWorkerInfo() const
 {
-    return(m_pImpl->SendOriented(strNodeType, uiFactor, iCmd, uiSeq, oMsgBody, pSender));
+    return(m_stWorkerInfo);
 }
 
-bool Worker::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+const CJsonObject& Worker::GetCustomConf() const
 {
-    return(m_pImpl->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
+    return(m_oCustomConf);
 }
 
-bool Worker::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Worker::SetCustomConf(const CJsonObject& oJsonConf)
 {
-    return(m_pImpl->Broadcast(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
+    m_oCustomConf = oJsonConf;
+    return(m_oNodeConf.Replace("custom", oJsonConf));
 }
 
-bool Worker::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
+bool Worker::WithSsl()
 {
-    return(m_pImpl->SendTo(pChannel, oHttpMsg, uiHttpStepSeq));
-}
-
-bool Worker::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
-{
-    return(m_pImpl->SendTo(strHost, iPort, strUrlPath, oHttpMsg, uiHttpStepSeq));
-}
-
-bool Worker::SendTo(std::shared_ptr<RedisChannel> pChannel, Actor* pSender)
-{
-    return(m_pImpl->SendTo(pChannel, pSender));
-}
-
-bool Worker::SendTo(const std::string& strIdentify, Actor* pSender)
-{
-    return(m_pImpl->SendTo(strIdentify, pSender));
-}
-
-bool Worker::SendTo(const std::string& strHost, int iPort, Actor* pSender)
-{
-    return(m_pImpl->SendTo(strHost, iPort, pSender));
+    if (m_oNodeConf["with_ssl"]("config_path").length() > 0)
+    {
+        return(true);
+    }
+    return(false);
 }
 
 } /* namespace neb */

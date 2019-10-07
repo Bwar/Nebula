@@ -11,26 +11,22 @@
 #define SRC_ACTOR_SESSION_SESSION_HPP_
 
 #include <queue>
-#include "labor/Worker.hpp"
 #include "actor/DynamicCreator.hpp"
 #include "actor/Actor.hpp"
 
 namespace neb
 {
 
+class ActorBuilder;
+
 class Session: public Actor
 {
 public:
-    Session(uint64 ullSessionId, ev_tstamp dSessionTimeout = 60.0);
+    Session(uint32 uiSessionId, ev_tstamp dSessionTimeout = 60.0);
     Session(const std::string& strSessionId, ev_tstamp dSessionTimeout = 60.0);
     Session(const Session&) = delete;
     Session& operator=(const Session&) = delete;
     virtual ~Session();
-
-    virtual bool Init()
-    {
-        return(true);
-    }
 
     /**
      * @brief 会话超时回调
@@ -71,11 +67,11 @@ private:
     uint32 PopWaitingStep();
 
 private:
-    friend class WorkerImpl;
     bool m_bDataReady;
     bool m_bDataLoading;
     std::string m_strSessionId;
     std::queue<uint32> m_vecWaitingStep;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */

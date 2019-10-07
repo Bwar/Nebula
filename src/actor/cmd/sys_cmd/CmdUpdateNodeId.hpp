@@ -11,12 +11,13 @@
 #define SRC_ACTOR_CMD_SYS_CMD_CMDUPDATENODEID_HPP_
 
 #include "actor/cmd/Cmd.hpp"
-#include "labor/WorkerFriend.hpp"
+#include "actor/ActorFriend.hpp"
 
 namespace neb
 {
 
-class CmdUpdateNodeId: public Cmd, public DynamicCreator<CmdUpdateNodeId, int32>, public WorkerFriend
+class CmdUpdateNodeId: public Cmd,
+    public DynamicCreator<CmdUpdateNodeId, int32>, public ActorFriend
 {
 public:
     CmdUpdateNodeId(int32 iCmd);

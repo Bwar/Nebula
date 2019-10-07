@@ -20,7 +20,8 @@
 namespace neb
 {
 
-class WorkerImpl;
+class Dispatcher;
+class ActorBuilder;
 class RedisStep;
 
 class RedisChannel: public Channel
@@ -49,7 +50,8 @@ private:
     redisAsyncContext* m_pRedisCtx;         ///< redis连接上下文地址
     std::string m_strIdentify;              ///< 连接标识（可以为空，不为空时用于标识业务层与连接的关系）
     std::list< std::shared_ptr<RedisStep> > listPipelineStep; ///< RedisStep*的创建和回收在WorkerImpl
-    friend WorkerImpl;
+    friend Dispatcher;
+    friend ActorBuilder;
 };
 
 } /* namespace neb */

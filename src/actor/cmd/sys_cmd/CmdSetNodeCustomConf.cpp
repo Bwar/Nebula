@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include "actor/cmd/sys_cmd/CmdSetNodeCustomConf.hpp"
+#include "labor/Worker.hpp"
 
 namespace neb
 {
@@ -32,7 +33,7 @@ bool CmdSetNodeCustomConf::AnyMessage(
         CJsonObject oConf;
         if (oConf.Parse(oConfigInfo.file_content()))
         {
-            return(GetWorkerImpl(this)->SetCustomConf(oConf));
+            return(((Worker*)GetLabor(this))->SetCustomConf(oConf));
         }
     }
     return(false);

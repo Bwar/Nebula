@@ -12,6 +12,7 @@
 #include <cstdarg>
 #include "pb/msg.pb.h"
 #include "pb/neb_sys.pb.h"
+#include "labor/NodeInfo.hpp"
 #include "labor/Labor.hpp"
 #include "actor/cmd/CW.hpp"
 #include "NetLogger.hpp"
@@ -52,8 +53,8 @@ int NetLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLin
         MsgBody oMsgBody;
         TraceLog oTraceLog;
         //oTraceLog.set_log_time();
-        oTraceLog.set_node_type(m_pLabor->GetNodeType());
-        oTraceLog.set_node_identify(m_pLabor->GetNodeIdentify());
+        oTraceLog.set_node_type(m_pLabor->GetNodeInfo().strNodeType);
+        oTraceLog.set_node_identify(m_pLabor->GetNodeInfo().strNodeIdentify);
         oTraceLog.set_log_level(LogLevMsg[iLev]);
         oTraceLog.set_code_file_name(szFileName);
         oTraceLog.set_code_file_line(uiFileLine);
@@ -62,7 +63,7 @@ int NetLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLin
         //oMsgBody.set_data(oTraceLog.SerializeAsString());
         oTraceLog.SerializeToString(&m_strLogData);
         oMsgBody.set_data(m_strLogData);
-        oMsgBody.mutable_req_target()->set_route(m_pLabor->GetNodeIdentify());
+        oMsgBody.mutable_req_target()->set_route(m_pLabor->GetNodeInfo().strNodeIdentify);
         m_pLabor->AddNetLogMsg(oMsgBody);
     }
 
@@ -76,7 +77,7 @@ int NetLogger::WriteLog(const std::string& strTraceId, int iLev, const char* szF
     vsnprintf(m_pLogBuff, gc_uiMaxLogLineLen, szLogStr, ap);
     va_end(ap);
 
-    if (strTraceId == m_pLabor->GetNodeIdentify())
+    if (strTraceId == m_pLabor->GetNodeInfo().strNodeIdentify)
     {
         m_pLog->WriteLog(iLev, szFileName, uiFileLine, szFunction, m_pLogBuff);
     }
@@ -88,8 +89,8 @@ int NetLogger::WriteLog(const std::string& strTraceId, int iLev, const char* szF
     {
         MsgBody oMsgBody;
         TraceLog oTraceLog;
-        oTraceLog.set_node_type(m_pLabor->GetNodeType());
-        oTraceLog.set_node_identify(m_pLabor->GetNodeIdentify());
+        oTraceLog.set_node_type(m_pLabor->GetNodeInfo().strNodeType);
+        oTraceLog.set_node_identify(m_pLabor->GetNodeInfo().strNodeIdentify);
         oTraceLog.set_log_level(LogLevMsg[iLev]);
         oTraceLog.set_code_file_name(szFileName);
         oTraceLog.set_code_file_line(uiFileLine);
@@ -105,7 +106,7 @@ int NetLogger::WriteLog(const std::string& strTraceId, int iLev, const char* szF
         }
         else
         {
-            oMsgBody.mutable_req_target()->set_route(m_pLabor->GetNodeIdentify());
+            oMsgBody.mutable_req_target()->set_route(m_pLabor->GetNodeInfo().strNodeIdentify);
         }
         m_pLabor->AddNetLogMsg(oMsgBody);
     }

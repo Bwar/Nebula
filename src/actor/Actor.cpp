@@ -8,10 +8,11 @@
  * Modify history:
  ******************************************************************************/
 
-#include "labor/Worker.hpp"
 #include "actor/Actor.hpp"
+#include "ios/Dispatcher.hpp"
 #include "actor/session/Session.hpp"
 #include "actor/step/Step.hpp"
+#include "labor/Worker.hpp"
 
 namespace neb
 {
@@ -19,14 +20,14 @@ namespace neb
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : m_eActorType(eActorType),
       m_uiSequence(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
-      m_pWorker(nullptr), m_pTimerWatcher(NULL), m_pContext(nullptr)
+      m_pLabor(nullptr), m_pTimerWatcher(NULL), m_pContext(nullptr)
 {
 }
 
 Actor::~Actor()
 {
     FREE(m_pTimerWatcher);
-    m_pWorker->Logger(m_strTraceId, Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "eActorType %d, seq %u", m_eActorType, m_uiSequence);
+    m_pLabor->GetActorBuilder()->Logger(m_strTraceId, Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "eActorType %d, seq %u", m_eActorType, m_uiSequence);
 }
 
 uint32 Actor::GetSequence()
@@ -34,9 +35,9 @@ uint32 Actor::GetSequence()
     if ((ACT_CMD == m_eActorType || ACT_MODULE == m_eActorType) // Cmd和Module总是获取最新Seq
         || 0 == m_uiSequence)
     {
-        if (nullptr != m_pWorker)
+        if (nullptr != m_pLabor)
         {
-            m_uiSequence = m_pWorker->GetSequence();
+            m_uiSequence = m_pLabor->GetSequence();
         }
     }
     return(m_uiSequence);
@@ -44,61 +45,56 @@ uint32 Actor::GetSequence()
 
 uint32 Actor::GetNodeId() const
 {
-    return(m_pWorker->GetNodeId());
+    return(m_pLabor->GetNodeInfo().uiNodeId);
 }
 
 uint32 Actor::GetWorkerIndex() const
 {
-    return(m_pWorker->GetWorkerIndex());
-}
-
-ev_tstamp Actor::GetDefaultTimeout() const
-{
-    return(m_pWorker->GetDefaultTimeout());
+    return(((Worker*)m_pLabor)->GetWorkerInfo().iWorkerIndex);
 }
 
 const std::string& Actor::GetNodeType() const
 {
-    return(m_pWorker->GetNodeType());
+    return(m_pLabor->GetNodeInfo().strNodeType);
 }
 
 const std::string& Actor::GetWorkPath() const
 {
-    return(m_pWorker->GetWorkPath());
+    return(m_pLabor->GetNodeInfo().strWorkPath);
 }
 
 const std::string& Actor::GetNodeIdentify() const
 {
-    return(m_pWorker->GetNodeIdentify());
+    return(m_pLabor->GetNodeInfo().strNodeIdentify);
 }
 
 time_t Actor::GetNowTime() const
 {
-    return(m_pWorker->GetNowTime());
+    return(m_pLabor->GetNowTime());
 }
 
 const CJsonObject& Actor::GetCustomConf() const
 {
-    return(m_pWorker->GetCustomConf());
+    return(((Worker*)m_pLabor)->GetCustomConf());
 }
-std::shared_ptr<Session> Actor::GetSession(uint64 ullSessionId)
+std::shared_ptr<Session> Actor::GetSession(uint32 uiSessionId)
 {
-    return(m_pWorker->GetSession(ullSessionId));
+    return(m_pLabor->GetActorBuilder()->GetSession(uiSessionId));
 }
 
 std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId)
 {
-    return(m_pWorker->GetSession(strSessionId));
+    return(m_pLabor->GetActorBuilder()->GetSession(strSessionId));
 }
 
 bool Actor::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
 {
-    return(m_pWorker->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
+    return(m_pLabor->GetActorBuilder()->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
 }
 
 std::shared_ptr<Model> Actor::GetModel(const std::string& strModelName)
 {
-    return(m_pWorker->GetModel(strModelName));
+    return(m_pLabor->GetActorBuilder()->GetModel(strModelName));
 }
 
 std::shared_ptr<Context> Actor::GetContext()
@@ -113,67 +109,67 @@ void Actor::SetContext(std::shared_ptr<Context> pContext)
 
 void Actor::AddAssemblyLine(std::shared_ptr<Session> pSession)
 {
-    m_pWorker->AddAssemblyLine(pSession);
+    m_pLabor->GetActorBuilder()->AddAssemblyLine(pSession);
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
-    return(m_pWorker->SendTo(pChannel));
+    return(m_pLabor->GetDispatcher()->SendTo(pChannel));
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendTo(pChannel, iCmd, uiSeq, oMsgBody, this));
+    return(m_pLabor->GetDispatcher()->SendTo(pChannel, iCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
 {
-    return(m_pWorker->SendTo(pChannel, oHttpMsg));
+    return(m_pLabor->GetDispatcher()->SendTo(pChannel, oHttpMsg));
 }
 
 bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendTo(strIdentify, iCmd, uiSeq, oMsgBody, this));
+    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, iCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg)
 {
-    return(m_pWorker->SendTo(strHost, iPort, strUrlPath, oHttpMsg, this->GetSequence()));
+    return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, strUrlPath, oHttpMsg, this->GetSequence()));
 }
 
 bool Actor::SendTo(std::shared_ptr<RedisChannel> pChannel)
 {
-    return(m_pWorker->SendTo(pChannel, this));
+    return(m_pLabor->GetDispatcher()->SendTo(pChannel, this));
 }
 
 bool Actor::SendTo(const std::string& strIdentify)
 {
-    return(m_pWorker->SendTo(strIdentify, this));
+    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, this));
 }
 
 bool Actor::SendTo(const std::string& strHost, int iPort)
 {
-    return(m_pWorker->SendTo(strHost, iPort, this));
+    return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, this));
 }
 
 bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, this));
+    return(m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendOriented(strNodeType, uiFactor, iCmd, uiSeq, oMsgBody, this));
+    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, uiFactor, iCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pWorker->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, this));
+    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, this));
 }
 
-void Actor::SetWorker(Worker* pWorker)
+void Actor::SetLabor(Labor* pLabor)
 {
-    m_pWorker = pWorker;
+    m_pLabor = pLabor;
 }
 
 ev_timer* Actor::MutableTimerWatcher()

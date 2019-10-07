@@ -45,6 +45,11 @@ SocketChannel::~SocketChannel()
     m_pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "");
 }
 
+int SocketChannel::GetFd() const
+{
+    return(m_pImpl->GetFd());
+}
+
 const std::string& SocketChannel::GetIdentify() const
 {
     return(m_pImpl->GetIdentify());
@@ -58,6 +63,16 @@ const std::string& SocketChannel::GetRemoteAddr() const
 const std::string& SocketChannel::GetClientData() const
 {
     return(m_pImpl->GetClientData());
+}
+
+E_CODEC_TYPE SocketChannel::GetCodecType() const
+{
+    return(m_pImpl->GetCodecType());
+}
+
+uint32 SocketChannel::GetStepSeq() const
+{
+    return(m_pImpl->GetStepSeq());
 }
 
 int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger)

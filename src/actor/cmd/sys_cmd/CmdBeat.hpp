@@ -11,12 +11,13 @@
 #define SRC_ACTOR_CMD_SYS_CMD_CMDBEAT_HPP_
 
 #include "actor/cmd/Cmd.hpp"
-#include "labor/WorkerFriend.hpp"
+#include "actor/ActorFriend.hpp"
 
 namespace neb
 {
 
-class CmdBeat: public Cmd, public DynamicCreator<CmdBeat, int32>, public WorkerFriend
+class CmdBeat: public Cmd,
+    public DynamicCreator<CmdBeat, int32>, public ActorFriend
 {
 public:
     CmdBeat(int32 iCmd);

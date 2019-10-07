@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include <actor/step/sys_step/StepConnectWorker.hpp>
+#include "actor/cmd/CW.hpp"
 
 namespace neb
 {

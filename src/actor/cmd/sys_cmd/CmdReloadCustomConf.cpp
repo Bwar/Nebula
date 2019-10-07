@@ -26,7 +26,7 @@ bool CmdReloadCustomConf::AnyMessage(
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
 {
-    return(GetWorkerImpl(this)->ReloadCmdConf());
+    return(GetLabor(this)->GetActorBuilder()->ReloadCmdConf());
 }
 
 } /* namespace neb */

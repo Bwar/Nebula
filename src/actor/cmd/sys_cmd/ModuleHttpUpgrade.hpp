@@ -12,12 +12,13 @@
 
 #include "codec/Codec.hpp"
 #include "actor/cmd/Module.hpp"
-#include "labor/WorkerFriend.hpp"
+#include "actor/ActorFriend.hpp"
 
 namespace neb
 {
 
-class ModuleHttpUpgrade: public Module, public DynamicCreator<ModuleHttpUpgrade, std::string>, public WorkerFriend
+class ModuleHttpUpgrade: public Module,
+    public DynamicCreator<ModuleHttpUpgrade, std::string>, public ActorFriend
 {
 public:
     ModuleHttpUpgrade(const std::string& strModulePath);

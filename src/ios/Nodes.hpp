@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     SessionNode.hpp
+ * @file     Nodes.hpp
  * @brief    节点Session
  * @author   bwar
  * @date:    2016年3月19日
@@ -8,8 +8,8 @@
  * hash字符串或hash值定位具体节点操作。
  * Modify history:
  ******************************************************************************/
-#ifndef SRC_ACTOR_SESSION_SYS_SESSION_SESSIONREDISNODE_HPP_
-#define SRC_ACTOR_SESSION_SYS_SESSION_SESSIONREDISNODE_HPP_
+#ifndef SRC_IOS_NODES_HPP_
+#define SRC_IOS_NODES_HPP_
 
 #include <memory>
 #include <vector>
@@ -40,7 +40,7 @@ enum E_HASH_ALGORITHM
  * 此Session也只是成为了一个定时器，不会真正超时。
  *     SessionNode不从Session派生，因为不会被应用层actor用到。
  */
-class SessionNode
+class Nodes
 {
 public:
     /**
@@ -48,8 +48,8 @@ public:
      * @param iVirtualNodeNum 每个实体节点对应的虚拟节点数量
      * @param dSessionTimeout 超时时间，0表示永不超时
      */
-    SessionNode(int iHashAlgorithm = HASH_fnv1a_64, int iVirtualNodeNum = 200, ev_tstamp dSessionTimeout = 0.0);
-    virtual ~SessionNode();
+    Nodes(int iHashAlgorithm = HASH_fnv1a_64, int iVirtualNodeNum = 200, ev_tstamp dSessionTimeout = 0.0);
+    virtual ~Nodes();
 
     virtual E_CMD_STATUS Timeout()
     {
@@ -120,4 +120,4 @@ private:
 
 } /* namespace neb */
 
-#endif /* SRC_ACTOR_SESSION_SYS_SESSION_SESSIONREDISNODE_HPP_ */
+#endif /* SRC_IOS_NODES_HPP_ */

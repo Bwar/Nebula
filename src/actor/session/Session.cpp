@@ -14,12 +14,12 @@
 namespace neb
 {
 
-Session::Session(uint64 ullSessionId, ev_tstamp dSessionTimeout)
+Session::Session(uint32 uiSessionId, ev_tstamp dSessionTimeout)
     : Actor(Actor::ACT_SESSION, dSessionTimeout),
       m_bDataReady(false), m_bDataLoading(false)
 {
     std::ostringstream oss;
-    oss << ullSessionId;
+    oss << uiSessionId;
     m_strSessionId = std::move(oss.str());
 }
 

@@ -11,12 +11,13 @@
 #define SRC_ACTOR_CMD_SYS_CMD_CMDSETNODECONF_HPP_
 
 #include "actor/cmd/Cmd.hpp"
-#include "labor/WorkerFriend.hpp"
+#include "actor/ActorFriend.hpp"
 
 namespace neb
 {
 
-class CmdSetNodeConf: public Cmd, public DynamicCreator<CmdSetNodeConf, int32>, public WorkerFriend
+class CmdSetNodeConf: public Cmd,
+    public DynamicCreator<CmdSetNodeConf, int32>, public ActorFriend
 {
 public:
     CmdSetNodeConf(int32 iCmd);

@@ -12,12 +12,13 @@
 
 #include <queue>
 #include <vector>
-#include "labor/Worker.hpp"
 #include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
+
+class ActorBuilder;
 
 class Chain final: public Actor,
     public neb::DynamicCreator<Chain, std::string, ev_tstamp>
@@ -47,7 +48,7 @@ private:
     // queue的每个元素称为链块（std::unordered_set<std::string>）
     std::queue<std::vector<std::string> > m_queChainBlock;
 
-    friend class WorkerImpl;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */
