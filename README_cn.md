@@ -108,12 +108,15 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="TODO"></a>
 ## 开发任务
-   -   完成开发指南
- - NebulaMydis数据代理服务
+   -  完成开发指南
+   -  NebulaMydis数据代理服务
    -  应用Nebula开发IM项目
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v0.10
+   - 增加插件so版本控制动态卸载和加载即时生效功能
+   - 优化反射动态创建Actor
 #### v0.9
    - 增加Model模型组件
    - 增加Chain调用链组件
