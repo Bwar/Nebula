@@ -17,6 +17,8 @@
     "server_name": "AsyncServer",
     "//worker_num": "进程数量",
     "worker_num": 10,
+    "//with_loader":"是否启动loader进程",
+    "with_loader":false,
     "//cpu_affinity":"是否设置进程CPU亲和度（绑定CPU）",
     "cpu_affinity":false,
     "//worker_capacity": "子进程最大工作负荷",
