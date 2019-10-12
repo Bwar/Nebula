@@ -34,11 +34,7 @@ enum E_HASH_ALGORITHM
 };
 
 /**
- * @brief 节点Session
- * @note 节点Session常驻内存，永不过期，构造函数中的dSessionTimeout传入0表示
- * 不做超时检查。Timeout()方法实现直接返回Running，即便dSessionTimeout设置了超时，
- * 此Session也只是成为了一个定时器，不会真正超时。
- *     SessionNode不从Session派生，因为不会被应用层actor用到。
+ * @brief 节点管理
  */
 class Nodes
 {
@@ -48,13 +44,8 @@ public:
      * @param iVirtualNodeNum 每个实体节点对应的虚拟节点数量
      * @param dSessionTimeout 超时时间，0表示永不超时
      */
-    Nodes(int iHashAlgorithm = HASH_fnv1a_64, int iVirtualNodeNum = 200, ev_tstamp dSessionTimeout = 0.0);
+    Nodes(int iHashAlgorithm = HASH_fnv1a_64, int iVirtualNodeNum = 200);
     virtual ~Nodes();
-
-    virtual E_CMD_STATUS Timeout()
-    {
-        return(CMD_STATUS_RUNNING);
-    }
 
     /* 实体节点hash信息
      * key为Identify字符串

@@ -43,7 +43,8 @@ class ActorBuilder;
 class Worker: public Labor
 {
 public:
-    Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf);
+    Worker(const std::string& strWorkPath, int iControlFd, int iDataFd,
+            int iWorkerIndex, Labor::LABOR_TYPE eLaborType = Labor::LABOR_WORKER);
     Worker(const Worker&) = delete;
     Worker& operator=(const Worker&) = delete;
     virtual ~Worker();
@@ -52,6 +53,7 @@ public:
     void OnTerminated(struct ev_signal* watcher);
     bool CheckParent();
 
+    virtual bool Init(CJsonObject& oJsonConf);
     void Run();
 
 public:     // about worker
@@ -90,10 +92,11 @@ public:     // about worker
         void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
 protected:
-    bool Init(CJsonObject& oJsonConf);
     bool InitLogger(const CJsonObject& oJsonConf);
-    bool InitDispatcher();
-    bool InitActorBuilder();
+    virtual bool InitDispatcher();
+    virtual bool InitActorBuilder();
+    bool NewDispatcher();
+    bool NewActorBuilder();
     bool CreateEvents();
     void Destroy();
     bool AddPeriodicTaskEvent();

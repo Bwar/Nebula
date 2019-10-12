@@ -55,6 +55,8 @@ bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
         switch (eCodecType)
         {
             case CODEC_NEBULA:
+            case CODEC_PROTO:
+            case CODEC_NEBULA_IN_NODE:
                 m_pCodec = new CodecProto(m_pLogger, eCodecType);
                 m_pCodec->SetKey(m_strKey);
                 break;
@@ -653,6 +655,8 @@ bool SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAliv
         switch (eCodecType)
         {
             case CODEC_NEBULA:
+            case CODEC_PROTO:
+            case CODEC_NEBULA_IN_NODE:
                 pNewCodec = new CodecProto(m_pLogger, eCodecType);
                 pNewCodec->SetKey(m_strKey);
                 break;

@@ -31,6 +31,16 @@ bool CmdOnWorkerLoad::AnyMessage(
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
 {
+    if (m_pSessionManager == nullptr)
+    {
+        m_pSessionManager = std::dynamic_pointer_cast<SessionManager>(
+                GetSession("neb::SessionManager"));
+        if (m_pSessionManager == nullptr)
+        {
+            LOG4_ERROR("no session named \"neb::SessionManager\"!");
+            return(false);
+        }
+    }
     CJsonObject oJsonLoad;
     if (oJsonLoad.Parse(oInMsgBody.data()))
     {

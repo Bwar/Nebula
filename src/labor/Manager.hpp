@@ -103,6 +103,7 @@ protected:
     void Destroy();
 
     bool CreateEvents();
+    void CreateLoader();
     void CreateWorker();
     bool RestartWorker(int iDeathPid);
     bool AddPeriodicTaskEvent();

@@ -30,21 +30,27 @@ public:
     void AddOnlineNode(const std::string& strNodeIdentify, const std::string& strNodeInfo);
     void DelOnlineNode(const std::string& strNodeIdentify);
     bool SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);    // 向Worker发送数据
+    bool SendToWorkerWithoutLoader(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendToLoader(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     void AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
+    void AddLoaderInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
     const WorkerInfo* GetWorkerInfo(int32 iWorkerIndex) const;
     bool SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad);
     std::pair<int, int> GetMinLoadWorkerDataFd();
     bool CheckWorker();
-    bool WorkerDeath(int iPid, int& iWorkerIndex);
+    bool WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE& eLaborType);
     void SendOnlineNodesToWorker();
     void MakeReportData(CJsonObject& oReportJson);
+    int GetLoaderDataFd() const;
+    bool NewSocketWhenWorkerCreated(int iWorkerDataFd);
+    bool NewSocketWhenLoaderCreated();
 
 private:
+    int m_iLoaderDataFd = -1;
     std::unordered_map<int, WorkerInfo*> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
     std::unordered_map<int, int> m_mapWorkerStartNum;       ///< 进程被启动次数，key为WorkerIdx
     std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
     std::unordered_map<std::string, std::string> m_mapOnlineNodes;     ///< 订阅的节点在线信息
-    std::vector<int> m_vecFreeWorkerIdx;            ///< 空闲进程编号
 };
 
 } /* namespace neb */

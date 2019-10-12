@@ -34,7 +34,7 @@ public:
         LABOR_UNDEFINE      = 0,
         LABOR_MANAGER       = 1,
         LABOR_WORKER        = 2,
-        LABOR_HOLDER        = 3,
+        LABOR_LOADER        = 3,
     };
 public:
     Labor(LABOR_TYPE eLaborType)

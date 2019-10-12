@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include "actor/cmd/sys_cmd/CmdReloadCustomConf.hpp"
+#include "actor/ActorBuilder.hpp"
 
 namespace neb
 {

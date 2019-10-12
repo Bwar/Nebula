@@ -21,6 +21,7 @@ extern "C" {
 
 #include "Manager.hpp"
 #include "Worker.hpp"
+#include "Loader.hpp"
 #include "channel/SocketChannel.hpp"
 #include "ios/Dispatcher.hpp"
 #include "actor/ActorBuilder.hpp"
@@ -55,6 +56,7 @@ Manager::Manager(const std::string& strConfFile)
     }
     m_stManagerInfo.iWorkerBeat = (gc_iBeatInterval * 2) + 1;
     CreateEvents();
+    CreateLoader();
     CreateWorker();
 }
 
@@ -164,7 +166,9 @@ bool Manager::InitActorBuilder()
         LOG4_ERROR("new ActorBuilder error: %s", e.what());
         return(false);
     }
-    if (!m_pActorBuilder->Init(m_oCurrentConf["boot_load"], m_oCurrentConf["dynamic_loading"]))
+    if (!m_pActorBuilder->Init(
+            m_oCurrentConf["load_conf"]["manager"]["boot_load"],
+            m_oCurrentConf["load_conf"]["manager"]["dynamic_loading"]))
     {
         LOG4_ERROR("ActorBuilder->Init() failed!");
         return(false);
@@ -349,6 +353,67 @@ bool Manager::CreateEvents()
     return(true);
 }
 
+void Manager::CreateLoader()
+{
+    bool bWithLoader = false;
+    m_oCurrentConf.Get("with_loader", bWithLoader);
+    if (!bWithLoader)
+    {
+        return;
+    }
+    LOG4_TRACE(" ");
+    int iControlFds[2];
+    int iDataFds[2];
+    if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
+    {
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+    }
+    if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
+    {
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+    }
+
+    int iPid = fork();
+    if (iPid == 0)   // 子进程
+    {
+        close(m_stManagerInfo.iS2SListenFd);
+        if (m_stManagerInfo.iC2SListenFd > 2)
+        {
+            close(m_stManagerInfo.iC2SListenFd);
+        }
+        close(iControlFds[0]);
+        close(iDataFds[0]);
+        x_sock_set_block(iControlFds[1], 0);
+        x_sock_set_block(iDataFds[1], 0);
+        Loader oLoader(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], 0);
+        if (!oLoader.Init(m_oCurrentConf))
+        {
+            exit(3);
+        }
+        oLoader.Run();
+        exit(-2);
+    }
+    else if (iPid > 0)   // 父进程
+    {
+        close(iControlFds[1]);
+        close(iDataFds[1]);
+        x_sock_set_block(iControlFds[0], 0);
+        x_sock_set_block(iDataFds[0], 0);
+        m_pSessionManager->AddLoaderInfo(0, iPid, iControlFds[0], iDataFds[0]);
+        std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
+        std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
+        m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
+        m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
+        m_pDispatcher->AddIoReadEvent(pChannelData);
+        m_pDispatcher->AddIoReadEvent(pChannelControl);
+        m_pSessionManager->SendOnlineNodesToWorker();
+    }
+    else
+    {
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+    }
+}
+
 void Manager::CreateWorker()
 {
     LOG4_TRACE(" ");
@@ -379,7 +444,11 @@ void Manager::CreateWorker()
             close(iDataFds[0]);
             x_sock_set_block(iControlFds[1], 0);
             x_sock_set_block(iDataFds[1], 0);
-            Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], i, m_oCurrentConf);
+            Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], i);
+            if (!oWorker.Init(m_oCurrentConf))
+            {
+                exit(3);
+            }
             oWorker.Run();
             exit(-2);
         }
@@ -396,6 +465,7 @@ void Manager::CreateWorker()
             m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
             m_pDispatcher->AddIoReadEvent(pChannelData);
             m_pDispatcher->AddIoReadEvent(pChannelControl);
+            m_pSessionManager->NewSocketWhenWorkerCreated(iDataFds[0]);
         }
         else
         {
@@ -409,7 +479,8 @@ bool Manager::RestartWorker(int iDeathPid)
     LOG4_DEBUG("%d", iDeathPid);
     int iWorkerIndex = 0;
     int iNewPid = 0;
-    if (m_pSessionManager->WorkerDeath(iDeathPid, iWorkerIndex))
+    Labor::LABOR_TYPE eLaborType;
+    if (m_pSessionManager->WorkerDeath(iDeathPid, iWorkerIndex, eLaborType))
     {
         int iControlFds[2];
         int iDataFds[2];
@@ -434,7 +505,11 @@ bool Manager::RestartWorker(int iDeathPid)
             close(iDataFds[0]);
             x_sock_set_block(iControlFds[1], 0);
             x_sock_set_block(iDataFds[1], 0);
-            Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], iWorkerIndex, m_oCurrentConf);
+            Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], iWorkerIndex);
+            if (!oWorker.Init(m_oCurrentConf))
+            {
+                exit(-1);
+            }
             oWorker.Run();
             exit(-2);   // 子进程worker没有正常运行
         }
@@ -453,6 +528,16 @@ bool Manager::RestartWorker(int iDeathPid)
             m_pDispatcher->AddIoReadEvent(pChannelData);
             m_pDispatcher->AddIoReadEvent(pChannelControl);
             m_pSessionManager->SendOnlineNodesToWorker();
+            if (Labor::LABOR_LOADER == eLaborType)
+            {
+                m_pSessionManager->AddLoaderInfo(iWorkerIndex, iNewPid, iControlFds[0], iDataFds[0]);
+                m_pSessionManager->NewSocketWhenLoaderCreated();
+            }
+            else
+            {
+                m_pSessionManager->AddWorkerInfo(iWorkerIndex, iNewPid, iControlFds[0], iDataFds[0]);
+                m_pSessionManager->NewSocketWhenWorkerCreated(iDataFds[0]);
+            }
         }
         else
         {
@@ -482,11 +567,19 @@ void Manager::RefreshServer()
         }
 
         // 更新动态库配置或重新加载动态库
-        if (m_oLastConf["dynamic_loading"].ToString() != m_oCurrentConf["dynamic_loading"].ToString())
+        if (m_oLastConf["load_config"]["worker"]["dynamic_loading"].ToString()
+                != m_oCurrentConf["load_config"]["worker"]["dynamic_loading"].ToString())
         {
             MsgBody oMsgBody;
-            oMsgBody.set_data(m_oCurrentConf["dynamic_loading"].ToString());
-            m_pSessionManager->SendToWorker(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
+            oMsgBody.set_data(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"].ToString());
+            m_pSessionManager->SendToWorkerWithoutLoader(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
+        }
+        if (m_oLastConf["load_config"]["loader"]["dynamic_loading"].ToString()
+                != m_oCurrentConf["load_config"]["loader"]["dynamic_loading"].ToString())
+        {
+            MsgBody oMsgBody;
+            oMsgBody.set_data(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"].ToString());
+            m_pSessionManager->SendToLoader(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
         }
     }
     else
@@ -504,7 +597,7 @@ bool Manager::AddPeriodicTaskEvent()
         LOG4_ERROR("new timeout_watcher error!");
         return(false);
     }
-    m_pPeriodicTaskWatcher->data = (void*)this;
+    m_pPeriodicTaskWatcher->data = (void*)this->GetDispatcher();
     m_pDispatcher->AddEvent(m_pPeriodicTaskWatcher, Dispatcher::PeriodicTaskCallback, NODE_BEAT);
     std::shared_ptr<Step> pReportToBeacon = m_pActorBuilder->MakeSharedStep(
             nullptr, "neb::StepReportToBeacon", NODE_BEAT);

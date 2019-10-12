@@ -30,10 +30,14 @@ bool CmdOnNodeNotice::AnyMessage(
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
 {
+    MsgBody oOutMsgBody;
     CJsonObject oJson;
     if (!oJson.Parse(oInMsgBody.data()))
     {
         LOG4_ERROR("failed to parse msgbody content!");
+        oOutMsgBody.mutable_rsp_result()->set_code(ERR_BODY_JSON);
+        oOutMsgBody.mutable_rsp_result()->set_msg("failed to pase msgbody content!");
+        SendTo(pChannel, CMD_RSP_NODE_NOTICE, oInMsgHead.seq(), oOutMsgBody);
         return(false);
     }
     if (m_pSessionManager == nullptr)
@@ -46,6 +50,9 @@ bool CmdOnNodeNotice::AnyMessage(
             return(false);
         }
     }
+    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
+    oOutMsgBody.mutable_rsp_result()->set_msg("success");
+    SendTo(pChannel, CMD_RSP_NODE_NOTICE, oInMsgHead.seq(), oOutMsgBody);
     m_pSessionManager->SendToWorker(CMD_REQ_NODE_NOTICE, GetSequence(), oInMsgBody);
     std::ostringstream oss;
     std::string strIdentify;

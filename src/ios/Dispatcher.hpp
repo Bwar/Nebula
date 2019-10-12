@@ -137,6 +137,7 @@ public:
     bool AutoRedisCmd(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep);
 
     // SendTo() for unix domain socket
+    bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender);
     bool SendTo(int iFd);
 
     bool Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
@@ -200,6 +201,8 @@ private:
     /* named Channel */
     std::unordered_map<std::string, std::list<std::shared_ptr<SocketChannel> > > m_mapNamedSocketChannel;      ///< key为Identify，连接存在时，if(http连接)list.size()>=1;else list.size()==1;
     std::unordered_map<std::string, std::list<std::shared_ptr<RedisChannel> > > m_mapNamedRedisChannel;        ///< key为identify，list.size()==1
+    std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapLoaderAndWorkerChannel;     ///< Loader和Worker之间通信通道
+    std::unordered_map<int32, std::shared_ptr<SocketChannel> >::iterator m_iterLoaderAndWorkerChannel;
 
     std::unordered_map<std::string, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
 

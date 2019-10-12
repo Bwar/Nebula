@@ -16,7 +16,7 @@
 namespace neb
 {
 
-Nodes::Nodes(int iHashAlgorithm, int iVirtualNodeNum, ev_tstamp dSessionTimeout)
+Nodes::Nodes(int iHashAlgorithm, int iVirtualNodeNum)
     : m_iHashAlgorithm(iHashAlgorithm), m_iVirtualNodeNum(iVirtualNodeNum)
 {
 }

@@ -282,30 +282,33 @@ bool Dispatcher::FdTransfer(int iFd)
     }
     else
     {
-        int iKeepAlive = 1;
-        int iKeepIdle = 60;
-        int iKeepInterval = 5;
-        int iKeepCount = 3;
-        int iTcpNoDelay = 1;
-        if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+        if (iAiFamily != PF_UNIX)
         {
-            LOG4_WARNING("fail to set SO_KEEPALIVE");
-        }
-        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
-        {
-            LOG4_WARNING("fail to set TCP_KEEPIDLE");
-        }
-        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
-        {
-            LOG4_WARNING("fail to set TCP_KEEPINTVL");
-        }
-        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
-        {
-            LOG4_WARNING("fail to set TCP_KEEPCNT");
-        }
-        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
-        {
-            LOG4_WARNING("fail to set TCP_NODELAY");
+            int iKeepAlive = 1;
+            int iKeepIdle = 60;
+            int iKeepInterval = 5;
+            int iKeepCount = 3;
+            int iTcpNoDelay = 1;
+            if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+            {
+                LOG4_WARNING("fail to set SO_KEEPALIVE");
+            }
+            if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+            {
+                LOG4_WARNING("fail to set TCP_KEEPIDLE");
+            }
+            if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+            {
+                LOG4_WARNING("fail to set TCP_KEEPINTVL");
+            }
+            if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+            {
+                LOG4_WARNING("fail to set TCP_KEEPCNT");
+            }
+            if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+            {
+                LOG4_WARNING("fail to set TCP_NODELAY");
+            }
         }
         std::shared_ptr<SocketChannel> pChannel = nullptr;
         LOG4_TRACE("fd[%d] transfer successfully.", iAcceptFd);
@@ -337,7 +340,7 @@ bool Dispatcher::FdTransfer(int iFd)
                     LOG4_ERROR("getpeername error %d", errno);
                 }
             }
-            else   // AF_INET6
+            else if (AF_INET6 == iAiFamily)  // AF_INET6
             {
                 char szClientAddr[64] = {0};
                 int z;                          /* status return code */
@@ -366,6 +369,12 @@ bool Dispatcher::FdTransfer(int iFd)
                     return(false);
                 }
                 pStepTellWorker->Emit(ERR_OK);
+            }
+            else if (CODEC_NEBULA_IN_NODE == iCodec)
+            {
+                pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+                m_mapLoaderAndWorkerChannel.insert(std::make_pair(pChannel->GetFd(), pChannel));
+                m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
             }
             else
             {
@@ -1171,6 +1180,46 @@ bool Dispatcher::AutoRedisCmd(const std::string& strHost, int iPort, std::shared
     return(true);
 }
 
+bool Dispatcher::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    if (m_pLabor->GetLaborType() == Labor::LABOR_MANAGER)
+    {
+        LOG4_ERROR("this function can not be called by manager process!");
+        return(false);
+    }
+    if (nullptr != pSender)
+    {
+        (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
+    }
+    if (m_iterLoaderAndWorkerChannel == m_mapLoaderAndWorkerChannel.end())
+    {
+        m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
+        if (m_iterLoaderAndWorkerChannel == m_mapLoaderAndWorkerChannel.end())
+        {
+            LOG4_ERROR("no channel for loader!");
+            return(false);
+        }
+    }
+    E_CODEC_STATUS eStatus = m_iterLoaderAndWorkerChannel->second->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
+    m_iterLoaderAndWorkerChannel++;
+    if (CODEC_STATUS_OK == eStatus)
+    {
+        RemoveIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
+        return(true);
+    }
+    else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
+    {
+        AddIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
+        return(true);
+    }
+    else if (CODEC_STATUS_WANT_READ == eStatus)
+    {
+        RemoveIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
+        return(true);
+    }
+    return(false);
+}
+
 bool Dispatcher::SendTo(int iFd)
 {
     auto iter = m_mapSocketChannel.find(iFd);
@@ -1577,6 +1626,13 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
             ev_timer_stop (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
         }
 
+        if (CODEC_NEBULA_IN_NODE == pChannel->m_pImpl->GetCodecType())
+        {
+            auto inner_channel_iter = m_mapLoaderAndWorkerChannel.find(pChannel->GetFd());
+            m_mapLoaderAndWorkerChannel.erase(inner_channel_iter);
+            m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
+        }
+
         auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
         if (named_iter != m_mapNamedSocketChannel.end())
         {
@@ -1662,6 +1718,178 @@ bool Dispatcher::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
         }
         return(true);
     }
+}
+bool Dispatcher::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
+{
+    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
+    if (NULL == io_watcher)
+    {
+        return(false);
+    }
+    if (EV_WRITE & io_watcher->events)
+    {
+        ev_io_stop(m_loop, io_watcher);
+        ev_io_set(io_watcher, io_watcher->fd, io_watcher->events & (~EV_WRITE));
+        ev_io_start (m_loop, io_watcher);
+    }
+    return(true);
+}
+
+void Dispatcher::SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus)
+{
+    pChannel->m_pImpl->SetChannelStatus(eStatus);
+}
+
+void Dispatcher::SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus, uint32 ulStepSeq)
+{
+    pChannel->m_pImpl->SetChannelStatus(eStatus, ulStepSeq);
+}
+
+bool Dispatcher::AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout)
+{
+    LOG4_TRACE(" ");
+    ev_timer* timeout_watcher = new ev_timer();
+    if (timeout_watcher == NULL)
+    {
+        LOG4_ERROR("new timeout_watcher error!");
+        return(false);
+    }
+    tagClientConnWatcherData* pData = new tagClientConnWatcherData();
+    if (pData == NULL)
+    {
+        LOG4_ERROR("new tagClientConnWatcherData error!");
+        delete timeout_watcher;
+        return(false);
+    }
+    ev_timer_init (timeout_watcher, ClientConnFrequencyTimeoutCallback, dTimeout + ev_time() - ev_now(m_loop), 0.);
+    pData->pDispatcher = this;
+    snprintf(pData->pAddr, gc_iAddrLen, "%s", pAddr);
+    timeout_watcher->data = (void*)pData;
+    ev_timer_start (m_loop, timeout_watcher);
+    return(true);
+}
+
+bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
+{
+    char szClientAddr[64] = {0};
+    int iAcceptFd = -1;
+    if (AF_INET == iFamily)
+    {
+        struct sockaddr_in stClientAddr;
+        socklen_t clientAddrSize = sizeof(stClientAddr);
+        iAcceptFd = accept(iFd, (struct sockaddr*) &stClientAddr, &clientAddrSize);
+        if (iAcceptFd < 0)
+        {
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+            return(false);
+        }
+        inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
+        LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
+    }
+    else    // AF_INET6
+    {
+        struct sockaddr_in6 stClientAddr;
+        socklen_t clientAddrSize = sizeof(stClientAddr);
+        iAcceptFd = accept(iFd, (struct sockaddr*) &stClientAddr, &clientAddrSize);
+        if (iAcceptFd < 0)
+        {
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+            return(false);
+        }
+        inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
+        LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
+    }
+
+    auto iter = m_mapClientConnFrequency.find(std::string(szClientAddr));
+    if (iter == m_mapClientConnFrequency.end())
+    {
+        m_mapClientConnFrequency.insert(std::make_pair(std::string(szClientAddr), 1));
+        AddClientConnFrequencyTimeout(szClientAddr, m_pLabor->GetNodeInfo().dAddrStatInterval);
+    }
+    else
+    {
+        iter->second++;
+        if (((Manager*)m_pLabor)->GetManagerInfo().iC2SListenFd > 2 && iter->second > (uint32)m_pLabor->GetNodeInfo().iAddrPermitNum)
+        {
+            LOG4_WARNING("client addr %s had been connected more than %u times in %f seconds, it's not permitted",
+                            szClientAddr, m_pLabor->GetNodeInfo().iAddrPermitNum, m_pLabor->GetNodeInfo().dAddrStatInterval);
+            close(iAcceptFd);
+            return(false);
+        }
+    }
+
+    std::pair<int, int> worker_pid_fd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd();
+    if (worker_pid_fd.second > 0)
+    {
+        LOG4_DEBUG("send new fd %d to worker communication fd %d",
+                        iAcceptFd, worker_pid_fd.second);
+        int iCodec = m_pLabor->GetNodeInfo().eCodec;
+        int iErrno = SocketChannel::SendChannelFd(worker_pid_fd.second, iAcceptFd, iFamily, iCodec, m_pLogger);
+        if (iErrno != ERR_OK)
+        {
+            LOG4_ERROR("error %d: %s", iErrno, strerror_r(iErrno, m_pErrBuff, gc_iErrBuffLen));
+        }
+        close(iAcceptFd);
+        return(true);
+    }
+    LOG4_WARNING("GetMinLoadWorkerDataFd() found worker_pid_fd.second = %d", worker_pid_fd.second);
+    close(iAcceptFd);
+    return(false);
+}
+
+bool Dispatcher::AcceptServerConn(int iFd)
+{
+    struct sockaddr_in stClientAddr;
+    socklen_t clientAddrSize = sizeof(stClientAddr);
+    int iAcceptFd = accept(iFd, (struct sockaddr*) &stClientAddr, &clientAddrSize);
+    if (iAcceptFd < 0)
+    {
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+        return(false);
+    }
+    else
+    {
+        /* tcp连接检测 */
+        int iKeepAlive = 1;
+        int iKeepIdle = 60;
+        int iKeepInterval = 5;
+        int iKeepCount = 3;
+        int iTcpNoDelay = 1;
+        if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPIDLE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPINTVL");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+        {
+            LOG4_WARNING("fail to set TCP_NODELAY");
+        }
+        x_sock_set_block(iAcceptFd, 0);
+        std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iAcceptFd, CODEC_NEBULA);
+        if (NULL != pChannel)
+        {
+            AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
+            AddIoReadEvent(pChannel);
+        }
+    }
+    return(false);
+}
+
+void Dispatcher::EvBreak()
+{
+    ev_break (m_loop, EVBREAK_ALL);
 }
 
 }

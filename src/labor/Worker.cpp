@@ -24,8 +24,8 @@ extern "C" {
 namespace neb
 {
 
-Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, CJsonObject& oJsonConf)
-    : Labor(LABOR_WORKER)
+Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, Labor::LABOR_TYPE eLaborType)
+    : Labor(eLaborType)
 {
     m_stWorkerInfo.iControlFd = iControlFd;
     m_stWorkerInfo.iDataFd = iDataFd;
@@ -33,11 +33,6 @@ Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int 
     m_stWorkerInfo.iWorkerPid = getpid();
     m_stNodeInfo.strWorkPath = strWorkPath;
     m_pErrBuff = (char*)malloc(gc_iErrBuffLen);
-    if (!Init(oJsonConf))
-    {
-        exit(3);
-    }
-    m_oNodeConf = oJsonConf;
 }
 
 Worker::~Worker()
@@ -111,6 +106,7 @@ bool Worker::Init(CJsonObject& oJsonConf)
     oJsonConf.Get("node_type", m_stNodeInfo.strNodeType);
     oJsonConf.Get("host", m_stNodeInfo.strHostForServer);
     oJsonConf.Get("port", m_stNodeInfo.iPortForServer);
+    m_oNodeConf = oJsonConf;
     m_oCustomConf = oJsonConf["custom"];
     std::ostringstream oss;
     oss << m_stNodeInfo.strHostForServer << ":" << m_stNodeInfo.iPortForServer << "." << m_stWorkerInfo.iWorkerIndex;
@@ -231,6 +227,26 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf)
 
 bool Worker::InitDispatcher()
 {
+    if (NewDispatcher())
+    {
+        return(m_pDispatcher->Init());
+    }
+    return(false);
+}
+
+bool Worker::InitActorBuilder()
+{
+    if (NewActorBuilder())
+    {
+        return(m_pActorBuilder->Init(
+                m_oNodeConf["load_config"]["worker"]["boot_load"],
+                m_oNodeConf["load_config"]["worker"]["dynamic_loading"]));
+    }
+    return(false);
+}
+
+bool Worker::NewDispatcher()
+{
     try
     {
         m_pDispatcher = new Dispatcher(this, m_pLogger);
@@ -240,10 +256,10 @@ bool Worker::InitDispatcher()
         LOG4_ERROR("new Dispatcher error: %s", e.what());
         return(false);
     }
-    return(m_pDispatcher->Init());
+    return(true);
 }
 
-bool Worker::InitActorBuilder()
+bool Worker::NewActorBuilder()
 {
     try
     {
@@ -252,11 +268,6 @@ bool Worker::InitActorBuilder()
     catch(std::bad_alloc& e)
     {
         LOG4_ERROR("new ActorBuilder error: %s", e.what());
-        return(false);
-    }
-    if (!m_pActorBuilder->Init(m_oNodeConf["boot_load"], m_oNodeConf["dynamic_loading"]))
-    {
-        LOG4_ERROR("ActorBuilder->Init() failed!");
         return(false);
     }
     return(true);
@@ -314,7 +325,7 @@ bool Worker::AddPeriodicTaskEvent()
         LOG4_ERROR("malloc timeout_watcher error!");
         return(false);
     }
-    timeout_watcher->data = (void*)this;
+    timeout_watcher->data = (void*)this->GetDispatcher();
     m_pDispatcher->AddEvent(timeout_watcher, Dispatcher::PeriodicTaskCallback, NODE_BEAT);
     return(true);
 }
