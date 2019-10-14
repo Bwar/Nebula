@@ -712,7 +712,7 @@ void ActorBuilder::LoadSysCmd()
     MakeSharedCmd(nullptr, "neb::CmdBeat", (int)CMD_REQ_BEAT);
     if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
     {
-        MakeSharedCmd(nullptr, "neb::CmdWorkerLoad", (int)CMD_REQ_UPDATE_WORKER_LOAD);
+        MakeSharedCmd(nullptr, "neb::CmdOnWorkerLoad", (int)CMD_REQ_UPDATE_WORKER_LOAD);
         MakeSharedCmd(nullptr, "neb::CmdOnTellWorker", (int)CMD_REQ_TELL_WORKER);
         MakeSharedCmd(nullptr, "neb::CmdOnOrientationFdTransfer", (int)CMD_REQ_CONNECT_TO_WORKER);
         MakeSharedCmd(nullptr, "neb::CmdOnNodeNotice", (int)CMD_REQ_NODE_NOTICE);
