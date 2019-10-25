@@ -55,7 +55,7 @@ bool CmdOnSetNodeCustomConf::AnyMessage(
                 fout.close();
                 oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
                 oOutMsgBody.mutable_rsp_result()->set_msg("success");
-                m_pSessionManager->SendToWorker(CMD_REQ_SET_NODE_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
+                m_pSessionManager->SendToChild(CMD_REQ_SET_NODE_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
                 GetLabor(this)->SetNodeConf(oCurrentConf);
                 SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
                 return(true);

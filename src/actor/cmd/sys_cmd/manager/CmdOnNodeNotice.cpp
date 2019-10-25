@@ -53,7 +53,7 @@ bool CmdOnNodeNotice::AnyMessage(
     oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
     oOutMsgBody.mutable_rsp_result()->set_msg("success");
     SendTo(pChannel, CMD_RSP_NODE_NOTICE, oInMsgHead.seq(), oOutMsgBody);
-    m_pSessionManager->SendToWorker(CMD_REQ_NODE_NOTICE, GetSequence(), oInMsgBody);
+    m_pSessionManager->SendToChild(CMD_REQ_NODE_NOTICE, GetSequence(), oInMsgBody);
     std::ostringstream oss;
     std::string strIdentify;
     std::string strNodeType;

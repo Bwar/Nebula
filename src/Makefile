@@ -39,7 +39,7 @@ LDFLAGS := $(LDFLAGS) -D_LINUX_OS_ \
            -L$(LIB3RD_PATH)/lib -lprotobuf \
            -L$(SYSTEM_LIB_PATH) -lc -lrt -ldl
 
-SUB_INCLUDE = channel labor codec pb mydis logger
+SUB_INCLUDE = channel ios labor codec pb mydis logger
 DEEP_SUB_INCLUDE = actor util
 CPP_SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cpp))
 CC_SRCS = $(foreach dir, $(DIRS), $(wildcard $(dir)/*.cc))

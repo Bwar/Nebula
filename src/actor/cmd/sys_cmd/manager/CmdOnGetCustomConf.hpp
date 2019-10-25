@@ -11,14 +11,14 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_MANAGER_CMDONGETCUSTOMCONF_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_MANAGER_CMDONGETCUSTOMCONF_HPP_
 
-#include "actor/ActorFriend.hpp"
+#include "../../../ActorSys.hpp"
 #include "actor/cmd/Cmd.hpp"
 
 namespace neb
 {
 
 class CmdOnGetCustomConf: public Cmd,
-    public DynamicCreator<CmdOnGetCustomConf, int32>, public ActorFriend
+    public DynamicCreator<CmdOnGetCustomConf, int32>, public ActorSys
 {
 public:
     CmdOnGetCustomConf(int32 iCmd);

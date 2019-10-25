@@ -37,7 +37,7 @@ namespace neb
 class Labor;
 class Dispatcher;
 class ActorBuilder;
-class ActorFriend;
+class ActorSys;
 
 class SocketChannel;
 class RedisChannel;
@@ -262,7 +262,7 @@ private:
 
     friend class Dispatcher;
     friend class ActorBuilder;
-    friend class ActorFriend;
+    friend class ActorSys;
     friend class Chain;
 };
 

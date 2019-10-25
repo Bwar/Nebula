@@ -10,14 +10,14 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_CMDSETNODECUSTOMCONF_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_CMDSETNODECUSTOMCONF_HPP_
 
+#include "../../ActorSys.hpp"
 #include "actor/cmd/Cmd.hpp"
-#include "actor/ActorFriend.hpp"
 
 namespace neb
 {
 
 class CmdSetNodeCustomConf: public Cmd,
-    public DynamicCreator<CmdSetNodeCustomConf, int32>, public ActorFriend
+    public DynamicCreator<CmdSetNodeCustomConf, int32>, public ActorSys
 {
 public:
     CmdSetNodeCustomConf(int32 iCmd);

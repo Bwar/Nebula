@@ -65,7 +65,7 @@ E_CMD_STATUS StepReportToBeacon::Callback(
         if (uiNodeId != GetLabor(this)->GetNodeInfo().uiNodeId)
         {
             GetLabor(this)->SetNodeId((uiNodeId));
-            m_pSessionManager->SendToWorker(CMD_REQ_REFRESH_NODE_ID, oInMsgHead.seq(), oInMsgBody);
+            m_pSessionManager->SendToChild(CMD_REQ_REFRESH_NODE_ID, oInMsgHead.seq(), oInMsgBody);
         }
         return(CMD_STATUS_RUNNING);
     }

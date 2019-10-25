@@ -11,7 +11,7 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_MANAGER_CMDONSETNODECONF_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_MANAGER_CMDONSETNODECONF_HPP_
 
-#include "actor/ActorFriend.hpp"
+#include "../../../ActorSys.hpp"
 #include "actor/cmd/Cmd.hpp"
 
 namespace neb
@@ -20,7 +20,7 @@ namespace neb
 class SessionManager;
 
 class CmdOnSetNodeConf: public Cmd,
-    public DynamicCreator<CmdOnSetNodeConf, int32>, public ActorFriend
+    public DynamicCreator<CmdOnSetNodeConf, int32>, public ActorSys
 {
 public:
     CmdOnSetNodeConf(int32 iCmd);

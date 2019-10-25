@@ -138,7 +138,7 @@ public:
 
     // SendTo() for unix domain socket
     bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender);
-    bool SendTo(int iFd);
+    bool SendTo(int iFd, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     bool Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
     bool Disconnect(const std::string& strIdentify, bool bChannelNotice = true);

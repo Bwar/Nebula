@@ -67,16 +67,17 @@ void SessionManager::DelOnlineNode(const std::string& strNodeIdentify)
     }
 }
 
-bool SessionManager::SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool SessionManager::SendToChild(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     for (auto worker_iter = m_mapWorker.begin(); worker_iter != m_mapWorker.end(); ++worker_iter)
     {
-        GetLabor(this)->GetDispatcher()->SendTo(worker_iter->second->iControlFd);
+        GetLabor(this)->GetDispatcher()->SendTo(
+                worker_iter->second->iControlFd, iCmd, uiSeq, oMsgBody);
     }
     return(true);
 }
 
-bool SessionManager::SendToWorkerWithoutLoader(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool SessionManager::SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     for (auto worker_iter = m_mapWorker.begin(); worker_iter != m_mapWorker.end(); ++worker_iter)
     {
@@ -84,7 +85,8 @@ bool SessionManager::SendToWorkerWithoutLoader(int32 iCmd, uint32 uiSeq, const M
         {
             continue;
         }
-        GetLabor(this)->GetDispatcher()->SendTo(worker_iter->second->iControlFd);
+        GetLabor(this)->GetDispatcher()->SendTo(
+                worker_iter->second->iControlFd, iCmd, uiSeq, oMsgBody);
     }
     return(true);
 }
@@ -95,7 +97,8 @@ bool SessionManager::SendToLoader(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgB
     {
         if (m_iLoaderDataFd == worker_iter->second->iDataFd)
         {
-            GetLabor(this)->GetDispatcher()->SendTo(worker_iter->second->iControlFd);
+            GetLabor(this)->GetDispatcher()->SendTo(
+                    worker_iter->second->iControlFd, iCmd, uiSeq, oMsgBody);
         }
     }
     return(true);
@@ -281,7 +284,7 @@ void SessionManager::SendOnlineNodesToWorker()
         oSubscribeNode["add_nodes"].Add(CJsonObject(it->second));
     }
     oMsgBody.set_data(oSubscribeNode.ToString());
-    SendToWorker(CMD_REQ_NODE_NOTICE, GetSequence(), oMsgBody);
+    SendToChild(CMD_REQ_NODE_NOTICE, GetSequence(), oMsgBody);
 }
 
 /**

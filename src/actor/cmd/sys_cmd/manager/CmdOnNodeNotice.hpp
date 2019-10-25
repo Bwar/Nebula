@@ -11,7 +11,7 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_MANAGER_CMDONNODENOTICE_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_MANAGER_CMDONNODENOTICE_HPP_
 
-#include "actor/ActorFriend.hpp"
+#include "../../../ActorSys.hpp"
 #include "actor/cmd/Cmd.hpp"
 
 namespace neb
@@ -21,7 +21,7 @@ class SessionManager;
 
 class CmdOnNodeNotice: public Cmd,
     public DynamicCreator<CmdOnNodeNotice, int32>,
-    public ActorFriend
+    public ActorSys
 {
 public:
     CmdOnNodeNotice(int32 iCmd);

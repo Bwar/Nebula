@@ -11,15 +11,15 @@
 #ifndef SRC_ACTOR_SESSION_SYS_SESSION_MANAGER_SESSIONMANAGER_HPP_
 #define SRC_ACTOR_SESSION_SYS_SESSION_MANAGER_SESSIONMANAGER_HPP_
 
+#include "../../../ActorSys.hpp"
 #include "labor/NodeInfo.hpp"
-#include "actor/ActorFriend.hpp"
 #include "actor/session/Session.hpp"
 
 namespace neb
 {
 
 class SessionManager : public Session,
-    public DynamicCreator<SessionManager>, public ActorFriend
+    public DynamicCreator<SessionManager>, public ActorSys
 {
 public:
     SessionManager();
@@ -29,8 +29,8 @@ public:
 
     void AddOnlineNode(const std::string& strNodeIdentify, const std::string& strNodeInfo);
     void DelOnlineNode(const std::string& strNodeIdentify);
-    bool SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);    // 向Worker发送数据
-    bool SendToWorkerWithoutLoader(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendToChild(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);    // 向Worker和Loader发送数据
+    bool SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     bool SendToLoader(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     void AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
     void AddLoaderInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);

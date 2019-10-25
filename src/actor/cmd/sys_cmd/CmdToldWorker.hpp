@@ -10,14 +10,14 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_CMDTOLDWORKER_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_CMDTOLDWORKER_HPP_
 
+#include "../../ActorSys.hpp"
 #include "actor/cmd/Cmd.hpp"
-#include "actor/ActorFriend.hpp"
 
 namespace neb
 {
 
 class CmdToldWorker: public Cmd,
-    public DynamicCreator<CmdToldWorker, int32>, public ActorFriend
+    public DynamicCreator<CmdToldWorker, int32>, public ActorSys
 {
 public:
     CmdToldWorker(int32 iCmd);

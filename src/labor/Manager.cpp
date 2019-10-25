@@ -563,7 +563,7 @@ void Manager::RefreshServer()
             oLogLevel.set_log_level(iLogLevel);
             oLogLevel.set_net_log_level(iNetLogLevel);
             oMsgBody.set_data(oLogLevel.SerializeAsString());
-            m_pSessionManager->SendToWorker(CMD_REQ_SET_LOG_LEVEL, GetSequence(), oMsgBody);
+            m_pSessionManager->SendToChild(CMD_REQ_SET_LOG_LEVEL, GetSequence(), oMsgBody);
         }
 
         // 更新动态库配置或重新加载动态库
@@ -572,7 +572,7 @@ void Manager::RefreshServer()
         {
             MsgBody oMsgBody;
             oMsgBody.set_data(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"].ToString());
-            m_pSessionManager->SendToWorkerWithoutLoader(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
+            m_pSessionManager->SendToWorker(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
         }
         if (m_oLastConf["load_config"]["loader"]["dynamic_loading"].ToString()
                 != m_oCurrentConf["load_config"]["loader"]["dynamic_loading"].ToString())

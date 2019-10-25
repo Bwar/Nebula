@@ -10,8 +10,8 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_CMDNODENOTICE_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_CMDNODENOTICE_HPP_
 
+#include "../../ActorSys.hpp"
 #include "actor/cmd/Cmd.hpp"
-#include "actor/ActorFriend.hpp"
 #include "pb/neb_sys.pb.h"
 
 namespace neb
@@ -24,7 +24,7 @@ namespace neb
  * @note    各个模块启动时需要向BEACON进行注册
  */
 class CmdNodeNotice : public Cmd,
-    public DynamicCreator<CmdNodeNotice, int32>, public ActorFriend
+    public DynamicCreator<CmdNodeNotice, int32>, public ActorSys
 {
 public:
     CmdNodeNotice(int32 iCmd);

@@ -1220,12 +1220,12 @@ bool Dispatcher::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor
     return(false);
 }
 
-bool Dispatcher::SendTo(int iFd)
+bool Dispatcher::SendTo(int iFd, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     auto iter = m_mapSocketChannel.find(iFd);
     if (iter != m_mapSocketChannel.end())
     {
-        return(SendTo(iter->second));
+        return(SendTo(iter->second, iCmd, uiSeq, oMsgBody));
     }
     return(false);
 }
@@ -1612,6 +1612,11 @@ std::shared_ptr<SocketChannel> Dispatcher::CreateSocketChannel(int iFd, E_CODEC_
 
 bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice)
 {
+    if (pChannel == nullptr)
+    {
+        LOG4_ERROR("pChannel not exist!");
+        return(false);
+    }
     LOG4_DEBUG("%s disconnect, fd %d, identify %s", pChannel->m_pImpl->GetRemoteAddr().c_str(), pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetIdentify().c_str());
     if (bChannelNotice)
     {

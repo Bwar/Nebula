@@ -10,7 +10,7 @@
 #ifndef SRC_ACTOR_STEP_SYS_STEP_STEPIOTIMEOUT_HPP_
 #define SRC_ACTOR_STEP_SYS_STEP_STEPIOTIMEOUT_HPP_
 
-#include "actor/ActorFriend.hpp"
+#include "../../ActorSys.hpp"
 #include "actor/step/PbStep.hpp"
 #include "Definition.hpp"
 
@@ -25,7 +25,7 @@ namespace neb
  */
 class StepIoTimeout: public PbStep,
     public DynamicCreator<StepIoTimeout, std::shared_ptr<SocketChannel> >,
-    public ActorFriend
+    public ActorSys
 {
 public:
     StepIoTimeout(std::shared_ptr<SocketChannel> pChannel);

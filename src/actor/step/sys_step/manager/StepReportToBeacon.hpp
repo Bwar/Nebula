@@ -11,7 +11,7 @@
 #ifndef SRC_ACTOR_STEP_SYS_STEP_MANAGER_STEPREPORTTOBEACON_HPP_
 #define SRC_ACTOR_STEP_SYS_STEP_MANAGER_STEPREPORTTOBEACON_HPP_
 
-#include "actor/ActorFriend.hpp"
+#include "../../../ActorSys.hpp"
 #include "actor/step/PbStep.hpp"
 
 namespace neb
@@ -20,7 +20,7 @@ namespace neb
 class SessionManager;
 
 class StepReportToBeacon: public PbStep,
-        public DynamicCreator<StepReportToBeacon, ev_tstamp>, public ActorFriend
+        public DynamicCreator<StepReportToBeacon, ev_tstamp>, public ActorSys
 {
 public:
     StepReportToBeacon(ev_tstamp dTimeout);
