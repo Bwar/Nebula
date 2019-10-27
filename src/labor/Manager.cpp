@@ -125,6 +125,7 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
     {
         int32 iMaxLogFileSize = 0;
         int32 iMaxLogFileNum = 0;
+        int32 iMaxLogLineLen = 1024;
         std::string strLoggingHost;
         std::string strLogname = m_stNodeInfo.strWorkPath + std::string("/")
                         + oJsonConf("log_path") + std::string("/") + getproctitle() + std::string(".log");
@@ -133,8 +134,9 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         ssServerName << getproctitle() << " " << m_stNodeInfo.strHostForServer << ":" << m_stNodeInfo.iPortForServer;
         oJsonConf.Get("max_log_file_size", iMaxLogFileSize);
         oJsonConf.Get("max_log_file_num", iMaxLogFileNum);
+        oJsonConf.Get("log_max_line_len", iMaxLogLineLen);
         oJsonConf.Get("log_level", iLogLevel);
-        m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, this);
+        m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, iMaxLogLineLen, this);
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_NOTICE("%s program begin, and work path %s...", oJsonConf("server_name").c_str(), m_stNodeInfo.strWorkPath.c_str());
         return(true);
@@ -346,8 +348,10 @@ bool Manager::CreateEvents()
     fpe_signal_watcher->data = (void*)this;
     m_pDispatcher->AddEvent(fpe_signal_watcher, Dispatcher::SignalCallback, SIGFPE);
 
+    bool bDirectToLoader = false;
+    m_oCurrentConf.Get("new_client_to_loader", bDirectToLoader);
     m_pSessionManager = std::dynamic_pointer_cast<SessionManager>(
-            m_pActorBuilder->MakeSharedSession(nullptr, "neb::SessionManager"));
+            m_pActorBuilder->MakeSharedSession(nullptr, "neb::SessionManager", bDirectToLoader));
     AddPeriodicTaskEvent();
 
     return(true);

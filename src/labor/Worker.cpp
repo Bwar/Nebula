@@ -209,6 +209,7 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf)
     {
         int32 iMaxLogFileSize = 0;
         int32 iMaxLogFileNum = 0;
+        int32 iMaxLogLineLen = 1024;
         int32 iLogLevel = 0;
         int32 iNetLogLevel = 0;
         std::string strLogname = m_stNodeInfo.strWorkPath + std::string("/") + oJsonConf("log_path")
@@ -216,9 +217,10 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf)
         std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
         oJsonConf.Get("max_log_file_size", iMaxLogFileSize);
         oJsonConf.Get("max_log_file_num", iMaxLogFileNum);
+        oJsonConf.Get("log_max_line_len", iMaxLogLineLen);
         oJsonConf.Get("net_log_level", iNetLogLevel);
         oJsonConf.Get("log_level", iLogLevel);
-        m_pLogger = std::make_shared<neb::NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, this);
+        m_pLogger = std::make_shared<neb::NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, iMaxLogLineLen, this);
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_NOTICE("%s program begin...", getproctitle());
         return(true);

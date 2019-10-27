@@ -20,10 +20,12 @@
 namespace neb
 {
 
-NetLogger::NetLogger(const std::string strLogFile, int iLogLev, unsigned int uiMaxFileSize, unsigned int uiMaxRollFileIndex, Labor* pLabor)
-    : m_pLogBuff(NULL), m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO), m_bEnableNetLogger(false), m_pLabor(pLabor), m_pLog(nullptr)
+NetLogger::NetLogger(const std::string strLogFile, int iLogLev, unsigned int uiMaxFileSize,
+        unsigned int uiMaxRollFileIndex, unsigned int uiMaxLogLineLen, Labor* pLabor)
+    : m_pLogBuff(NULL), m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO), m_uiMaxLogLineLen(uiMaxFileSize),
+      m_bEnableNetLogger(false), m_pLabor(pLabor), m_pLog(nullptr)
 {
-    m_pLogBuff = (char*)malloc(gc_uiMaxLogLineLen);
+    m_pLogBuff = (char*)malloc(m_uiMaxLogLineLen);
 #if __cplusplus >= 201401L
     m_pLog = std::make_unique<neb::FileLogger>(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex);
 #else
@@ -39,7 +41,7 @@ int NetLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLin
 {
     va_list ap;
     va_start(ap, szLogStr);
-    vsnprintf(m_pLogBuff, gc_uiMaxLogLineLen, szLogStr, ap);
+    vsnprintf(m_pLogBuff, m_uiMaxLogLineLen, szLogStr, ap);
     va_end(ap);
 
     m_pLog->WriteLog(iLev, szFileName, uiFileLine, szFunction, m_pLogBuff);

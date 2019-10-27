@@ -21,8 +21,8 @@
 namespace neb
 {
 
-SessionManager::SessionManager()
-    : Session("neb::SessionManager", gc_dNoTimeout)
+SessionManager::SessionManager(bool bDirectToLoader)
+    : Session("neb::SessionManager", gc_dNoTimeout), m_bDirectToLoader(bDirectToLoader)
 {
 }
 
@@ -191,20 +191,35 @@ std::pair<int, int> SessionManager::GetMinLoadWorkerDataFd()
     int iMinLoadWorkerFd = 0;
     int iMinLoad = -1;
     std::pair<int, int> worker_pid_fd;
-    for (auto iter = m_mapWorker.begin(); iter != m_mapWorker.end(); ++iter)
+    if (m_bDirectToLoader && m_iLoaderDataFd != -1)
     {
-       if (iter == m_mapWorker.begin() && iter->second->iDataFd != m_iLoaderDataFd)
-       {
-           iMinLoadWorkerFd = iter->second->iDataFd;
-           iMinLoad = iter->second->iLoad;
-           worker_pid_fd = std::pair<int, int>(iter->first, iMinLoadWorkerFd);
-       }
-       else if (iter->second->iLoad < iMinLoad && iter->second->iDataFd != m_iLoaderDataFd)
-       {
-           iMinLoadWorkerFd = iter->second->iDataFd;
-           iMinLoad = iter->second->iLoad;
-           worker_pid_fd = std::pair<int, int>(iter->first, iMinLoadWorkerFd);
-       }
+        auto it = m_mapWorkerFdPid.find(m_iLoaderDataFd);
+        if (it != m_mapWorkerFdPid.end())
+        {
+            worker_pid_fd = std::pair<int, int>(it->second, m_iLoaderDataFd);
+        }
+        else
+        {
+            worker_pid_fd = std::pair<int, int>(0, m_iLoaderDataFd);
+        }
+    }
+    else
+    {
+        for (auto iter = m_mapWorker.begin(); iter != m_mapWorker.end(); ++iter)
+        {
+            if (iMinLoad == -1 && iter->second->iDataFd != m_iLoaderDataFd)
+            {
+               iMinLoadWorkerFd = iter->second->iDataFd;
+               iMinLoad = iter->second->iLoad;
+               worker_pid_fd = std::pair<int, int>(iter->first, iMinLoadWorkerFd);
+            }
+            else if (iter->second->iLoad < iMinLoad && iter->second->iDataFd != m_iLoaderDataFd)
+            {
+               iMinLoadWorkerFd = iter->second->iDataFd;
+               iMinLoad = iter->second->iLoad;
+               worker_pid_fd = std::pair<int, int>(iter->first, iMinLoadWorkerFd);
+            }
+        }
     }
     return(worker_pid_fd);
 }

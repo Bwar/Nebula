@@ -19,6 +19,8 @@
     "worker_num": 10,
     "//with_loader":"是否启动loader进程",
     "with_loader":false,
+    "//new_client_to_loader":"集群外部（从access_port端口进来）的新连接直接转发到loader，不转发给worker",
+    "new_client_to_loader":false,
     "//cpu_affinity":"是否设置进程CPU亲和度（绑定CPU）",
     "cpu_affinity":false,
     "//worker_capacity": "子进程最大工作负荷",
@@ -27,6 +29,8 @@
     "config_path": "conf/",
     "//log_path": "日志文件路径（相对路径）",
     "log_path": "log/",
+    "//log_max_line_len":"每条日志最大字节数",
+    "log_max_line_len":4096,
     "//beacon": "控制中心",
     "beacon": [
         { "host": "192.168.1.11", "port": 16000 },
@@ -54,7 +58,7 @@
         "cert_file": "20180623143147.pem",
         "key_file": "20180623143147.key"
     },
-    "//refresh_interval": "刷新Server配置，检查、加载插件动态库时间周期（周期时间长短视服务器忙闲而定）",
+    "//refresh_interval": "刷新Server配置，检查、加载插件动态库时间周期",
     "refresh_interval": 60,
     "load_config":{
         "manager":{            

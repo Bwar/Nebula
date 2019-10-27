@@ -19,10 +19,10 @@ namespace neb
 {
 
 class SessionManager : public Session,
-    public DynamicCreator<SessionManager>, public ActorSys
+    public DynamicCreator<SessionManager, bool>, public ActorSys
 {
 public:
-    SessionManager();
+    SessionManager(bool bDirectToLoader);
     virtual ~SessionManager();
 
     virtual E_CMD_STATUS Timeout();
@@ -46,6 +46,7 @@ public:
     bool NewSocketWhenLoaderCreated();
 
 private:
+    bool m_bDirectToLoader = false;
     int m_iLoaderDataFd = -1;
     std::unordered_map<int, WorkerInfo*> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
     std::unordered_map<int, int> m_mapWorkerStartNum;       ///< 进程被启动次数，key为WorkerIdx
