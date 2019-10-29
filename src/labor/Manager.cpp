@@ -314,6 +314,12 @@ void Manager::Destroy()
         delete m_pActorBuilder;
         m_pActorBuilder = nullptr;
     }
+
+    if (m_pErrBuff != NULL)
+    {
+        free(m_pErrBuff);
+        m_pErrBuff = NULL;
+    }
 }
 
 bool Manager::CreateEvents()
