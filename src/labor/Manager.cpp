@@ -320,6 +320,7 @@ void Manager::Destroy()
         free(m_pErrBuff);
         m_pErrBuff = NULL;
     }
+    
 }
 
 bool Manager::CreateEvents()
