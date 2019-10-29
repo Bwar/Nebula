@@ -11,12 +11,14 @@
 #define SRC_ACTOR_CMD_MODULE_HPP_
 
 #include "codec/CodecHttp.hpp"
-#include "labor/Worker.hpp"
 #include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
+
+class ActorBuilder;
+
 class Module: public Actor
 {
 public:
@@ -60,7 +62,7 @@ protected:
 
 private:
     std::string m_strModulePath;
-    friend class WorkerImpl;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */

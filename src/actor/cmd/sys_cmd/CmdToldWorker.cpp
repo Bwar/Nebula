@@ -9,6 +9,7 @@
  ******************************************************************************/
 #include "CmdToldWorker.hpp"
 #include "pb/neb_sys.pb.h"
+#include "ios/Dispatcher.hpp"
 
 namespace neb
 {
@@ -37,7 +38,7 @@ bool CmdToldWorker::AnyMessage(
         LOG4_DEBUG("AddNodeIdentify(%s, %s)!", oInTargetWorker.node_type().c_str(),
                         oInTargetWorker.worker_identify().c_str());
 // 发起连接的节点执行autosend时已添加过，这里已不再需要添加        GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
-        GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
+        GetLabor(this)->GetDispatcher()->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
         oOutTargetWorker.set_worker_identify(GetNodeIdentify());
         oOutTargetWorker.set_node_type(GetNodeType());
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);

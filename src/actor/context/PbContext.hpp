@@ -10,12 +10,13 @@
 #ifndef SRC_ACTOR_PBCONTEXT_HPP_
 #define SRC_ACTOR_PBCONTEXT_HPP_
 
-#include "labor/Worker.hpp"
 #include "actor/DynamicCreator.hpp"
 #include "Context.hpp"
 
 namespace neb
 {
+
+class ActorBuilder;
 
 class PbContext: public Context
 {
@@ -64,7 +65,7 @@ private:
     uint32 m_uiReqSeq;
     MsgBody m_oReqMsgBody;
     
-    friend class WorkerImpl;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */

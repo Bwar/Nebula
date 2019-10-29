@@ -9,6 +9,7 @@
  ******************************************************************************/
 
 #include "SessionLogger.hpp"
+#include "actor/cmd/CW.hpp"
 
 namespace neb
 {

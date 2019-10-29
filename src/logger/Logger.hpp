@@ -16,7 +16,7 @@ namespace neb
 {
 
 
-const unsigned int gc_uiMaxLogLineLen = 1024;
+const unsigned int gc_uiMaxLogLineLen = 2048;
 const unsigned int gc_uiMaxLogFileSize = 2048000;
 const unsigned int gc_uiMaxRollLogFileIndex = 9;
 

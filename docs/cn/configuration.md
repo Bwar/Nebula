@@ -8,10 +8,6 @@
 {
     "//node_type": "节点类型：ACCESS，LOGIC，PROXY，CENTER等，由业务层定义",
     "node_type": "ACCESS",
-    "//host": "系统内各Server之间通信绑定的IP（Server to Server）",
-    "host": "192.168.18.81",
-    "//port": "系统内各Server之间通信监听的端口",
-    "port": 9987,
     "//access_host": "对系统外提供服务绑定的IP（Client to Server），若不提供对外服务，则无需配置",
     "access_host": "192.168.18.81",
     "//access_port": "对系统外提供服务监听的端口",
@@ -20,25 +16,33 @@
     "access_codec": 4,
     "gateway": "113.102.157.188",
     "gateway_port": 9988,
+    "//host": "系统内各Server之间通信绑定的IP（Server to Server）",
+    "host": "192.168.18.81",
+    "//port": "系统内各Server之间通信监听的端口",
+    "port": 9987,
     "//server_name": "异步事件驱动Server",
     "server_name": "AsyncServer",
     "//worker_num": "进程数量",
     "worker_num": 10,
-    "//worker_capacity": "子进程最大工作负荷",
-    "worker_capacity": 1000000,
+    "//with_loader":"是否启动loader进程",
+    "with_loader":false,
     "//cpu_affinity":"是否设置进程CPU亲和度（绑定CPU）",
     "cpu_affinity":false,
+    "//worker_capacity": "子进程最大工作负荷",
+    "worker_capacity": 1000000,
     "//config_path": "配置文件路径（相对路径）",
     "config_path": "conf/",
     "//log_path": "日志文件路径（相对路径）",
     "log_path": "log/",
+    "//beacon": "控制中心",
+    "beacon": [
+        { "host": "192.168.1.11", "port": 16000 },
+        { "host": "192.168.1.12", "port": 16000 }
+    ],
     "//max_log_file_num": "最大日志文件数量，用于日志文件滚动",
     "max_log_file_num": 5,
     "//max_log_file_size": "单个日志文件大小限制",
     "max_log_file_size": 20480000,
-    "log_levels": { "FATAL": 0, "CRITICAL": 1, "ERROR": 2, "NOTICE": 3, "WARNING": 4, "INFO": 5, "DEBUG": 6, "TRACE": 7 },
-    "log_level": 7,
-    "net_log_level": 6,
     "//permission": "限制。addr_permit为连接限制，限制每个IP在统计时间内连接次数；uin_permit为消息数量限制，限制每个用户在单位统计时间内发送消息数量。",
     "permission": {
         "addr_permit": { "stat_interval": 60.0, "permit_num": 1000000000 },
@@ -48,62 +52,70 @@
     "io_timeout": 300.0,
     "//step_timeout": "步骤超时设置（单位：秒）小数点后面至少保留一位",
     "step_timeout": 1.5,
-    "boot_load": {
-        "cmd": [
-            { "cmd": 1001, "class": "neb::CmdHello" },
-            { "cmd": 1003, "class": "neb::CmdDbAgent" }
-        ],
-        "module": [
-            { "path": "neb/switch", "class": "neb::ModuleSwitch" },
-            { "path": "neb/hello", "class": "neb::ModuleHello" }
-        ]
-    },
+    "log_levels": { "FATAL": 0, "CRITICAL": 1, "ERROR": 2, "NOTICE": 3, "WARNING": 4, "INFO": 5, "DEBUG": 6, "TRACE": 7 },
+    "log_level": 7,
+    "net_log_level": 6,
     "//with_ssl": "SSL配置（可为空），路径为相对${WorkPath}的相对路径，公钥文件和私钥文件均为PEM格式",
     "with_ssl": {
         "config_path": "conf/ssl",
         "cert_file": "20180623143147.pem",
         "key_file": "20180623143147.key"
     },
-    "//refresh_interval": "刷新Server配置，检查、加载插件动态库时间周期",
+    "//refresh_interval": "刷新Server配置，检查、加载插件动态库时间周期（周期时间长短视服务器忙闲而定）",
     "refresh_interval": 60,
-    "//beacon": "控制中心",
-    "beacon": [
-        { "host": "192.168.1.11", "port": 16000 },
-        { "host": "192.168.1.12", "port": 16000 }
-    ],
-    "dynamic_loading": [{
-            "so_path": "plugins/User.so",
-            "load": false,
-            "version": 1,
-            "cmd": [
-                { "cmd": 2001, "class": "neb::CmdUserLogin" },
-                { "cmd": 2003, "class": "neb::CmdUserLogout" }
-            ],
-            "module": [
-                { "path": "im/user/login", "class": "neb::ModuleLogin" },
-                { "path": "im/user/logout", "class": "neb::ModuleLogout" }
-            ],
-            "session":["im::SessionUser", "im::SessionGroup"],
-            "step":["im::StepLogin", "im::StepLogout", "im::StepP2pChat"],
-            "model":[]
+    "load_config":{
+        "manager":{
         },
-        {
-            "so_path": "plugins/ChatMsg.so",
-            "load": false,
-            "version": 1,
-            "cmd": [
-                { "cmd": 2001, "class": "neb::CmdChat" }
+        "worker":{
+            "boot_load": {
+                "cmd": [
+                    { "cmd": 1001, "class": "neb::CmdHello" },
+                    { "cmd": 1003, "class": "neb::CmdDbAgent" }
+                ],
+                "module": [
+                    { "path": "neb/switch", "class": "neb::ModuleSwitch" },
+                    { "path": "neb/hello", "class": "neb::ModuleHello" }
+                ]
+            },
+            "dynamic_loading": [{
+                    "so_path": "plugins/User.so",
+                    "load": false,
+                    "version": "1.0",
+                    "cmd": [
+                        { "cmd": 2001, "class": "neb::CmdUserLogin" },
+                        { "cmd": 2003, "class": "neb::CmdUserLogout" }
+                    ],
+                    "module": [
+                        { "path": "im/user/login", "class": "neb::ModuleLogin" },
+                        { "path": "im/user/logout", "class": "neb::ModuleLogout" }
+                    ],
+                    "session":["im::SessionUser", "im::SessionGroup"],
+                    "step":["im::StepLogin", "im::StepLogout", "im::StepP2pChat"],
+                    "matrix":[],
+                    "chain":[]
+                },
+                {
+                    "so_path": "plugins/ChatMsg.so",
+                    "load": false,
+                    "version": "1.0",
+                    "cmd": [
+                        { "cmd": 2001, "class": "neb::CmdChat" }
+                    ],
+                    "module": [],
+                    "session":[],
+                    "step":[],
+                    "matrix":[],
+                    "chain":[]
+                }
             ],
-            "module": [],
-            "session":[],
-            "step":[],
-            "model":[]
-        }
-    ],
-    "runtime":{
-        "chains":{
-            "chain_1":["step1", "matrix1", ["step2A", "step2B", "step2C"], "step3", "matrix2"],
-            "chain_2":[]
+            "runtime":{
+                "chains":{
+                    "chain_1":["step1", "matrix1", ["step2A", "step2B", "step2C"], "step3", "matrix2"],
+                    "chain_2":[]
+                }
+            }
+        },
+        "loader":{
         }
     },
     "//custom": "自定义配置，用于通过框架层带给业务",
@@ -126,6 +138,7 @@
 * port 集群内部通信端口。host:port组成的字符串在集群内唯一标识一个节点，用作管理层面（与Beacon通信）名字服务的节点名字。host:port.workerindex组成的字符串在集群内唯一标识一个节点的一个Worker进程，用作数据层面（也即业务层面，除Beacon之外的节点间通信）名字服务的节点Worker名字。
 * server_name 节点Server进程名，方便在服务器中标识和管理，在集群管理和节点通信中都不会用到。通俗一点讲，这是给人用的不是给机器用的。
 * worker_num Worker进程数量，每个节点由一个Manager进程和若干个Worker进程构成。通常，如果某台机器只部署了一个Nebula服务并且主要是给这个服务使用的，为了更充分使用机器资源，将worker_num配置成与cpu核数相同。
+* with_loader 是否启动loader进程。Loader进程用于做本地数据存储，大部分IO密集型的应用不会用到，所以默认不会启动Loader进程。
 * worker_capacity 进程容量，用于过载保护。进程负载 = Channel数量 * 系数 + Step数量 * 系数。这个计算公式会根据需要和合理性做调整。当进程负载达到进程容量限制时会拒绝新的连接。
 * cpu_affinity CPU亲和度，为true时，Worker进程会均匀地绑定到CPU核。默认为false，不绑定。
 * config_path 配置文件存储路径，相对于NEBULA_HOME的路径。
@@ -138,9 +151,10 @@
 * permission 连接或消息发送频率限制。addr_permit为连接限制，限制每个IP在统计时间内连接次数，超出permit_num次数限制的连接会被直接拒绝；uin_permit为消息数量限制，限制每个用户在单位统计时间内permit_num发送消息数量，超出限制数量的消息会被直接丢弃。stat_interval到了之后重新计算。
 * io_timeout 网络IO（连接）超时设置（单位：秒）小数点后面至少保留一位，用于触发连接的有效性检查。如果在到达超时时间前连接有数据收或发过，则从最后一次收发数据时间开始重新计算超时时间；如果超时时间到达却一直没有数据收发过，有三种处理情况：(1) 需要做应用层心跳检查，自动发送心跳包，心跳包得到响应，连接得以保持，重新计算超时时间；(2) 需要做应用层心跳检查，自动发送心跳包，心跳包未得到响应，立即断开连接，回收连接所分配资源；(3) 无须做应用层心跳检查，立即断开连接，回收连接所分配资源。
 * step_timeout 步骤超时设置（单位：秒）小数点后面至少保留一位，用于请求发出后等待响应的默认超时等待。在代码层可以为每一个发出的请求设置等待超时，通常为Step类的最后一个参数，如果这个参数为缺省值，则配置文件里的step_timeout会作为这个Step发出请求后等待响应的超时时间。
-* boot_load 服务启动加载的处理模块入口。Nebula框架会被编译成动态库 libnebula.so，基于Nebula框架的Server需要写个main函数并编译链接成一个二进制文件，比如NebulaBeacon，还有一些不需要做动态加载的模块会一起编译链接到这个二进制文件里，而这些模块是Nebula框架未知的（libnebula.so早于任何一个server二进制文件存在），boot_load就是为这些模块加载使用的。boot_load里的配置说明见下文描述动态加载配置说明。
 * with_ssl 配置接入服务的对外连接是否需要SSL传输加密，如果需要则配置ssl配置文件路径和相关文件名。
 * refresh_interval 刷新Server配置，检查、加载配置或加载卸载插件动态库时间周期。
+* load_config 功能模块加载。功能模块分manager、worker、loader进程的功能模块，分别加载到对应类型的进程里。
+* boot_load 服务启动加载的处理模块入口。Nebula框架会被编译成动态库 libnebula.so，基于Nebula框架的Server需要写个main函数并编译链接成一个二进制文件，比如NebulaBeacon，还有一些不需要做动态加载的模块会一起编译链接到这个二进制文件里，而这些模块是Nebula框架未知的（libnebula.so早于任何一个server二进制文件存在），boot_load就是为这些模块加载使用的。boot_load里的配置说明见下文描述动态加载配置说明。
 
 #### 控制中心配置
 * beacon 控制中心地址和端口，有几个控制中心节点就配置几条。如果无须控制中心，则配置为空。

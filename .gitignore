@@ -13,3 +13,6 @@ compile
 install-sh
 missing
 *.swp
+.cproject
+.project
+.settings

@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include "actor/cmd/sys_cmd/CmdReloadCustomConf.hpp"
+#include "actor/ActorBuilder.hpp"
 
 namespace neb
 {
@@ -26,7 +27,7 @@ bool CmdReloadCustomConf::AnyMessage(
         const MsgHead& oInMsgHead,
         const MsgBody& oInMsgBody)
 {
-    return(GetWorkerImpl(this)->ReloadCmdConf());
+    return(GetLabor(this)->GetActorBuilder()->ReloadCmdConf());
 }
 
 } /* namespace neb */

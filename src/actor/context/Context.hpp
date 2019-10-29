@@ -10,12 +10,13 @@
 #ifndef SRC_ACTOR_CONTEXT_HPP_
 #define SRC_ACTOR_CONTEXT_HPP_
 
-#include "labor/Worker.hpp"
 #include "actor/DynamicCreator.hpp"
 #include "actor/Actor.hpp"
 
 namespace neb
 {
+
+class ActorBuilder;
 
 /**
  * @brief Actor上下文信息
@@ -70,7 +71,7 @@ public:
 
 private:
     std::shared_ptr<SocketChannel> m_pChannel;
-    friend class WorkerImpl;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */

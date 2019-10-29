@@ -10,12 +10,13 @@
 #ifndef SRC_ACTOR_MODEL_HPP_
 #define SRC_ACTOR_MODEL_HPP_
 
-#include "labor/Worker.hpp"
 #include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
+
+class ActorBuilder;
 
 class Model: public Actor
 {
@@ -49,7 +50,7 @@ public:
     virtual E_CMD_STATUS Submit() = 0;
 
 private:
-    friend class WorkerImpl;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */

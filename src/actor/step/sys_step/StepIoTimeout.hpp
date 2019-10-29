@@ -10,7 +10,7 @@
 #ifndef SRC_ACTOR_STEP_SYS_STEP_STEPIOTIMEOUT_HPP_
 #define SRC_ACTOR_STEP_SYS_STEP_STEPIOTIMEOUT_HPP_
 
-#include "labor/WorkerFriend.hpp"
+#include "../../ActorSys.hpp"
 #include "actor/step/PbStep.hpp"
 #include "Definition.hpp"
 
@@ -23,7 +23,9 @@ namespace neb
  * 若该步骤正常回调，则重置连接超时，若该步骤超时，则关闭连接，销毁连接资源。该步骤实现的是服务
  * 端发起的心跳机制，心跳时间间隔就是IO超时时间。
  */
-class StepIoTimeout: public PbStep, public DynamicCreator<StepIoTimeout, std::shared_ptr<SocketChannel> >, public WorkerFriend
+class StepIoTimeout: public PbStep,
+    public DynamicCreator<StepIoTimeout, std::shared_ptr<SocketChannel> >,
+    public ActorSys
 {
 public:
     StepIoTimeout(std::shared_ptr<SocketChannel> pChannel);

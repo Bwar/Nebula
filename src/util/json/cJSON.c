@@ -149,7 +149,7 @@ static const char *parse_number(cJSON *item, const char *num)
 
     if (scale == 0 && subscale == 0)
     {
-        item->valuedouble = (double)(item->sign * (uint64)n);
+        item->valuedouble = (double)(item->sign * n);
         item->valueint = (uint64)(item->sign * (uint64)n);
         item->type = cJSON_Int;
     }
@@ -171,9 +171,7 @@ static char *print_double(cJSON *item)
     str = (char*) cJSON_malloc(64); /* This is a nice tradeoff. */
     if (str)
     {
-        if (fabs(floor(d) - d) <= DBL_EPSILON)
-            sprintf(str, "%.0f", d);
-        else if (fabs(d) < 1.0e-6 || fabs(d) > 1.0e9)
+        if (fabs(d) < 1.0e-6 || fabs(d) > 1.0e9)
             sprintf(str, "%lf", d);
         else
             sprintf(str, "%f", d);

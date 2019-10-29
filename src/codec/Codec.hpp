@@ -39,6 +39,7 @@ enum E_CODEC_TYPE
     CODEC_PRIVATE           = 5,        ///< 私有协议编解码
     CODEC_WS_EXTEND_JSON    = 6,        ///< 带Extension data的websocket协议扩展，Application data为json
     CODEC_WS_EXTEND_PB      = 7,        ///< 带Extension data的websocket协议扩展，Application data为pb
+    CODEC_NEBULA_IN_NODE    = 8,        ///< 节点各进程间通信协议，与CODEC_NEBULA协议相同，使用的编解码类也相同，只为区别节点内部连接与外部连接
 };
 
 /**

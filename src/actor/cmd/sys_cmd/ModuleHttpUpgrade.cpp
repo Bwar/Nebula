@@ -12,6 +12,7 @@
 #include <cryptopp/sha.h>
 #include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
+#include "ios/Dispatcher.hpp"
 
 namespace neb
 {
@@ -119,7 +120,7 @@ bool ModuleHttpUpgrade::WebSocket(std::shared_ptr<SocketChannel> pChannel, const
         oOutHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("Sec-WebSocket-Extensions", "private-extension"));
         oOutHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("Sec-WebSocket-Accept", strBase64EncodeAcceptKey));
         SendTo(pChannel, oOutHttpMsg);
-        GetWorkerImpl(this)->SwitchCodec(pChannel, CODEC_WS_EXTEND_JSON);
+        GetLabor(this)->GetDispatcher()->SwitchCodec(pChannel, CODEC_WS_EXTEND_JSON);
     }
     else
     {

@@ -413,7 +413,7 @@ E_CODEC_STATUS CodecWsExtentJson::Decode(CBuffer* pBuff,
         }
         else
         {
-            LOG4_ERROR("cmd[%u], seq[%lu] json string to MsgBody error!",
+            LOG4_ERROR("cmd[%u], seq[%u] json string to MsgBody error!",
                     oMsgHead.cmd(), oMsgHead.seq());
             return (CODEC_STATUS_ERR);
         }

@@ -10,13 +10,14 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_CMDRELOADCUSTOMCONF_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_CMDRELOADCUSTOMCONF_HPP_
 
+#include "../../ActorSys.hpp"
 #include "actor/cmd/Cmd.hpp"
-#include "labor/WorkerFriend.hpp"
 
 namespace neb
 {
 
-class CmdReloadCustomConf: public Cmd, public DynamicCreator<CmdReloadCustomConf, int32>, public WorkerFriend
+class CmdReloadCustomConf: public Cmd,
+    public DynamicCreator<CmdReloadCustomConf, int32>, public ActorSys
 {
 public:
     CmdReloadCustomConf(int32 iCmd);

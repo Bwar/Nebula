@@ -27,6 +27,7 @@ public:
         int iLogLev = Logger::INFO,
         unsigned int uiMaxFileSize = gc_uiMaxLogFileSize,
         unsigned int uiMaxRollFileIndex = gc_uiMaxRollLogFileIndex,
+        unsigned int uiMaxLogLineLen = gc_uiMaxLogLineLen,
         Labor* pLabor = nullptr);
     virtual ~NetLogger();
 
@@ -56,6 +57,7 @@ private:
     char* m_pLogBuff;
     int m_iLogLevel;
     int m_iNetLogLevel;
+    unsigned int m_uiMaxLogLineLen;
     bool m_bEnableNetLogger;
     Labor* m_pLabor;
     std::string m_strLogData;   ///< 用于提高序列化效率

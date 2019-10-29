@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include <actor/step/sys_step/StepTellWorker.hpp>
+#include "ios/Dispatcher.hpp"
 
 namespace neb
 {
@@ -30,8 +31,6 @@ E_CMD_STATUS StepTellWorker::Emit(
     TargetWorker oTargetWorker;
     oTargetWorker.set_worker_identify(GetNodeIdentify());
     oTargetWorker.set_node_type(GetNodeType());
-    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
-    oOutMsgBody.mutable_rsp_result()->set_msg("OK");
     oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
     Step::SendTo(m_pChannel, CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
     return(CMD_STATUS_RUNNING);
@@ -49,8 +48,8 @@ E_CMD_STATUS StepTellWorker::Callback(
         if (oInTargetWorker.ParseFromString(oInMsgBody.data()))
         {
             LOG4_DEBUG("AddNodeIdentify(%s)!", oInTargetWorker.worker_identify().c_str());
-            GetWorkerImpl(this)->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
-            GetWorkerImpl(this)->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
+            GetLabor(this)->GetDispatcher()->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
+            GetLabor(this)->GetDispatcher()->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
             SendTo(pChannel);
             return(CMD_STATUS_COMPLETED);
         }

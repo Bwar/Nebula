@@ -32,7 +32,8 @@ bool CmdSetNodeConf::AnyMessage(
         CJsonObject oConf;
         if (oConf.Parse(oConfigInfo.file_content()))
         {
-            return(GetWorkerImpl(this)->SetWorkerConf(oConf));
+            GetLabor(this)->SetNodeConf(oConf);
+            return(true);
         }
     }
     return(false);

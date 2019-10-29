@@ -8,7 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include "actor/step/sys_step/StepIoTimeout.hpp"
-#include "labor/WorkerImpl.hpp"
+#include "ios/Dispatcher.hpp"
 
 namespace neb
 {
@@ -39,13 +39,13 @@ E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
 E_CMD_STATUS StepIoTimeout::Callback(std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead, const MsgBody& oInMsgBody, void* data)
 {
-    GetWorkerImpl(this)->AddIoTimeout(pChannel);
+    GetLabor(this)->GetDispatcher()->AddIoTimeout(pChannel);
     return(CMD_STATUS_COMPLETED);
 }
 
 E_CMD_STATUS StepIoTimeout::Timeout()
 {
-    GetWorkerImpl(this)->Disconnect(m_pChannel);
+    GetLabor(this)->GetDispatcher()->Disconnect(m_pChannel);
     return(CMD_STATUS_FAULT);
 }
 

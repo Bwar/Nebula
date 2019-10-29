@@ -10,14 +10,16 @@
 #ifndef SRC_ACTOR_STEP_SYS_STEP_STEPTELLWORKER_HPP_
 #define SRC_ACTOR_STEP_SYS_STEP_STEPTELLWORKER_HPP_
 
-#include "labor/WorkerFriend.hpp"
+#include "../../ActorSys.hpp"
 #include "actor/step/PbStep.hpp"
 #include "pb/neb_sys.pb.h"
 
 namespace neb
 {
 
-class StepTellWorker: public PbStep, public DynamicCreator<StepTellWorker, std::shared_ptr<SocketChannel> >, public WorkerFriend
+class StepTellWorker: public PbStep,
+    public DynamicCreator<StepTellWorker, std::shared_ptr<SocketChannel> >,
+    public ActorSys
 {
 public:
     StepTellWorker(std::shared_ptr<SocketChannel> pChannel);

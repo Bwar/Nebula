@@ -10,13 +10,13 @@
 #ifndef SRC_ACTOR_STEP_STEP_HPP_
 #define SRC_ACTOR_STEP_STEP_HPP_
 
-#include "labor/Worker.hpp"
 #include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
 
 namespace neb
 {
 
+class ActorBuilder;
 class Chain;
 
 class Step: public Actor
@@ -56,7 +56,7 @@ private:
     std::unordered_set<uint32> m_setNextStepSeq;
     std::unordered_set<uint32> m_setPreStepSeq;
 
-    friend class WorkerImpl;
+    friend class ActorBuilder;
     friend class Chain;
 };
 

@@ -11,12 +11,13 @@
 #define SRC_ACTOR_HTTPCONTEXT_HPP_
 
 #include "pb/http.pb.h"
-#include "labor/Worker.hpp"
 #include "actor/DynamicCreator.hpp"
 #include "Context.hpp"
 
 namespace neb
 {
+
+class ActorBuilder;
 
 class HttpContext: public Context
 {
@@ -49,7 +50,7 @@ public:
 
 private:
     HttpMsg m_oReqHttpMsg;
-    friend class WorkerImpl;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */
