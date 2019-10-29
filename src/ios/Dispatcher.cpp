@@ -34,12 +34,13 @@ Dispatcher::Dispatcher(Labor* pLabor, std::shared_ptr<NetLogger> pLogger)
      m_pLogger(pLogger), m_pSessionNode(nullptr)
 {
     m_pErrBuff = (char*)malloc(gc_iErrBuffLen);
+
     m_loop = ev_loop_new(EVFLAG_FORKCHECK | EVFLAG_SIGNALFD);
-#if __cplusplus >= 201401L
+/*#if __cplusplus >= 201401L
     m_pSessionNode = std::make_unique<Nodes>();
 #else
     m_pSessionNode = std::unique_ptr<Nodes>(new Nodes());
-#endif
+#endif*/
 }
 
 Dispatcher::~Dispatcher()
