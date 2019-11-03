@@ -643,6 +643,7 @@ void ActorBuilder::RemoveChain(uint32 uiChainId)
 
 void ActorBuilder::ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const std::string& strClientData)
 {
+    //TODO CMD_REQ_DISCONNECT 命令业务实现未定义
     LOG4_TRACE(" ");
     auto cmd_iter = m_mapCmd.find(CMD_REQ_DISCONNECT);
     if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)

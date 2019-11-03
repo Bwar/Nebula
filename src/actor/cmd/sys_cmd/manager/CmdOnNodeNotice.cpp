@@ -67,6 +67,7 @@ bool CmdOnNodeNotice::AnyMessage(
                 && oJson["add_nodes"][i].Get("node_port",iNodePort)
                 && oJson["add_nodes"][i].Get("worker_num",iWorkerNum))
         {
+            oss.str("");
             oss << strNodeHost << ":" << iNodePort;
             strIdentify = std::move(oss.str());
             m_pSessionManager->AddOnlineNode(strIdentify, oJson["add_nodes"][i].ToString());
@@ -74,6 +75,7 @@ bool CmdOnNodeNotice::AnyMessage(
             {
                 for(int j = 1; j <= iWorkerNum; ++j)
                 {
+                    oss.str("");
                     oss << strNodeHost << ":" << iNodePort << "." << j;
                     strIdentify = std::move(oss.str());
                     GetLabor(this)->GetDispatcher()->AddNodeIdentify(strNodeType, strIdentify);
