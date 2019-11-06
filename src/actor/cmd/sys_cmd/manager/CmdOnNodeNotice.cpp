@@ -92,6 +92,7 @@ bool CmdOnNodeNotice::AnyMessage(
                 && oJson["del_nodes"][i].Get("node_port",iNodePort)
                 && oJson["del_nodes"][i].Get("worker_num",iWorkerNum))
         {
+            oss.str("");
             oss << strNodeHost << ":" << iNodePort;
             strIdentify = std::move(oss.str());
             m_pSessionManager->DelOnlineNode(strIdentify);
@@ -99,6 +100,7 @@ bool CmdOnNodeNotice::AnyMessage(
             {
                 for(int j = 1; j <= iWorkerNum; ++j)
                 {
+                    oss.str("");
                     oss << strNodeHost << ":" << iNodePort << "." << j;
                     strIdentify = std::move(oss.str());
                     if (std::string("LOGGER") == strNodeType)

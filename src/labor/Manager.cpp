@@ -357,7 +357,7 @@ bool Manager::CreateEvents()
     bool bDirectToLoader = false;
     m_oCurrentConf.Get("new_client_to_loader", bDirectToLoader);
     m_pSessionManager = std::dynamic_pointer_cast<SessionManager>(
-            m_pActorBuilder->MakeSharedSession(nullptr, "neb::SessionManager", bDirectToLoader));
+            m_pActorBuilder->MakeSharedSession(nullptr, "neb::SessionManager", (bool)bDirectToLoader));
     AddPeriodicTaskEvent();
 
     return(true);
