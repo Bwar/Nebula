@@ -216,7 +216,10 @@ std::shared_ptr<Actor> ActorBuilder::MakeSharedActor(Actor* pCreator, const std:
         /**
          * @brief 为兼容&&参数推导差异导致ActorFactory<Targs...>未Regist进而导致
          * ActorFactory<Targs...>::Instance()->Create()调用不到对应的创建函数而增加。
-         * NewActor()参数将按值传递，如果调用到NewActor()才new成功，代价会相对大些。
+         * NewActor()参数将按值传递，如果调用到NewActor()才new成功，代价可能会相对大些。
+         * 如果是整型、浮点型等内置类型则正常，如果是std::string等自定义类型，检查一下
+         * Actor子类定义时public DynamicCreator传递的参数是否写错，导致本该按引用传递
+         * 参数变成了按值传递。
          */
         pActor = NewActor(strActorName, std::forward<Targs>(args)...);
         if (nullptr == pActor)
@@ -276,7 +279,7 @@ std::shared_ptr<Chain> ActorBuilder::MakeSharedChain(Actor* pCreator, const std:
 template <typename ...Targs>
 Actor* ActorBuilder::NewActor(const std::string& strActorName, Targs... args)
 {
-    LOG4_TRACE("%s() called by MakeSharedActor().", __FUNCTION__);
+    LOG4_TRACE("\"%s\" created by NewActor().", strActorName.c_str());
     return(ActorFactory<Targs...>::Instance()->Create(strActorName, std::forward<Targs>(args)...));
 }
 
