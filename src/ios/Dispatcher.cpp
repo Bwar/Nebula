@@ -409,7 +409,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
             else
             {
                 std::shared_ptr<Step> pStepConnectWorker = m_pLabor->GetActorBuilder()->MakeSharedStep(
-                        nullptr, "neb::StepConnectWorker", (std::shared_ptr<SocketChannel>)pChannel, (uint16)pChannel->m_pImpl->m_unRemoteWorkerIdx);
+                        nullptr, "neb::StepConnectWorker", pChannel, pChannel->m_pImpl->m_unRemoteWorkerIdx);
                 if (nullptr == pStepConnectWorker)
                 {
                     LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
@@ -472,7 +472,7 @@ bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
     if (pChannel->m_pImpl->NeedAliveCheck())     // 需要发送心跳检查
     {
         std::shared_ptr<Step> pStepIoTimeout = m_pLabor->GetActorBuilder()->MakeSharedStep(
-                nullptr, "neb::StepIoTimeout", (std::shared_ptr<SocketChannel>)pChannel);
+                nullptr, "neb::StepIoTimeout", pChannel);
         if (nullptr == pStepIoTimeout)
         {
             LOG4_ERROR("new StepIoTimeout error!");

@@ -1074,12 +1074,12 @@ void ActorBuilder::BootLoadCmd(CJsonObject& oCmdConf)
     for (int i = 0; i < oCmdConf["cmd"].GetArraySize(); ++i)
     {
         oCmdConf["cmd"][i].Get("cmd", iCmd);
-        MakeSharedCmd(nullptr, oCmdConf["cmd"][i]("class"), (int32)iCmd);
+        MakeSharedCmd(nullptr, oCmdConf["cmd"][i]("class"), iCmd);
     }
     for (int j = 0; j < oCmdConf["module"].GetArraySize(); ++j)
     {
         oCmdConf["module"][j].Get("path", strUrlPath);
-        MakeSharedModule(nullptr, oCmdConf["module"][j]("class"), (std::string)strUrlPath);
+        MakeSharedModule(nullptr, oCmdConf["module"][j]("class"), strUrlPath);
     }
 }
 
@@ -1207,14 +1207,14 @@ void ActorBuilder::LoadDynamicSymbol(CJsonObject& oOneSoConf)
         std::unordered_set<int32> setCmd;
         m_mapLoadedCmd.insert(std::make_pair(oOneSoConf["cmd"][i]("class"), setCmd));
         oOneSoConf["cmd"][i].Get("cmd", iCmd);
-        MakeSharedCmd(nullptr, oOneSoConf["cmd"][i]("class"), (int32)iCmd);
+        MakeSharedCmd(nullptr, oOneSoConf["cmd"][i]("class"), iCmd);
     }
     for (int j = 0; j < oOneSoConf["module"].GetArraySize(); ++j)
     {
         std::unordered_set<std::string> setModule;
         m_mapLoadedModule.insert(std::make_pair(oOneSoConf["module"][j]("class"), setModule));
         oOneSoConf["module"][j].Get("path", strUrlPath);
-        MakeSharedModule(nullptr, oOneSoConf["module"][j]("class"), (std::string)strUrlPath);
+        MakeSharedModule(nullptr, oOneSoConf["module"][j]("class"), strUrlPath);
     }
     for (int k = 0; k < oOneSoConf["session"].GetArraySize(); ++k)
     {
