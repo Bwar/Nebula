@@ -27,7 +27,8 @@ Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
 Actor::~Actor()
 {
     FREE(m_pTimerWatcher);
-    m_pLabor->GetActorBuilder()->Logger(m_strTraceId, Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "eActorType %d, seq %u", m_eActorType, m_uiSequence);
+    LOG4_TRACE("eActorType %d, seq %u, actor name \"%s\"",
+            m_eActorType, GetSequence(), m_strActorName.c_str());
 }
 
 uint32 Actor::GetSequence()
@@ -150,6 +151,11 @@ bool Actor::SendTo(const std::string& strIdentify)
 bool Actor::SendTo(const std::string& strHost, int iPort)
 {
     return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, this));
+}
+
+bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+{
+    return(m_pLabor->GetDispatcher()->SendTo(iCmd, uiSeq, oMsgBody, this));
 }
 
 bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)

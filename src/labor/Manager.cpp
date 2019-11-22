@@ -515,12 +515,24 @@ bool Manager::RestartWorker(int iDeathPid)
             close(iDataFds[0]);
             x_sock_set_block(iControlFds[1], 0);
             x_sock_set_block(iDataFds[1], 0);
-            Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], iWorkerIndex);
-            if (!oWorker.Init(m_oCurrentConf))
+            if (Labor::LABOR_LOADER == eLaborType)
             {
-                exit(-1);
+                Loader oLoader(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], 0);
+                if (!oLoader.Init(m_oCurrentConf))
+                {
+                    exit(-1);
+                }
+                oLoader.Run();
             }
-            oWorker.Run();
+            else
+            {
+                Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], iWorkerIndex);
+                if (!oWorker.Init(m_oCurrentConf))
+                {
+                    exit(-1);
+                }
+                oWorker.Run();
+            }
             exit(-2);   // 子进程worker没有正常运行
         }
         else if (iNewPid > 0)   // 父进程

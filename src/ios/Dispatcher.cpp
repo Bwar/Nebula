@@ -1202,22 +1202,25 @@ bool Dispatcher::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor
         }
     }
     E_CODEC_STATUS eStatus = m_iterLoaderAndWorkerChannel->second->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
-    m_iterLoaderAndWorkerChannel++;
     if (CODEC_STATUS_OK == eStatus)
     {
         RemoveIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
+        m_iterLoaderAndWorkerChannel++;
         return(true);
     }
     else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
     {
         AddIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
+        m_iterLoaderAndWorkerChannel++;
         return(true);
     }
     else if (CODEC_STATUS_WANT_READ == eStatus)
     {
         RemoveIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
+        m_iterLoaderAndWorkerChannel++;
         return(true);
     }
+    m_iterLoaderAndWorkerChannel++;
     return(false);
 }
 

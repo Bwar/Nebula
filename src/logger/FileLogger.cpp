@@ -12,6 +12,7 @@
 #include <cstdarg>
 #include <chrono>
 #include <ctime>
+#include <sys/time.h>
 #include <iomanip>
 #include <string>
 #include <iostream>
@@ -27,7 +28,7 @@ FileLogger* FileLogger::s_pInstance = nullptr;
 
 FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
         unsigned int uiMaxFileSize, unsigned int uiMaxRollFileIndex)
-    : m_iLogLevel(iLogLev), m_uiMaxFileSize(uiMaxFileSize),
+    : m_iLogLevel(iLogLev), m_uiLogNum(0), m_uiMaxFileSize(uiMaxFileSize),
       m_uiMaxRollFileIndex(uiMaxRollFileIndex), m_strLogFileBase(strLogFile)
 {
 #if __GNUC__ < 5
@@ -70,6 +71,7 @@ int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLi
     fprintf(m_fp, "\n");
 
     fflush(m_fp);
+    ++m_uiLogNum;
 
     return 0;
 }
@@ -93,6 +95,7 @@ int FileLogger::WriteLog(const std::string& strTraceId, int iLev, const char* sz
     va_end(ap);
 
     fprintf(m_fp, "\n");
+    ++m_uiLogNum;
 
     fflush(m_fp);
 
@@ -188,23 +191,26 @@ int FileLogger::Vappend(int iLev, const char* szFileName, unsigned int uiFileLin
 
 int FileLogger::Vappend(const std::string& strTraceId, int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, va_list ap)
 {
-    long file_size = -1;
-    if (NULL != m_fp)
+    if (m_uiLogNum % 10000 == 1)
     {
-        file_size = ftell(m_fp);
-    }
-    //    if (0 == fstat(m_fd, &sb))
-    //    {
-    //        file_size = sb.st_size;
-    //    }
-    if (file_size < 0)
-    {
-        ReOpen();
-    }
-    else if (file_size >= m_uiMaxFileSize)
-    {
-        RollOver();
-        ReOpen();
+        long file_size = -1;
+        if (NULL != m_fp)
+        {
+            file_size = ftell(m_fp);
+        }
+        //    if (0 == fstat(m_fd, &sb))
+        //    {
+        //        file_size = sb.st_size;
+        //    }
+        if (file_size < 0)
+        {
+            ReOpen();
+        }
+        else if (file_size >= m_uiMaxFileSize)
+        {
+            RollOver();
+            ReOpen();
+        }
     }
     if (NULL == m_fp)
     {

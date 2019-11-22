@@ -9,6 +9,7 @@
  ******************************************************************************/
 
 #include "Chain.hpp"
+#include "util/json/CJsonObject.hpp"
 #include "actor/context/Context.hpp"
 #include "actor/step/Step.hpp"
 #include "actor/model/Model.hpp"
@@ -26,9 +27,39 @@ Chain::~Chain()
 {
 }
 
-void Chain::Init(const std::queue<std::vector<std::string> >& queChainBlock)
+bool Chain::Init(const std::queue<std::vector<std::string> >& queChainBlock)
 {
     m_queChainBlock = queChainBlock;
+    return(true);
+}
+
+bool Chain::Init(CJsonObject& oChainBlock)
+{
+    LOG4_TRACE("actor chain:  %s", oChainBlock.ToString().c_str());
+    if (oChainBlock.IsArray())
+    {
+        for (int i = 0; i < oChainBlock.GetArraySize(); ++i)
+        {
+            std::vector<std::string> vecBlock;
+            if (oChainBlock[i].IsArray())
+            {
+                for (int j = 0; j < oChainBlock[i].GetArraySize(); ++j)
+                {
+                    vecBlock.push_back(oChainBlock[i](j));
+                }
+            }
+            else
+            {
+                vecBlock.push_back(oChainBlock(i));
+            }
+            m_queChainBlock.push(std::move(vecBlock));
+        }
+        return(true);
+    }
+    else
+    {
+        return(false);
+    }
 }
 
 E_CMD_STATUS Chain::Next()

@@ -10,6 +10,7 @@
 
 #include <dlfcn.h>
 #include "ActorBuilder.hpp"
+#include "util/json/CJsonObject.hpp"
 #include "labor/NodeInfo.hpp"
 #include "Actor.hpp"
 #include "cmd/Cmd.hpp"
@@ -170,7 +171,7 @@ bool ActorBuilder::OnChainTimeout(std::shared_ptr<Chain> pChain)
 
 bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
 {
-    LOG4_DEBUG("cmd %u, seq %lu", oMsgHead.cmd(), oMsgHead.seq());
+    LOG4_DEBUG("cmd %u, seq %u", oMsgHead.cmd(), oMsgHead.seq());
     if (gc_uiCmdReq & oMsgHead.cmd())    // 新请求
     {
         MsgHead oOutMsgHead;
@@ -643,7 +644,6 @@ void ActorBuilder::RemoveChain(uint32 uiChainId)
 
 void ActorBuilder::ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const std::string& strClientData)
 {
-    //TODO CMD_REQ_DISCONNECT 命令业务实现未定义
     LOG4_TRACE(" ");
     auto cmd_iter = m_mapCmd.find(CMD_REQ_DISCONNECT);
     if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
@@ -957,12 +957,28 @@ bool ActorBuilder::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor
     auto chain_conf_iter = m_mapChainConf.find(pSharedChain->GetChainFlag());
     if (chain_conf_iter == m_mapChainConf.end())
     {
-        LOG4_ERROR("no chain block config for \"%s\"", pSharedChain->GetChainFlag().c_str());
-        return(false);
+        neb::CJsonObject oChainConf;
+        if (oChainConf.Parse(pSharedChain->GetChainFlag()))
+        {
+            if (!pSharedChain->Init(oChainConf))
+            {
+                LOG4_ERROR("chain \"%s\" init failed!", pSharedChain->GetActorName().c_str());
+                return(false);
+            }
+        }
+        else
+        {
+            LOG4_ERROR("no chain block config for \"%s\"", pSharedChain->GetChainFlag().c_str());
+            return(false);
+        }
     }
     else
     {
-        pSharedChain->Init(chain_conf_iter->second);
+        if (!pSharedChain->Init(chain_conf_iter->second))
+        {
+            LOG4_ERROR("chain \"%s\" init failed!", pSharedChain->GetActorName().c_str());
+            return(false);
+        }
     }
     auto ret = m_mapChain.insert(std::make_pair(pSharedChain->GetSequence(), pSharedChain));
     if (ret.second)

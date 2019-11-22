@@ -19,6 +19,7 @@ namespace neb
 {
 
 class ActorBuilder;
+class CJsonObject;
 
 class Chain final: public Actor,
     public neb::DynamicCreator<Chain, std::string, ev_tstamp>
@@ -29,11 +30,13 @@ public:
     Chain& operator=(const Chain&) = delete;
     virtual ~Chain();
 
-    void Init(const std::queue<std::vector<std::string> >& queChainBlock);
+    bool Init(const std::queue<std::vector<std::string> >& queChainBlock);
+    bool Init(CJsonObject& oChainBlock);
     E_CMD_STATUS Next();
 
     virtual E_CMD_STATUS Timeout()
     {
+        LOG4_ERROR("chain_id %d timeout, chain flag \"%s\"", GetSequence(), m_strChainFlag.c_str());
         return(CMD_STATUS_FAULT);
     }
 
