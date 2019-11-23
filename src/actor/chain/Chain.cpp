@@ -148,4 +148,10 @@ E_CMD_STATUS Chain::Next()
     }
 }
 
+E_CMD_STATUS Chain::Timeout()
+{
+    LOG4_ERROR("chain_id %d timeout, chain flag \"%s\"", GetSequence(), m_strChainFlag.c_str());
+    return(CMD_STATUS_FAULT);
+}
+
 } /* namespace neb */

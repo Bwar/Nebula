@@ -10,7 +10,7 @@
 #ifndef SRC_ACTOR_STEP_SYS_STEP_STEPIOTIMEOUT_HPP_
 #define SRC_ACTOR_STEP_SYS_STEP_STEPIOTIMEOUT_HPP_
 
-#include "../../ActorSys.hpp"
+#include "actor/ActorSys.hpp"
 #include "actor/step/PbStep.hpp"
 #include "Definition.hpp"
 

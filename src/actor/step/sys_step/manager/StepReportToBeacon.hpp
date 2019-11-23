@@ -11,7 +11,7 @@
 #ifndef SRC_ACTOR_STEP_SYS_STEP_MANAGER_STEPREPORTTOBEACON_HPP_
 #define SRC_ACTOR_STEP_SYS_STEP_MANAGER_STEPREPORTTOBEACON_HPP_
 
-#include "../../../ActorSys.hpp"
+#include "actor/ActorSys.hpp"
 #include "actor/step/PbStep.hpp"
 
 namespace neb

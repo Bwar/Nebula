@@ -34,11 +34,7 @@ public:
     bool Init(CJsonObject& oChainBlock);
     E_CMD_STATUS Next();
 
-    virtual E_CMD_STATUS Timeout()
-    {
-        LOG4_ERROR("chain_id %d timeout, chain flag \"%s\"", GetSequence(), m_strChainFlag.c_str());
-        return(CMD_STATUS_FAULT);
-    }
+    virtual E_CMD_STATUS Timeout();
 
     const std::string& GetChainFlag() const
     {
