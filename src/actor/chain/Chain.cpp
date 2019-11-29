@@ -87,6 +87,12 @@ E_CMD_STATUS Chain::Next()
         if (pSharedModel == nullptr)
         {
             std::shared_ptr<Actor> pSharedActor = MakeSharedActor(*iter);
+            if (pSharedActor == nullptr)
+            {
+                LOG4_ERROR("failed to new \"%s\", the chain \"%s\" terminated!",
+                        iter->c_str(), m_strChainFlag.c_str());
+                break;
+            }
             // pSharedModel->SetContext(GetContext()); it had been set in MakeSharedActor().
             if (Actor::ACT_MODEL == pSharedActor->GetActorType())
             {

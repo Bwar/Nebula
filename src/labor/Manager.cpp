@@ -623,6 +623,7 @@ bool Manager::AddPeriodicTaskEvent()
     m_pDispatcher->AddEvent(m_pPeriodicTaskWatcher, Dispatcher::PeriodicTaskCallback, NODE_BEAT);
     std::shared_ptr<Step> pReportToBeacon = m_pActorBuilder->MakeSharedStep(
             nullptr, "neb::StepReportToBeacon", NODE_BEAT);
+    //pReportToBeacon->Emit();
     return(true);
 }
 

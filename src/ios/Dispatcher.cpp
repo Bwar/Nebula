@@ -1618,7 +1618,7 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
 {
     if (pChannel == nullptr)
     {
-        LOG4_ERROR("pChannel not exist!");
+        LOG4_DEBUG("pChannel not exist!");
         return(false);
     }
     LOG4_DEBUG("%s disconnect, fd %d, identify %s", pChannel->m_pImpl->GetRemoteAddr().c_str(), pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetIdentify().c_str());
