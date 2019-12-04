@@ -173,6 +173,11 @@ bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSe
     return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, this));
 }
 
+int32 Actor::GetStepNum() const
+{
+    return(m_pLabor->GetActorBuilder()->GetStepNum());
+}
+
 void Actor::SetLabor(Labor* pLabor)
 {
     m_pLabor = pLabor;

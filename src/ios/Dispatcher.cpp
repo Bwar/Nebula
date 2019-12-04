@@ -832,9 +832,9 @@ bool Dispatcher::SendTo(const std::string& strHost, int iPort, const std::string
         {
             auto channel_iter = named_iter->second.begin();
             E_CODEC_STATUS eStatus = (*channel_iter)->m_pImpl->Send(oHttpMsg, uiHttpStepSeq);
+            named_iter->second.erase(channel_iter);     // erase from named channel pool, the channel remain in m_mapSocketChannel.
             if (CODEC_STATUS_OK == eStatus)
             {
-                named_iter->second.erase(channel_iter);     // erase from named channel pool, the channel remain in m_mapSocketChannel.
                 return(true);
             }
             else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
@@ -1621,7 +1621,10 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         LOG4_DEBUG("pChannel not exist!");
         return(false);
     }
-    LOG4_DEBUG("%s disconnect, fd %d, identify %s", pChannel->m_pImpl->GetRemoteAddr().c_str(), pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetIdentify().c_str());
+    LOG4_DEBUG("%s disconnect, fd %d, channel_seq %u, identify %s",
+            pChannel->m_pImpl->GetRemoteAddr().c_str(),
+            pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence(),
+            pChannel->m_pImpl->GetIdentify().c_str());
     if (bChannelNotice)
     {
         m_pLabor->GetActorBuilder()->ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
@@ -1669,7 +1672,8 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
             {
                 --m_iClientNum;
             }
-            LOG4_TRACE("erase channel %d from m_mapSocketChannel.", pChannel->m_pImpl->GetFd());
+            LOG4_TRACE("erase channel %d channel_seq %u from m_mapSocketChannel.",
+                    pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
         }
         return(true);
     }

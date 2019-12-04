@@ -236,6 +236,8 @@ protected:
 
     bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
+    int32 GetStepNum() const;
+
 protected:
     virtual void SetActiveTime(ev_tstamp dActiveTime)
     {

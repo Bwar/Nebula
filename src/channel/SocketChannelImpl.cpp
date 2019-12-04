@@ -724,7 +724,7 @@ bool SocketChannelImpl::Close()
         if (0 == close(m_iFd))
         {
             m_ucChannelStatus = CHANNEL_STATUS_CLOSED;
-            LOG4_DEBUG("channel[%d] close successfully.", m_iFd);
+            LOG4_DEBUG("channel[%d], channel_seq[%u] close successfully.", m_iFd, GetSequence());
             return(true);
         }
         else
@@ -735,8 +735,8 @@ bool SocketChannelImpl::Close()
     }
     else
     {
-        LOG4_WARNING("channel(fd %d) had been closed before.", m_iFd);
-        return(true);
+        LOG4_WARNING("channel(fd %d, seq %u) had been closed before.", m_iFd, GetSequence());
+        return(false);
     }
 }
 
