@@ -11,7 +11,7 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_MANAGER_CMDONTELLWORKER_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_MANAGER_CMDONTELLWORKER_HPP_
 
-#include "../../../ActorSys.hpp"
+#include "actor/ActorSys.hpp"
 #include "actor/cmd/Cmd.hpp"
 
 namespace neb

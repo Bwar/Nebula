@@ -27,7 +27,8 @@ Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
 Actor::~Actor()
 {
     FREE(m_pTimerWatcher);
-    m_pLabor->GetActorBuilder()->Logger(m_strTraceId, Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "eActorType %d, seq %u", m_eActorType, m_uiSequence);
+    LOG4_TRACE("eActorType %d, seq %u, actor name \"%s\"",
+            m_eActorType, GetSequence(), m_strActorName.c_str());
 }
 
 uint32 Actor::GetSequence()
@@ -152,6 +153,11 @@ bool Actor::SendTo(const std::string& strHost, int iPort)
     return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, this));
 }
 
+bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+{
+    return(m_pLabor->GetDispatcher()->SendTo(iCmd, uiSeq, oMsgBody, this));
+}
+
 bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     return(m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, this));
@@ -165,6 +171,11 @@ bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 
 bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, this));
+}
+
+int32 Actor::GetStepNum() const
+{
+    return(m_pLabor->GetActorBuilder()->GetStepNum());
 }
 
 void Actor::SetLabor(Labor* pLabor)

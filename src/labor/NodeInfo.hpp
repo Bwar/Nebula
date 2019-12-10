@@ -61,6 +61,7 @@ struct WorkerInfo
     int32 iSendByte         = 0;                    ///< 发送字节数
     int32 iClientNum        = 0;                    ///< 客户端数量
     ev_tstamp dBeatTime     = 0.0;                  ///< 心跳时间
+    bool bStartBeatCheck    = 0.0;                  ///< 是否需要心跳检查，worker或loader进程启动时可能需要加载数据而处于繁忙状态无法响应Manager的心跳，需等待其就绪之后才开始心跳检查。
 
     WorkerInfo(){}
     WorkerInfo(const WorkerInfo& stAttr) = delete;

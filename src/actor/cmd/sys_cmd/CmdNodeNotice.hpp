@@ -10,7 +10,7 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_CMDNODENOTICE_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_CMDNODENOTICE_HPP_
 
-#include "../../ActorSys.hpp"
+#include "actor/ActorSys.hpp"
 #include "actor/cmd/Cmd.hpp"
 #include "pb/neb_sys.pb.h"
 

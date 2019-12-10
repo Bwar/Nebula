@@ -39,6 +39,10 @@ NetLogger::~NetLogger()
 
 int NetLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction, const char* szLogStr, ...)
 {
+    if (iLev > m_iLogLevel && iLev > m_iNetLogLevel)
+    {
+        return(0);
+    }
     va_list ap;
     va_start(ap, szLogStr);
     vsnprintf(m_pLogBuff, m_uiMaxLogLineLen, szLogStr, ap);

@@ -98,9 +98,9 @@ bool CmdOnNodeNotice::AnyMessage(
             m_pSessionManager->DelOnlineNode(strIdentify);
             if (std::string("LOGGER") == strNodeType)
             {
+                oss.str("");
                 for(int j = 1; j <= iWorkerNum; ++j)
                 {
-                    oss.str("");
                     oss << strNodeHost << ":" << iNodePort << "." << j;
                     strIdentify = std::move(oss.str());
                     if (std::string("LOGGER") == strNodeType)

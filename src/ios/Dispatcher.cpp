@@ -409,7 +409,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
             else
             {
                 std::shared_ptr<Step> pStepConnectWorker = m_pLabor->GetActorBuilder()->MakeSharedStep(
-                        nullptr, "neb::StepConnectWorker", (std::shared_ptr<SocketChannel>)pChannel, (uint16)pChannel->m_pImpl->m_unRemoteWorkerIdx);
+                        nullptr, "neb::StepConnectWorker", pChannel, pChannel->m_pImpl->m_unRemoteWorkerIdx);
                 if (nullptr == pStepConnectWorker)
                 {
                     LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
@@ -472,7 +472,7 @@ bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
     if (pChannel->m_pImpl->NeedAliveCheck())     // 需要发送心跳检查
     {
         std::shared_ptr<Step> pStepIoTimeout = m_pLabor->GetActorBuilder()->MakeSharedStep(
-                nullptr, "neb::StepIoTimeout", (std::shared_ptr<SocketChannel>)pChannel);
+                nullptr, "neb::StepIoTimeout", pChannel);
         if (nullptr == pStepIoTimeout)
         {
             LOG4_ERROR("new StepIoTimeout error!");
@@ -832,9 +832,9 @@ bool Dispatcher::SendTo(const std::string& strHost, int iPort, const std::string
         {
             auto channel_iter = named_iter->second.begin();
             E_CODEC_STATUS eStatus = (*channel_iter)->m_pImpl->Send(oHttpMsg, uiHttpStepSeq);
+            named_iter->second.erase(channel_iter);     // erase from named channel pool, the channel remain in m_mapSocketChannel.
             if (CODEC_STATUS_OK == eStatus)
             {
-                named_iter->second.erase(channel_iter);     // erase from named channel pool, the channel remain in m_mapSocketChannel.
                 return(true);
             }
             else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
@@ -1202,22 +1202,25 @@ bool Dispatcher::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor
         }
     }
     E_CODEC_STATUS eStatus = m_iterLoaderAndWorkerChannel->second->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
-    m_iterLoaderAndWorkerChannel++;
     if (CODEC_STATUS_OK == eStatus)
     {
         RemoveIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
+        m_iterLoaderAndWorkerChannel++;
         return(true);
     }
     else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
     {
         AddIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
+        m_iterLoaderAndWorkerChannel++;
         return(true);
     }
     else if (CODEC_STATUS_WANT_READ == eStatus)
     {
         RemoveIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
+        m_iterLoaderAndWorkerChannel++;
         return(true);
     }
+    m_iterLoaderAndWorkerChannel++;
     return(false);
 }
 
@@ -1615,10 +1618,13 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
 {
     if (pChannel == nullptr)
     {
-        LOG4_ERROR("pChannel not exist!");
+        LOG4_DEBUG("pChannel not exist!");
         return(false);
     }
-    LOG4_DEBUG("%s disconnect, fd %d, identify %s", pChannel->m_pImpl->GetRemoteAddr().c_str(), pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetIdentify().c_str());
+    LOG4_DEBUG("%s disconnect, fd %d, channel_seq %u, identify %s",
+            pChannel->m_pImpl->GetRemoteAddr().c_str(),
+            pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence(),
+            pChannel->m_pImpl->GetIdentify().c_str());
     if (bChannelNotice)
     {
         m_pLabor->GetActorBuilder()->ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
@@ -1666,7 +1672,8 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
             {
                 --m_iClientNum;
             }
-            LOG4_TRACE("erase channel %d from m_mapSocketChannel.", pChannel->m_pImpl->GetFd());
+            LOG4_TRACE("erase channel %d channel_seq %u from m_mapSocketChannel.",
+                    pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
         }
         return(true);
     }

@@ -9,6 +9,7 @@
  ******************************************************************************/
 
 #include "Chain.hpp"
+#include "util/json/CJsonObject.hpp"
 #include "actor/context/Context.hpp"
 #include "actor/step/Step.hpp"
 #include "actor/model/Model.hpp"
@@ -26,9 +27,39 @@ Chain::~Chain()
 {
 }
 
-void Chain::Init(const std::queue<std::vector<std::string> >& queChainBlock)
+bool Chain::Init(const std::queue<std::vector<std::string> >& queChainBlock)
 {
     m_queChainBlock = queChainBlock;
+    return(true);
+}
+
+bool Chain::Init(CJsonObject& oChainBlock)
+{
+    LOG4_TRACE("actor chain:  %s", oChainBlock.ToString().c_str());
+    if (oChainBlock.IsArray())
+    {
+        for (int i = 0; i < oChainBlock.GetArraySize(); ++i)
+        {
+            std::vector<std::string> vecBlock;
+            if (oChainBlock[i].IsArray())
+            {
+                for (int j = 0; j < oChainBlock[i].GetArraySize(); ++j)
+                {
+                    vecBlock.push_back(oChainBlock[i](j));
+                }
+            }
+            else
+            {
+                vecBlock.push_back(oChainBlock(i));
+            }
+            m_queChainBlock.push(std::move(vecBlock));
+        }
+        return(true);
+    }
+    else
+    {
+        return(false);
+    }
 }
 
 E_CMD_STATUS Chain::Next()
@@ -56,6 +87,12 @@ E_CMD_STATUS Chain::Next()
         if (pSharedModel == nullptr)
         {
             std::shared_ptr<Actor> pSharedActor = MakeSharedActor(*iter);
+            if (pSharedActor == nullptr)
+            {
+                LOG4_ERROR("failed to new \"%s\", the chain \"%s\" terminated!",
+                        iter->c_str(), m_strChainFlag.c_str());
+                break;
+            }
             // pSharedModel->SetContext(GetContext()); it had been set in MakeSharedActor().
             if (Actor::ACT_MODEL == pSharedActor->GetActorType())
             {
@@ -115,6 +152,12 @@ E_CMD_STATUS Chain::Next()
     {
         return(Next());
     }
+}
+
+E_CMD_STATUS Chain::Timeout()
+{
+    LOG4_ERROR("chain_id %d timeout, chain flag \"%s\"", GetSequence(), m_strChainFlag.c_str());
+    return(CMD_STATUS_FAULT);
 }
 
 } /* namespace neb */

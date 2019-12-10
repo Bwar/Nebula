@@ -67,6 +67,7 @@ private:
 #endif
     FILE* m_fp;
     int m_iLogLevel;
+    unsigned int m_uiLogNum;
     unsigned int m_uiMaxFileSize;       // 日志文件大小
     unsigned int m_uiMaxRollFileIndex;  // 滚动日志文件数量
     std::string m_strLogFileBase;       // 日志文件基本名（如 log/program_name.log）

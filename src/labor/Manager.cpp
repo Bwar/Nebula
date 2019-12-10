@@ -357,7 +357,7 @@ bool Manager::CreateEvents()
     bool bDirectToLoader = false;
     m_oCurrentConf.Get("new_client_to_loader", bDirectToLoader);
     m_pSessionManager = std::dynamic_pointer_cast<SessionManager>(
-            m_pActorBuilder->MakeSharedSession(nullptr, "neb::SessionManager", (bool)bDirectToLoader));
+            m_pActorBuilder->MakeSharedSession(nullptr, "neb::SessionManager", bDirectToLoader));
     AddPeriodicTaskEvent();
 
     return(true);
@@ -515,12 +515,24 @@ bool Manager::RestartWorker(int iDeathPid)
             close(iDataFds[0]);
             x_sock_set_block(iControlFds[1], 0);
             x_sock_set_block(iDataFds[1], 0);
-            Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], iWorkerIndex);
-            if (!oWorker.Init(m_oCurrentConf))
+            if (Labor::LABOR_LOADER == eLaborType)
             {
-                exit(-1);
+                Loader oLoader(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], 0);
+                if (!oLoader.Init(m_oCurrentConf))
+                {
+                    exit(-1);
+                }
+                oLoader.Run();
             }
-            oWorker.Run();
+            else
+            {
+                Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], iWorkerIndex);
+                if (!oWorker.Init(m_oCurrentConf))
+                {
+                    exit(-1);
+                }
+                oWorker.Run();
+            }
             exit(-2);   // 子进程worker没有正常运行
         }
         else if (iNewPid > 0)   // 父进程
@@ -611,6 +623,7 @@ bool Manager::AddPeriodicTaskEvent()
     m_pDispatcher->AddEvent(m_pPeriodicTaskWatcher, Dispatcher::PeriodicTaskCallback, NODE_BEAT);
     std::shared_ptr<Step> pReportToBeacon = m_pActorBuilder->MakeSharedStep(
             nullptr, "neb::StepReportToBeacon", NODE_BEAT);
+    //pReportToBeacon->Emit();
     return(true);
 }
 

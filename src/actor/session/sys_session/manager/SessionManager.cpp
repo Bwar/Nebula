@@ -170,6 +170,7 @@ bool SessionManager::SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad)
             oJsonLoad.Get("send_byte", it->second->iSendByte);
             oJsonLoad.Get("client", it->second->iClientNum);
             it->second->dBeatTime = GetNowTime();
+            it->second->bStartBeatCheck = true;
             return(true);
         }
         else
@@ -230,13 +231,16 @@ bool SessionManager::CheckWorker()
     for (auto worker_iter = m_mapWorker.begin();
                     worker_iter != m_mapWorker.end(); ++worker_iter)
     {
-        LOG4_TRACE("now %lf, worker_beat_time %lf, worker_beat %d",
-                GetNowTime(), worker_iter->second->dBeatTime, ((Manager*)GetLabor(this))->GetManagerInfo().iWorkerBeat);
-        if (GetNowTime() - worker_iter->second->dBeatTime > ((Manager*)GetLabor(this))->GetManagerInfo().iWorkerBeat)
+        if (worker_iter->second->bStartBeatCheck)
         {
-            LOG4_INFO("worker_%d pid %d is unresponsive, "
+            LOG4_TRACE("now %lf, worker_beat_time %lf, worker_beat %d",
+                    GetNowTime(), worker_iter->second->dBeatTime, ((Manager*)GetLabor(this))->GetManagerInfo().iWorkerBeat);
+            if (GetNowTime() - worker_iter->second->dBeatTime > ((Manager*)GetLabor(this))->GetManagerInfo().iWorkerBeat)
+            {
+                LOG4_ERROR("worker_%d pid %d is unresponsive, "
                             "terminate it.", worker_iter->second->iWorkerIndex, worker_iter->first);
-            kill(worker_iter->first, SIGKILL); //SIGINT);
+                kill(worker_iter->first, SIGKILL); //SIGINT);
+            }
         }
     }
     return(true);
@@ -269,7 +273,7 @@ bool SessionManager::WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE&
             m_mapWorkerFdPid.erase(fd_iter);
         }
         auto pControlChannel = GetLabor(this)->GetDispatcher()->GetChannel(worker_iter->second->iControlFd);
-        GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pControlChannel);
+        GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pControlChannel); // 在io事件中已关闭连接，这里可以不需要
         auto pDataChannel = GetLabor(this)->GetDispatcher()->GetChannel(worker_iter->second->iDataFd);
         GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pDataChannel);
         delete worker_iter->second;

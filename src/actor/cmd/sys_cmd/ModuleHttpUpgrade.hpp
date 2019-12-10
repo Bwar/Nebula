@@ -10,7 +10,7 @@
 #ifndef SRC_ACTOR_CMD_SYS_CMD_MODULEHTTPUPGRADE_HPP_
 #define SRC_ACTOR_CMD_SYS_CMD_MODULEHTTPUPGRADE_HPP_
 
-#include "../../ActorSys.hpp"
+#include "actor/ActorSys.hpp"
 #include "codec/Codec.hpp"
 #include "actor/cmd/Module.hpp"
 

@@ -11,7 +11,7 @@
 #ifndef SRC_ACTOR_SESSION_SYS_SESSION_MANAGER_SESSIONMANAGER_HPP_
 #define SRC_ACTOR_SESSION_SYS_SESSION_MANAGER_SESSIONMANAGER_HPP_
 
-#include "../../../ActorSys.hpp"
+#include "actor/ActorSys.hpp"
 #include "labor/NodeInfo.hpp"
 #include "actor/session/Session.hpp"
 
