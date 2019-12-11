@@ -522,7 +522,7 @@ bool Dispatcher::OnRedisDisconnected(const redisAsyncContext *c, int status)
         DelNamedRedisChannel(channel_iter->second->GetIdentify());
         m_mapRedisChannel.erase(channel_iter);
     }
-    redisAsyncFree(const_cast<redisAsyncContext*>(c));
+    //redisAsyncDisconnect(const_cast<redisAsyncContext*>(c));  //被动断开连接不需要
     return(true);
 }
 
@@ -1153,7 +1153,10 @@ bool Dispatcher::AutoRedisCmd(const std::string& strHost, int iPort, std::shared
     if (c->err)
     {
         LOG4_ERROR("error: %s", c->errstr);
-        redisAsyncFree(c);
+        // If the onConnect callback is called with REDIS_ERROR the context will
+        // be disconnected (and the inner context freed) after that callback anyway.
+        // No need to call it yourself
+        // redisAsyncFree(c);
         return(false);
     }
     c->data = m_pLabor;
@@ -1177,6 +1180,7 @@ bool Dispatcher::AutoRedisCmd(const std::string& strHost, int iPort, std::shared
     std::ostringstream oss;
     oss << strHost << ":" << iPort;
     std::string strIdentify = std::move(oss.str());
+    pRedisChannel->SetIdentify(strIdentify);
     AddNamedRedisChannel(strIdentify, pRedisChannel);
     return(true);
 }

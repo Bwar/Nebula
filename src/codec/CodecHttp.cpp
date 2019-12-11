@@ -200,6 +200,12 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
             m_mapAddingHttpHeader.clear();
             return(CODEC_STATUS_ERR);
         }
+        if (stUrl.field_data[UF_PATH].off >= oHttpMsg.url().size())
+        {
+            LOG4_ERROR("invalid url \"%s\"!", oHttpMsg.url().c_str());
+            m_mapAddingHttpHeader.clear();
+            return(CODEC_STATUS_ERR);
+        }
         iWriteSize = pBuff->Printf("%s %s HTTP/%u.%u\r\n", http_method_str((http_method)oHttpMsg.method()),
                         oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, std::string::npos).c_str(),
                         oHttpMsg.http_major(), oHttpMsg.http_minor());

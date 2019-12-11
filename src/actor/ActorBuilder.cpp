@@ -434,6 +434,7 @@ bool ActorBuilder::OnRedisConnected(std::shared_ptr<RedisChannel> pChannel, cons
             if (iCmdStatus == REDIS_OK)
             {
                 LOG4_TRACE("succeed in sending redis cmd: %s", (*step_iter)->CmdToString().c_str());
+                ++step_iter;
             }
             else
             {
@@ -741,8 +742,7 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
     pSharedActor->SetLabor(m_pLabor);
     pSharedActor->SetActiveTime(m_pLabor->GetNowTime());
     pSharedActor->SetActorName(strActorName);
-    
-    if (nullptr != pCreator && pSharedActor->GetActorType() !=　Actor::ACT_CONTEXT)
+    if (nullptr != pCreator && pSharedActor->GetActorType() != Actor::ACT_CONTEXT)
     {
         pSharedActor->SetContext(pCreator->GetContext());
     }
