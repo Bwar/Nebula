@@ -22,7 +22,7 @@ class ActorBuilder;
 class CJsonObject;
 
 class Chain final: public Actor,
-    public neb::DynamicCreator<Chain, std::string, ev_tstamp>
+    public neb::DynamicCreator<Chain, std::string&, ev_tstamp>
 {
 public:
     Chain(const std::string& strChainFlag, ev_tstamp dChainTimeout = 60.0);

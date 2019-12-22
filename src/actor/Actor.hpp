@@ -106,6 +106,7 @@ protected:
     const std::string& GetWorkPath() const;
     const std::string& GetNodeIdentify() const;
     time_t GetNowTime() const;
+    ev_tstamp GetDataReportInterval() const;
 
     /**
      * @brief 获取Server自定义配置
@@ -235,6 +236,8 @@ protected:
     bool SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+
+    bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     int32 GetStepNum() const;
 

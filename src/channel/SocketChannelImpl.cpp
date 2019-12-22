@@ -65,7 +65,7 @@ bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
                 m_pCodec->SetKey(m_strKey);
                 break;
             case CODEC_HTTP:
-                m_pCodec = new CodecHttp(m_pLogger, eCodecType);
+                m_pCodec = new CodecHttp(m_pLogger, eCodecType, m_dKeepAlive);
                 m_pCodec->SetKey(m_strKey);
                 break;
             default:
@@ -174,7 +174,7 @@ E_CODEC_STATUS SocketChannelImpl::Send()
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("send to fd %d error %d: %s",
+        LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -237,7 +237,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
         }
             break;
         default:
-            LOG4_ERROR("invalid connect status %d!", m_ucChannelStatus);
+            LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), m_ucChannelStatus);
             return(CODEC_STATUS_OK);
     }
 
@@ -286,7 +286,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("send to fd %d error %d: %s",
+        LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -320,7 +320,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
             }
             break;
         default:
-            LOG4_ERROR("invalid connect status %d!", m_ucChannelStatus);
+            LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), m_ucChannelStatus);
             return(CODEC_STATUS_OK);
     }
 
@@ -336,7 +336,8 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
     }
 
     int iWriteLen = Write(m_pSendBuff, m_iErrno);
-    LOG4_TRACE("iWriteLen = %d, m_iErrno = %d", iWriteLen, m_iErrno);
+    LOG4_TRACE("fd[%d], channel_seq[%u] iWriteLen = %d, m_iErrno = %d",
+            GetFd(), GetSequence(), iWriteLen, m_iErrno);
     if (iWriteLen >= 0)
     {
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
@@ -348,10 +349,6 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iWriteLen)
         {
-            if (ulStepSeq == 0 && m_dKeepAlive == 0.0)
-            {
-                return(CODEC_STATUS_EOF);
-            }
             return(CODEC_STATUS_OK);
         }
         else
@@ -366,7 +363,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("send to fd %d error %d: %s",
+        LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -433,7 +430,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                 }
                     break;
                 default:
-                    LOG4_ERROR("invalid connect status %d!", m_ucChannelStatus);
+                    LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), m_ucChannelStatus);
                     return(CODEC_STATUS_ERR);
             }
         }
@@ -454,7 +451,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("recv from fd %d error %d: %s",
+        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -506,7 +503,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("recv from fd %d error %d: %s",
+        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -566,7 +563,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
-        LOG4_ERROR("recv from fd %d error %d: %s",
+        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_INT);
@@ -596,13 +593,13 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 
 E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
 {
-    // TODO 当http1.0响应包未带Content-Length头时，以关闭连接表示数据发送完毕。需再处理
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_ulSeq);
     if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
     {
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_ulSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
+    // 当http1.0响应包未带Content-Length头时，m_pRecvBuff可读字节数为0，以关闭连接表示数据发送完毕。
     E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
     return(eCodecStatus);
 }
@@ -665,7 +662,7 @@ bool SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAliv
                 pNewCodec->SetKey(m_strKey);
                 break;
             case CODEC_HTTP:
-                pNewCodec = new CodecHttp(m_pLogger, eCodecType);
+                pNewCodec = new CodecHttp(m_pLogger, eCodecType, dKeepAlive);
                 pNewCodec->SetKey(m_strKey);
                 break;
             default:
@@ -742,13 +739,13 @@ bool SocketChannelImpl::Close()
 
 int SocketChannelImpl::Write(CBuffer* pBuff, int& iErrno)
 {
-    LOG4_TRACE("");
+    LOG4_TRACE("fd[%d], channel_seq[%u]", GetFd(), GetSequence());
     return(pBuff->WriteFD(m_iFd, iErrno));
 }
 
 int SocketChannelImpl::Read(CBuffer* pBuff, int& iErrno)
 {
-    LOG4_TRACE("");
+    LOG4_TRACE("fd[%d], channel_seq[%u]", GetFd(), GetSequence());
     return(pBuff->ReadFD(m_iFd, iErrno));
 }
 

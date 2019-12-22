@@ -106,6 +106,7 @@ bool Worker::Init(CJsonObject& oJsonConf)
     oJsonConf.Get("node_type", m_stNodeInfo.strNodeType);
     oJsonConf.Get("host", m_stNodeInfo.strHostForServer);
     oJsonConf.Get("port", m_stNodeInfo.iPortForServer);
+    oJsonConf.Get("data_report", m_stNodeInfo.dDataReportInterval);
     m_oNodeConf = oJsonConf;
     m_oCustomConf = oJsonConf["custom"];
     std::ostringstream oss;
@@ -372,6 +373,11 @@ const WorkerInfo& Worker::GetWorkerInfo() const
 const CJsonObject& Worker::GetCustomConf() const
 {
     return(m_oCustomConf);
+}
+
+std::shared_ptr<SocketChannel> Worker::GetManagerControlChannel()
+{
+    return(m_pManagerControlChannel);
 }
 
 bool Worker::SetCustomConf(const CJsonObject& oJsonConf)

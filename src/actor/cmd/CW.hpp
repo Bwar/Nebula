@@ -47,8 +47,8 @@ enum E_CMD
     CMD_RSP_NODE_NOTICE                 = 106,  ///< 节点通知应答通知（Manager应答，Worker无须应答）
     CMD_REQ_REFRESH_NODE_ID             = 107,  ///< 更新节点ID请求（Manager发往Worker）
     CMD_RSP_REFRESH_NODE_ID             = 108,  ///< 更新节点ID应答（一般无须应答）
-    CMD_REQ_SERVER_DATA_STATUS_REPORT   = 109,  ///< 服务器数据状态上报请求
-    CMD_RSP_SERVER_DATA_STATUS_REPORT   = 110,  ///< 服务器数据状态上报应答
+    CMD_REQ_DATA_REPORT                 = 109,  ///< 服务器数据状态上报请求
+    CMD_RSP_DATA_REPORT                 = 110,  ///< 服务器数据状态上报应答
     CMD_REQ_GET_LOAD_MIN_SERVER         = 111,  ///< 获取低负载服务器请求
     CMD_RSP_GET_LOAD_MIN_SERVER         = 112,  ///< 获取低负载服务器应答
     CMD_REQ_LEADER_ELECTION             = 113,  ///< 分布式leader选举请求

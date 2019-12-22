@@ -10,6 +10,7 @@
 #ifndef SRC_ACTOR_STEP_HTTPSTEP_HPP_
 #define SRC_ACTOR_STEP_HTTPSTEP_HPP_
 
+#include <google/protobuf/map.h>
 #include <actor/step/Step.hpp>
 #include "util/http/http_parser.h"
 
@@ -29,10 +30,13 @@ public:
                     const HttpMsg& oHttpMsg,
                     void* data = NULL) = 0;
 
-    bool HttpPost(const std::string& strUrl, const std::string& strBody, const std::unordered_map<std::string, std::string>& mapHeaders);
     bool HttpGet(const std::string& strUrl);
+    bool HttpPost(const std::string& strUrl, const std::string& strBody,
+            const std::unordered_map<std::string, std::string>& mapHeaders);
+    bool HttpPost(const std::string& strUrl, const std::string& strBody,
+            const ::google::protobuf::Map<std::string, std::string>& mapHeaders);
 
-protected:
+private:
     bool HttpRequest(const HttpMsg& oHttpMsg);
 };
 

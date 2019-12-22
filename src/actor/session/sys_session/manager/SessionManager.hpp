@@ -36,6 +36,7 @@ public:
     void AddLoaderInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
     const WorkerInfo* GetWorkerInfo(int32 iWorkerIndex) const;
     bool SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad);
+    int GetNextWorkerDataFd();
     std::pair<int, int> GetMinLoadWorkerDataFd();
     bool CheckWorker();
     bool WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE& eLaborType);
@@ -49,6 +50,7 @@ private:
     bool m_bDirectToLoader = false;
     int m_iLoaderDataFd = -1;
     std::unordered_map<int, WorkerInfo*> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
+    std::unordered_map<int, WorkerInfo*>::iterator m_iterWorker;
     std::unordered_map<int, int> m_mapWorkerStartNum;       ///< 进程被启动次数，key为WorkerIdx
     std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
     std::unordered_map<std::string, std::string> m_mapOnlineNodes;     ///< 订阅的节点在线信息
