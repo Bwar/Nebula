@@ -67,7 +67,7 @@ bool CmdDataReport::AnyMessage(
         }
         pSessionDataReport = std::dynamic_pointer_cast<SessionDataReport>(pSharedSession);
     }
-    LOG4_TRACE("data report from %s", pChanel->GetIdentify().c_str());
+    LOG4_TRACE("data report from %s", pChannel->GetIdentify().c_str());
     pSessionDataReport->AddReport(pReport);
     if (GetNodeType() == "BEACON")
     {

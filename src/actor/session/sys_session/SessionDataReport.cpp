@@ -102,28 +102,28 @@ void SessionDataReport::AddReport(const std::shared_ptr<Report> pReport)
             pRecord->set_key(pReport->records(i).key());
             for (int j = 0; j < pReport->records(i).value_size(); ++j)
             {
-                pRecord->add_value(pReport.records(i).value(j));
+                pRecord->add_value(pReport->records(i).value(j));
             }
-            m_mapDataCollect.insert(std::make_pair(oReport.records(i).key(), pRecord));
+            m_mapDataCollect.insert(std::make_pair(pReport->records(i).key(), pRecord));
         }
         else
         {
-            for (int j = 0; j < pReport.records(i).value_size(); ++j)
+            for (int j = 0; j < pReport->records(i).value_size(); ++j)
             {
                 if (j < iter->second->value_size())
                 {
-                    iter->second->set_value(j, iter->second->value(j) + pReport.records(i).value(j));
+                    iter->second->set_value(j, iter->second->value(j) + pReport->records(i).value(j));
                 }
                 else
                 {
-                    iter->second->add_value(pReport.records(i).value(j));
+                    iter->second->add_value(pReport->records(i).value(j));
                 }
             }
         }
     }
 }
 
-void SendDataReport::AddReport(const std::string& strNodeIdentify, std::shared_ptr<Report> pReport)
+void SessionDataReport::AddReport(const std::string& strNodeIdentify, std::shared_ptr<Report> pReport)
 {
     LOG4_TRACE("report from %s", strNodeIdentify.c_str());
     auto& mapUpdating = m_vecNodeReport[m_uiNodeReportUpdatingIndex];
@@ -134,7 +134,7 @@ void SendDataReport::AddReport(const std::string& strNodeIdentify, std::shared_p
     }
     else
     {
-        iter->second = pRecord;
+        iter->second = pReport;
     }
 }
 
