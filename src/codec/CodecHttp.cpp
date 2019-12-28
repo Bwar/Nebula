@@ -156,7 +156,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     }
     if (0 == oHttpMsg.http_major())
     {
-        LOG4_ERROR("miss http version!");
+        LOG4_WARNING("miss http version!");
         m_mapAddingHttpHeader.clear();
         return(CODEC_STATUS_ERR);
     }
@@ -167,7 +167,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     {
         if (oHttpMsg.url().size() == 0)
         {
-            LOG4_ERROR("miss url!");
+            LOG4_WARNING("miss url!");
             m_mapAddingHttpHeader.clear();
             return(CODEC_STATUS_ERR);
         }
@@ -208,13 +208,13 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         }
         else
         {
-            LOG4_ERROR("http_parser_parse_url error!");
+            LOG4_WARNING("http_parser_parse_url error!");
             m_mapAddingHttpHeader.clear();
             return(CODEC_STATUS_ERR);
         }
         if (stUrl.field_data[UF_PATH].off >= oHttpMsg.url().size())
         {
-            LOG4_ERROR("invalid url \"%s\"!", oHttpMsg.url().c_str());
+            LOG4_WARNING("invalid url \"%s\"!", oHttpMsg.url().c_str());
             m_mapAddingHttpHeader.clear();
             return(CODEC_STATUS_ERR);
         }
@@ -247,7 +247,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     {
         if (0 == oHttpMsg.status_code())
         {
-            LOG4_ERROR("miss status code!");
+            LOG4_WARNING("miss status code!");
             pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
             m_mapAddingHttpHeader.clear();
             return(CODEC_STATUS_ERR);
@@ -318,7 +318,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         {
             if (!Gzip(oHttpMsg.body(), strGzipData))
             {
-                LOG4_ERROR("gzip error!");
+                LOG4_WARNING("gzip error!");
                 pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
                 m_mapAddingHttpHeader.clear();
                 return(CODEC_STATUS_ERR);
@@ -661,7 +661,7 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
     {
         if(m_parser.http_errno != HPE_OK)
         {
-            LOG4_ERROR("Failed to parse http message for cause:%s",
+            LOG4_WARNING("Failed to parse http message for cause:%s",
                             http_errno_name((http_errno)m_parser.http_errno));
             return(CODEC_STATUS_ERR);
         }
@@ -700,7 +700,7 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
             }
             else
             {
-                LOG4_ERROR("guzip error!");
+                LOG4_WARNING("guzip error!");
                 return(CODEC_STATUS_ERR);
             }
         }

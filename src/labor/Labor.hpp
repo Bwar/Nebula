@@ -55,6 +55,7 @@ public:
     virtual ActorBuilder* GetActorBuilder() = 0;
     virtual uint32 GetSequence() const = 0;
     virtual time_t GetNowTime() const = 0;
+    virtual long GetNowTimeMs() const = 0;
     virtual const CJsonObject& GetNodeConf() const = 0;
     virtual void SetNodeConf(const CJsonObject& oNodeConf) = 0;
     virtual const NodeInfo& GetNodeInfo() const = 0;

@@ -677,6 +677,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
             RemoveIoWriteEvent(*named_iter->second.begin());
             return(true);
         }
+        DiscardSocketChannel(*named_iter->second.begin());
         return(false);
     }
 }
@@ -885,6 +886,7 @@ bool Dispatcher::SendTo(const std::string& strHost, int iPort, const std::string
                 RemoveIoWriteEvent(*channel_iter);
                 return(true);
             }
+            DiscardSocketChannel(*channel_iter);
             return(false);
         }
     }
@@ -1663,17 +1665,37 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         LOG4_DEBUG("pChannel not exist!");
         return(false);
     }
-    LOG4_DEBUG("%s disconnect, fd %d, channel_seq %u, identify %s",
-            pChannel->m_pImpl->GetRemoteAddr().c_str(),
-            pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence(),
-            pChannel->m_pImpl->GetIdentify().c_str());
-    if (bChannelNotice)
+
+    auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
+    if (named_iter != m_mapNamedSocketChannel.end())
     {
-        m_pLabor->GetActorBuilder()->ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
+       for (auto it = named_iter->second.begin();
+           it != named_iter->second.end(); ++it)
+       {
+           if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
+           {
+               named_iter->second.erase(it);
+               LOG4_TRACE("erase channel %d from m_mapNamedSocketChannel.", pChannel->m_pImpl->GetFd());
+               break;
+           }
+       }
+       if (0 == named_iter->second.size())
+       {
+           m_mapNamedSocketChannel.erase(named_iter);
+       }
     }
+
     bool bCloseResult = pChannel->m_pImpl->Close();
     if (bCloseResult)
     {
+        LOG4_DEBUG("%s disconnect, fd %d, channel_seq %u, identify %s",
+                pChannel->m_pImpl->GetRemoteAddr().c_str(),
+                pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence(),
+                pChannel->m_pImpl->GetIdentify().c_str());
+        if (bChannelNotice)
+        {
+            m_pLabor->GetActorBuilder()->ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
+        }
         ev_io_stop (m_loop, pChannel->m_pImpl->MutableIoWatcher());
         if (nullptr != pChannel->m_pImpl->MutableTimerWatcher())
         {
@@ -1685,25 +1707,6 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
             auto inner_channel_iter = m_mapLoaderAndWorkerChannel.find(pChannel->GetFd());
             m_mapLoaderAndWorkerChannel.erase(inner_channel_iter);
             m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
-        }
-
-        auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
-        if (named_iter != m_mapNamedSocketChannel.end())
-        {
-            for (auto it = named_iter->second.begin();
-                    it != named_iter->second.end(); ++it)
-            {
-                if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
-                {
-                    named_iter->second.erase(it);
-                    LOG4_TRACE("erase channel %d from m_mapNamedSocketChannel.", pChannel->m_pImpl->GetFd());
-                    break;
-                }
-            }
-            if (0 == named_iter->second.size())
-            {
-                m_mapNamedSocketChannel.erase(named_iter);
-            }
         }
 
         auto channel_iter = m_mapSocketChannel.find(pChannel->m_pImpl->GetFd());

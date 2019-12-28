@@ -353,7 +353,7 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
                 {
                     HttpMsg oOutHttpMsg;
                     snprintf(m_pErrBuff, gc_iErrBuffLen, "no module to dispose %s!", oHttpMsg.path().c_str());
-                    LOG4_ERROR(m_pErrBuff);
+                    LOG4_WARNING(m_pErrBuff);
                     oOutHttpMsg.set_type(HTTP_RESPONSE);
                     oOutHttpMsg.set_status_code(404);
                     oOutHttpMsg.set_http_major(oHttpMsg.http_major());

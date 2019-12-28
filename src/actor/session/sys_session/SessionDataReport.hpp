@@ -29,7 +29,8 @@ public:
 
     virtual E_CMD_STATUS Timeout();
 
-    void AddReport(const Report& oReport);
+    void AddReport(const std::shared_ptr<Report> pReport);
+    void AddReport(const std::string& strNodeIdentify, std::shared_ptr<Report> pReport);
 
     const Report* GetReport()
     {
@@ -40,11 +41,18 @@ public:
     {
         return(m_strReport);
     }
+
+    const std::unordered_map<std::string, std::shared_ptr<Report>>& GetNodeReport() const
+    {
+        return(m_vecNodeReport[1 - m_uiNodeReportUpdatingIndex]);
+    }
                     
 private:
+    uint32 m_uiNodeReportUpdatingIndex;
     Report* m_pReport;          ///< final report
     std::string m_strReport;    ///< m_pReport SerializeToString
-    std::unordered_map<std::string, ReportRecord*> m_mapData;   ///< report collector
+    std::unordered_map<std::string, ReportRecord*> m_mapDataCollect;   ///< report collector
+    std::vector<std::unordered_map<std::string, std::shared_ptr<Report>> > m_vecNodeReport;  ///< report data from nebula node
 };
 
 }

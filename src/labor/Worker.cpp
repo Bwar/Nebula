@@ -338,6 +338,11 @@ time_t Worker::GetNowTime() const
     return(m_pDispatcher->GetNowTime());
 }
 
+long Worker::GetNowTimeMs() const
+{
+    return(m_pDispatcher->GetNowTimeMs());
+}
+
 const CJsonObject& Worker::GetNodeConf() const
 {
     return(m_oNodeConf);

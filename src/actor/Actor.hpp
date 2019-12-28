@@ -106,6 +106,7 @@ protected:
     const std::string& GetWorkPath() const;
     const std::string& GetNodeIdentify() const;
     time_t GetNowTime() const;
+    long GetNowTimeMs() const;
     ev_tstamp GetDataReportInterval() const;
 
     /**

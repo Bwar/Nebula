@@ -79,6 +79,11 @@ time_t Actor::GetNowTime() const
     return(m_pLabor->GetNowTime());
 }
 
+long Actor::GetNowTimeMs() const
+{
+    return(m_pLabor->GetNowTimeMs());
+}
+
 const CJsonObject& Actor::GetCustomConf() const
 {
     return(((Worker*)m_pLabor)->GetCustomConf());

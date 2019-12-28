@@ -36,7 +36,6 @@ bool CmdOnTellWorker::AnyMessage(
     {
         LOG4_DEBUG("AddNodeIdentify(%s, %s)!", oInTargetWorker.node_type().c_str(),
                  oInTargetWorker.worker_identify().c_str());
-        GetLabor(this)->GetDispatcher()->AddNamedSocketChannel(oInTargetWorker.worker_identify(), pChannel);
         GetLabor(this)->GetDispatcher()->AddNodeIdentify(oInTargetWorker.node_type(), oInTargetWorker.worker_identify());
         oOutTargetWorker.set_worker_identify(GetNodeIdentify());
         oOutTargetWorker.set_node_type(GetLabor(this)->GetNodeInfo().strNodeType);

@@ -45,8 +45,13 @@ bool CmdDataReport::AnyMessage(
         const MsgBody& oInMsgBody)
 {
     LOG4_TRACE("");
-    Report oReport;
-    if (!oReport.ParseFromString(oInMsgBody.data()))
+    std::shared_ptr<Report> pReport = std::make_shared<Report>();
+    if (pReport == nullptr)
+    {
+        LOG4_ERROR("failed to new Report!");
+        return(CMD_STATUS_FAULT);
+    }
+    if (!pReport->ParseFromString(oInMsgBody.data()))
     {
         LOG4_ERROR("Report.ParseFromString() failed!");
         return(false);
@@ -62,7 +67,12 @@ bool CmdDataReport::AnyMessage(
         }
         pSessionDataReport = std::dynamic_pointer_cast<SessionDataReport>(pSharedSession);
     }
-    pSessionDataReport->AddReport(oReport);
+    LOG4_TRACE("data report from %s", pChanel->GetIdentify().c_str());
+    pSessionDataReport->AddReport(pReport);
+    if (GetNodeType() == "BEACON")
+    {
+        pSessionDataReport->AddReport(pChannel->GetIdentify(), pReport);
+    }
     return(true);
 }
 

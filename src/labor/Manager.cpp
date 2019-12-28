@@ -193,6 +193,11 @@ time_t Manager::GetNowTime() const
     return(m_pDispatcher->GetNowTime());
 }
 
+long Manager::GetNowTimeMs() const
+{
+    return(m_pDispatcher->GetNowTimeMs());
+}
+
 bool Manager::GetConf()
 {
     if (m_stNodeInfo.strWorkPath.length() == 0)
