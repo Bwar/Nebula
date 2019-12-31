@@ -24,6 +24,7 @@ namespace neb
 SessionManager::SessionManager(bool bDirectToLoader)
     : Session("neb::SessionManager", gc_dNoTimeout), m_bDirectToLoader(bDirectToLoader)
 {
+    m_iterWorker = m_mapWorker.begin();
 }
 
 SessionManager::~SessionManager()
@@ -34,6 +35,7 @@ SessionManager::~SessionManager()
         it->second = nullptr;
     }
     m_mapWorker.clear();
+    m_iterWorker = m_mapWorker.begin();
     m_mapWorkerStartNum.clear();
     m_mapWorkerFdPid.clear();
     m_mapOnlineNodes.clear();
@@ -121,6 +123,7 @@ void SessionManager::AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, i
     pWorkerAttr->iDataFd = iDataFd;
     pWorkerAttr->dBeatTime = GetNowTime();
     m_mapWorker.insert(std::make_pair(iPid, pWorkerAttr));
+    m_iterWorker = m_mapWorker.begin();
     m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFd, iPid));
     m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFd, iPid));
     auto start_num_iter = m_mapWorkerStartNum.find(iWorkerIndex);
@@ -183,6 +186,27 @@ bool SessionManager::SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad)
     {
         LOG4_ERROR("%d is not a worker fd!", iWorkerFd);
         return(false);
+    }
+}
+
+int SessionManager::GetNextWorkerDataFd()
+{
+    if (m_bDirectToLoader && m_iLoaderDataFd != -1)
+    {
+        return(m_iLoaderDataFd);
+    }
+    else
+    {
+        if (m_mapWorker.empty())
+        {
+            return(-1);
+        }
+        ++m_iterWorker;
+        if (m_iterWorker == m_mapWorker.end())
+        {
+            m_iterWorker = m_mapWorker.begin();
+        }
+        return(m_iterWorker->second->iDataFd);
     }
 }
 
@@ -278,6 +302,7 @@ bool SessionManager::WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE&
         GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pDataChannel);
         delete worker_iter->second;
         m_mapWorker.erase(worker_iter);
+        m_iterWorker = m_mapWorker.begin();
 
         auto restart_num_iter = m_mapWorkerStartNum.find(iWorkerIndex);
         if (restart_num_iter != m_mapWorkerStartNum.end())

@@ -78,6 +78,7 @@ public:     // about worker
     }
 
     virtual time_t GetNowTime() const;
+    virtual long GetNowTimeMs() const;
     virtual const CJsonObject& GetNodeConf() const;
     virtual void SetNodeConf(const CJsonObject& oJsonConf);
     virtual const NodeInfo& GetNodeInfo() const;
@@ -85,6 +86,7 @@ public:     // about worker
     virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
     const WorkerInfo& GetWorkerInfo() const;
     const CJsonObject& GetCustomConf() const;
+    std::shared_ptr<SocketChannel> GetManagerControlChannel();
     bool SetCustomConf(const CJsonObject& oJsonConf);
     bool WithSsl();
 

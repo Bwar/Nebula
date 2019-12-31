@@ -1,0 +1,13 @@
+syntax = "proto3";
+package neb;
+
+message ReportRecord
+{
+    bytes key                   = 1;
+    repeated uint64 value       = 2;
+}
+
+message Report
+{
+    repeated ReportRecord records = 1;
+}

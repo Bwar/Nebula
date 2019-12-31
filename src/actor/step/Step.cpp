@@ -37,7 +37,7 @@ void Step::NextStep(int iErrno, const std::string& strErrMsg, void* data)
 
     for (auto it = m_setNextStepSeq.begin(); it != m_setNextStepSeq.end(); ++it)
     {
-        ExecStep(*it);
+        ExecStep(*it, iErrno, strErrMsg, data);
     }
 }
 

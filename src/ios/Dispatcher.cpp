@@ -259,7 +259,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
     }
     else    // 编解码出错或连接关闭或连接中断
     {
-        LOG4_DEBUG("codec error or connection closed!");
+        LOG4_TRACE("codec error or connection closed!");
         DiscardSocketChannel(pChannel);
         return(false);
     }
@@ -522,7 +522,7 @@ bool Dispatcher::OnRedisDisconnected(const redisAsyncContext *c, int status)
         DelNamedRedisChannel(channel_iter->second->GetIdentify());
         m_mapRedisChannel.erase(channel_iter);
     }
-    redisAsyncFree(const_cast<redisAsyncContext*>(c));
+    //redisAsyncDisconnect(const_cast<redisAsyncContext*>(c));  //被动断开连接不需要
     return(true);
 }
 
@@ -677,6 +677,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
             RemoveIoWriteEvent(*named_iter->second.begin());
             return(true);
         }
+        DiscardSocketChannel(*named_iter->second.begin());
         return(false);
     }
 }
@@ -788,6 +789,44 @@ bool Dispatcher::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 ui
     }
 }
 
+bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+{
+    if (m_pLabor->GetLaborType() == Labor::LABOR_MANAGER)
+    {
+        return(Broadcast("BEACON", iCmd, uiSeq, oMsgBody, pSender));
+    }
+    else
+    {
+        auto pChannel = ((Worker*)m_pLabor)->GetManagerControlChannel();
+        if (pChannel == nullptr)
+        {
+            LOG4_ERROR("no connected channel to manager!");
+            return(false);
+        }
+        if (nullptr != pSender)
+        {
+            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
+        }
+        E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
+        if (CODEC_STATUS_OK == eStatus)
+        {
+            RemoveIoWriteEvent(pChannel);
+            return(true);
+        }
+        else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
+        {
+            AddIoWriteEvent(pChannel);
+            return(true);
+        }
+        else if (CODEC_STATUS_WANT_READ == eStatus)
+        {
+            RemoveIoWriteEvent(pChannel);
+            return(true);
+        }
+        return(false);
+    }
+}
+
 bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
     E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(oHttpMsg, uiHttpStepSeq);
@@ -814,7 +853,7 @@ bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
 bool Dispatcher::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
     char szIdentify[256] = {0};
-    snprintf(szIdentify, sizeof(szIdentify), "%s:%d%s", strHost.c_str(), iPort, strUrlPath.c_str());
+    snprintf(szIdentify, sizeof(szIdentify), "%s:%d", strHost.c_str(), iPort);
     LOG4_TRACE("identify: %s", szIdentify);
     auto named_iter = m_mapNamedSocketChannel.find(szIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
@@ -847,6 +886,7 @@ bool Dispatcher::SendTo(const std::string& strHost, int iPort, const std::string
                 RemoveIoWriteEvent(*channel_iter);
                 return(true);
             }
+            DiscardSocketChannel(*channel_iter);
             return(false);
         }
     }
@@ -1074,7 +1114,7 @@ bool Dispatcher::AutoSend(const std::string& strHost, int iPort, const std::stri
     int iCode = getaddrinfo(strHost.c_str(), std::to_string(iPort).c_str(), &stAddrHints, &pAddrResult);
     if (0 != iCode)
     {
-        LOG4_ERROR("getaddrinfo(\"%s\", \"%s\") error %d: %s",
+        LOG4_ERROR("getaddrinfo(\"%s\", \"%d\") error %d: %s",
                 strHost.c_str(), iPort, iCode, gai_strerror(iCode));
         return(false);
     }
@@ -1153,7 +1193,10 @@ bool Dispatcher::AutoRedisCmd(const std::string& strHost, int iPort, std::shared
     if (c->err)
     {
         LOG4_ERROR("error: %s", c->errstr);
-        redisAsyncFree(c);
+        // If the onConnect callback is called with REDIS_ERROR the context will
+        // be disconnected (and the inner context freed) after that callback anyway.
+        // No need to call it yourself
+        // redisAsyncFree(c);
         return(false);
     }
     c->data = m_pLabor;
@@ -1177,6 +1220,7 @@ bool Dispatcher::AutoRedisCmd(const std::string& strHost, int iPort, std::shared
     std::ostringstream oss;
     oss << strHost << ":" << iPort;
     std::string strIdentify = std::move(oss.str());
+    pRedisChannel->SetIdentify(strIdentify);
     AddNamedRedisChannel(strIdentify, pRedisChannel);
     return(true);
 }
@@ -1548,7 +1592,7 @@ int32 Dispatcher::GetClientNum() const
 bool Dispatcher::Init()
 {
 #if __cplusplus >= 201401L
-    m_pSessionNode = std::make_shared<Nodes>();
+    m_pSessionNode = std::make_unique<Nodes>();
 #else
     m_pSessionNode = std::unique_ptr<Nodes>(new Nodes());
 #endif
@@ -1621,17 +1665,37 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         LOG4_DEBUG("pChannel not exist!");
         return(false);
     }
-    LOG4_DEBUG("%s disconnect, fd %d, channel_seq %u, identify %s",
-            pChannel->m_pImpl->GetRemoteAddr().c_str(),
-            pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence(),
-            pChannel->m_pImpl->GetIdentify().c_str());
-    if (bChannelNotice)
+
+    auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
+    if (named_iter != m_mapNamedSocketChannel.end())
     {
-        m_pLabor->GetActorBuilder()->ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
+       for (auto it = named_iter->second.begin();
+           it != named_iter->second.end(); ++it)
+       {
+           if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
+           {
+               named_iter->second.erase(it);
+               LOG4_TRACE("erase channel %d from m_mapNamedSocketChannel.", pChannel->m_pImpl->GetFd());
+               break;
+           }
+       }
+       if (0 == named_iter->second.size())
+       {
+           m_mapNamedSocketChannel.erase(named_iter);
+       }
     }
+
     bool bCloseResult = pChannel->m_pImpl->Close();
     if (bCloseResult)
     {
+        LOG4_DEBUG("%s disconnect, fd %d, channel_seq %u, identify %s",
+                pChannel->m_pImpl->GetRemoteAddr().c_str(),
+                pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence(),
+                pChannel->m_pImpl->GetIdentify().c_str());
+        if (bChannelNotice)
+        {
+            m_pLabor->GetActorBuilder()->ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
+        }
         ev_io_stop (m_loop, pChannel->m_pImpl->MutableIoWatcher());
         if (nullptr != pChannel->m_pImpl->MutableTimerWatcher())
         {
@@ -1643,25 +1707,6 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
             auto inner_channel_iter = m_mapLoaderAndWorkerChannel.find(pChannel->GetFd());
             m_mapLoaderAndWorkerChannel.erase(inner_channel_iter);
             m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
-        }
-
-        auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
-        if (named_iter != m_mapNamedSocketChannel.end())
-        {
-            for (auto it = named_iter->second.begin();
-                    it != named_iter->second.end(); ++it)
-            {
-                if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
-                {
-                    named_iter->second.erase(it);
-                    LOG4_TRACE("erase channel %d from m_mapNamedSocketChannel.", pChannel->m_pImpl->GetFd());
-                    break;
-                }
-            }
-            if (0 == named_iter->second.size())
-            {
-                m_mapNamedSocketChannel.erase(named_iter);
-            }
         }
 
         auto channel_iter = m_mapSocketChannel.find(pChannel->m_pImpl->GetFd());
@@ -1832,13 +1877,16 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
         }
     }
 
-    std::pair<int, int> worker_pid_fd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd();
-    if (worker_pid_fd.second > 0)
+    int iWorkerDataFd = -1;
+    //std::pair<int, int> worker_pid_fd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd();
+    //iWorkerDataFd = worker_pid_fd.second;
+    iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd();
+    if (iWorkerDataFd > 0)
     {
         LOG4_DEBUG("send new fd %d to worker communication fd %d",
-                        iAcceptFd, worker_pid_fd.second);
+                        iAcceptFd, iWorkerDataFd);
         int iCodec = m_pLabor->GetNodeInfo().eCodec;
-        int iErrno = SocketChannel::SendChannelFd(worker_pid_fd.second, iAcceptFd, iFamily, iCodec, m_pLogger);
+        int iErrno = SocketChannel::SendChannelFd(iWorkerDataFd, iAcceptFd, iFamily, iCodec, m_pLogger);
         if (iErrno != ERR_OK)
         {
             LOG4_ERROR("error %d: %s", iErrno, strerror_r(iErrno, m_pErrBuff, gc_iErrBuffLen));
@@ -1846,7 +1894,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
         close(iAcceptFd);
         return(true);
     }
-    LOG4_WARNING("GetMinLoadWorkerDataFd() found worker_pid_fd.second = %d", worker_pid_fd.second);
+    LOG4_WARNING("GetMinLoadWorkerDataFd() found worker_pid_fd.second = %d", iWorkerDataFd);
     close(iAcceptFd);
     return(false);
 }

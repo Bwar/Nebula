@@ -193,6 +193,11 @@ time_t Manager::GetNowTime() const
     return(m_pDispatcher->GetNowTime());
 }
 
+long Manager::GetNowTimeMs() const
+{
+    return(m_pDispatcher->GetNowTimeMs());
+}
+
 bool Manager::GetConf()
 {
     if (m_stNodeInfo.strWorkPath.length() == 0)
@@ -235,6 +240,7 @@ bool Manager::GetConf()
     if (m_oLastConf.ToString() != m_oCurrentConf.ToString())
     {
         m_oCurrentConf.Get("io_timeout", m_stNodeInfo.dIoTimeout);
+        m_oCurrentConf.Get("data_report", m_stNodeInfo.dDataReportInterval);
         if (m_oLastConf.ToString().length() == 0)
         {
             m_stNodeInfo.uiWorkerNum = strtoul(m_oCurrentConf("worker_num").c_str(), NULL, 10);
@@ -578,6 +584,8 @@ void Manager::RefreshServer()
         {
             int iLogLevel = Logger::INFO;
             int iNetLogLevel = Logger::INFO;
+            m_oCurrentConf.Get("log_level", iLogLevel);
+            m_oCurrentConf.Get("net_log_level", iNetLogLevel);
             m_pLogger->SetLogLevel(iLogLevel);
             m_pLogger->SetNetLogLevel(iNetLogLevel);
             MsgBody oMsgBody;

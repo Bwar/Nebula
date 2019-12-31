@@ -20,7 +20,7 @@ namespace neb
 class CodecHttp: public Codec
 {
 public:
-    CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
+    CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive = 10.0);
     virtual ~CodecHttp();
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);
@@ -43,6 +43,8 @@ public:
         return(m_dKeepAlive);
     }
 
+    bool CloseRightAway() const;
+
 protected:
     static int OnMessageBegin(http_parser *parser);
     static int OnUrl(http_parser *parser, const char *at, size_t len);
@@ -56,6 +58,9 @@ protected:
     static int OnChunkComplete(http_parser *parser);
 
 private:
+    bool m_bChannelIsClient;    // 当前编解码器所在channel是作为http客户端还是作为http服务端
+    uint32 m_uiEncodedNum;
+    uint32 m_uiDecodedNum;
     int32 m_iHttpMajor;
     int32 m_iHttpMinor;
     ev_tstamp m_dKeepAlive;

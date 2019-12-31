@@ -85,6 +85,7 @@ public:
     }
 
     virtual time_t GetNowTime() const;
+    virtual long GetNowTimeMs() const;
     virtual const CJsonObject& GetNodeConf() const;
     virtual void SetNodeConf(const CJsonObject& oNodeConf);
     virtual const NodeInfo& GetNodeInfo() const;

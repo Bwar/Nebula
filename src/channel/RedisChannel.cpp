@@ -19,10 +19,11 @@ RedisChannel::RedisChannel(redisAsyncContext *c)
 
 RedisChannel::~RedisChannel()
 {
-    if (NULL != m_pRedisCtx)
-    {
-        redisAsyncFree(m_pRedisCtx);
-    }
+    // RedisChannel should not be active closed.
+    //if (NULL != m_pRedisCtx)
+    //{
+    //    redisAsyncFree(m_pRedisCtx);
+    //}
 }
 
 } /* namespace neb */

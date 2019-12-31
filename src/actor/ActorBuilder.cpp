@@ -197,8 +197,10 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
             {
                 LogLevel oLogLevel;
                 oLogLevel.ParseFromString(oMsgBody.data());
-                LOG4_INFO("log level set to %d", oLogLevel.log_level());
+                LOG4_INFO("log level set to %d, net_log_level set to %d",
+                        oLogLevel.log_level(), oLogLevel.net_log_level());
                 m_pLogger->SetLogLevel(oLogLevel.log_level());
+                m_pLogger->SetNetLogLevel(oLogLevel.net_log_level());
             }
             else if (CMD_REQ_RELOAD_SO == oMsgHead.cmd())
             {
@@ -346,14 +348,25 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
             module_iter = m_mapModule.find("/switch");
             if (module_iter == m_mapModule.end())
             {
-                HttpMsg oOutHttpMsg;
-                snprintf(m_pErrBuff, gc_iErrBuffLen, "no module to dispose %s!", oHttpMsg.path().c_str());
-                LOG4_ERROR(m_pErrBuff);
-                oOutHttpMsg.set_type(HTTP_RESPONSE);
-                oOutHttpMsg.set_status_code(404);
-                oOutHttpMsg.set_http_major(oHttpMsg.http_major());
-                oOutHttpMsg.set_http_minor(oHttpMsg.http_minor());
-                m_pLabor->GetDispatcher()->SendTo(pChannel, oOutHttpMsg, 0);
+                module_iter = m_mapModule.find("/route");
+                if (module_iter == m_mapModule.end())
+                {
+                    HttpMsg oOutHttpMsg;
+                    snprintf(m_pErrBuff, gc_iErrBuffLen, "no module to dispose %s!", oHttpMsg.path().c_str());
+                    LOG4_WARNING(m_pErrBuff);
+                    oOutHttpMsg.set_type(HTTP_RESPONSE);
+                    oOutHttpMsg.set_status_code(404);
+                    oOutHttpMsg.set_http_major(oHttpMsg.http_major());
+                    oOutHttpMsg.set_http_minor(oHttpMsg.http_minor());
+                    m_pLabor->GetDispatcher()->SendTo(pChannel, oOutHttpMsg, 0);
+                }
+                else
+                {
+                    std::ostringstream oss;
+                    oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
+                    module_iter->second->SetTraceId(oss.str());
+                    module_iter->second->AnyMessage(pChannel, oHttpMsg);
+                }
             }
             else
             {
@@ -376,7 +389,7 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
         auto http_step_iter = m_mapCallbackStep.find(pChannel->GetStepSeq());
         if (http_step_iter == m_mapCallbackStep.end())
         {
-            LOG4_ERROR("no callback for http response from %s!", oHttpMsg.url().c_str());
+            LOG4_TRACE("no callback for http response from %s!", oHttpMsg.url().c_str());
             m_pLabor->GetDispatcher()->SetChannelStatus(pChannel, CHANNEL_STATUS_ESTABLISHED, 0);
             m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);       // push back to named socket channel pool.
         }
@@ -434,6 +447,7 @@ bool ActorBuilder::OnRedisConnected(std::shared_ptr<RedisChannel> pChannel, cons
             if (iCmdStatus == REDIS_OK)
             {
                 LOG4_TRACE("succeed in sending redis cmd: %s", (*step_iter)->CmdToString().c_str());
+                ++step_iter;
             }
             else
             {
@@ -723,6 +737,7 @@ void ActorBuilder::LoadSysCmd()
         MakeSharedCmd(nullptr, "neb::CmdOnGetNodeCustomConf", (int)CMD_REQ_GET_NODE_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdOnSetCustomConf", (int)CMD_REQ_SET_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdOnGetCustomConf", (int)CMD_REQ_GET_CUSTOM_CONFIG);
+        MakeSharedCmd(nullptr, "neb::CmdDataReport", (int)CMD_REQ_DATA_REPORT);
     }
     else
     {
@@ -741,8 +756,7 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
     pSharedActor->SetLabor(m_pLabor);
     pSharedActor->SetActiveTime(m_pLabor->GetNowTime());
     pSharedActor->SetActorName(strActorName);
-    
-    if (nullptr != pCreator && pSharedActor->GetActorType() !=　Actor::ACT_CONTEXT)
+    if (nullptr != pCreator && pSharedActor->GetActorType() != Actor::ACT_CONTEXT)
     {
         pSharedActor->SetContext(pCreator->GetContext());
     }
@@ -800,7 +814,7 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
 
 bool ActorBuilder::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
 {
-    pSharedActor->m_dTimeout = (0 == pSharedActor->m_dTimeout)
+    pSharedActor->m_dTimeout = (gc_dDefaultTimeout == pSharedActor->m_dTimeout)
             ? m_pLabor->GetNodeInfo().dStepTimeout : pSharedActor->m_dTimeout;
     ev_timer* timer_watcher = pSharedActor->MutableTimerWatcher();
     if (NULL == timer_watcher)
@@ -863,7 +877,7 @@ bool ActorBuilder::TransformToSharedSession(Actor* pCreator, std::shared_ptr<Act
     auto ret = m_mapCallbackSession.insert(std::make_pair(pSharedSession->GetSessionId(), pSharedSession));
     if (ret.second)
     {
-        if (gc_dNoTimeout != pSharedSession->m_dTimeout)
+        if (pSharedSession->m_dTimeout > 0)
         {
             m_pLabor->GetDispatcher()->AddEvent(timer_watcher, SessionTimeoutCallback, pSharedSession->m_dTimeout);
         }

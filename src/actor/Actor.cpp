@@ -69,9 +69,19 @@ const std::string& Actor::GetNodeIdentify() const
     return(m_pLabor->GetNodeInfo().strNodeIdentify);
 }
 
+ev_tstamp Actor::GetDataReportInterval() const
+{
+    return(m_pLabor->GetNodeInfo().dDataReportInterval);
+}
+
 time_t Actor::GetNowTime() const
 {
     return(m_pLabor->GetNowTime());
+}
+
+long Actor::GetNowTimeMs() const
+{
+    return(m_pLabor->GetNowTimeMs());
 }
 
 const CJsonObject& Actor::GetCustomConf() const
@@ -171,6 +181,11 @@ bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 
 bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, this));
+}
+
+bool Actor::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+{
+    return(m_pLabor->GetDispatcher()->SendDataReport(iCmd, uiSeq, oMsgBody, this));
 }
 
 int32 Actor::GetStepNum() const
