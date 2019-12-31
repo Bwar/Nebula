@@ -35,6 +35,7 @@ public:
     virtual ~ActorFactory(){};
 
     bool Regist(const std::string& strTypeName, std::function<Actor*(Targs&&... args)> pFunc);
+    bool UnRegist(const std::string& strTypeName);
     Actor* Create(const std::string& strTypeName, Targs&&... args);
 
 private:
@@ -57,6 +58,21 @@ bool ActorFactory<Targs...>::Regist(const std::string& strTypeName, std::functio
     bool bReg = m_mapCreateFunction.insert(
                     std::make_pair(strTypeName, pFunc)).second;
     return (bReg);
+}
+
+template<typename ...Targs>
+bool ActorFactory<Targs...>::UnRegist(const std::string& strTypeName)
+{
+    auto iter = m_mapCreateFunction.find(strTypeName);
+    if (iter == m_mapCreateFunction.end())
+    {
+        return (false);
+    }
+    else
+    {
+        m_mapCreateFunction.erase(iter);
+        return (true);
+    }
 }
 
 template<typename ...Targs>

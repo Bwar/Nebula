@@ -40,6 +40,23 @@ public:
             }
             ActorFactory<Targs...>::Instance()->Regist(strTypeName, CreateObject);
         }
+        ~Register()
+        {
+            char* szDemangleName = NULL;
+            std::string strTypeName;
+#ifdef __GNUC__
+            szDemangleName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
+#else
+            szDemangleName = abi::__cxa_demangle(typeid(T).name(), NULL, NULL, NULL);
+#endif
+            if (NULL != szDemangleName)
+            {
+                strTypeName = szDemangleName;
+                free(szDemangleName);
+            }
+            ActorFactory<Targs...>::Instance()->UnRegist(strTypeName);
+        }
+
         inline void do_nothing()const { };
     };
 
