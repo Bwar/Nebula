@@ -62,7 +62,6 @@ bool CmdOnSetCustomConf::AnyMessage(
             fout.close();
             oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
             oOutMsgBody.mutable_rsp_result()->set_msg("success");
-            m_pSessionManager->SendToChild(CMD_REQ_SET_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
             m_pSessionManager->SendToChild(CMD_REQ_RELOAD_CUSTOM_CONFIG, GetSequence(), oInMsgBody);
             SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
             return(true);
