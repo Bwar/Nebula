@@ -33,6 +33,36 @@ bool HttpStep::HttpGet(const std::string& strUrl)
     return(HttpRequest(oHttpMsg));
 }
 
+bool HttpStep::HttpGet(const std::string& strUrl, const std::unordered_map<std::string, std::string>& mapHeaders)
+{
+    HttpMsg oHttpMsg;
+    oHttpMsg.set_http_major(1);
+    oHttpMsg.set_http_minor(1);
+    oHttpMsg.set_type(HTTP_REQUEST);
+    oHttpMsg.set_method(HTTP_GET);
+    oHttpMsg.set_url(strUrl);
+    for (auto c_iter = mapHeaders.begin(); c_iter != mapHeaders.end(); ++c_iter)
+    {
+        oHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>(c_iter->first, c_iter->second));
+    }
+    return(HttpRequest(oHttpMsg));
+}
+
+bool HttpStep::HttpGet(const std::string& strUrl, const ::google::protobuf::Map<std::string, std::string>& mapHeaders)
+{
+    HttpMsg oHttpMsg;
+    oHttpMsg.set_http_major(1);
+    oHttpMsg.set_http_minor(1);
+    oHttpMsg.set_type(HTTP_REQUEST);
+    oHttpMsg.set_method(HTTP_GET);
+    oHttpMsg.set_url(strUrl);
+    for (auto c_iter = mapHeaders.begin(); c_iter != mapHeaders.end(); ++c_iter)
+    {
+        oHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>(c_iter->first, c_iter->second));
+    }
+    return(HttpRequest(oHttpMsg));
+}
+
 bool HttpStep::HttpPost(const std::string& strUrl, const std::string& strBody, const std::unordered_map<std::string, std::string>& mapHeaders)
 {
     HttpMsg oHttpMsg;

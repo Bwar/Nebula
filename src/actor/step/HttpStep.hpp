@@ -31,6 +31,10 @@ public:
                     void* data = NULL) = 0;
 
     bool HttpGet(const std::string& strUrl);
+    bool HttpGet(const std::string& strUrl,
+            const std::unordered_map<std::string, std::string>& mapHeaders);
+    bool HttpGet(const std::string& strUrl,
+            const ::google::protobuf::Map<std::string, std::string>& mapHeaders);
     bool HttpPost(const std::string& strUrl, const std::string& strBody,
             const std::unordered_map<std::string, std::string>& mapHeaders);
     bool HttpPost(const std::string& strUrl, const std::string& strBody,

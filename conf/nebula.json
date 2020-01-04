@@ -58,6 +58,8 @@
         "cert_file": "20180623143147.pem",
         "key_file": "20180623143147.key"
     },
+    "//data_report": "数据上报时间间隔，无统计数据时不上报",
+    "data_report": 60,
     "//refresh_interval": "刷新Server配置，检查、加载插件动态库时间周期",
     "refresh_interval": 60,
     "load_config":{

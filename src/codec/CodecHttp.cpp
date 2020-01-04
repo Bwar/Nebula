@@ -283,6 +283,10 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     bool bIsGzip = false;   // 是否用gizp压缩传输包
     for (auto h_iter = oHttpMsg.headers().begin(); h_iter != oHttpMsg.headers().end(); ++h_iter)
     {
+        if (h_iter->first == "Content-Length" || h_iter->first == "Host")
+        {
+            continue;
+        }
         auto h_a_iter = m_mapAddingHttpHeader.find(h_iter->first);
         if (h_a_iter == m_mapAddingHttpHeader.end())
         {

@@ -126,6 +126,13 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.0
+   - separate the network dispatch and actor management from Labor (Manager and Worker) to Dispatcher and ActorBuilder 
+   - add supports of Actor classes to Manager process, and move the manager system management features to Cmd and Step
+   - add Loader
+   - optimize Actor dynamic creator
+   - optimize HTTP connection and HTTP data sending and receiving
+   - RedisChannel bug fixed
 #### v0.10
    - the plugin version control dynamically unloads and loads the instant validation feature.
    - optimize reflection dynamic creation of Actor.

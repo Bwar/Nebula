@@ -58,7 +58,7 @@
 
 <a name="GettingStart"></a>
 ## 开始
-&emsp;&emsp;Nebula是个较大型项目，也是一个你难得一见的依赖很少的项目，并且提供了一键安装脚本，[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)，让开发者可以快速部署和体验Nebula。相信部署和体验之后，你会对Nebula产生兴趣，这将会是一个可以广泛应用的框架，基于NebulaBootstrap提供的分布式解决方案可以很方便地用C++开发微服务应用。
+&emsp;&emsp;Nebula是个较完备的项目，也是一个你难得一见的依赖很少的项目，提供了许多开箱即用的功能，并提供了一键安装脚本，[NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap)，让开发者可以快速部署和体验Nebula。相信部署和体验之后，你会对Nebula产生兴趣，这将会是一个可以广泛应用的框架，基于NebulaBootstrap提供的分布式解决方案可以很方便地用C++开发微服务应用。Nebula的相关项目就是学习和使用Nebula框架最好的例子。
 
 * [高并发单机Server示例](docs/cn/nebula_server_demo.md)
 * [分布式服务示例](docs/cn/nebula_distributed_demo.md)
@@ -114,6 +114,13 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.0
+   - 从Manager和Worker类中分离出网络分发功能类Dispatcher和Actor创建及管理类ActorBuilder
+   - Manager进程支持Actor类的使用，将Manager系统管理功能分离到Cmd类和Step类中
+   - 增加Loader进程类型
+   - 优化Actor通过反射动态创建实例
+   - 优化http短连接和http数据收发
+   - RedisChannel bug修复
 #### v0.10
    - 增加插件so版本控制动态卸载和加载即时生效功能
    - 优化反射动态创建Actor
