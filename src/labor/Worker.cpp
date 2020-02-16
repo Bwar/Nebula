@@ -50,7 +50,7 @@ void Worker::Run()
         exit(-2);
     }
 
-    m_pDispatcher->EeventRun();
+    m_pDispatcher->EventRun();
 }
 
 void Worker::OnTerminated(struct ev_signal* watcher)

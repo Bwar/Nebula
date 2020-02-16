@@ -55,6 +55,7 @@ namespace neb
 class Labor;
 class Manager;
 class Worker;
+class LoadStress;  // not in Nebula project
 class Actor;
 class ActorBuilder;
 class Nodes;
@@ -62,6 +63,7 @@ struct tagClientConnWatcherData;
 
 typedef void (*signal_callback)(struct ev_loop*,ev_signal*,int);
 typedef void (*timer_callback)(struct ev_loop*,ev_timer*,int);
+typedef void (*idle_callback)(struct ev_loop*,ev_idle*,int);
 
 class Dispatcher
 {
@@ -85,6 +87,7 @@ public:
 
     Dispatcher(Labor* pLabor, std::shared_ptr<NetLogger> pLogger);
     virtual ~Dispatcher();
+    bool Init();
 
 public:
     static void IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents);
@@ -110,7 +113,7 @@ public:
     template <typename ...Targs>
     void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
-    void EeventRun();
+    void EventRun();
 
 public:
     bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
@@ -118,13 +121,14 @@ public:
     // SendTo() for nebula socket
     bool SendTo(std::shared_ptr<SocketChannel> pChannel);
     bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    bool Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
+    bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
+    bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
+    bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
+    bool Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
+    bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
     bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender);
+    std::shared_ptr<SocketChannel> StressSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
     // SendTo() for http
     bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
@@ -172,13 +176,13 @@ public:
     int SendFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType);
 
 protected:
-    bool Init();
     void Destroy();
     bool AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel);
     bool AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
     bool RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel);
     bool AddEvent(ev_signal* signal_watcher, signal_callback pFunc, int iSignum);
     bool AddEvent(ev_timer* timer_watcher, timer_callback pFunc, ev_tstamp dTimeout);
+    bool AddEvent(ev_idle* idle_watcher, idle_callback pFunc);
     bool RefreshEvent(ev_timer* timer_watcher, ev_tstamp dTimeout);
     bool DelEvent(ev_io* io_watcher);
     bool DelEvent(ev_timer* timer_watcher);
@@ -214,6 +218,7 @@ private:
     friend class Manager;
     friend class Worker;
     friend class ActorBuilder;
+    friend class LoadStress;
 };
 
 template <typename ...Targs>

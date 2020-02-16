@@ -84,11 +84,11 @@ public:     // about worker
     virtual const NodeInfo& GetNodeInfo() const;
     virtual void SetNodeId(uint32 uiNodeId);
     virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
+    bool WithSsl();
     const WorkerInfo& GetWorkerInfo() const;
     const CJsonObject& GetCustomConf() const;
     std::shared_ptr<SocketChannel> GetManagerControlChannel();
     bool SetCustomConf(const CJsonObject& oJsonConf);
-    bool WithSsl();
 
     template <typename ...Targs>
         void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);

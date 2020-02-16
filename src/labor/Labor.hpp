@@ -62,6 +62,10 @@ public:
     virtual void SetNodeId(uint32 uiNodeId) = 0;
     virtual bool AddNetLogMsg(const MsgBody& oMsgBody) = 0;
     virtual void OnTerminated(struct ev_signal* watcher) = 0;
+    virtual bool WithSsl()
+    {
+        return(false);
+    }
 
 private:
     LABOR_TYPE m_eLaborType;

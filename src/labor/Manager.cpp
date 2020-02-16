@@ -106,7 +106,7 @@ void Manager::OnChildTerminated(struct ev_signal* watcher)
 void Manager::Run()
 {
     LOG4_TRACE(" ");
-    m_pDispatcher->EeventRun();
+    m_pDispatcher->EventRun();
 }
 
 bool Manager::InitLogger(const CJsonObject& oJsonConf)
@@ -271,23 +271,46 @@ bool Manager::Init()
         return(false);
     }
 
-    if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
+    std::string strBindIp;
+    if (m_oCurrentConf.Get("bind_ip", strBindIp) && strBindIp.length() > 0)
     {
-        // 接入节点才需要监听客户端连接
-        if (!m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
-                m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd,
-                m_stManagerInfo.iC2SFamily))
+        if (!m_pDispatcher->CreateListenFd(strBindIp,
+                    m_stNodeInfo.iPortForServer, m_stManagerInfo.iS2SListenFd,
+                    m_stManagerInfo.iS2SFamily))
         {
             return(false);
         }
+
+        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
+        {
+            // 接入节点才需要监听客户端连接
+            if (!m_pDispatcher->CreateListenFd(strBindIp,
+                    m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd,
+                    m_stManagerInfo.iC2SFamily))
+            {
+                return(false);
+            }
+        }
     }
-
-
-    if (!m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForServer,
-            m_stNodeInfo.iPortForServer, m_stManagerInfo.iS2SListenFd,
-            m_stManagerInfo.iS2SFamily))
+    else
     {
-        return(false);
+        if (!m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForServer,
+                m_stNodeInfo.iPortForServer, m_stManagerInfo.iS2SListenFd,
+                m_stManagerInfo.iS2SFamily))
+        {
+            return(false);
+        }
+
+        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
+        {
+            // 接入节点才需要监听客户端连接
+            if (!m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
+                    m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd,
+                    m_stManagerInfo.iC2SFamily))
+            {
+                return(false);
+            }
+        }
     }
 
     // 创建到beacon的连接信息

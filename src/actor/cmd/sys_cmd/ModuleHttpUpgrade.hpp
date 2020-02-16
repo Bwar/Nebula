@@ -18,7 +18,7 @@ namespace neb
 {
 
 class ModuleHttpUpgrade: public Module,
-    public DynamicCreator<ModuleHttpUpgrade, std::string>, public ActorSys
+    public DynamicCreator<ModuleHttpUpgrade, std::string&>, public ActorSys
 {
 public:
     ModuleHttpUpgrade(const std::string& strModulePath);

@@ -128,15 +128,8 @@ E_CODEC_STATUS SocketChannelImpl::Send()
         iNeedWriteLen = m_pWaitForSendBuff->ReadableBytes();
         if (0 == iNeedWriteLen)
         {
-            if (CODEC_NEBULA != m_pCodec->GetCodecType() && m_dKeepAlive <= 0.0)
-            {
-                return(CODEC_STATUS_EOF);
-            }
-            else
-            {
-                LOG4_DEBUG("no data need to send.");
-                return(CODEC_STATUS_OK);
-            }
+            LOG4_TRACE("no data need to send.");
+            return(CODEC_STATUS_OK);
         }
         else
         {
@@ -212,6 +205,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
             {
                 case CMD_RSP_TELL_WORKER:
                     m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
+                    m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
                     eCodecStatus = m_pCodec->Encode(oMsgHead, oMsgBody, m_pSendBuff);
                     break;
                 case CMD_REQ_TELL_WORKER:
@@ -401,6 +395,10 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                         ++m_ulUnitTimeMsgNum;
                         ++m_ulMsgNum;
                         oMsgBody.set_add_on(m_strClientData);
+                        if (m_ulMsgNum)
+                        {
+                            m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+                        }
                     }
                     break;
                 case CHANNEL_STATUS_TELL_WORKER:
@@ -414,6 +412,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                     {
                         case CMD_RSP_TELL_WORKER:
                             m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
+                            m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
                             break;
                         case CMD_REQ_TELL_WORKER:
                             m_ucChannelStatus = CHANNEL_STATUS_TELL_WORKER;
@@ -479,11 +478,20 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         }
         m_dActiveTime = m_pLabor->GetNowTime();
         E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
+        if (CODEC_STATUS_OK == eCodecStatus)
+        {
+            ++m_ulUnitTimeMsgNum;
+            ++m_ulMsgNum;
+            if (m_ulMsgNum > 0)
+            {
+                m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+            }
+        }
         return(eCodecStatus);
     }
     else if (iReadLen == 0)
     {
-        LOG4_DEBUG("fd %d closed by peer, error %d %s!",
+        LOG4_TRACE("fd %d closed by peer, error %d %s!",
                         m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
         if (m_pRecvBuff->ReadableBytes() > 0)
         {
@@ -533,6 +541,15 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
         if (CODEC_HTTP == m_pCodec->GetCodecType())
         {
             E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
+            if (CODEC_STATUS_OK == eCodecStatus)
+            {
+                ++m_ulUnitTimeMsgNum;
+                ++m_ulMsgNum;
+                if (m_ulMsgNum > 0)
+                {
+                    m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+                }
+            }
             return(eCodecStatus);
         }
         else
@@ -544,6 +561,10 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
                 ++m_ulUnitTimeMsgNum;
                 ++m_ulMsgNum;
                 oMsgBody.set_add_on(m_strClientData);
+                if (m_ulMsgNum >0)
+                {
+                    m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+                }
                 LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_ulSeq, oMsgHead.cmd(), oMsgHead.seq());
             }
             return(eCodecStatus);

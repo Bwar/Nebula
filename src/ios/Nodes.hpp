@@ -57,6 +57,7 @@ public:
         T_NODE2HASH_MAP mapNode2Hash;
         T_NODE2HASH_MAP::iterator itPollingNode;
         std::map<uint32, std::string> mapHash2Node;
+        std::map<uint32, std::string>::const_iterator itHashRing;
 
         tagNode(){}
         ~tagNode(){}
@@ -76,6 +77,8 @@ public:
     bool GetNode(const std::string& strNodeType, const std::string& strHashKey, std::string& strNodeIdentify);
 
     bool GetNode(const std::string& strNodeType, uint32 uiHash, std::string& strNodeIdentify);
+
+    bool GetNodeInHashRing(const std::string& strNodeType, std::string& strNodeIdentify);
 
     bool GetNode(const std::string& strNodeType, std::string& strNodeIdentify);
 

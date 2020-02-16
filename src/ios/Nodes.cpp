@@ -57,6 +57,7 @@ bool Nodes::GetNode(const std::string& strNodeType, const std::string& strHashKe
         else
         {
             strNodeIdentify = c_iter->second;
+            node_type_iter->second->itHashRing = c_iter;
         }
         return(true);
     }
@@ -79,7 +80,27 @@ bool Nodes::GetNode(const std::string& strNodeType, uint32 uiHash, std::string& 
         else
         {
             strNodeIdentify = c_iter->second;
+            node_type_iter->second->itHashRing = c_iter;
         }
+        return(true);
+    }
+}
+
+bool Nodes::GetNodeInHashRing(const std::string& strNodeType, std::string& strNodeIdentify)
+{
+    auto node_type_iter = m_mapNode.find(strNodeType);
+    if (node_type_iter == m_mapNode.end())
+    {
+        return(false);
+    }
+    else
+    {
+        node_type_iter->second->itHashRing++;
+        if (node_type_iter->second->itHashRing == node_type_iter->second->mapHash2Node.end())
+        {
+            node_type_iter->second->itHashRing = node_type_iter->second->mapHash2Node.begin();
+        }
+        strNodeIdentify = node_type_iter->second->itHashRing->first;
         return(true);
     }
 }
@@ -148,6 +169,7 @@ void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeId
             }
         }
         pNode->itPollingNode = pNode->mapNode2Hash.begin();
+        pNode->itHashRing = pNode->mapHash2Node.begin();
     }
     else
     {
@@ -175,6 +197,7 @@ void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeId
                 }
             }
             node_type_iter->second->itPollingNode = node_type_iter->second->mapNode2Hash.begin();
+            node_type_iter->second->itHashRing = node_type_iter->second->mapHash2Node.begin();
         }
     }
 }
@@ -194,6 +217,7 @@ void Nodes::DelNode(const std::string& strNodeType, const std::string& strNodeId
             }
             node_type_iter->second->mapNode2Hash.erase(node_iter);
             node_type_iter->second->itPollingNode = node_type_iter->second->mapNode2Hash.begin();
+            node_type_iter->second->itHashRing = node_type_iter->second->mapHash2Node.begin();
         }
 
         if (node_type_iter->second->mapNode2Hash.empty())

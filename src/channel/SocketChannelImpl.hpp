@@ -200,7 +200,7 @@ private:
     uint32 m_ulUnitTimeMsgNum;            ///< 统计单位时间内接收消息数量
     uint32 m_ulMsgNum;                    ///< 接收消息数量
     ev_tstamp m_dActiveTime;              ///< 最后一次访问时间
-    ev_tstamp m_dKeepAlive;               ///< 连接保持时间，默认值0为用心跳保持的长连接，大于0的值不做心跳检查，时间到即断连接,小于0为收完数据立即断开连接（主要用于http连接）
+    ev_tstamp m_dKeepAlive;               ///< 连接保持时间
     ev_io* m_pIoWatcher;                  ///< 不在结构体析构时回收
     ev_timer* m_pTimerWatcher;            ///< 不在结构体析构时回收
     CBuffer* m_pRecvBuff;

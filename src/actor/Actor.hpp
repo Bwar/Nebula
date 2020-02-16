@@ -29,6 +29,7 @@
 #include "util/json/CJsonObject.hpp"
 #include "channel/Channel.hpp"
 #include "labor/Labor.hpp"
+#include "codec/Codec.hpp"
 #include "ActorBuilder.hpp"
 
 namespace neb
@@ -165,9 +166,10 @@ protected:
      * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
+     * @param oCodecType 编解码方式
      * @return 是否发送成功
      */
-    bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
     /**
      * @brief 发送数据
@@ -220,9 +222,10 @@ protected:
      * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
+     * @param oCodecType 编解码方式
      * @return 是否发送成功
      */
-    bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
     /**
      * @brief 以取模方式选择发送到同一类型节点
@@ -232,11 +235,12 @@ protected:
      * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
+     * @param oCodecType 编解码方式
      * @return 是否发送成功
      */
-    bool SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
-    bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
     bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 

@@ -31,11 +31,11 @@ struct NodeInfo
     int32 iPortForClient            = 0;            ///< 对Client通信监听端口，对应 iC2SListenFd
     int32 iGatewayPort              = 0;            ///< 对Client服务的真实端口
     bool bIsAccess                  = false;        ///< 是否接入Server
-    ev_tstamp dIoTimeout            = 0.0;          ///< IO（连接）超时配置
+    ev_tstamp dIoTimeout            = 10.0;          ///< IO（连接）超时配置
     ev_tstamp dDataReportInterval   = 60.0;         ///< 统计数据上报时间间隔
-    ev_tstamp dMsgStatInterval      = 0.0;          ///< 客户端连接发送数据包统计时间间隔
-    ev_tstamp dAddrStatInterval     = 0.0;          ///< IP地址数据统计时间间隔
-    ev_tstamp dStepTimeout          = 0.0;          ///< 步骤超时
+    ev_tstamp dMsgStatInterval      = 60.0;          ///< 客户端连接发送数据包统计时间间隔
+    ev_tstamp dAddrStatInterval     = 60.0;          ///< IP地址数据统计时间间隔
+    ev_tstamp dStepTimeout          = 1.5;          ///< 步骤超时
     std::string strWorkPath;                        ///< 工作路径
     std::string strConfFile;                        ///< 配置文件
     std::string strNodeType;                        ///< 节点类型

@@ -43,6 +43,7 @@ bool ModuleHttpUpgrade::AnyMessage(std::shared_ptr<SocketChannel> pChannel, cons
     oOutHttpMsg.set_status_code(400);
     oOutHttpMsg.set_http_major(oHttpMsg.http_major());
     oOutHttpMsg.set_http_minor(oHttpMsg.http_minor());
+    SendTo(pChannel, oOutHttpMsg);
     return(false);
 }
 

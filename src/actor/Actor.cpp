@@ -138,9 +138,9 @@ bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttp
     return(m_pLabor->GetDispatcher()->SendTo(pChannel, oHttpMsg));
 }
 
-bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
-    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, iCmd, uiSeq, oMsgBody, this));
+    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, iCmd, uiSeq, oMsgBody, eCodecType, this));
 }
 
 bool Actor::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg)
@@ -168,19 +168,19 @@ bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     return(m_pLabor->GetDispatcher()->SendTo(iCmd, uiSeq, oMsgBody, this));
 }
 
-bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
-    return(m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, this));
+    return(m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType, this));
 }
 
-bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
-    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, uiFactor, iCmd, uiSeq, oMsgBody, this));
+    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, uiFactor, iCmd, uiSeq, oMsgBody, eCodecType, this));
 }
 
-bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
-    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, this));
+    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType, this));
 }
 
 bool Actor::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)

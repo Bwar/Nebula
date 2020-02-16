@@ -176,7 +176,7 @@ bool Dispatcher::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
             return(DataRecvAndHandle(pChannel));
         }
     }
-    else
+    else if (Labor::LABOR_WORKER == m_pLabor->GetLaborType() || Labor::LABOR_LOADER == m_pLabor->GetLaborType())
     {
         if (pChannel->m_pImpl->GetFd() == ((Worker*)m_pLabor)->GetWorkerInfo().iDataFd)
         {
@@ -186,6 +186,10 @@ bool Dispatcher::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
         {
             return(DataRecvAndHandle(pChannel));
         }
+    }
+    else
+    {
+        return(DataRecvAndHandle(pChannel));
     }
 }
 
@@ -313,7 +317,7 @@ bool Dispatcher::FdTransfer(int iFd)
         }
         std::shared_ptr<SocketChannel> pChannel = nullptr;
         LOG4_TRACE("fd[%d] transfer successfully.", iAcceptFd);
-        if (CODEC_NEBULA != iCodec && ((Worker*)m_pLabor)->WithSsl())
+        if (CODEC_NEBULA != iCodec && m_pLabor->WithSsl())
         {
             pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), false, true);
         }
@@ -459,7 +463,8 @@ bool Dispatcher::OnIoError(std::shared_ptr<SocketChannel> pChannel)
 
 bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
 {
-    ev_tstamp after = pChannel->m_pImpl->GetActiveTime() - ev_now(m_loop) + m_pLabor->GetNodeInfo().dIoTimeout;
+    //ev_tstamp after = pChannel->m_pImpl->GetActiveTime() - ev_now(m_loop) + m_pLabor->GetNodeInfo().dIoTimeout;
+    ev_tstamp after = pChannel->m_pImpl->GetActiveTime() - ev_now(m_loop) + pChannel->m_pImpl->GetKeepAlive();
     if (after > 0)    // IO在定时时间内被重新刷新过，重新设置定时器
     {
         ev_timer_stop (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
@@ -565,7 +570,7 @@ bool Dispatcher::OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, e
     return(bRes);
 }
 
-void Dispatcher::EeventRun()
+void Dispatcher::EventRun()
 {
     ev_run (m_loop, 0);
 }
@@ -642,7 +647,7 @@ bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uin
     return(false);
 }
 
-bool Dispatcher::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Dispatcher::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType, Actor* pSender)
 {
     LOG4_TRACE("identify: %s", strIdentify.c_str());
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
@@ -653,7 +658,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
         {
             (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
         }
-        return(AutoSend(strIdentify, iCmd, uiSeq, oMsgBody));
+        return(AutoSend(strIdentify, iCmd, uiSeq, oMsgBody, eCodecType));
     }
     else
     {
@@ -682,7 +687,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq
     }
 }
 
-bool Dispatcher::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Dispatcher::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType, Actor* pSender)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
@@ -692,7 +697,7 @@ bool Dispatcher::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint
         {
             (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
         }
-        return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody));
+        return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody, eCodecType));
     }
     else
     {
@@ -701,7 +706,7 @@ bool Dispatcher::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint
     }
 }
 
-bool Dispatcher::SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Dispatcher::SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType, Actor* pSender)
 {
     LOG4_TRACE("nody_type: %s, factor: %d", strNodeType.c_str(), uiFactor);
     std::string strOnlineNode;
@@ -711,7 +716,7 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, unsigned int uiFac
         {
             (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
         }
-        return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody));
+        return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody, eCodecType));
     }
     else
     {
@@ -720,14 +725,14 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, unsigned int uiFac
     }
 }
 
-bool Dispatcher::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Dispatcher::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType, Actor* pSender)
 {
     LOG4_TRACE("nody_type: %s", strNodeType.c_str());
     if (oMsgBody.has_req_target())
     {
         if (0 != oMsgBody.req_target().route_id())
         {
-            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, pSender));
+            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, eCodecType, pSender));
         }
         else if (oMsgBody.req_target().route().length() > 0)
         {
@@ -738,7 +743,7 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, int32 iCmd, uint32
                 {
                     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
                 }
-                return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody));
+                return(SendTo(strOnlineNode, iCmd, uiSeq, oMsgBody, eCodecType));
             }
             else
             {
@@ -748,7 +753,7 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, int32 iCmd, uint32
         }
         else
         {
-            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, pSender));
+            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType, pSender));
         }
     }
     else
@@ -758,7 +763,7 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, int32 iCmd, uint32
     }
 };
 
-bool Dispatcher::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender)
+bool Dispatcher::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType, Actor* pSender)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::unordered_set<std::string> setOnlineNodes;
@@ -771,7 +776,7 @@ bool Dispatcher::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 ui
         bool bSendResult = false;
         for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
         {
-            bSendResult |= SendTo(*node_iter, iCmd, uiSeq, oMsgBody);
+            bSendResult |= SendTo(*node_iter, iCmd, uiSeq, oMsgBody, eCodecType);
         }
         return(bSendResult);
     }
@@ -793,7 +798,7 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
 {
     if (m_pLabor->GetLaborType() == Labor::LABOR_MANAGER)
     {
-        return(Broadcast("BEACON", iCmd, uiSeq, oMsgBody, pSender));
+        return(Broadcast("BEACON", iCmd, uiSeq, oMsgBody, CODEC_NEBULA, pSender));
     }
     else
     {
@@ -824,6 +829,88 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
             return(true);
         }
         return(false);
+    }
+}
+
+std::shared_ptr<SocketChannel> Dispatcher::StressSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
+{
+    LOG4_TRACE("%s", strIdentify.c_str());
+    size_t iPosIpPortSeparator = strIdentify.rfind(":");
+    if (iPosIpPortSeparator == std::string::npos)
+    {
+        return(nullptr);
+    }
+    std::string strHost = strIdentify.substr(0, iPosIpPortSeparator);
+    std::string strPort = strIdentify.substr(iPosIpPortSeparator + 1, std::string::npos);
+    int iPort = atoi(strPort.c_str());
+    if (iPort == 0)
+    {
+        return(nullptr);
+    }
+
+    struct addrinfo stAddrHints;
+    struct addrinfo* pAddrResult;
+    struct addrinfo* pAddrCurrent;
+    memset(&stAddrHints, 0, sizeof(struct addrinfo));
+    stAddrHints.ai_family = AF_UNSPEC;
+    stAddrHints.ai_socktype = SOCK_STREAM;
+    stAddrHints.ai_protocol = IPPROTO_IP;
+    int iCode = getaddrinfo(strHost.c_str(), strPort.c_str(), &stAddrHints, &pAddrResult);
+    if (0 != iCode)
+    {
+        LOG4_ERROR("getaddrinfo(\"%s\", \"%s\") error %d: %s",
+                strHost.c_str(), strPort.c_str(), iCode, gai_strerror(iCode));
+        return(nullptr);
+    }
+    int iFd = -1;
+    for (pAddrCurrent = pAddrResult;
+            pAddrCurrent != NULL; pAddrCurrent = pAddrCurrent->ai_next)
+    {
+        iFd = socket(pAddrCurrent->ai_family,
+                pAddrCurrent->ai_socktype, pAddrCurrent->ai_protocol);
+        if (iFd == -1)
+        {
+            continue;
+        }
+        break;
+    }
+
+    /* no address succeeded */
+    if (pAddrCurrent == NULL)
+    {
+        LOG4_ERROR("Could not connect to \"%s:%s\"", strHost.c_str(), strPort.c_str());
+        freeaddrinfo(pAddrResult);
+        return(nullptr);
+    }
+
+    x_sock_set_block(iFd, 0);
+    int nREUSEADDR = 1;
+    setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
+    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, eCodecType);
+    if (nullptr != pChannel)
+    {
+        connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
+        freeaddrinfo(pAddrResult);  /* no longer needed */
+        AddIoTimeout(pChannel, 1.5);
+        AddIoReadEvent(pChannel);
+        AddIoWriteEvent(pChannel);
+        pChannel->m_pImpl->SetRemoteAddr(strHost);
+        E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
+        if (CODEC_STATUS_OK != eCodecStatus
+                && CODEC_STATUS_PAUSE != eCodecStatus
+                && CODEC_STATUS_WANT_WRITE != eCodecStatus
+                && CODEC_STATUS_WANT_READ != eCodecStatus)
+        {
+            DiscardSocketChannel(pChannel);
+        }
+        pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+        return(pChannel);
+    }
+    else
+    {
+        freeaddrinfo(pAddrResult);
+        close(iFd);
+        return(nullptr);
     }
 }
 
@@ -1007,27 +1094,42 @@ bool Dispatcher::SendTo(const std::string& strHost, int iPort, Actor* pSender)
     }
 }
 
-bool Dispatcher::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+bool Dispatcher::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType, Actor* pSender)
 {
     LOG4_TRACE("%s", strIdentify.c_str());
     size_t iPosIpPortSeparator = strIdentify.rfind(':');
+    size_t iPosPortWorkerIndexSeparator = strIdentify.rfind('.');
     if (iPosIpPortSeparator == std::string::npos)
     {
         return(false);
     }
-    size_t iPosPortWorkerIndexSeparator = strIdentify.rfind('.');
     std::string strHost = strIdentify.substr(0, iPosIpPortSeparator);
-    std::string strPort = strIdentify.substr(iPosIpPortSeparator + 1, iPosPortWorkerIndexSeparator - (iPosIpPortSeparator + 1));
-    std::string strWorkerIndex = strIdentify.substr(iPosPortWorkerIndexSeparator + 1, std::string::npos);
-    int iPort = atoi(strPort.c_str());
-    if (iPort == 0)
+    std::string strPort;
+    int iPort = 0;
+    int iWorkerIndex = 0;
+    if (iPosPortWorkerIndexSeparator != std::string::npos)
     {
-        return(false);
+        strPort = strIdentify.substr(iPosIpPortSeparator + 1, iPosPortWorkerIndexSeparator - (iPosIpPortSeparator + 1));
+        iPort = atoi(strPort.c_str());
+        if (iPort == 0)
+        {
+            return(false);
+        }
+        std::string strWorkerIndex = strIdentify.substr(iPosPortWorkerIndexSeparator + 1, std::string::npos);
+        int iWorkerIndex = atoi(strWorkerIndex.c_str());
+        if (iWorkerIndex > 200)
+        {
+            return(false);
+        }
     }
-    int iWorkerIndex = atoi(strWorkerIndex.c_str());
-    if (iWorkerIndex > 200)
+    else
     {
-        return(false);
+        strPort = strIdentify.substr(iPosIpPortSeparator + 1, std::string::npos);
+        iPort = atoi(strPort.c_str());
+        if (iPort == 0)
+        {
+            return(false);
+        }
     }
 
     struct addrinfo stAddrHints;
@@ -1069,7 +1171,7 @@ bool Dispatcher::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiS
     x_sock_set_block(iFd, 0);
     int nREUSEADDR = 1;
     setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
-    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, CODEC_NEBULA);
+    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, eCodecType);
     if (nullptr != pChannel)
     {
         connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
@@ -1453,6 +1555,17 @@ bool Dispatcher::AddEvent(ev_timer* timer_watcher, timer_callback pFunc, ev_tsta
     }
     ev_timer_init (timer_watcher, pFunc, dTimeout + ev_time() - ev_now(m_loop), 0.);
     ev_timer_start (m_loop, timer_watcher);
+    return(true);
+}
+
+bool Dispatcher::AddEvent(ev_idle* idle_watcher, idle_callback pFunc)
+{
+    if (NULL == idle_watcher)
+    {
+        return(false);
+    }
+    ev_idle_init (idle_watcher, pFunc);
+    ev_idle_start (m_loop, idle_watcher);
     return(true);
 }
 
