@@ -76,7 +76,7 @@ public:
     Actor& operator=(const Actor&) = delete;
     virtual ~Actor();
 
-    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
+    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args) const;
     template <typename ...Targs> std::shared_ptr<Step> MakeSharedStep(const std::string& strStepName, Targs&&... args);
     template <typename ...Targs> std::shared_ptr<Session> MakeSharedSession(const std::string& strSessionName, Targs&&... args);
     template <typename ...Targs> std::shared_ptr<Context> MakeSharedContext(const std::string& strContextName, Targs&&... args);
@@ -286,7 +286,7 @@ private:
 };
 
 template <typename ...Targs>
-void Actor::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args)
+void Actor::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args) const
 {
     m_pLabor->GetActorBuilder()->Logger(m_strTraceId, iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }

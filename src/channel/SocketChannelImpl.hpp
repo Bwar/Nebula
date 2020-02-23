@@ -51,7 +51,7 @@ public:
 
     virtual E_CODEC_STATUS Send();
     virtual E_CODEC_STATUS Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    virtual E_CODEC_STATUS Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq);
+    virtual E_CODEC_STATUS Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq);
     virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody);
     virtual E_CODEC_STATUS Recv(HttpMsg& oHttpMsg);
     virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg);
@@ -74,7 +74,7 @@ public:
 
     uint32 GetStepSeq() const
     {
-        return(m_ulStepSeq);
+        return(m_uiStepSeq);
     }
 
     ev_tstamp GetActiveTime() const
@@ -121,6 +121,11 @@ public:
         return(m_ulUnitTimeMsgNum);
     }
 
+    const std::vector<uint32>& GetStepWaitForConnected() const
+    {
+        return(m_vecStepWaitForConnected);
+    }
+
     int GetErrno() const
     {
         return(m_iErrno);
@@ -154,10 +159,10 @@ public:
         m_ucChannelStatus = (uint8)eStatus;
     }
 
-    void SetChannelStatus(E_CHANNEL_STATUS eStatus, uint32 ulStepSeq)
+    void SetChannelStatus(E_CHANNEL_STATUS eStatus, uint32 uiStepSeq)
     {
         m_ucChannelStatus = (uint8)eStatus;
-        m_ulStepSeq = ulStepSeq;
+        m_uiStepSeq = uiStepSeq;
     }
 
     void SetClientData(const std::string& strClientData)
@@ -196,7 +201,7 @@ private:
     int32 m_iFd;                          ///< 文件描述符
     uint32 m_ulSeq;                       ///< 文件描述符创建时对应的序列号
     uint32 m_ulForeignSeq;                ///< 外来的seq，每个连接的包都是有序的，用作接入Server数据包检查，防止篡包
-    uint32 m_ulStepSeq;                   ///< 正在等待回调的Step seq（比如发出一个HttpPost或HttpGet请求，m_ulStepSeq即为正在等待响应的HttpStep的seq）
+    uint32 m_uiStepSeq;                   ///< 正在等待回调的Step seq（比如发出一个HttpPost或HttpGet请求，m_uiStepSeq即为正在等待响应的HttpStep的seq）
     uint32 m_ulUnitTimeMsgNum;            ///< 统计单位时间内接收消息数量
     uint32 m_ulMsgNum;                    ///< 接收消息数量
     ev_tstamp m_dActiveTime;              ///< 最后一次访问时间
@@ -213,6 +218,7 @@ private:
     std::string m_strErrMsg;
     std::string m_strIdentify;            ///< 连接标识（可以为空，不为空时用于标识业务层与连接的关系）
     std::string m_strRemoteAddr;          ///< 对端IP地址（不是客户端地址，但可能跟客户端地址相同）
+    std::vector<uint32> m_vecStepWaitForConnected;  ///< 等待连接成功的Step
     Labor* m_pLabor;
     SocketChannel* m_pSocketChannel;
     std::shared_ptr<NetLogger> m_pLogger;

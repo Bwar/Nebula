@@ -215,10 +215,6 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             {
                 m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
             }
-            else if (CODEC_STATUS_WANT_WRITE == eCodecStatus)
-            {
-                return(SendTo(pChannel));
-            }
             else
             {
                 break;
@@ -264,6 +260,13 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
     else    // 编解码出错或连接关闭或连接中断
     {
         LOG4_TRACE("codec error or connection closed!");
+        auto& vecUncompletedStep = pChannel->m_pImpl->GetStepWaitForConnected();
+        for (auto it = vecUncompletedStep.begin();
+                it != vecUncompletedStep.end(); ++it)
+        {
+            m_pLabor->GetActorBuilder()->OnError(pChannel, *it,
+                    pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
+        }
         DiscardSocketChannel(pChannel);
         return(false);
     }
@@ -402,29 +405,18 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     {
         if (CHANNEL_STATUS_TRY_CONNECT == pChannel->m_pImpl->GetChannelStatus())  // connect之后的第一个写事件
         {
-            if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
+            std::shared_ptr<Step> pStepConnectWorker = m_pLabor->GetActorBuilder()->MakeSharedStep(
+                    nullptr, "neb::StepConnectWorker", pChannel, pChannel->m_pImpl->m_unRemoteWorkerIdx);
+            if (nullptr == pStepConnectWorker)
             {
-                MsgBody oMsgBody;
-                oMsgBody.set_data(std::to_string(pChannel->m_pImpl->m_unRemoteWorkerIdx));
-                LOG4_DEBUG("send after connect, oMsgBody.ByteSize() = %d", oMsgBody.ByteSize());
-                SendTo(pChannel, CMD_REQ_CONNECT_TO_WORKER, m_pLabor->GetSequence(), oMsgBody);
-                return(true);
+                LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
+                return(false);
             }
-            else
+            if (CMD_STATUS_RUNNING != pStepConnectWorker->Emit(ERR_OK))
             {
-                std::shared_ptr<Step> pStepConnectWorker = m_pLabor->GetActorBuilder()->MakeSharedStep(
-                        nullptr, "neb::StepConnectWorker", pChannel, pChannel->m_pImpl->m_unRemoteWorkerIdx);
-                if (nullptr == pStepConnectWorker)
-                {
-                    LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
-                    return(false);
-                }
-                if (CMD_STATUS_RUNNING != pStepConnectWorker->Emit(ERR_OK))
-                {
-                    m_pLabor->GetActorBuilder()->RemoveStep(pStepConnectWorker);
-                }
-                return(true);
+                m_pLabor->GetActorBuilder()->RemoveStep(pStepConnectWorker);
             }
+            return(true);
         }
     }
     else
@@ -1116,9 +1108,10 @@ bool Dispatcher::AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiS
             return(false);
         }
         std::string strWorkerIndex = strIdentify.substr(iPosPortWorkerIndexSeparator + 1, std::string::npos);
-        int iWorkerIndex = atoi(strWorkerIndex.c_str());
+        iWorkerIndex = atoi(strWorkerIndex.c_str());
         if (iWorkerIndex > 200)
         {
+            LOG4_ERROR("worker index must smaller than 200");
             return(false);
         }
     }

@@ -28,7 +28,7 @@ bool CmdDataReport::Init()
     if (pSessionDataReport == nullptr)
     {
         std::string strReportSessionId = "neb::SessionDataReport";
-        auto pSharedSession = MakeSharedSession("neb::SessionReport",
+        auto pSharedSession = MakeSharedSession("neb::SessionDataReport",
                 strReportSessionId, GetDataReportInterval());
         if (pSharedSession == nullptr)
         {

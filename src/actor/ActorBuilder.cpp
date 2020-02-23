@@ -305,11 +305,11 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
                                 oMsgHead.cmd(), oMsgHead.seq(), step_iter->second->GetSequence(),
                                 step_iter->second->GetActiveTime());
                 eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(pChannel, oMsgHead, oMsgBody);
-                if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
+                if (CMD_STATUS_RUNNING != eResult)
                 {
                     uint32 uiChainId = step_iter->second->GetChainId();
                     RemoveStep(step_iter->second);
-                    if (0 != uiChainId)
+                    if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
                     {
                         auto chain_iter = m_mapChain.find(uiChainId);
                         if (chain_iter != m_mapChain.end())
@@ -398,13 +398,13 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
             E_CMD_STATUS eResult;
             http_step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
             eResult = (std::dynamic_pointer_cast<HttpStep>(http_step_iter->second))->Callback(pChannel, oHttpMsg);
-            if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
+            if (CMD_STATUS_RUNNING != eResult)
             {
                 uint32 uiChainId = http_step_iter->second->GetChainId();
                 RemoveStep(http_step_iter->second);
                 m_pLabor->GetDispatcher()->SetChannelStatus(pChannel, CHANNEL_STATUS_ESTABLISHED, 0);
                 m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);       // push back to named socket channel pool.
-                if (0 != uiChainId)
+                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
                 {
                     auto chain_iter = m_mapChain.find(uiChainId);
                     if (chain_iter != m_mapChain.end())
@@ -421,6 +421,46 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
         }
     }
     return(true);
+}
+
+bool ActorBuilder::OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, int iErrno, const std::string& strErrMsg)
+{
+    auto step_iter = m_mapCallbackStep.find(uiStepSeq);
+    if (step_iter != m_mapCallbackStep.end())
+    {
+        if (step_iter->second != nullptr)
+        {
+            E_CMD_STATUS eResult;
+            step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+            eResult = step_iter->second->ErrBack(pChannel, iErrno, strErrMsg);
+            if (CMD_STATUS_RUNNING != eResult)
+            {
+                uint32 uiChainId = step_iter->second->GetChainId();
+                RemoveStep(step_iter->second);
+                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
+                {
+                    auto chain_iter = m_mapChain.find(uiChainId);
+                    if (chain_iter != m_mapChain.end())
+                    {
+                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                        eResult = chain_iter->second->Next();
+                        if (CMD_STATUS_RUNNING != eResult)
+                        {
+                            RemoveChain(uiChainId);
+                        }
+                    }
+                }
+            }
+        }
+        ExecAssemblyLine(pChannel, iErrno, strErrMsg);
+        return(true);
+    }
+    else
+    {
+        snprintf(m_pErrBuff, gc_iErrBuffLen, "no callback or the callback for seq %u had been timeout!", uiStepSeq);
+        LOG4_WARNING(m_pErrBuff);
+        return(false);
+    }
 }
 
 bool ActorBuilder::OnRedisConnected(std::shared_ptr<RedisChannel> pChannel, const redisAsyncContext *c, int status)
@@ -691,11 +731,50 @@ void ActorBuilder::ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, con
                 E_CMD_STATUS eResult;
                 step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
                 eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(pChannel, oMsgHead, oMsgBody);
-                if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
+                if (CMD_STATUS_RUNNING != eResult)
                 {
                     uint32 uiChainId = step_iter->second->GetChainId();
                     RemoveStep(step_iter->second);
-                    if (0 != uiChainId)
+                    if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
+                    {
+                        auto chain_iter = m_mapChain.find(uiChainId);
+                        if (chain_iter != m_mapChain.end())
+                        {
+                            chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                            eResult = chain_iter->second->Next();
+                            if (CMD_STATUS_RUNNING != eResult)
+                            {
+                                RemoveChain(uiChainId);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        while(uiStepSeq > 0);
+    }
+    m_setAssemblyLine.clear();
+}
+
+void ActorBuilder::ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg)
+{
+    for (auto session_iter = m_setAssemblyLine.begin(); session_iter != m_setAssemblyLine.end(); ++session_iter)
+    {
+        uint32 uiStepSeq = 0;
+        do
+        {
+            uiStepSeq = (*session_iter)->PopWaitingStep();
+            auto step_iter = m_mapCallbackStep.find(uiStepSeq);
+            if (step_iter != m_mapCallbackStep.end())
+            {
+                E_CMD_STATUS eResult;
+                step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->ErrBack(pChannel, iErrno, strErrMsg);
+                if (CMD_STATUS_RUNNING != eResult)
+                {
+                    uint32 uiChainId = step_iter->second->GetChainId();
+                    RemoveStep(step_iter->second);
+                    if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
                     {
                         auto chain_iter = m_mapChain.find(uiChainId);
                         if (chain_iter != m_mapChain.end())
@@ -747,6 +826,12 @@ void ActorBuilder::LoadSysCmd()
         MakeSharedCmd(nullptr, "neb::CmdSetNodeConf", (int)CMD_REQ_SET_NODE_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdSetNodeCustomConf", (int)CMD_REQ_SET_NODE_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdReloadCustomConf", (int)CMD_REQ_RELOAD_CUSTOM_CONFIG);
+        std::string strModulePath = "/healthy";
+        MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
+        strModulePath = "/health";
+        MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
+        strModulePath = "/status";
+        MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
     }
     m_pSessionLogger = std::dynamic_pointer_cast<SessionLogger>(MakeSharedSession(nullptr, "neb::SessionLogger"));
 }

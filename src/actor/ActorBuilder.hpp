@@ -93,6 +93,7 @@ public:
     bool OnChainTimeout(std::shared_ptr<Chain> pChain);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
+    bool OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, int iErrno, const std::string& strErrMsg);
     bool OnRedisConnected(std::shared_ptr<RedisChannel> pChannel, const redisAsyncContext *c, int status);
     void OnRedisDisconnected(std::shared_ptr<RedisChannel> pChannel, const redisAsyncContext *c, int status);
     bool OnRedisCmdResult(std::shared_ptr<RedisChannel> pChannel, redisAsyncContext *c, void *reply, void *privdata);
@@ -153,6 +154,7 @@ protected:
     void RemoveChain(uint32 uiChainId);
     void ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const std::string& strClientData);
     void ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    void ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg);
 
     void AddChainConf(const std::string& strChainKey, std::queue<std::vector<std::string> >&& queChainBlocks);
     void LoadSysCmd();

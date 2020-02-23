@@ -114,12 +114,12 @@ E_CODEC_STATUS CodecHttp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBod
 E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE(" ");
-    ++m_uiDecodedNum;
     if (pBuff->ReadableBytes() == 0)
     {
         LOG4_DEBUG("no data...");
         return(CODEC_STATUS_PAUSE);
     }
+    ++m_uiDecodedNum;
     HttpMsg oHttpMsg;
     E_CODEC_STATUS eCodecStatus = Decode(pBuff, oHttpMsg);
     if (CODEC_STATUS_OK == eCodecStatus)
@@ -636,15 +636,17 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
 E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
 {
     LOG4_TRACE(" ");
-    ++m_uiDecodedNum;
     if (pBuff->ReadableBytes() == 0)
     {
+        /*
         if (CloseRightAway())
         {
             return(CODEC_STATUS_EOF);
         }
+        */
         return(CODEC_STATUS_PAUSE);
     }
+    ++m_uiDecodedNum;
     m_parser_setting.on_message_begin = OnMessageBegin;
     m_parser_setting.on_url = OnUrl;
     m_parser_setting.on_status = OnStatus;

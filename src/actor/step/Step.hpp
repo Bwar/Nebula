@@ -38,6 +38,19 @@ public:
      */
     virtual E_CMD_STATUS Timeout() = 0;
 
+    /**
+     * @brief 错误回调
+     * @note 由框架层回调，与业务逻辑无关。当框架明确网络错误发生且不可能产生多于
+     * 一种结果时回调（比如异步网络发送错误）。为兼容之前版本，该方法设计为非纯虚
+     * 方法。
+     */
+    virtual E_CMD_STATUS ErrBack(std::shared_ptr<SocketChannel> pChannel,
+            int iErrno, const std::string& strErrMsg)
+    {
+        LOG4_ERROR("error %d: %s", iErrno, strErrMsg.c_str());
+        return(CMD_STATUS_FAULT);
+    }
+
 protected:
     /**
      * @brief 执行当前步骤接下来的步骤

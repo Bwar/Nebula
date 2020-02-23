@@ -20,7 +20,7 @@ namespace neb
 {
 
 SocketChannelImpl::SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
-    : m_ucChannelStatus(CHANNEL_STATUS_INIT), m_unRemoteWorkerIdx(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulForeignSeq(0), m_ulStepSeq(0),
+    : m_ucChannelStatus(CHANNEL_STATUS_INIT), m_unRemoteWorkerIdx(0), m_iFd(iFd), m_ulSeq(ulSeq), m_ulForeignSeq(0), m_uiStepSeq(0),
       m_ulUnitTimeMsgNum(0), m_ulMsgNum(0), m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
       m_pIoWatcher(NULL), m_pTimerWatcher(NULL),
       m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
@@ -32,6 +32,7 @@ SocketChannelImpl::SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_
 SocketChannelImpl::~SocketChannelImpl()
 {
     LOG4_DEBUG("SocketChannelImpl::~SocketChannelImpl() fd %d, seq %u", m_iFd, m_ulSeq);
+    m_vecStepWaitForConnected.clear();
     if (CHANNEL_STATUS_CLOSED != m_ucChannelStatus)
     {
         Close();
@@ -145,6 +146,7 @@ E_CODEC_STATUS SocketChannelImpl::Send()
     LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
     if (iWriteLen >= 0)
     {
+        m_vecStepWaitForConnected.clear();
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -167,9 +169,9 @@ E_CODEC_STATUS SocketChannelImpl::Send()
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
-        m_strErrMsg = m_szErrBuff;
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
         return(CODEC_STATUS_INT);
     }
 }
@@ -225,6 +227,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
                     if (CODEC_STATUS_OK == eCodecStatus)
                     {
                         eCodecStatus = CODEC_STATUS_PAUSE;
+                        m_vecStepWaitForConnected.push_back(uiSeq);
                     }
                     break;
             }
@@ -280,14 +283,14 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
-        m_strErrMsg = m_szErrBuff;
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
         return(CODEC_STATUS_INT);
     }
 }
 
-E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq)
+E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_ulSeq, m_ucChannelStatus);
     if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
@@ -311,6 +314,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
             if (CODEC_STATUS_OK == eCodecStatus)
             {
                 eCodecStatus = CODEC_STATUS_PAUSE;
+                m_vecStepWaitForConnected.push_back(uiStepSeq);
             }
             break;
         default:
@@ -339,7 +343,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
         {
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
         }
-        m_ulStepSeq = ulStepSeq;
+        m_uiStepSeq = uiStepSeq;
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iWriteLen)
         {
@@ -357,9 +361,9 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
-        m_strErrMsg = m_szErrBuff;
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
         return(CODEC_STATUS_INT);
     }
 }
@@ -438,9 +442,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
     }
     else if (iReadLen == 0)
     {
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_DEBUG("fd %d closed by peer, error %d %s!",
-                        m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
-        m_strErrMsg = m_szErrBuff;
+                        m_iFd, m_iErrno, m_strErrMsg.c_str());
         return(CODEC_STATUS_EOF);
     }
     else
@@ -450,9 +454,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
-        m_strErrMsg = m_szErrBuff;
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
         return(CODEC_STATUS_INT);
     }
 }
@@ -491,8 +495,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
     }
     else if (iReadLen == 0)
     {
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_TRACE("fd %d closed by peer, error %d %s!",
-                        m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
+                        m_iFd, m_iErrno, m_strErrMsg.c_str());
         if (m_pRecvBuff->ReadableBytes() > 0)
         {
             E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
@@ -501,7 +506,6 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
                 oHttpMsg.set_is_decoding(false);
             }
         }
-        m_strErrMsg = m_szErrBuff;
         return(CODEC_STATUS_EOF);
     }
     else
@@ -511,9 +515,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
-        m_strErrMsg = m_szErrBuff;
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
         return(CODEC_STATUS_INT);
     }
 }
@@ -572,9 +576,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
     }
     else if (iReadLen == 0)
     {
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_DEBUG("fd %d closed by peer, error %d %s!",
-                        m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
-        m_strErrMsg = m_szErrBuff;
+                        m_iFd, m_iErrno, m_strErrMsg.c_str());
         return(CODEC_STATUS_EOF);
     }
     else
@@ -584,9 +588,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff)));
-        m_strErrMsg = m_szErrBuff;
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
         return(CODEC_STATUS_INT);
     }
 }
