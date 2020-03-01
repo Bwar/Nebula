@@ -66,7 +66,7 @@ bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
                 m_pCodec->SetKey(m_strKey);
                 break;
             case CODEC_HTTP:
-                m_pCodec = new CodecHttp(m_pLogger, eCodecType, m_dKeepAlive);
+                m_pCodec = new CodecHttp(m_pLogger, eCodecType);
                 m_pCodec->SetKey(m_strKey);
                 break;
             default:
@@ -491,6 +491,10 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
                 m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
             }
         }
+        if (((CodecHttp*)m_pCodec)->CloseRightAway())
+        {
+            eCodecStatus = CODEC_STATUS_EOF;
+        }
         return(eCodecStatus);
     }
     else if (iReadLen == 0)
@@ -553,6 +557,10 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, Htt
                 {
                     m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
                 }
+            }
+            if (((CodecHttp*)m_pCodec)->CloseRightAway())
+            {
+                eCodecStatus = CODEC_STATUS_EOF;
             }
             return(eCodecStatus);
         }
@@ -640,6 +648,10 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody, Ht
     if (CODEC_HTTP == m_pCodec->GetCodecType())
     {
         eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
+        if (((CodecHttp*)m_pCodec)->CloseRightAway())
+        {
+            eCodecStatus = CODEC_STATUS_EOF;
+        }
         return(eCodecStatus);
     }
     else

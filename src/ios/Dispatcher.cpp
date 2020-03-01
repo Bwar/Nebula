@@ -215,6 +215,10 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             {
                 m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
             }
+            else if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10)
+            {
+                m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+            }
             else
             {
                 break;
