@@ -156,7 +156,7 @@ void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeId
         pNode->mapNode2Hash.insert(std::make_pair(strNodeIdentify, vecHash));
         for (int i = 0; i < m_iVirtualNodeNum / iPointPerHash; ++i)     // distribution: ketama
         {
-            snprintf(szVirtualNodeIdentify, 32, "%s##%d", strNodeIdentify.c_str(), i);
+            snprintf(szVirtualNodeIdentify, 32, "%d@%s##%d", m_iVirtualNodeNum - i, strNodeIdentify.c_str(), i);
             oMd5.CalculateDigest(szDigest, (const CryptoPP::byte*)szVirtualNodeIdentify, strlen(szVirtualNodeIdentify));
             for (int j = 0; j < iPointPerHash; ++j)
             {

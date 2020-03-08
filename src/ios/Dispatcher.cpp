@@ -9,11 +9,6 @@
  ******************************************************************************/
 
 #include "Dispatcher.hpp"
-#include <sys/wait.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <arpa/inet.h>
 #include <algorithm>
 #include "util/process_helper.h"
 #include "Definition.hpp"
@@ -215,7 +210,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             {
                 m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
             }
-            else if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10)
+            else if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10) // http1.0 client close
             {
                 m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
             }
@@ -263,6 +258,89 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
     }
     else    // 编解码出错或连接关闭或连接中断
     {
+        if (CODEC_STATUS_INVALID == eCodecStatus)
+        {
+            if (pChannel->m_pImpl->AutoSwitchCodec())
+            {
+                return(DataFetchAndHandle(pChannel));
+            }
+        }
+        LOG4_TRACE("codec error or connection closed!");
+        auto& vecUncompletedStep = pChannel->m_pImpl->GetStepWaitForConnected();
+        for (auto it = vecUncompletedStep.begin();
+                it != vecUncompletedStep.end(); ++it)
+        {
+            m_pLabor->GetActorBuilder()->OnError(pChannel, *it,
+                    pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
+        }
+        DiscardSocketChannel(pChannel);
+        return(false);
+    }
+}
+
+bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
+{
+    LOG4_TRACE(" ");
+    E_CODEC_STATUS eCodecStatus;
+    if (CODEC_HTTP == pChannel->m_pImpl->GetCodecType())
+    {
+        HttpMsg oHttpMsg;
+        eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
+        while (CODEC_STATUS_OK == eCodecStatus)
+        {
+            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+            eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
+        }
+        if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10) // http1.0 client close
+        {
+            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+        }
+    }
+    else
+    {
+        MsgHead oMsgHead;
+        MsgBody oMsgBody;
+        eCodecStatus = pChannel->m_pImpl->Fetch(oMsgHead, oMsgBody);
+        while (CODEC_STATUS_OK == eCodecStatus)
+        {
+            if (m_pLabor->GetNodeInfo().bIsAccess && !pChannel->m_pImpl->IsChannelVerify())
+            {
+                if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType() && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
+                {
+                    LOG4_DEBUG("invalid request, please login first!");
+                    DiscardSocketChannel(pChannel);
+                    return(false);
+                }
+            }
+            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oMsgHead, oMsgBody);
+            oMsgHead.Clear();       // 注意protobuf的Clear()使用不当容易造成内存泄露
+            oMsgBody.Clear();
+            eCodecStatus = pChannel->m_pImpl->Fetch(oMsgHead, oMsgBody);
+        }
+    }
+
+    if (CODEC_STATUS_PAUSE == eCodecStatus)
+    {
+        return(true);
+    }
+    else if (CODEC_STATUS_WANT_WRITE == eCodecStatus)
+    {
+        return(SendTo(pChannel));
+    }
+    else if (CODEC_STATUS_WANT_READ == eCodecStatus)
+    {
+        RemoveIoWriteEvent(pChannel);
+        return(true);
+    }
+    else    // 编解码出错或连接关闭或连接中断
+    {
+        if (CODEC_STATUS_INVALID == eCodecStatus)
+        {
+            if (pChannel->m_pImpl->AutoSwitchCodec())
+            {
+                return(DataFetchAndHandle(pChannel));
+            }
+        }
         LOG4_TRACE("codec error or connection closed!");
         auto& vecUncompletedStep = pChannel->m_pImpl->GetStepWaitForConnected();
         for (auto it = vecUncompletedStep.begin();
@@ -1706,6 +1784,9 @@ bool Dispatcher::Init()
 #else
     m_pSessionNode = std::unique_ptr<Nodes>(new Nodes());
 #endif
+    Codec::AddAutoSwitchCodecType(CODEC_HTTP);
+    Codec::AddAutoSwitchCodecType(CODEC_PROTO);
+    Codec::AddAutoSwitchCodecType(CODEC_PRIVATE);
     return(true);
 }
 
@@ -2051,7 +2132,7 @@ bool Dispatcher::AcceptServerConn(int iFd)
         std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iAcceptFd, CODEC_NEBULA);
         if (NULL != pChannel)
         {
-            AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
+            AddIoTimeout(pChannel, 1.0);     // 初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
             AddIoReadEvent(pChannel);
         }
     }

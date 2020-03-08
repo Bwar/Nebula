@@ -229,7 +229,7 @@ E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& 
                     strRawData.assign((const char*)pBuff->GetRawReadBuffer(), stMsgHead.body_len);
                     if (!Rc5Decrypt(strRawData, strDecryptData))
                     {
-                        LOG4_ERROR("Rc5Decrypt error!");
+                        LOG4_WARNING("Rc5Decrypt error!");
                         return(CODEC_STATUS_ERR);
                     }
                 }
@@ -239,7 +239,7 @@ E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& 
                     {
                         if (!Unzip(strDecryptData, strUncompressData))
                         {
-                            LOG4_ERROR("uncompress error!");
+                            LOG4_WARNING("uncompress error!");
                             return(CODEC_STATUS_ERR);
                         }
                     }
@@ -249,7 +249,7 @@ E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& 
                         strRawData.assign((const char*)pBuff->GetRawReadBuffer(), stMsgHead.body_len);
                         if (!Unzip(strRawData, strUncompressData))
                         {
-                            LOG4_ERROR("uncompress error!");
+                            LOG4_WARNING("uncompress error!");
                             return(CODEC_STATUS_ERR);
                         }
                     }
@@ -260,7 +260,7 @@ E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& 
                     {
                         if (!Gunzip(strDecryptData, strUncompressData))
                         {
-                            LOG4_ERROR("uncompress error!");
+                            LOG4_WARNING("uncompress error!");
                             return(CODEC_STATUS_ERR);
                         }
                     }
@@ -270,7 +270,7 @@ E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& 
                         strRawData.assign((const char*)pBuff->GetRawReadBuffer(), stMsgHead.body_len);
                         if (!Gunzip(strRawData, strUncompressData))
                         {
-                            LOG4_ERROR("uncompress error!");
+                            LOG4_WARNING("uncompress error!");
                             return(CODEC_STATUS_ERR);
                         }
                     }
@@ -298,7 +298,7 @@ E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& 
             }
             else
             {
-                LOG4_ERROR("cmd[%u], seq[%u] oMsgBody.ParseFromArray() error!", oMsgHead.cmd(), oMsgHead.seq());
+                LOG4_WARNING("cmd[%u], seq[%u] oMsgBody.ParseFromArray() error!", oMsgHead.cmd(), oMsgHead.seq());
                 return(CODEC_STATUS_ERR);
             }
         }

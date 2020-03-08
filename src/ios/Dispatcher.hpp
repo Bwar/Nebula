@@ -101,6 +101,7 @@ public:
 
     bool OnIoRead(std::shared_ptr<SocketChannel> pChannel);
     bool DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
+    bool DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel);
     bool FdTransfer(int iFd);
     bool OnIoWrite(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoError(std::shared_ptr<SocketChannel> pChannel);

@@ -430,164 +430,52 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         {
             if (strGzipData.size() > 0)
             {
-                if (strGzipData.size() > 8192)  // 长度太长，使用chunked编码传输
+                iWriteSize = pBuff->Printf("Content-Length: %u\r\n\r\n", strGzipData.size());
+                if (iWriteSize < 0)
                 {
-                    bIsChunked = true;
-                    iWriteSize = pBuff->Printf("Transfer-Encoding: chunked\r\n\r\n");
-                    if (iWriteSize < 0)
-                    {
-                        pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                        m_mapAddingHttpHeader.clear();
-                        return(CODEC_STATUS_ERR);
-                    }
-                    else
-                    {
-                        iHadEncodedSize += iWriteSize;
-                    }
-                    size_t iChunkLength = 8192;
-                    for (size_t iPos = 0; iPos < strGzipData.size(); iPos += iChunkLength)
-                    {
-                        iChunkLength = (iChunkLength < strGzipData.size() - iPos) ? iChunkLength : (strGzipData.size() - iPos);
-                        iWriteSize = pBuff->Printf("%x\r\n", iChunkLength);
-                        if (iWriteSize < 0)
-                        {
-                            pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                            m_mapAddingHttpHeader.clear();
-                            return(CODEC_STATUS_ERR);
-                        }
-                        else
-                        {
-                            iHadEncodedSize += iWriteSize;
-                        }
-                        iWriteSize = pBuff->Printf("%s\r\n", strGzipData.substr(iPos, iChunkLength).c_str(), iChunkLength);
-                        if (iWriteSize < 0)
-                        {
-                            pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                            m_mapAddingHttpHeader.clear();
-                            return(CODEC_STATUS_ERR);
-                        }
-                        else
-                        {
-                            iHadEncodedSize += iWriteSize;
-                        }
-                    }
-                    iWriteSize = pBuff->Printf("0\r\n\r\n");
-                    if (iWriteSize < 0)
-                    {
-                        pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                        m_mapAddingHttpHeader.clear();
-                        return(CODEC_STATUS_ERR);
-                    }
-                    else
-                    {
-                        iHadEncodedSize += iWriteSize;
-                    }
+                    pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
+                    m_mapAddingHttpHeader.clear();
+                    return(CODEC_STATUS_ERR);
                 }
                 else
                 {
-                    iWriteSize = pBuff->Printf("Content-Length: %u\r\n\r\n", strGzipData.size());
-                    if (iWriteSize < 0)
-                    {
-                        pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                        m_mapAddingHttpHeader.clear();
-                        return(CODEC_STATUS_ERR);
-                    }
-                    else
-                    {
-                        iHadEncodedSize += iWriteSize;
-                    }
-                    iWriteSize = pBuff->Write(strGzipData.c_str(), strGzipData.size());
-                    if (iWriteSize < 0)
-                    {
-                        pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                        m_mapAddingHttpHeader.clear();
-                        return(CODEC_STATUS_ERR);
-                    }
-                    else
-                    {
-                        iHadEncodedSize += iWriteSize;
-                    }
+                    iHadEncodedSize += iWriteSize;
+                }
+                iWriteSize = pBuff->Write(strGzipData.c_str(), strGzipData.size());
+                if (iWriteSize < 0)
+                {
+                    pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
+                    m_mapAddingHttpHeader.clear();
+                    return(CODEC_STATUS_ERR);
+                }
+                else
+                {
+                    iHadEncodedSize += iWriteSize;
                 }
             }
             else
             {
-                if (oHttpMsg.body().size() > 8192)
+                iWriteSize = pBuff->Printf("Content-Length: %u\r\n\r\n", oHttpMsg.body().size());
+                if (iWriteSize < 0)
                 {
-                    bIsChunked = true;
-                    iWriteSize = pBuff->Printf("Transfer-Encoding: chunked\r\n\r\n");
-                    if (iWriteSize < 0)
-                    {
-                        pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                        m_mapAddingHttpHeader.clear();
-                        return(CODEC_STATUS_ERR);
-                    }
-                    else
-                    {
-                        iHadEncodedSize += iWriteSize;
-                    }
-                    size_t iChunkLength = 8192;
-                    for (size_t iPos = 0; iPos < oHttpMsg.body().size(); iPos += iChunkLength)
-                    {
-                        iChunkLength = (iChunkLength < oHttpMsg.body().size() - iPos) ? iChunkLength : (oHttpMsg.body().size() - iPos);
-                        iWriteSize = pBuff->Printf("%x\r\n", iChunkLength);
-                        if (iWriteSize < 0)
-                        {
-                            pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                            m_mapAddingHttpHeader.clear();
-                            return(CODEC_STATUS_ERR);
-                        }
-                        else
-                        {
-                            iHadEncodedSize += iWriteSize;
-                        }
-                        iWriteSize = pBuff->Printf("%s\r\n", oHttpMsg.body().substr(iPos, iChunkLength).c_str(), iChunkLength);
-                        if (iWriteSize < 0)
-                        {
-                            pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                            m_mapAddingHttpHeader.clear();
-                            return(CODEC_STATUS_ERR);
-                        }
-                        else
-                        {
-                            iHadEncodedSize += iWriteSize;
-                        }
-                    }
-                    iWriteSize = pBuff->Printf("0\r\n\r\n");
-                    if (iWriteSize < 0)
-                    {
-                        pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                        m_mapAddingHttpHeader.clear();
-                        return(CODEC_STATUS_ERR);
-                    }
-                    else
-                    {
-                        iHadEncodedSize += iWriteSize;
-                    }
+                    pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
+                    m_mapAddingHttpHeader.clear();
+                    return(CODEC_STATUS_ERR);
                 }
                 else
                 {
-                    iWriteSize = pBuff->Printf("Content-Length: %u\r\n\r\n", oHttpMsg.body().size());
-                    if (iWriteSize < 0)
-                    {
-                        pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                        m_mapAddingHttpHeader.clear();
-                        return(CODEC_STATUS_ERR);
-                    }
-                    else
-                    {
-                        iHadEncodedSize += iWriteSize;
-                    }
-                    iWriteSize = pBuff->Write(oHttpMsg.body().c_str(), oHttpMsg.body().size());
-                    if (iWriteSize < 0)
-                    {
-                        pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
-                        m_mapAddingHttpHeader.clear();
-                        return(CODEC_STATUS_ERR);
-                    }
-                    else
-                    {
-                        iHadEncodedSize += iWriteSize;
-                    }
+                    iHadEncodedSize += iWriteSize;
+                }
+                iWriteSize = pBuff->Write(oHttpMsg.body().c_str(), oHttpMsg.body().size());
+                if (iWriteSize < 0)
+                {
+                    pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);
+                    m_mapAddingHttpHeader.clear();
+                    return(CODEC_STATUS_ERR);
+                }
+                else
+                {
+                    iHadEncodedSize += iWriteSize;
                 }
             }
         }

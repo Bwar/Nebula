@@ -169,8 +169,8 @@ bool Manager::InitActorBuilder()
         return(false);
     }
     if (!m_pActorBuilder->Init(
-            m_oCurrentConf["load_conf"]["manager"]["boot_load"],
-            m_oCurrentConf["load_conf"]["manager"]["dynamic_loading"]))
+            m_oCurrentConf["load_config"]["manager"]["boot_load"],
+            m_oCurrentConf["load_config"]["manager"]["dynamic_loading"]))
     {
         LOG4_ERROR("ActorBuilder->Init() failed!");
         return(false);

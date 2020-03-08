@@ -13,6 +13,7 @@
 //#include <zlib.h>
 //#include <zconf.h>
 
+#include <vector>
 #include <actor/cmd/CW.hpp>
 #include "util/CBuffer.hpp"
 #include "pb/msg.pb.h"
@@ -94,6 +95,9 @@ public:
         m_strKey = strKey;
     }
 
+    static const std::vector<E_CODEC_TYPE>& GetAutoSwitchCodecType();
+    static void AddAutoSwitchCodecType(E_CODEC_TYPE eCodecType);
+
     template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
 
 protected:
@@ -117,6 +121,7 @@ protected:
 private:
     E_CODEC_TYPE m_eCodecType;
     std::string m_strKey;       // 密钥
+    static std::vector<E_CODEC_TYPE> m_vecAutoSwitchCodecType;
 
     friend class SocketChannel;
 };
