@@ -228,6 +228,7 @@ bool Manager::GetConf()
             std::cerr << "failed to parse json file " << m_stNodeInfo.strConfFile << std::endl;
             return(false);
         }
+        m_oCustomConf = m_oCurrentConf["custom"];
         ssContent.str("");
         fin.close();
     }
@@ -666,6 +667,7 @@ const CJsonObject& Manager::GetNodeConf() const
 void Manager::SetNodeConf(const CJsonObject& oNodeConf)
 {
     m_oCurrentConf = oNodeConf;
+    m_oCustomConf = m_oCurrentConf["custom"];
 }
 
 const NodeInfo& Manager::GetNodeInfo() const
@@ -676,6 +678,11 @@ const NodeInfo& Manager::GetNodeInfo() const
 void Manager::SetNodeId(uint32 uiNodeId)
 {
     m_stNodeInfo.uiNodeId = uiNodeId;
+}
+
+const CJsonObject& Manager::GetCustomConf() const
+{
+    return(m_oCustomConf);
 }
 
 const Manager::tagManagerInfo& Manager::GetManagerInfo() const

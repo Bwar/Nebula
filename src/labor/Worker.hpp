@@ -84,9 +84,9 @@ public:     // about worker
     virtual const NodeInfo& GetNodeInfo() const;
     virtual void SetNodeId(uint32 uiNodeId);
     virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
+    virtual const CJsonObject& GetCustomConf() const;
     bool WithSsl();
     const WorkerInfo& GetWorkerInfo() const;
-    const CJsonObject& GetCustomConf() const;
     std::shared_ptr<SocketChannel> GetManagerControlChannel();
     bool SetCustomConf(const CJsonObject& oJsonConf);
 

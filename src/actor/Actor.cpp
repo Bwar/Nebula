@@ -86,7 +86,7 @@ long Actor::GetNowTimeMs() const
 
 const CJsonObject& Actor::GetCustomConf() const
 {
-    return(((Worker*)m_pLabor)->GetCustomConf());
+    return(m_pLabor->GetCustomConf());
 }
 std::shared_ptr<Session> Actor::GetSession(uint32 uiSessionId)
 {

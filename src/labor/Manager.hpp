@@ -90,6 +90,7 @@ public:
     virtual void SetNodeConf(const CJsonObject& oNodeConf);
     virtual const NodeInfo& GetNodeInfo() const;
     virtual void SetNodeId(uint32 uiNodeId);
+    virtual const CJsonObject& GetCustomConf() const;
     const tagManagerInfo& GetManagerInfo() const;
 
     virtual bool AddNetLogMsg(const MsgBody& oMsgBody);
@@ -117,6 +118,7 @@ private:
 
     CJsonObject m_oLastConf;          ///< 上次加载的配置
     CJsonObject m_oCurrentConf;       ///< 当前加载的配置
+    CJsonObject m_oCustomConf;        ///< 自定义配置
     NodeInfo m_stNodeInfo;
     tagManagerInfo m_stManagerInfo;
     ev_timer* m_pPeriodicTaskWatcher = NULL;          ///< 进程周期任务定时器

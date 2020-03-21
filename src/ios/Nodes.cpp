@@ -8,10 +8,11 @@
  * @note
  * Modify history:
  ******************************************************************************/
+#include "Nodes.hpp"
+#include <cstring>
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 #include "cryptopp/md5.h"
-//#include "cryptopp/hex.h"
-#include "Nodes.hpp"
+#include "cryptopp/hex.h"
 
 namespace neb
 {
@@ -148,26 +149,29 @@ void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeId
     {
         std::shared_ptr<tagNode> pNode = std::make_shared<tagNode>();
         m_mapNode.insert(std::make_pair(strNodeType, pNode));
-        CryptoPP::Weak::MD5 oMd5;
-        char szVirtualNodeIdentify[32] = {0};
-        CryptoPP::byte szDigest[CryptoPP::Weak::MD5::DIGESTSIZE] = {0};
+        std::string strHash;
+        char szVirtualNodeIdentify[40] = {0};
         int32 iPointPerHash = 4;
         std::vector<uint32> vecHash;
-        pNode->mapNode2Hash.insert(std::make_pair(strNodeIdentify, vecHash));
         for (int i = 0; i < m_iVirtualNodeNum / iPointPerHash; ++i)     // distribution: ketama
         {
-            snprintf(szVirtualNodeIdentify, 32, "%d@%s##%d", m_iVirtualNodeNum - i, strNodeIdentify.c_str(), i);
-            oMd5.CalculateDigest(szDigest, (const CryptoPP::byte*)szVirtualNodeIdentify, strlen(szVirtualNodeIdentify));
+            snprintf(szVirtualNodeIdentify, 40, "%d@%s#%d", m_iVirtualNodeNum - i, strNodeIdentify.c_str(), i);
+            CryptoPP::Weak1::MD5 oMd5;
+            CryptoPP::HexEncoder oHexEncoder;
+            oMd5.Update((const CryptoPP::byte*)szVirtualNodeIdentify, strlen(szVirtualNodeIdentify));
+            strHash.resize(oMd5.DigestSize());
+            oMd5.Final((CryptoPP::byte*)&strHash[0]);
             for (int j = 0; j < iPointPerHash; ++j)
             {
-                uint32 k = ((uint32)(szDigest[3 + j * iPointPerHash] & 0xFF) << 24)
-                       | ((uint32)(szDigest[2 + j * iPointPerHash] & 0xFF) << 16)
-                       | ((uint32)(szDigest[1 + j * iPointPerHash] & 0xFF) << 8)
-                       | (szDigest[j * iPointPerHash] & 0xFF);
-                pNode->mapNode2Hash.begin()->second.push_back(k);
+                uint32 k = ((uint32)(strHash[3 + j * iPointPerHash] & 0xFF) << 24)
+                       | ((uint32)(strHash[2 + j * iPointPerHash] & 0xFF) << 16)
+                       | ((uint32)(strHash[1 + j * iPointPerHash] & 0xFF) << 8)
+                       | (strHash[j * iPointPerHash] & 0xFF);
+                vecHash.push_back(k);
                 pNode->mapHash2Node.insert(std::make_pair(k, strNodeIdentify));
             }
         }
+        pNode->mapNode2Hash.insert(std::make_pair(strNodeIdentify, std::move(vecHash)));
         pNode->itPollingNode = pNode->mapNode2Hash.begin();
         pNode->itHashRing = pNode->mapHash2Node.begin();
     }
@@ -176,26 +180,29 @@ void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeId
         auto node_iter = node_type_iter->second->mapNode2Hash.find(strNodeIdentify);
         if (node_iter == node_type_iter->second->mapNode2Hash.end())
         {
-            CryptoPP::Weak::MD5 oMd5;
-            char szVirtualNodeIdentify[32] = {0};
-            CryptoPP::byte szDigest[CryptoPP::Weak::MD5::DIGESTSIZE] = {0};
+            std::string strHash;
+            char szVirtualNodeIdentify[40] = {0};
             int32 iPointPerHash = 4;
             std::vector<uint32> vecHash;
-            node_type_iter->second->mapNode2Hash.insert(std::make_pair(strNodeIdentify, vecHash));
             for (int i = 0; i < m_iVirtualNodeNum / iPointPerHash; ++i)     // distribution: ketama
             {
-                snprintf(szVirtualNodeIdentify, 32, "%s##%d", strNodeIdentify.c_str(), i);
-                oMd5.CalculateDigest(szDigest, (const CryptoPP::byte*)szVirtualNodeIdentify, strlen(szVirtualNodeIdentify));
+                snprintf(szVirtualNodeIdentify, 40, "%d@%s#%d", m_iVirtualNodeNum - i, strNodeIdentify.c_str(), i);
+                CryptoPP::Weak1::MD5 oMd5;
+                CryptoPP::HexEncoder oHexEncoder;
+                oMd5.Update((const CryptoPP::byte*)szVirtualNodeIdentify, strlen(szVirtualNodeIdentify));
+                strHash.resize(oMd5.DigestSize());
+                oMd5.Final((CryptoPP::byte*)&strHash[0]);
                 for (int j = 0; j < iPointPerHash; ++j)
                 {
-                    uint32 k = ((uint32)(szDigest[3 + j * iPointPerHash] & 0xFF) << 24)
-                           | ((uint32)(szDigest[2 + j * iPointPerHash] & 0xFF) << 16)
-                           | ((uint32)(szDigest[1 + j * iPointPerHash] & 0xFF) << 8)
-                           | (szDigest[j * iPointPerHash] & 0xFF);
-                    node_type_iter->second->mapNode2Hash.begin()->second.push_back(k);
+                    uint32 k = ((uint32)(strHash[3 + j * iPointPerHash] & 0xFF) << 24)
+                           | ((uint32)(strHash[2 + j * iPointPerHash] & 0xFF) << 16)
+                           | ((uint32)(strHash[1 + j * iPointPerHash] & 0xFF) << 8)
+                           | (strHash[j * iPointPerHash] & 0xFF);
+                    vecHash.push_back(k);
                     node_type_iter->second->mapHash2Node.insert(std::make_pair(k, strNodeIdentify));
                 }
             }
+            node_type_iter->second->mapNode2Hash.insert(std::make_pair(strNodeIdentify, std::move(vecHash)));
             node_type_iter->second->itPollingNode = node_type_iter->second->mapNode2Hash.begin();
             node_type_iter->second->itHashRing = node_type_iter->second->mapHash2Node.begin();
         }

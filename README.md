@@ -133,6 +133,9 @@ A simple testing can be start with a NebulaInterface only, and also can be start
    - optimize Actor dynamic creator
    - optimize HTTP connection and HTTP data sending and receiving
    - RedisChannel bug fixed
+   - add bind ip
+   - add load stress
+   - add codec auto switch
 #### v0.10
    - the plugin version control dynamically unloads and loads the instant validation feature.
    - optimize reflection dynamic creation of Actor.

@@ -121,6 +121,9 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
    - 优化Actor通过反射动态创建实例
    - 优化http短连接和http数据收发
    - RedisChannel bug修复
+   - 增加绑定IP配置
+   - 增加压力测试相关接口
+   - 增加编解码器自动转换
 #### v0.10
    - 增加插件so版本控制动态卸载和加载即时生效功能
    - 优化反射动态创建Actor
