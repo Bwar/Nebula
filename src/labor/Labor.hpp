@@ -53,6 +53,10 @@ public:
 public:
     virtual Dispatcher* GetDispatcher() = 0;
     virtual ActorBuilder* GetActorBuilder() = 0;
+    virtual ActorBuilder* GetLoaderActorBuilder()   // thread shared
+    {
+        return(nullptr);
+    }
     virtual uint32 GetSequence() const = 0;
     virtual time_t GetNowTime() const = 0;
     virtual long GetNowTimeMs() const = 0;

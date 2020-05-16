@@ -60,6 +60,14 @@ public:
         return(m_oReqMsgBody);
     }
 
+    void ResetContext(
+            std::shared_ptr<SocketChannel> pChannel,
+            int32 iCmd, uint32 uiSeq);
+    void ResetContext(
+            std::shared_ptr<SocketChannel> pChannel,
+            int32 iCmd, uint32 uiSeq,
+            const MsgBody& oReqMsgBody);
+
 private:
     int32 m_iReqCmd;
     uint32 m_uiReqSeq;

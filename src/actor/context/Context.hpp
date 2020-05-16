@@ -64,6 +64,11 @@ public:
     {
     }
 
+    void ResetChannel(std::shared_ptr<SocketChannel> pChannel)
+    {
+        m_pChannel = pChannel;
+    }
+
     std::shared_ptr<SocketChannel> GetChannel()
     {
         return(m_pChannel);

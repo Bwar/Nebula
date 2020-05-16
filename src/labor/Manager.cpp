@@ -56,8 +56,16 @@ Manager::Manager(const std::string& strConfFile)
     }
     m_stManagerInfo.iWorkerBeat = (gc_iBeatInterval * 2) + 1;
     CreateEvents();
-    CreateLoader();
-    CreateWorker();
+    if (m_stNodeInfo.bThreadMode)
+    {
+        CreateLoaderThread();
+        CreateWorkerThread();
+    }
+    else
+    {
+        CreateLoader();
+        CreateWorker();
+    }
 }
 
 Manager::~Manager()
@@ -175,6 +183,11 @@ bool Manager::InitActorBuilder()
         LOG4_ERROR("ActorBuilder->Init() failed!");
         return(false);
     }
+    if (m_stNodeInfo.bThreadMode)
+    {
+        m_pActorBuilder->Init(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"]);
+        m_pActorBuilder->Init(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"]);
+    }
     return(true);
 }
 
@@ -267,6 +280,7 @@ bool Manager::GetConf()
 
 bool Manager::Init()
 {
+    m_oCurrentConf.Get("thread_mode", m_stNodeInfo.bThreadMode);
     if (!InitLogger(m_oCurrentConf) || !InitDispatcher() || !InitActorBuilder())
     {
         return(false);
@@ -454,6 +468,52 @@ void Manager::CreateLoader()
     }
 }
 
+void Manager::CreateLoaderThread()
+{
+    bool bWithLoader = false;
+    m_oCurrentConf.Get("with_loader", bWithLoader);
+    if (!bWithLoader)
+    {
+        return;
+    }
+    LOG4_TRACE(" ");
+    int iControlFds[2];
+    int iDataFds[2];
+    if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
+    {
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+    }
+    if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
+    {
+        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+    }
+
+    x_sock_set_block(iControlFds[0], 0);
+    x_sock_set_block(iDataFds[0], 0);
+    x_sock_set_block(iControlFds[1], 0);
+    x_sock_set_block(iDataFds[1], 0);
+    Worker* pWorker = m_pSessionManager->MutableLoader(0, m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1]);
+    if (pWorker == nullptr)
+    {
+        return;
+    }
+    if (pWorker->Init(m_oCurrentConf))
+    {
+        return;
+    }
+    m_pLoaderActorBuilder = pWorker->GetActorBuilder();
+    std::thread t(&Worker::Run, pWorker);
+    t.detach();
+    m_pSessionManager->AddLoaderInfo(0, getpid(), iControlFds[0], iDataFds[0]);
+    std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
+    std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
+    m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
+    m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
+    m_pDispatcher->AddIoReadEvent(pChannelData);
+    m_pDispatcher->AddIoReadEvent(pChannelControl);
+    m_pSessionManager->SendOnlineNodesToWorker();
+}
+
 void Manager::CreateWorker()
 {
     LOG4_TRACE(" ");
@@ -511,6 +571,49 @@ void Manager::CreateWorker()
         {
             LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
         }
+    }
+}
+
+void Manager::CreateWorkerThread()
+{
+    LOG4_TRACE(" ");
+    for (unsigned int i = 1; i <= m_stNodeInfo.uiWorkerNum; ++i)
+    {
+        int iControlFds[2];
+        int iDataFds[2];
+        if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
+        {
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+        }
+        if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
+        {
+            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
+        }
+
+        x_sock_set_block(iControlFds[0], 0);
+        x_sock_set_block(iDataFds[0], 0);
+        x_sock_set_block(iControlFds[1], 0);
+        x_sock_set_block(iDataFds[1], 0);
+        Worker* pWorker = m_pSessionManager->MutableWorker(i, m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1]);
+        if (pWorker == nullptr)
+        {
+            continue;
+        }
+        if (!pWorker->Init(m_oCurrentConf))
+        {
+            continue;
+        }
+        pWorker->SetLoaderActorBuilder(m_pLoaderActorBuilder);
+        std::thread t(&Worker::Run, pWorker);
+        t.detach();
+        m_pSessionManager->AddWorkerInfo(i, getpid(), iControlFds[0], iDataFds[0]);
+        std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
+        std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
+        m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
+        m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
+        m_pDispatcher->AddIoReadEvent(pChannelData);
+        m_pDispatcher->AddIoReadEvent(pChannelControl);
+        m_pSessionManager->NewSocketWhenWorkerCreated(iDataFds[0]);
     }
 }
 
@@ -626,6 +729,10 @@ void Manager::RefreshServer()
         {
             MsgBody oMsgBody;
             oMsgBody.set_data(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"].ToString());
+            if (m_stNodeInfo.bThreadMode)
+            {
+                m_pActorBuilder->DynamicLoad(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"]);
+            }
             m_pSessionManager->SendToWorker(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
         }
         if (m_oLastConf["load_config"]["loader"]["dynamic_loading"].ToString()
@@ -633,6 +740,10 @@ void Manager::RefreshServer()
         {
             MsgBody oMsgBody;
             oMsgBody.set_data(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"].ToString());
+            if (m_stNodeInfo.bThreadMode)
+            {
+                m_pActorBuilder->DynamicLoad(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"]);
+            }
             m_pSessionManager->SendToLoader(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
         }
     }

@@ -61,4 +61,21 @@ bool PbContext::Response(int iErrno, const std::string& strData)
     return(false);
 }
 
+void PbContext::ResetContext(std::shared_ptr<SocketChannel> pChannel,
+        int32 iCmd, uint32 uiSeq)
+{
+    ResetChannel(pChannel);
+    m_iReqCmd = iCmd;
+    m_uiReqSeq = uiSeq;
+}
+
+void PbContext::ResetContext(std::shared_ptr<SocketChannel> pChannel,
+        int32 iCmd, uint32 uiSeq, const MsgBody& oReqMsgBody)
+{
+    ResetChannel(pChannel);
+    m_iReqCmd = iCmd;
+    m_uiReqSeq = uiSeq;
+    m_oReqMsgBody = oReqMsgBody;
+}
+
 } /* namespace neb */

@@ -84,6 +84,7 @@ public:
     ActorBuilder(Labor* pLabor, std::shared_ptr<NetLogger> pLogger);
     virtual ~ActorBuilder();
     bool Init(CJsonObject& oBootLoadConf, CJsonObject& oDynamicLoadConf);
+    bool Init(CJsonObject& oDynamicLoadConf);
 
     static void StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);

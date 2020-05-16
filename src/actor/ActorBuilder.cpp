@@ -62,6 +62,12 @@ bool ActorBuilder::Init(CJsonObject& oBootLoadConf, CJsonObject& oDynamicLoadCon
     return(true);
 }
 
+bool ActorBuilder::Init(CJsonObject& oDynamicLoadConf)
+{
+    DynamicLoad(oDynamicLoadConf);
+    return(true);
+}
+
 void ActorBuilder::StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
     if (watcher->data != NULL)
@@ -1219,29 +1225,12 @@ void ActorBuilder::DynamicLoad(CJsonObject& oDynamicLoadingConf)
                 {
                     std::string strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/")
                         + oDynamicLoadingConf[i]("so_path") + std::string(".") + oDynamicLoadingConf[i]("version");
-                    if (0 != access(strSoFile.c_str(), F_OK))
+                    if (m_pLabor->GetNodeInfo().bThreadMode && Labor::LABOR_MANAGER != m_pLabor->GetLaborType())
                     {
-                        strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
-                        if (0 != access(strSoFile.c_str(), F_OK))
-                        {
-                            LOG4_WARNING("%s not exist!", strSoFile.c_str());
-                            continue;
-                        }
-                    }
-                    pSo = LoadSo(strSoFile, strVersion);
-                    if (pSo != nullptr)
-                    {
-                        LOG4_INFO("succeed in loading %s", strSoFile.c_str());
-                        m_mapLoadedSo.insert(std::make_pair(strSoPath, pSo));
                         LoadDynamicSymbol(oDynamicLoadingConf[i]);
                     }
-                }
-                else
-                {
-                    if (strVersion != so_iter->second->strVersion)  // 版本升级，先卸载再加载
+                    else
                     {
-                        std::string strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/")
-                            + oDynamicLoadingConf[i]("so_path") + std::string(".") + oDynamicLoadingConf[i]("version");
                         if (0 != access(strSoFile.c_str(), F_OK))
                         {
                             strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
@@ -1251,19 +1240,51 @@ void ActorBuilder::DynamicLoad(CJsonObject& oDynamicLoadingConf)
                                 continue;
                             }
                         }
-                        UnloadDynamicSymbol(oDynamicLoadingConf[i]);
-                        dlclose(so_iter->second->pSoHandle);
-                        delete so_iter->second;
                         pSo = LoadSo(strSoFile, strVersion);
                         if (pSo != nullptr)
                         {
                             LOG4_INFO("succeed in loading %s", strSoFile.c_str());
-                            so_iter->second = pSo;
+                            m_mapLoadedSo.insert(std::make_pair(strSoPath, pSo));
+                            LoadDynamicSymbol(oDynamicLoadingConf[i]);
+                        }
+                    }
+                }
+                else
+                {
+                    if (strVersion != so_iter->second->strVersion)  // 版本升级，先卸载再加载
+                    {
+                        std::string strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/")
+                            + oDynamicLoadingConf[i]("so_path") + std::string(".") + oDynamicLoadingConf[i]("version");
+                        if (m_pLabor->GetNodeInfo().bThreadMode && Labor::LABOR_MANAGER != m_pLabor->GetLaborType())
+                        {
+                            UnloadDynamicSymbol(oDynamicLoadingConf[i]);
                             LoadDynamicSymbol(oDynamicLoadingConf[i]);
                         }
                         else
                         {
-                            m_mapLoadedSo.erase(so_iter);
+                            if (0 != access(strSoFile.c_str(), F_OK))
+                            {
+                                strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
+                                if (0 != access(strSoFile.c_str(), F_OK))
+                                {
+                                    LOG4_WARNING("%s not exist!", strSoFile.c_str());
+                                    continue;
+                                }
+                            }
+                            UnloadDynamicSymbol(oDynamicLoadingConf[i]);
+                            dlclose(so_iter->second->pSoHandle);
+                            delete so_iter->second;
+                            pSo = LoadSo(strSoFile, strVersion);
+                            if (pSo != nullptr)
+                            {
+                                LOG4_INFO("succeed in loading %s", strSoFile.c_str());
+                                so_iter->second = pSo;
+                                LoadDynamicSymbol(oDynamicLoadingConf[i]);
+                            }
+                            else
+                            {
+                                m_mapLoadedSo.erase(so_iter);
+                            }
                         }
                     }
                 }
@@ -1273,15 +1294,22 @@ void ActorBuilder::DynamicLoad(CJsonObject& oDynamicLoadingConf)
         {
             if (oDynamicLoadingConf[i].Get("so_path", strSoPath))
             {
-                so_iter = m_mapLoadedSo.find(strSoPath);
-                if (so_iter != m_mapLoadedSo.end())
+                if (m_pLabor->GetNodeInfo().bThreadMode && Labor::LABOR_MANAGER != m_pLabor->GetLaborType())
                 {
                     UnloadDynamicSymbol(oDynamicLoadingConf[i]);
-                    dlclose(so_iter->second->pSoHandle);
-                    delete so_iter->second;
-                    m_mapLoadedSo.erase(so_iter);
-                    LOG4_INFO("unload %s.%s", strSoPath.c_str(),
-                            oDynamicLoadingConf[i]("version").c_str());
+                }
+                else
+                {
+                    so_iter = m_mapLoadedSo.find(strSoPath);
+                    if (so_iter != m_mapLoadedSo.end())
+                    {
+                        UnloadDynamicSymbol(oDynamicLoadingConf[i]);
+                        dlclose(so_iter->second->pSoHandle);
+                        delete so_iter->second;
+                        m_mapLoadedSo.erase(so_iter);
+                        LOG4_INFO("unload %s.%s", strSoPath.c_str(),
+                                oDynamicLoadingConf[i]("version").c_str());
+                    }
                 }
             }
         }

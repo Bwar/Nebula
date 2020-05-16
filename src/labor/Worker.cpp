@@ -24,7 +24,8 @@ extern "C" {
 namespace neb
 {
 
-Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, Labor::LABOR_TYPE eLaborType)
+Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd,
+        int iWorkerIndex, Labor::LABOR_TYPE eLaborType)
     : Labor(eLaborType)
 {
     m_stWorkerInfo.iControlFd = iControlFd;
@@ -65,12 +66,15 @@ void Worker::OnTerminated(struct ev_signal* watcher)
 
 bool Worker::CheckParent()
 {
-    pid_t iParentPid = getppid();
-    if (iParentPid == 1)    // manager进程已不存在
+    if (!m_stNodeInfo.bThreadMode)
     {
-        LOG4_INFO("no manager process exist, worker %d exit.", m_stWorkerInfo.iWorkerIndex);
-        Destroy();
-        exit(0);
+        pid_t iParentPid = getppid();
+        if (iParentPid == 1)    // manager进程已不存在
+        {
+            LOG4_INFO("no manager process exist, worker %d exit.", m_stWorkerInfo.iWorkerIndex);
+            Destroy();
+            exit(0);
+        }
     }
     MsgBody oMsgBody;
     CJsonObject oJsonLoad;
@@ -97,7 +101,11 @@ bool Worker::Init(CJsonObject& oJsonConf)
 {
     char szProcessName[64] = {0};
     snprintf(szProcessName, sizeof(szProcessName), "%s_W%d", oJsonConf("server_name").c_str(), m_stWorkerInfo.iWorkerIndex);
-    ngx_setproctitle(szProcessName);
+    oJsonConf.Get("thread_mode", m_stNodeInfo.bThreadMode);
+    if (!m_stNodeInfo.bThreadMode)
+    {
+        ngx_setproctitle(szProcessName);
+    }
     oJsonConf.Get("io_timeout", m_stNodeInfo.dIoTimeout);
     if (!oJsonConf.Get("step_timeout", m_stNodeInfo.dStepTimeout))
     {
@@ -119,7 +127,7 @@ bool Worker::Init(CJsonObject& oJsonConf)
         oJsonConf["permission"]["uin_permit"].Get("stat_interval", m_stNodeInfo.dMsgStatInterval);
         oJsonConf["permission"]["uin_permit"].Get("permit_num", m_stNodeInfo.iMsgPermitNum);
     }
-    if (!InitLogger(oJsonConf))
+    if (!InitLogger(oJsonConf, szProcessName))
     {
         return(false);
     }
@@ -194,7 +202,7 @@ bool Worker::Init(CJsonObject& oJsonConf)
     return(true);
 }
 
-bool Worker::InitLogger(const CJsonObject& oJsonConf)
+bool Worker::InitLogger(const CJsonObject& oJsonConf, const std::string& strLogNameBase)
 {
     if (nullptr != m_pLogger)  // 已经被初始化过，只修改日志级别
     {
@@ -214,7 +222,7 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf)
         int32 iLogLevel = 0;
         int32 iNetLogLevel = 0;
         std::string strLogname = m_stNodeInfo.strWorkPath + std::string("/") + oJsonConf("log_path")
-                        + std::string("/") + getproctitle() + std::string(".log");
+                        + std::string("/") + strLogNameBase + std::string(".log");
         std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
         oJsonConf.Get("max_log_file_size", iMaxLogFileSize);
         oJsonConf.Get("max_log_file_num", iMaxLogFileNum);
@@ -278,11 +286,14 @@ bool Worker::NewActorBuilder()
 
 bool Worker::CreateEvents()
 {
-    signal(SIGPIPE, SIG_IGN);
-    // 注册信号事件
-    ev_signal* signal_watcher = (ev_signal*)malloc(sizeof(ev_signal));
-    signal_watcher->data = (void*)this;
-    m_pDispatcher->AddEvent(signal_watcher, Dispatcher::SignalCallback, SIGINT);
+    if (!m_stNodeInfo.bThreadMode)
+    {
+        signal(SIGPIPE, SIG_IGN);
+        // 注册信号事件
+        ev_signal* signal_watcher = (ev_signal*)malloc(sizeof(ev_signal));
+        signal_watcher->data = (void*)this;
+        m_pDispatcher->AddEvent(signal_watcher, Dispatcher::SignalCallback, SIGINT);
+    }
     AddPeriodicTaskEvent();
 
     // 注册网络IO事件

@@ -51,4 +51,10 @@ bool HttpContext::Response(const std::string& strData)
     return(false);
 }
 
+void HttpContext::ResetContext(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
+{
+    ResetChannel(pChannel);
+    m_oReqHttpMsg = oHttpMsg;
+}
+
 } /* namespace neb */

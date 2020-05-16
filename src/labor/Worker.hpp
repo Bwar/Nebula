@@ -67,6 +67,16 @@ public:     // about worker
         return(m_pActorBuilder);
     }
 
+    virtual ActorBuilder* GetLoaderActorBuilder()
+    {
+        return(m_pLoaderActorBuilder);
+    }
+
+    void SetLoaderActorBuilder(ActorBuilder* pActorBuilder)
+    {
+        m_pLoaderActorBuilder = pActorBuilder;
+    }
+
     virtual uint32 GetSequence() const
     {
         ++m_ulSequence;
@@ -94,7 +104,7 @@ public:     // about worker
         void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
 protected:
-    bool InitLogger(const CJsonObject& oJsonConf);
+    bool InitLogger(const CJsonObject& oJsonConf, const std::string& strLogNameBase = "");
     virtual bool InitDispatcher();
     virtual bool InitActorBuilder();
     bool NewDispatcher();
@@ -108,6 +118,7 @@ private:
     mutable uint32 m_ulSequence = 0;
     Dispatcher* m_pDispatcher = nullptr;
     ActorBuilder* m_pActorBuilder = nullptr;
+    ActorBuilder* m_pLoaderActorBuilder = nullptr;
 
     CJsonObject m_oNodeConf;
     CJsonObject m_oCustomConf;    ///< 自定义配置

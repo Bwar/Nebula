@@ -48,6 +48,8 @@ public:
         return(m_oReqHttpMsg);
     }
 
+    void ResetContext(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
+
 private:
     HttpMsg m_oReqHttpMsg;
     friend class ActorBuilder;

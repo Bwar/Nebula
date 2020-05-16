@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <list>
+#include <thread>
 
 #include "util/json/CJsonObject.hpp"
 #include "logger/NetLogger.hpp"
@@ -79,6 +80,11 @@ public:
         return(m_pActorBuilder);
     }
 
+    virtual ActorBuilder* GetLoaderActorBuilder()
+    {
+        return(m_pLoaderActorBuilder);
+    }
+
     std::shared_ptr<SessionManager> GetSessionManager()
     {
         return m_pSessionManager;
@@ -106,7 +112,9 @@ protected:
 
     bool CreateEvents();
     void CreateLoader();
-    void CreateWorker();
+    void CreateLoaderThread();
+    void CreateWorker();       //muti process
+    void CreateWorkerThread(); //muti thread
     bool RestartWorker(int iDeathPid);
     bool AddPeriodicTaskEvent();
 
@@ -115,6 +123,7 @@ private:
     mutable uint32 m_uiSequence = 0;
     Dispatcher* m_pDispatcher = nullptr;
     ActorBuilder* m_pActorBuilder = nullptr;
+    ActorBuilder* m_pLoaderActorBuilder = nullptr;
 
     CJsonObject m_oLastConf;          ///< 上次加载的配置
     CJsonObject m_oCurrentConf;       ///< 当前加载的配置

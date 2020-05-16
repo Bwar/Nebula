@@ -15,6 +15,8 @@
 #include "util/json/CJsonObject.hpp"
 #include "labor/NodeInfo.hpp"
 #include "labor/Manager.hpp"
+#include "labor/Worker.hpp"
+#include "labor/Loader.hpp"
 #include "ios/Dispatcher.hpp"
 #include "actor/cmd/CW.hpp"
 
@@ -24,7 +26,7 @@ namespace neb
 SessionManager::SessionManager(bool bDirectToLoader)
     : Session("neb::SessionManager", gc_dNoTimeout), m_bDirectToLoader(bDirectToLoader)
 {
-    m_iterWorker = m_mapWorker.begin();
+    m_iterWorkerInfo = m_mapWorkerInfo.begin();
 }
 
 SessionManager::~SessionManager()
@@ -35,7 +37,13 @@ SessionManager::~SessionManager()
         it->second = nullptr;
     }
     m_mapWorker.clear();
-    m_iterWorker = m_mapWorker.begin();
+    for (auto it = m_mapWorkerInfo.begin(); it != m_mapWorkerInfo.end(); ++it)
+    {
+        delete it->second;
+        it->second = nullptr;
+    }
+    m_mapWorkerInfo.clear();
+    m_iterWorkerInfo = m_mapWorkerInfo.begin();
     m_mapWorkerStartNum.clear();
     m_mapWorkerFdPid.clear();
     m_mapOnlineNodes.clear();
@@ -71,7 +79,7 @@ void SessionManager::DelOnlineNode(const std::string& strNodeIdentify)
 
 bool SessionManager::SendToChild(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    for (auto worker_iter = m_mapWorker.begin(); worker_iter != m_mapWorker.end(); ++worker_iter)
+    for (auto worker_iter = m_mapWorkerInfo.begin(); worker_iter != m_mapWorkerInfo.end(); ++worker_iter)
     {
         GetLabor(this)->GetDispatcher()->SendTo(
                 worker_iter->second->iControlFd, iCmd, uiSeq, oMsgBody);
@@ -81,7 +89,7 @@ bool SessionManager::SendToChild(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBo
 
 bool SessionManager::SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    for (auto worker_iter = m_mapWorker.begin(); worker_iter != m_mapWorker.end(); ++worker_iter)
+    for (auto worker_iter = m_mapWorkerInfo.begin(); worker_iter != m_mapWorkerInfo.end(); ++worker_iter)
     {
         if (m_iLoaderDataFd == worker_iter->second->iDataFd)
         {
@@ -95,7 +103,7 @@ bool SessionManager::SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgB
 
 bool SessionManager::SendToLoader(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    for (auto worker_iter = m_mapWorker.begin(); worker_iter != m_mapWorker.end(); ++worker_iter)
+    for (auto worker_iter = m_mapWorkerInfo.begin(); worker_iter != m_mapWorkerInfo.end(); ++worker_iter)
     {
         if (m_iLoaderDataFd == worker_iter->second->iDataFd)
         {
@@ -122,10 +130,20 @@ void SessionManager::AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, i
     pWorkerAttr->iControlFd = iControlFd;
     pWorkerAttr->iDataFd = iDataFd;
     pWorkerAttr->dBeatTime = GetNowTime();
-    m_mapWorker.insert(std::make_pair(iPid, pWorkerAttr));
-    m_iterWorker = m_mapWorker.begin();
-    m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFd, iPid));
-    m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFd, iPid));
+    if (GetLabor(this)->GetNodeInfo().bThreadMode)
+    {
+        m_mapWorkerInfo.insert(std::make_pair(iWorkerIndex, pWorkerAttr));
+        m_iterWorkerInfo = m_mapWorkerInfo.begin();
+        m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFd, iWorkerIndex));
+        m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFd, iWorkerIndex));
+    }
+    else
+    {
+        m_mapWorkerInfo.insert(std::make_pair(iPid, pWorkerAttr));
+        m_iterWorkerInfo = m_mapWorkerInfo.begin();
+        m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFd, iPid));
+        m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFd, iPid));
+    }
     auto start_num_iter = m_mapWorkerStartNum.find(iWorkerIndex);
     if (start_num_iter == m_mapWorkerStartNum.end())
     {
@@ -143,10 +161,58 @@ void SessionManager::AddLoaderInfo(int iWorkerIndex, int iPid, int iControlFd, i
     AddWorkerInfo(iWorkerIndex, iPid, iControlFd, iDataFd);
 }
 
+Worker* SessionManager::MutableWorker(int iWorkerIndex, const std::string& strWorkerPath, int iControlFd, int iDataFd)
+{
+    auto iter = m_mapWorker.find(iWorkerIndex);
+    if (iter == m_mapWorker.end())
+    {
+        Worker* pWorker = nullptr;
+        try
+        {
+            pWorker = new Worker(strWorkerPath, iControlFd, iDataFd, iWorkerIndex);
+        }
+        catch(std::bad_alloc& e)
+        {
+            LOG4_ERROR("new Worker error: %s", e.what());
+            return(nullptr);
+        }
+        m_mapWorker.insert(std::make_pair(iWorkerIndex, pWorker));
+        return(pWorker);
+    }
+    else
+    {
+        return(iter->second);
+    }
+}
+
+Worker* SessionManager::MutableLoader(int iWorkerIndex, const std::string& strWorkerPath, int iControlFd, int iDataFd)
+{
+    auto iter = m_mapWorker.find(iWorkerIndex);
+    if (iter == m_mapWorker.end())
+    {
+        Worker* pLoader = nullptr;
+        try
+        {
+            pLoader = new Loader(strWorkerPath, iControlFd, iDataFd, iWorkerIndex);
+        }
+        catch(std::bad_alloc& e)
+        {
+            LOG4_ERROR("new Worker error: %s", e.what());
+            return(nullptr);
+        }
+        m_mapWorker.insert(std::make_pair(iWorkerIndex, pLoader));
+        return(pLoader);
+    }
+    else
+    {
+        return(iter->second);
+    }
+}
+
 const WorkerInfo* SessionManager::GetWorkerInfo(int32 iWorkerIndex) const
 {
-    for (auto worker_iter = m_mapWorker.begin();
-                    worker_iter != m_mapWorker.end(); ++worker_iter)
+    for (auto worker_iter = m_mapWorkerInfo.begin();
+                    worker_iter != m_mapWorkerInfo.end(); ++worker_iter)
     {
         if (iWorkerIndex == worker_iter->second->iWorkerIndex)
         {
@@ -162,8 +228,8 @@ bool SessionManager::SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad)
     if (fd_pid_iter != m_mapWorkerFdPid.end())
     {
         auto iPid = fd_pid_iter->second;
-        auto it = m_mapWorker.find(iPid);
-        if (it != m_mapWorker.end())
+        auto it = m_mapWorkerInfo.find(iPid);
+        if (it != m_mapWorkerInfo.end())
         {
             oJsonLoad.Get("load", it->second->iLoad);
             oJsonLoad.Get("connect", it->second->iConnect);
@@ -197,16 +263,24 @@ int SessionManager::GetNextWorkerDataFd()
     }
     else
     {
-        if (m_mapWorker.empty())
+        if (m_mapWorkerInfo.empty())
         {
             return(-1);
         }
-        ++m_iterWorker;
-        if (m_iterWorker == m_mapWorker.end())
+        ++m_iterWorkerInfo;
+        if (m_iterWorkerInfo == m_mapWorkerInfo.end())
         {
-            m_iterWorker = m_mapWorker.begin();
+            m_iterWorkerInfo = m_mapWorkerInfo.begin();
         }
-        return(m_iterWorker->second->iDataFd);
+        else if (m_iterWorkerInfo->second->iDataFd == m_iLoaderDataFd)
+        {
+            ++m_iterWorkerInfo;
+            if (m_iterWorkerInfo == m_mapWorkerInfo.end())
+            {
+                m_iterWorkerInfo = m_mapWorkerInfo.begin();
+            }
+        }
+        return(m_iterWorkerInfo->second->iDataFd);
     }
 }
 
@@ -230,7 +304,7 @@ std::pair<int, int> SessionManager::GetMinLoadWorkerDataFd()
     }
     else
     {
-        for (auto iter = m_mapWorker.begin(); iter != m_mapWorker.end(); ++iter)
+        for (auto iter = m_mapWorkerInfo.begin(); iter != m_mapWorkerInfo.end(); ++iter)
         {
             if (iMinLoad == -1 && iter->second->iDataFd != m_iLoaderDataFd)
             {
@@ -252,8 +326,8 @@ std::pair<int, int> SessionManager::GetMinLoadWorkerDataFd()
 bool SessionManager::CheckWorker()
 {
     LOG4_TRACE(" ");
-    for (auto worker_iter = m_mapWorker.begin();
-                    worker_iter != m_mapWorker.end(); ++worker_iter)
+    for (auto worker_iter = m_mapWorkerInfo.begin();
+                    worker_iter != m_mapWorkerInfo.end(); ++worker_iter)
     {
         if (worker_iter->second->bStartBeatCheck)
         {
@@ -272,8 +346,8 @@ bool SessionManager::CheckWorker()
 
 bool SessionManager::WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE& eLaborType)
 {
-    auto worker_iter = m_mapWorker.find(iPid);
-    if (worker_iter != m_mapWorker.end())
+    auto worker_iter = m_mapWorkerInfo.find(iPid);
+    if (worker_iter != m_mapWorkerInfo.end())
     {
         LOG4_TRACE("restart worker %d, close control fd %d and data fd %d first.",
                         worker_iter->second->iWorkerIndex, worker_iter->second->iControlFd, worker_iter->second->iDataFd);
@@ -301,8 +375,8 @@ bool SessionManager::WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE&
         auto pDataChannel = GetLabor(this)->GetDispatcher()->GetChannel(worker_iter->second->iDataFd);
         GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pDataChannel);
         delete worker_iter->second;
-        m_mapWorker.erase(worker_iter);
-        m_iterWorker = m_mapWorker.begin();
+        m_mapWorkerInfo.erase(worker_iter);
+        m_iterWorkerInfo = m_mapWorkerInfo.begin();
 
         auto restart_num_iter = m_mapWorkerStartNum.find(iWorkerIndex);
         if (restart_num_iter != m_mapWorkerStartNum.end())
@@ -386,17 +460,17 @@ void SessionManager::MakeReportData(CJsonObject& oReportData)
     }
     if (m_iLoaderDataFd == -1)
     {
-        oReportData.Add("worker_num", (int)m_mapWorker.size());
+        oReportData.Add("worker_num", (int)m_mapWorkerInfo.size());
     }
     else
     {
-        oReportData.Add("worker_num", (int)m_mapWorker.size() - 1);
+        oReportData.Add("worker_num", (int)m_mapWorkerInfo.size() - 1);
     }
     oReportData.Add("active_time", (uint64)GetNowTime());
     oReportData.Add("node", CJsonObject("{}"));
     oReportData.Add("worker", CJsonObject("[]"));
-    auto worker_iter = m_mapWorker.begin();
-    for (; worker_iter != m_mapWorker.end(); ++worker_iter)
+    auto worker_iter = m_mapWorkerInfo.begin();
+    for (; worker_iter != m_mapWorkerInfo.end(); ++worker_iter)
     {
         if (m_iLoaderDataFd == worker_iter->second->iDataFd)
         {
@@ -448,6 +522,7 @@ bool SessionManager::NewSocketWhenWorkerCreated(int iWorkerDataFd)
     }
     x_sock_set_block(iFds[0], 0);
     x_sock_set_block(iFds[1], 0);
+    LOG4_TRACE("Transfer fd to Loader and Worker.");
     GetLabor(this)->GetDispatcher()->SendFd(m_iLoaderDataFd, iFds[0], PF_UNIX, CODEC_NEBULA_IN_NODE);
     GetLabor(this)->GetDispatcher()->SendFd(iWorkerDataFd, iFds[1], PF_UNIX, CODEC_NEBULA_IN_NODE);
     return(true);
@@ -460,7 +535,7 @@ bool SessionManager::NewSocketWhenLoaderCreated()
         LOG4_TRACE("no Loader process.");
         return(true);
     }
-    for (auto iter = m_mapWorker.begin(); iter != m_mapWorker.end(); ++iter)
+    for (auto iter = m_mapWorkerInfo.begin(); iter != m_mapWorkerInfo.end(); ++iter)
     {
         if (m_iLoaderDataFd == iter->second->iDataFd)
         {

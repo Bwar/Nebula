@@ -34,6 +34,8 @@ public:
     bool SendToLoader(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     void AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
     void AddLoaderInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
+    Worker* MutableWorker(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd);
+    Worker* MutableLoader(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd);
     const WorkerInfo* GetWorkerInfo(int32 iWorkerIndex) const;
     bool SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad);
     int GetNextWorkerDataFd();
@@ -49,8 +51,9 @@ public:
 private:
     bool m_bDirectToLoader = false;
     int m_iLoaderDataFd = -1;
-    std::unordered_map<int, WorkerInfo*> m_mapWorker;       ///< 业务逻辑工作进程及进程属性，key为pid
-    std::unordered_map<int, WorkerInfo*>::iterator m_iterWorker;
+    std::unordered_map<int, Worker*> m_mapWorker;               ///< only thread worker
+    std::unordered_map<int, WorkerInfo*> m_mapWorkerInfo;       ///< 业务逻辑工作进程及进程属性，key为pid
+    std::unordered_map<int, WorkerInfo*>::iterator m_iterWorkerInfo;
     std::unordered_map<int, int> m_mapWorkerStartNum;       ///< 进程被启动次数，key为WorkerIdx
     std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
     std::unordered_map<std::string, std::string> m_mapOnlineNodes;     ///< 订阅的节点在线信息

@@ -88,14 +88,33 @@ const CJsonObject& Actor::GetCustomConf() const
 {
     return(m_pLabor->GetCustomConf());
 }
+
 std::shared_ptr<Session> Actor::GetSession(uint32 uiSessionId)
 {
-    return(m_pLabor->GetActorBuilder()->GetSession(uiSessionId));
+    auto pSession = m_pLabor->GetActorBuilder()->GetSession(uiSessionId);
+    if (pSession == nullptr)
+    {
+        auto pActorBuilder = m_pLabor->GetLoaderActorBuilder();
+        if (pActorBuilder != nullptr)
+        {
+            return(pActorBuilder->GetSession(uiSessionId));
+        }
+    }
+    return(pSession);
 }
 
 std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId)
 {
-    return(m_pLabor->GetActorBuilder()->GetSession(strSessionId));
+    auto pSession = m_pLabor->GetActorBuilder()->GetSession(strSessionId);
+    if (pSession == nullptr)
+    {
+        auto pActorBuilder = m_pLabor->GetLoaderActorBuilder();
+        if (pActorBuilder != nullptr)
+        {
+            return(pActorBuilder->GetSession(strSessionId));
+        }
+    }
+    return(pSession);
 }
 
 bool Actor::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg, void* data)
