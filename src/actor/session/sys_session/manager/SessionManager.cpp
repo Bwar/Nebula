@@ -161,7 +161,7 @@ void SessionManager::AddLoaderInfo(int iWorkerIndex, int iPid, int iControlFd, i
     AddWorkerInfo(iWorkerIndex, iPid, iControlFd, iDataFd);
 }
 
-Worker* SessionManager::MutableWorker(int iWorkerIndex, const std::string& strWorkerPath, int iControlFd, int iDataFd)
+Worker* SessionManager::MutableWorker(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd)
 {
     auto iter = m_mapWorker.find(iWorkerIndex);
     if (iter == m_mapWorker.end())
@@ -169,7 +169,7 @@ Worker* SessionManager::MutableWorker(int iWorkerIndex, const std::string& strWo
         Worker* pWorker = nullptr;
         try
         {
-            pWorker = new Worker(strWorkerPath, iControlFd, iDataFd, iWorkerIndex);
+            pWorker = new Worker(strWorkPath, iControlFd, iDataFd, iWorkerIndex);
         }
         catch(std::bad_alloc& e)
         {
@@ -185,7 +185,7 @@ Worker* SessionManager::MutableWorker(int iWorkerIndex, const std::string& strWo
     }
 }
 
-Worker* SessionManager::MutableLoader(int iWorkerIndex, const std::string& strWorkerPath, int iControlFd, int iDataFd)
+Worker* SessionManager::MutableLoader(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd)
 {
     auto iter = m_mapWorker.find(iWorkerIndex);
     if (iter == m_mapWorker.end())
@@ -193,7 +193,7 @@ Worker* SessionManager::MutableLoader(int iWorkerIndex, const std::string& strWo
         Worker* pLoader = nullptr;
         try
         {
-            pLoader = new Loader(strWorkerPath, iControlFd, iDataFd, iWorkerIndex);
+            pLoader = new Loader(strWorkPath, iControlFd, iDataFd, iWorkerIndex);
         }
         catch(std::bad_alloc& e)
         {
