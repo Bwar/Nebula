@@ -497,7 +497,7 @@ void Manager::CreateLoaderThread()
     {
         return;
     }
-    if (pWorker->Init(m_oCurrentConf))
+    if (!pWorker->Init(m_oCurrentConf))
     {
         return;
     }

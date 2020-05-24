@@ -51,6 +51,24 @@ void Worker::Run()
         exit(-2);
     }
 
+#ifndef __CYGWIN__
+    bool bCpuAffinity = false;
+    m_oNodeConf.Get("cpu_affinity", bCpuAffinity);
+    if (bCpuAffinity && m_stNodeInfo.bThreadMode)
+    {
+        int iCpuNum = sysconf(_SC_NPROCESSORS_CONF);
+        cpu_set_t stCpuMask;
+        CPU_ZERO(&stCpuMask);
+        CPU_SET(m_stWorkerInfo.iWorkerIndex % iCpuNum, &stCpuMask);
+        if (sched_setaffinity(
+                    std::hash<std::thread::id>{}(std::this_thread::get_id()),
+                    sizeof(cpu_set_t), &stCpuMask) == -1)
+        {
+            LOG4_WARNING("sched_setaffinity failed.");
+        }
+    }
+#endif
+
     m_pDispatcher->EventRun();
 }
 

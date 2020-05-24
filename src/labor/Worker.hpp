@@ -25,6 +25,7 @@ extern "C" {
 #endif
 
 #include <memory>
+#include <thread>
 
 #include "util/CBuffer.hpp"
 #include "labor/Labor.hpp"

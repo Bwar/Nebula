@@ -19,6 +19,8 @@
     "server_name": "AsyncServer",
     "//worker_num": "进程数量",
     "worker_num": 10,
+    "//thread_mode":"是否采用线程模型",
+    "thread_mode":false,
     "//with_loader":"是否启动loader进程",
     "with_loader":false,
     "//new_client_to_loader":"集群外部（从access_port端口进来）的新连接直接转发到loader，不转发给worker",
