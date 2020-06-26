@@ -126,6 +126,8 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.1
+   - add worker thread mode
 #### v1.0
    - separate the network dispatch and actor management from Labor (Manager and Worker) to Dispatcher and ActorBuilder 
    - add supports of Actor classes to Manager process, and move the manager system management features to Cmd and Step

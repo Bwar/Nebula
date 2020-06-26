@@ -39,7 +39,10 @@ script:
     - make
     - make install
     - cd ..
-    - git clone https://github.com/kindy/libev.git libev
+    - wget https://github.com/kindy/libev/archive/master.zip
+    - mv master.zip libev.zip
+    - unzip libev.zip
+    - mv libev-master libev
     - cd libev/src
     - chmod u+x autogen.sh
     - ./autogen.sh
@@ -47,7 +50,10 @@ script:
     - make
     - make install
     - cd ../../
-    - git clone https://github.com/redis/hiredis.git hiredis
+    - wget https://github.com/redis/hiredis/archive/v0.13.0.zip
+    - mv v0.13.0.zip hiredis_v0.13.0.zip
+    - unzip hiredis_v0.13.0.zip
+    - mv hiredis-0.13.0 hiredis
     - cd hiredis
     - make
     - mkdir ../../NebulaDepend/include/hiredis

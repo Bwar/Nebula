@@ -114,6 +114,8 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.1
+   - 增加Worker的线程支持
 #### v1.0
    - 从Manager和Worker类中分离出网络分发功能类Dispatcher和Actor创建及管理类ActorBuilder
    - Manager进程支持Actor类的使用，将Manager系统管理功能分离到Cmd类和Step类中
