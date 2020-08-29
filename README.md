@@ -120,12 +120,13 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="TODO"></a>
 ## Todo list 
-   - Complete writing user guide before September 2019.
-   - NebulaMydis Data Agency Service.
-   - Developing an IM with the Nebula.
+   - Complete writing user guide
+   - http2 support
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.2
+   - delay start when loading a large amount of data
 #### v1.1
    - add worker thread mode
 #### v1.0

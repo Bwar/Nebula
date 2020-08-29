@@ -109,11 +109,14 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 <a name="TODO"></a>
 ## 开发任务
    -  完成开发指南
-   -  NebulaMydis数据代理服务
-   -  应用Nebula开发IM项目
+   -  支持http2
+   -  原生支持redis cluster、codis、dubbo、grpc等协议
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.2
+   - 增加延迟启动功能：因loader加载大量本地数据文件而延迟绑定端口提供服务并向Beacon注册。
+   - 线程模式下Manager不再监控和重启不健康的worker和loader服务。
 #### v1.1
    - 增加Worker的线程支持
 #### v1.0
