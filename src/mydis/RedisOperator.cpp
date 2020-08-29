@@ -110,14 +110,14 @@ bool RedisOperator::AddRedisField(const std::string& strFieldName, uint32 uiFiel
 bool RedisOperator::AddRedisField(const std::string& strFieldName, int64 llFieldValue)
 {
     char szFieldValue[40] = {0};
-    snprintf(szFieldValue, sizeof(szFieldValue), "%lld", llFieldValue);
+    snprintf(szFieldValue, sizeof(szFieldValue), "%ld", llFieldValue);
     return(AddRedisField(strFieldName, szFieldValue));
 }
 
 bool RedisOperator::AddRedisField(const std::string& strFieldName, uint64 ullFieldValue)
 {
     char szFieldValue[40] = {0};
-    snprintf(szFieldValue, sizeof(szFieldValue), "%llu", ullFieldValue);
+    snprintf(szFieldValue, sizeof(szFieldValue), "%lu", ullFieldValue);
     return(AddRedisField(strFieldName, szFieldValue));
 }
 

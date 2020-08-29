@@ -112,7 +112,7 @@ bool DbOperator::AddDbField(const std::string& strFieldName, int64 llFieldValue,
                 const std::string& strColAs, bool bGroupBy, bool bOrderBy, const std::string& strOrder)
 {
     char szFieldValue[64] = {0};
-    snprintf(szFieldValue, sizeof(szFieldValue), "%lld", llFieldValue);
+    snprintf(szFieldValue, sizeof(szFieldValue), "%ld", llFieldValue);
     return(AddDbField(strFieldName, (std::string)szFieldValue, BIGINT, strColAs, bGroupBy, bOrderBy, strOrder));
 }
 
@@ -120,7 +120,7 @@ bool DbOperator::AddDbField(const std::string& strFieldName, uint64 ullFieldValu
                 const std::string& strColAs, bool bGroupBy, bool bOrderBy, const std::string& strOrder)
 {
     char szFieldValue[64] = {0};
-    snprintf(szFieldValue, sizeof(szFieldValue), "%llu", ullFieldValue);
+    snprintf(szFieldValue, sizeof(szFieldValue), "%lu", ullFieldValue);
     return(AddDbField(strFieldName, (std::string)szFieldValue, BIGINT, strColAs, bGroupBy, bOrderBy, strOrder));
 }
 
@@ -195,7 +195,7 @@ bool DbOperator::AddCondition(Mydis::DbOperate::Condition::E_RELATION eRelation,
                 const std::string& strRightFieldName)
 {
     char szFieldValue[40] = {0};
-    snprintf(szFieldValue, sizeof(szFieldValue), "%lld", llFieldValue);
+    snprintf(szFieldValue, sizeof(szFieldValue), "%ld", llFieldValue);
     return(AddCondition(eRelation, strFieldName, szFieldValue, BIGINT, strRightFieldName));
 }
 
@@ -204,7 +204,7 @@ bool DbOperator::AddCondition(Mydis::DbOperate::Condition::E_RELATION eRelation,
                 const std::string& strRightFieldName)
 {
     char szFieldValue[64] = {0};
-    snprintf(szFieldValue, sizeof(szFieldValue), "%llu", ullFieldValue);
+    snprintf(szFieldValue, sizeof(szFieldValue), "%lu", ullFieldValue);
     return(AddCondition(eRelation, strFieldName, szFieldValue, BIGINT, strRightFieldName));
 }
 
@@ -280,7 +280,7 @@ bool DbOperator::AddCondition(Mydis::DbOperate::Condition::E_RELATION eRelation,
     for (std::vector<uint64>::const_iterator c_iter = vecFieldValues.begin();
                     c_iter != vecFieldValues.end(); ++c_iter)
     {
-        snprintf(szFieldValue, sizeof(szFieldValue), "%llu", *c_iter);
+        snprintf(szFieldValue, sizeof(szFieldValue), "%lu", *c_iter);
         pCondition->add_col_values(szFieldValue);
     }
     return(true);
@@ -384,7 +384,7 @@ bool DbOperator::AddCondition(int iGroupIdx,
                 const std::string& strRightFieldName)
 {
     char szFieldValue[40] = {0};
-    snprintf(szFieldValue, sizeof(szFieldValue), "%lld", llFieldValue);
+    snprintf(szFieldValue, sizeof(szFieldValue), "%ld", llFieldValue);
     return(AddCondition(iGroupIdx, eGroupRelation, eRelation, strFieldName, szFieldValue, BIGINT, strRightFieldName));
 }
 
@@ -395,7 +395,7 @@ bool DbOperator::AddCondition(int iGroupIdx,
                 const std::string& strRightFieldName)
 {
     char szFieldValue[40] = {0};
-    snprintf(szFieldValue, sizeof(szFieldValue), "%llu", ullFieldValue);
+    snprintf(szFieldValue, sizeof(szFieldValue), "%lu", ullFieldValue);
     return(AddCondition(iGroupIdx, eGroupRelation, eRelation, strFieldName, szFieldValue, BIGINT, strRightFieldName));
 }
 

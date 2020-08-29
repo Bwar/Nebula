@@ -11,6 +11,7 @@
 #define SRC_DEFINITION_HPP_
 
 #include <stddef.h>
+#include <stdint.h>
 
 #ifndef NODE_BEAT
 #define NODE_BEAT 7.0
@@ -104,14 +105,14 @@
 #define LOG4_TRACE(args...) Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, ##args)
 //#define LOG4_TRACE(...) Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
 
-typedef char int8;
-typedef unsigned char uint8;
-typedef short int16;
-typedef unsigned short uint16;
-typedef int int32;
-typedef unsigned int uint32;
-typedef long long int int64;
-typedef unsigned long long int uint64;
+typedef int8_t int8;
+typedef uint8_t uint8;
+typedef int16_t int16;
+typedef uint16_t uint16;
+typedef int32_t int32;
+typedef uint32_t uint32;
+typedef int64_t int64;
+typedef uint64_t uint64;
 typedef double ev_tstamp;           // ev.h
 
 #ifdef __CYGWIN__
