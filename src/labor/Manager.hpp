@@ -40,6 +40,7 @@ class Dispatcher;
 class ActorBuilder;
 class Step;
 class SessionManager;
+class CmdOnStartService;
 
 class Manager: public Labor
 {
@@ -108,6 +109,7 @@ protected:
     bool InitLogger(const CJsonObject& oJsonConf);
     bool InitDispatcher();
     bool InitActorBuilder();
+    void StartService();
     void Destroy();
 
     bool CreateEvents();
@@ -119,6 +121,7 @@ protected:
     bool AddPeriodicTaskEvent();
 
 private:
+    friend class CmdOnStartService;
     char* m_pErrBuff = NULL;
     mutable uint32 m_uiSequence = 0;
     Dispatcher* m_pDispatcher = nullptr;

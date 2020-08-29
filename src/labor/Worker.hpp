@@ -111,6 +111,7 @@ protected:
     bool NewDispatcher();
     bool NewActorBuilder();
     bool CreateEvents();
+    void StartService();
     void Destroy();
     bool AddPeriodicTaskEvent();
 

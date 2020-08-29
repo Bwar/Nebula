@@ -13,6 +13,7 @@
 //#include <zlib.h>
 //#include <zconf.h>
 
+#include <arpa/inet.h>
 #include <vector>
 #include <actor/cmd/CW.hpp>
 #include "util/CBuffer.hpp"
@@ -53,12 +54,14 @@ enum E_CODEC_STATUS
 {
     CODEC_STATUS_OK         = 0,    ///< 编解码成功
     CODEC_STATUS_PAUSE      = 1,    ///< 编解码暂停（数据不完整，等待数据完整之后再解码）
-    CODEC_STATUS_WANT_READ  = 2,    ///< 等待对端握手信息（此时，应该不再监听FD的可写事件，直到对端握手信息到达。此状态用于SSL连接握手）
-    CODEC_STATUS_WANT_WRITE = 3,    ///< 等待己端握手信息（此时，应发起握手信息，并添加FD的可写事件监听。此状态用于SSL连接握手）或握手成功等待数据发送
-    CODEC_STATUS_INVALID    = 4,    ///< 使用了错误的编解码方式（此时为调用错误，应修改调用方式）
-    CODEC_STATUS_ERR        = 5,    ///< 编解码失败
-    CODEC_STATUS_EOF        = 6,    ///< 连接正常关闭
-    CODEC_STATUS_INT        = 7,    ///< 连接非正常关闭
+    CODEC_STATUS_PART_OK    = 2,    ///< 部分编解码成功（消息比较大，分成多个数据包，比如http chunk或http2 stream的一个frame）
+    CODEC_STATUS_PART_ERR   = 3,    ///< 部分编解码失败（比如http2 stream的frame错误），无须关闭连接
+    CODEC_STATUS_WANT_READ  = 4,    ///< 等待对端握手信息（此时，应该不再监听FD的可写事件，直到对端握手信息到达。此状态用于SSL连接握手）
+    CODEC_STATUS_WANT_WRITE = 5,    ///< 等待己端握手信息（此时，应发起握手信息，并添加FD的可写事件监听。此状态用于SSL连接握手）或握手成功等待数据发送
+    CODEC_STATUS_INVALID    = 6,    ///< 使用了错误的编解码方式（此时为调用错误，应修改调用方式）
+    CODEC_STATUS_ERR        = 7,    ///< 编解码失败
+    CODEC_STATUS_EOF        = 8,    ///< 连接正常关闭
+    CODEC_STATUS_INT        = 9,    ///< 连接非正常关闭
 };
 
 class Codec
@@ -95,6 +98,11 @@ public:
         m_strKey = strKey;
     }
 
+    int32 GetErrno() const
+    {
+        return(m_iErrno);
+    }
+
     static const std::vector<E_CODEC_TYPE>& GetAutoSwitchCodecType();
     static void AddAutoSwitchCodecType(E_CODEC_TYPE eCodecType);
 
@@ -114,11 +122,16 @@ protected:
     bool Rc5Decrypt(const std::string& strSrc, std::string& strDest);
     bool AesEncrypt(const std::string& strSrc, std::string& strDest);
     bool AesDecrypt(const std::string& strSrc, std::string& strDest);
+    inline void SetErrno(int32 iErrno)
+    {
+        m_iErrno = iErrno;
+    }
 
 protected:
     std::shared_ptr<NetLogger> m_pLogger;
 
 private:
+    int32 m_iErrno;
     E_CODEC_TYPE m_eCodecType;
     std::string m_strKey;       // 密钥
     static std::vector<E_CODEC_TYPE> m_vecAutoSwitchCodecType;

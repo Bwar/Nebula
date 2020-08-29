@@ -60,15 +60,15 @@ void Worker::Run()
         cpu_set_t stCpuMask;
         CPU_ZERO(&stCpuMask);
         CPU_SET(m_stWorkerInfo.iWorkerIndex % iCpuNum, &stCpuMask);
-        if (sched_setaffinity(
-                    std::hash<std::thread::id>{}(std::this_thread::get_id()),
+        if (pthread_setaffinity_np(pthread_self(),
                     sizeof(cpu_set_t), &stCpuMask) == -1)
         {
-            LOG4_WARNING("sched_setaffinity failed.");
+            LOG4_WARNING("pthread_setaffinity_np thread %d failed, errno %d", pthread_self(), errno);
         }
     }
 #endif
 
+    StartService();
     m_pDispatcher->EventRun();
 }
 
@@ -322,6 +322,13 @@ bool Worker::CreateEvents()
     m_pDispatcher->AddIoReadEvent(m_pManagerDataChannel);
     m_pDispatcher->AddIoReadEvent(m_pManagerControlChannel);
     return(true);
+}
+
+void Worker::StartService()
+{
+    MsgBody oMsgBody;
+    oMsgBody.set_data(std::to_string(m_stWorkerInfo.iWorkerIndex));
+    m_pDispatcher->SendTo(m_pManagerControlChannel, CMD_REQ_START_SERVICE, GetSequence(), oMsgBody);
 }
 
 void Worker::Destroy()

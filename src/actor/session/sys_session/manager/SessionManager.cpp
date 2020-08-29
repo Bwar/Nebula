@@ -329,7 +329,7 @@ bool SessionManager::CheckWorker()
     for (auto worker_iter = m_mapWorkerInfo.begin();
                     worker_iter != m_mapWorkerInfo.end(); ++worker_iter)
     {
-        if (worker_iter->second->bStartBeatCheck)
+        if (worker_iter->second->bStartBeatCheck && !GetLabor(this)->GetNodeInfo().bThreadMode)
         {
             LOG4_TRACE("now %lf, worker_beat_time %lf, worker_beat %d",
                     GetNowTime(), worker_iter->second->dBeatTime, ((Manager*)GetLabor(this))->GetManagerInfo().iWorkerBeat);

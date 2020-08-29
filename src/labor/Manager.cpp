@@ -191,6 +191,60 @@ bool Manager::InitActorBuilder()
     return(true);
 }
 
+void Manager::StartService()
+{
+    std::string strBindIp;
+    if (m_oCurrentConf.Get("bind_ip", strBindIp) && strBindIp.length() > 0)
+    {
+        m_pDispatcher->CreateListenFd(strBindIp,
+                 m_stNodeInfo.iPortForServer, m_stManagerInfo.iS2SListenFd,
+                 m_stManagerInfo.iS2SFamily);
+
+        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
+        {
+            // 接入节点才需要监听客户端连接
+            m_pDispatcher->CreateListenFd(strBindIp,
+                  m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd,
+                  m_stManagerInfo.iC2SFamily);
+        }
+    }
+    else
+    {
+        m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForServer,
+              m_stNodeInfo.iPortForServer, m_stManagerInfo.iS2SListenFd,
+              m_stManagerInfo.iS2SFamily);
+
+        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
+        {
+            // 接入节点才需要监听客户端连接
+            m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
+                    m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd,
+                    m_stManagerInfo.iC2SFamily);
+        }
+    }
+
+    std::shared_ptr<SocketChannel> pChannelListen = nullptr;
+    if (m_stManagerInfo.iC2SListenFd > 2)
+    {
+        LOG4_TRACE("C2SListenFd[%d]", m_stManagerInfo.iC2SListenFd);
+        pChannelListen = m_pDispatcher->CreateSocketChannel(m_stManagerInfo.iC2SListenFd, m_stNodeInfo.eCodec);
+        m_pDispatcher->SetChannelStatus(pChannelListen, CHANNEL_STATUS_ESTABLISHED);
+        m_pDispatcher->AddIoReadEvent(pChannelListen);
+    }
+    LOG4_TRACE("S2SListenFd[%d]", m_stManagerInfo.iS2SListenFd);
+    pChannelListen = m_pDispatcher->CreateSocketChannel(m_stManagerInfo.iS2SListenFd, CODEC_NEBULA);
+    m_pDispatcher->SetChannelStatus(pChannelListen, CHANNEL_STATUS_ESTABLISHED);
+    m_pDispatcher->AddIoReadEvent(pChannelListen);
+
+    // 创建到beacon的连接信息
+    for (int i = 0; i < m_oCurrentConf["beacon"].GetArraySize(); ++i)
+    {
+        std::string strIdentify = m_oCurrentConf["beacon"][i]("host") + std::string(":")
+            + m_oCurrentConf["beacon"][i]("port") + std::string(".1");     // BeaconServer只有一个Worker
+        m_pDispatcher->AddNodeIdentify(std::string("BEACON"), strIdentify);
+    }
+}
+
 bool Manager::AddNetLogMsg(const MsgBody& oMsgBody)
 {
     if (std::string("BEACON") != m_stNodeInfo.strNodeType
@@ -285,57 +339,6 @@ bool Manager::Init()
     {
         return(false);
     }
-
-    std::string strBindIp;
-    if (m_oCurrentConf.Get("bind_ip", strBindIp) && strBindIp.length() > 0)
-    {
-        if (!m_pDispatcher->CreateListenFd(strBindIp,
-                    m_stNodeInfo.iPortForServer, m_stManagerInfo.iS2SListenFd,
-                    m_stManagerInfo.iS2SFamily))
-        {
-            return(false);
-        }
-
-        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
-        {
-            // 接入节点才需要监听客户端连接
-            if (!m_pDispatcher->CreateListenFd(strBindIp,
-                    m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd,
-                    m_stManagerInfo.iC2SFamily))
-            {
-                return(false);
-            }
-        }
-    }
-    else
-    {
-        if (!m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForServer,
-                m_stNodeInfo.iPortForServer, m_stManagerInfo.iS2SListenFd,
-                m_stManagerInfo.iS2SFamily))
-        {
-            return(false);
-        }
-
-        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
-        {
-            // 接入节点才需要监听客户端连接
-            if (!m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
-                    m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd,
-                    m_stManagerInfo.iC2SFamily))
-            {
-                return(false);
-            }
-        }
-    }
-
-    // 创建到beacon的连接信息
-    for (int i = 0; i < m_oCurrentConf["beacon"].GetArraySize(); ++i)
-    {
-        std::string strIdentify = m_oCurrentConf["beacon"][i]("host") + std::string(":")
-            + m_oCurrentConf["beacon"][i]("port") + std::string(".1");     // BeaconServer只有一个Worker
-        m_pDispatcher->AddNodeIdentify(std::string("BEACON"), strIdentify);
-    }
-
     return(true);
 }
 
@@ -369,19 +372,6 @@ void Manager::Destroy()
 bool Manager::CreateEvents()
 {
     LOG4_TRACE(" ");
-    std::shared_ptr<SocketChannel> pChannelListen = NULL;
-    if (m_stManagerInfo.iC2SListenFd > 2)
-    {
-        LOG4_DEBUG("C2SListenFd[%d]", m_stManagerInfo.iC2SListenFd);
-        pChannelListen = m_pDispatcher->CreateSocketChannel(m_stManagerInfo.iC2SListenFd, m_stNodeInfo.eCodec);
-        m_pDispatcher->SetChannelStatus(pChannelListen, CHANNEL_STATUS_ESTABLISHED);
-        m_pDispatcher->AddIoReadEvent(pChannelListen);
-    }
-    LOG4_DEBUG("S2SListenFd[%d]", m_stManagerInfo.iS2SListenFd);
-    pChannelListen = m_pDispatcher->CreateSocketChannel(m_stManagerInfo.iS2SListenFd, CODEC_NEBULA);
-    m_pDispatcher->SetChannelStatus(pChannelListen, CHANNEL_STATUS_ESTABLISHED);
-    m_pDispatcher->AddIoReadEvent(pChannelListen);
-
     ev_signal* child_signal_watcher = new ev_signal();
     child_signal_watcher->data = (void*)this;
     m_pDispatcher->AddEvent(child_signal_watcher, Dispatcher::SignalCallback, SIGCHLD);
@@ -453,6 +443,7 @@ void Manager::CreateLoader()
         close(iDataFds[1]);
         x_sock_set_block(iControlFds[0], 0);
         x_sock_set_block(iDataFds[0], 0);
+        m_stNodeInfo.uiLoaderNum = 1;
         m_pSessionManager->AddLoaderInfo(0, iPid, iControlFds[0], iDataFds[0]);
         std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
         std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
@@ -504,6 +495,7 @@ void Manager::CreateLoaderThread()
     m_pLoaderActorBuilder = pWorker->GetActorBuilder();
     std::thread t(&Worker::Run, pWorker);
     t.detach();
+    m_stNodeInfo.uiLoaderNum = 1;
     m_pSessionManager->AddLoaderInfo(0, getpid(), iControlFds[0], iDataFds[0]);
     std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
     std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);

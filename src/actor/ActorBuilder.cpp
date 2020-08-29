@@ -822,6 +822,7 @@ void ActorBuilder::LoadSysCmd()
         MakeSharedCmd(nullptr, "neb::CmdOnGetNodeCustomConf", (int)CMD_REQ_GET_NODE_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdOnSetCustomConf", (int)CMD_REQ_SET_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdOnGetCustomConf", (int)CMD_REQ_GET_CUSTOM_CONFIG);
+        MakeSharedCmd(nullptr, "neb::CmdOnStartService", (int)CMD_REQ_START_SERVICE);
         MakeSharedCmd(nullptr, "neb::CmdDataReport", (int)CMD_REQ_DATA_REPORT);
     }
     else

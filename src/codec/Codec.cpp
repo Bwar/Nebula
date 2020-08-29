@@ -22,7 +22,7 @@ namespace neb
 std::vector<E_CODEC_TYPE> Codec::m_vecAutoSwitchCodecType;
 
 Codec::Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
-    : m_pLogger(pLogger), m_eCodecType(eCodecType)
+    : m_pLogger(pLogger), m_iErrno(0), m_eCodecType(eCodecType)
 {
 }
 

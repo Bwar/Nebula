@@ -25,6 +25,7 @@ struct NodeInfo
     E_CODEC_TYPE eCodec             = CODEC_UNKNOW; ///< 接入端编解码器
     uint32 uiNodeId                 = 0;            ///< 节点ID（由beacon分配）
     uint32 uiWorkerNum              = 0;            ///< Worker子进程数量
+    uint32 uiLoaderNum              = 0;            ///< Loader子进程数量，有效值为0或1
     int32 iAddrPermitNum            = 0;            ///< IP地址统计时间内允许连接次数
     int32 iMsgPermitNum             = 0;            ///< 客户端统计时间内允许发送消息数量
     int32 iPortForServer            = 0;            ///< Server间通信监听端口，对应 iS2SListenFd
