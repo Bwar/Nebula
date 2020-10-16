@@ -33,7 +33,7 @@ E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
         const HttpMsg& oHttpMsg, CBuffer* pBuff)
 {
     tagH2FrameHead stFrameHead;
-    m_pFrame->Encode(pCodecH2, stFrameHead, pBuff, oHttpMsg, pReactBuff);
+    m_pFrame->Encode(pCodecH2, oHttpMsg, pBuff);
     switch (m_eStreamState)
     {
         case H2_STREAM_IDLE:
@@ -53,7 +53,7 @@ E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
                     m_pFrame->EncodeGoaway(pCodecH2, H2_ERR_PROTOCOL_ERROR,
                             "The endpoint detected an unspecific protocol error."
                             " This error is for use when a more specific error "
-                            "code is not available.", pReactBuff);
+                            "code is not available.", pBuff);
                     return(CODEC_STATUS_ERR);
             }
             if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
@@ -132,7 +132,7 @@ E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
                     break;
                 default:
                     m_pFrame->EncodeRstStream(pCodecH2,
-                            stFrameHead.uiStreamIdentifier, H2_ERR_STREAM_CLOSED, pReactBuff);
+                            stFrameHead.uiStreamIdentifier, H2_ERR_STREAM_CLOSED, pBuff);
                     return(CODEC_STATUS_PART_ERR);
             }
             break;
@@ -141,7 +141,7 @@ E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
         default:
             break;
     }
-    return();
+    return(CODEC_STATUS_OK);
 }
 
 E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,

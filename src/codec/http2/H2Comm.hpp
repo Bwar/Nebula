@@ -73,6 +73,8 @@ struct tagPriority
     uint8 ucWeight          = 0;
     uint32 uiDependency     = 0;
 
+    tagPriority(){}
+
     tagPriority(const tagPriority& stFrom)
     {
         E = stFrom.E;
@@ -93,6 +95,8 @@ struct tagSetting
 {
     uint16 unIdentifier     = 0;
     uint32 uiValue          = 0;
+
+    tagSetting(){}
 
     tagSetting(const tagSetting& stSetting)
     {

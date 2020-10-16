@@ -88,7 +88,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
     {
         if (m_stFrameHead.uiStreamIdentifier == m_pCodingStream->GetStreamId())
         {
-            return(m_pCodingStream->Decode(this, m_stFrameHead, pBuff, oHttpMsg));
+            return(m_pCodingStream->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff));
         }
         if (!m_pCodingStream->IsEndHeaders())
         {
@@ -263,7 +263,7 @@ void CodecHttp2::RstStream(uint32 uiStreamId)
 
         if (iter->second == m_pCodingStream)
         {
-            m_pCodingStream == nullptr;
+            m_pCodingStream = nullptr;
         }
         delete iter->second;
         iter->second = nullptr;
@@ -333,7 +333,7 @@ void CodecHttp2::WindowUpdate(uint32 uiStreamId, uint32 uiIncrement)
 
 E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBuff, HttpMsg& oHttpMsg)
 {
-    char B;
+    char B = 0;
     size_t uiReadIndex = 0;
 
     E_CODEC_STATUS eStatus;
@@ -341,7 +341,6 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
     int iDynamicTableIndex = -1;
     std::string strHeaderName;
     std::string strHeaderValue;
-    std::vector<std::pair<std::string, std::string>>& vecNewHeaders;
     auto pHeader = oHttpMsg.mutable_headers();
     while (pBuff->GetReadIndex() < uiHeaderBlockEndPos)
     {
@@ -564,33 +563,33 @@ void CodecHttp2::ReleaseStreamWeight(TreeNode<tagStreamWeight>* pNode)
 E_CODEC_STATUS CodecHttp2::UnpackHeaderIndexed(CBuffer* pBuff,
         ::google::protobuf::Map< ::std::string, ::std::string >* pHeader)
 {
-    int iTableIndex = Http2Header::DecodeInt(H2_HPACK_PREFIX_7_BITS, pBuff);
-    if (iTableIndex == 0)
+    uint32 uiTableIndex = (uint32)Http2Header::DecodeInt(H2_HPACK_PREFIX_7_BITS, pBuff);
+    if (uiTableIndex == 0)
     {
         SetErrno(H2_ERR_COMPRESSION_ERROR);
         LOG4_ERROR("hpack index value of 0 is not used!");
         return(CODEC_STATUS_ERR);
     }
-    else if (iTableIndex <= Http2Header::sc_uiMaxStaticTableIndex)
+    else if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex)
     {
         pHeader->insert({
-            Http2Header::sc_vecStaticTable[iTableIndex].first,
-            Http2Header::sc_vecStaticTable[iTableIndex].second});
+            Http2Header::sc_vecStaticTable[uiTableIndex].first,
+            Http2Header::sc_vecStaticTable[uiTableIndex].second});
         return(CODEC_STATUS_PART_OK);
     }
-    else if (iTableIndex <= Http2Header::sc_uiMaxStaticTableIndex + m_vecDecodingDynamicTable.size())
+    else if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex + m_vecDecodingDynamicTable.size())
     {
-        int iDynamicTableIndex = iTableIndex - Http2Header::sc_uiMaxStaticTableIndex - 1;
+        uint32 uiDynamicTableIndex = uiTableIndex - Http2Header::sc_uiMaxStaticTableIndex - 1;
         pHeader->insert({
-            m_vecDecodingDynamicTable[iDynamicTableIndex].Name(),
-            m_vecDecodingDynamicTable[iDynamicTableIndex].Value()});
+            m_vecDecodingDynamicTable[uiDynamicTableIndex].Name(),
+            m_vecDecodingDynamicTable[uiDynamicTableIndex].Value()});
         return(CODEC_STATUS_PART_OK);
     }
     else
     {
         SetErrno(H2_ERR_COMPRESSION_ERROR);
-        LOG4_ERROR("hpack index value of %d was greater than the sum of "
-                "the lengths of both static table and dynamic tables!", iTableIndex);
+        LOG4_ERROR("hpack index value of %u was greater than the sum of "
+                "the lengths of both static table and dynamic tables!", uiTableIndex);
         return(CODEC_STATUS_ERR);
     }
 }
@@ -601,14 +600,14 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
     // Literal Header Field with Incremental Indexing — Indexed Name
     if (iPrefixMask & ucFirstByte)
     {
-        int iTableIndex = Http2Header::DecodeInt(iPrefixMask, pBuff);
-        if (iTableIndex == 0)
+        uint32 uiTableIndex = (uint32)Http2Header::DecodeInt(iPrefixMask, pBuff);
+        if (uiTableIndex == 0)
         {
             SetErrno(H2_ERR_COMPRESSION_ERROR);
             LOG4_ERROR("hpack index value of 0 is not used!");
             return(CODEC_STATUS_ERR);
         }
-        else if (iTableIndex <= Http2Header::sc_uiMaxStaticTableIndex)
+        else if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex)
         {
             if (!Http2Header::DecodeStringLiteral(pBuff, strHeaderValue, bWithHuffman))
             {
@@ -616,26 +615,26 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
                 LOG4_ERROR("DecodeStringLiteral failed!");
                 return(CODEC_STATUS_ERR);
             }
-            strHeaderName = Http2Header::sc_vecStaticTable[iTableIndex].first;
+            strHeaderName = Http2Header::sc_vecStaticTable[uiTableIndex].first;
             return(CODEC_STATUS_PART_OK);
         }
-        else if (iTableIndex < Http2Header::sc_uiMaxStaticTableIndex + m_vecDecodingDynamicTable.size())
+        else if (uiTableIndex < Http2Header::sc_uiMaxStaticTableIndex + m_vecDecodingDynamicTable.size())
         {
-            iDynamicTableIndex = iTableIndex - Http2Header::sc_uiMaxStaticTableIndex - 1;
+            uint32 uiDynamicTableIndex = uiTableIndex - Http2Header::sc_uiMaxStaticTableIndex - 1;
             if (!Http2Header::DecodeStringLiteral(pBuff, strHeaderValue, bWithHuffman))
             {
                 SetErrno(H2_ERR_COMPRESSION_ERROR);
                 LOG4_ERROR("DecodeStringLiteral failed!");
                 return(CODEC_STATUS_ERR);
             }
-            strHeaderName = m_vecDecodingDynamicTable[iDynamicTableIndex].Name();
+            strHeaderName = m_vecDecodingDynamicTable[uiDynamicTableIndex].Name();
             return(CODEC_STATUS_PART_OK);
         }
         else
         {
             SetErrno(H2_ERR_COMPRESSION_ERROR);
             LOG4_ERROR("hpack index value of %d was greater than the sum of "
-                    "the lengths of both static table and dynamic tables!", iTableIndex);
+                    "the lengths of both static table and dynamic tables!", uiTableIndex);
             return(CODEC_STATUS_ERR);
         }
     }
@@ -846,7 +845,7 @@ size_t CodecHttp2::GetEncodingTableIndex(const std::string& strHeaderName, const
 void CodecHttp2::UpdateEncodingDynamicTable(int iDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue)
 {
     Http2Header oHeader(strHeaderName, strHeaderValue);
-    if (iDynamicTableIndex < 0 || iDynamicTableIndex >= m_vecEncodingDynamicTable.size())   // new header
+    if (iDynamicTableIndex < 0 || iDynamicTableIndex >= (int)m_vecEncodingDynamicTable.size())   // new header
     {
         while (m_uiEncodingDynamicTableSize + oHeader.HpackSize() > m_uiSettingsMaxFrameSize
                 && m_uiEncodingDynamicTableSize > 0)
@@ -875,7 +874,7 @@ void CodecHttp2::UpdateEncodingDynamicTable(int iDynamicTableIndex, const std::s
         }
         if (oHeader.HpackSize() <= m_uiSettingsMaxFrameSize)
         {
-            if (iDynamicTableIndex < m_vecEncodingDynamicTable.size())  // replace header
+            if (iDynamicTableIndex < (int)m_vecEncodingDynamicTable.size())  // replace header
             {
                 m_vecEncodingDynamicTable[iDynamicTableIndex] = std::move(oHeader);
             }
@@ -904,13 +903,13 @@ void CodecHttp2::UpdateEncodingDynamicTable(uint32 uiTableSize)
 void CodecHttp2::UpdateDecodingDynamicTable(int iDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue)
 {
     Http2Header oHeader(strHeaderName, strHeaderValue);
-    if (iDynamicTableIndex < 0 || iDynamicTableIndex >= m_vecDecodingDynamicTable.size())   // new header
+    if (iDynamicTableIndex < 0 || iDynamicTableIndex >= (int)m_vecDecodingDynamicTable.size())   // new header
     {
         while (m_uiDecodingDynamicTableSize + oHeader.HpackSize() > m_uiSettingsMaxFrameSize
                 && m_uiDecodingDynamicTableSize > 0)
         {
             auto& rLastElement = m_vecDecodingDynamicTable.back();
-            m_uiDecodingDynamicTableSize -= oHeader.HpackSize();
+            m_uiDecodingDynamicTableSize -= rLastElement.HpackSize();
             m_vecDecodingDynamicTable.pop_back();
         }
         if (oHeader.HpackSize() <= m_uiSettingsMaxFrameSize)
@@ -933,7 +932,7 @@ void CodecHttp2::UpdateDecodingDynamicTable(int iDynamicTableIndex, const std::s
         }
         if (oHeader.HpackSize() <= m_uiSettingsMaxFrameSize)
         {
-            if (iDynamicTableIndex < m_vecDecodingDynamicTable.size())  // replace header
+            if (iDynamicTableIndex < (int)m_vecDecodingDynamicTable.size())  // replace header
             {
                 m_vecDecodingDynamicTable[iDynamicTableIndex] = std::move(oHeader);
             }

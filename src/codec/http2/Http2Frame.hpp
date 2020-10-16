@@ -43,6 +43,7 @@ enum E_H2_FRAME_FLAG
 };
 
 class CodecHttp2;
+class Http2Stream;
 
 class Http2Frame: public Codec
 {
@@ -125,6 +126,10 @@ protected:
             uint32 uiStreamId, uint32 uiIncrement, CBuffer* pBuff);
     E_CODEC_STATUS EncodeContinuation(CodecHttp2* pCodecH2,
             uint32 uiStreamId, CBuffer* pHpackBuff, CBuffer* pBuff);
+
+private:
+    friend class CodecHttp2;
+    friend class Http2Stream;
 };
 
 } /* namespace neb */

@@ -141,7 +141,7 @@ E_CODEC_STATUS Http2Frame::DecodeHeaders(CodecHttp2* pCodecH2,
         pBuff->Read(&stPriority.ucWeight, 1);
         pCodecH2->SetPriority(stFrameHead.uiStreamIdentifier, stPriority);
     }
-    E_CODEC_STATUS eCodecStatus;
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     if (H2_FRAME_FLAG_END_HEADERS & stFrameHead.ucFlag)
     {
         eCodecStatus = pCodecH2->UnpackHeader(uiHeaderBlockEndPos, pBuff, oHttpMsg);
@@ -303,10 +303,10 @@ E_CODEC_STATUS Http2Frame::DecodePushPromise(CodecHttp2* pCodecH2,
         uiHeaderBlockEndPos = pBuff->GetReadIndex() + uiHeaderLength;
         oHttpMsg.set_push_promise_frame_padding(pBuff->GetRawReadBuffer() + uiHeaderLength, ucPadLength);
     }
-    unsigned char R;
+    //unsigned char R;
     uint32 uiStreamId = 0;
     pBuff->Read(&uiStreamId, 4);
-    R = (uiStreamId & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
+    //R = (uiStreamId & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
     uiStreamId = ntohl(uiStreamId & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
     E_CODEC_STATUS eCodecStatus = pCodecH2->PromiseStream(uiStreamId, pReactBuff);
     if (eCodecStatus == CODEC_STATUS_PART_OK)
@@ -363,13 +363,13 @@ E_CODEC_STATUS Http2Frame::DecodeGoaway(CodecHttp2* pCodecH2,
                 " specific error code is not available.", pReactBuff);
         return(CODEC_STATUS_ERR);
     }
-    unsigned char R;
+    //unsigned char R;
     uint32 uiLastStreamId = 0;
     int32 iErrCode = 0;
     std::string strDebugData;
     pBuff->Read(&uiLastStreamId, 4);
     pBuff->Read(&iErrCode, 4);
-    R = (uiLastStreamId & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
+    //R = (uiLastStreamId & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
     uiLastStreamId = ntohl(uiLastStreamId & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
     iErrCode = ntohl(iErrCode);
     strDebugData.assign(pBuff->GetRawReadBuffer(), stFrameHead.uiLength - 8);
@@ -450,7 +450,8 @@ void Http2Frame::EncodeFrameHeader(const tagH2FrameHead& stFrameHead, CBuffer* p
     uint32 uiIdentifier = stFrameHead.cR;
     uiIdentifier <<= 31;
     uiIdentifier |= (htonl(stFrameHead.uiStreamIdentifier));
-    pBuff->Write(&htonl(stFrameHead.uiLength), 3);
+    uint32 uiNetLength = htonl(stFrameHead.uiLength);
+    pBuff->Write(&uiNetLength, 3);
     pBuff->Write(&stFrameHead.ucType, 1);
     pBuff->Write(&stFrameHead.ucFlag, 1);
     pBuff->Write(&uiIdentifier, 4);
@@ -487,7 +488,8 @@ E_CODEC_STATUS Http2Frame::EncodeData(CodecHttp2* pCodecH2,
         stFrameHead.uiLength = 1 + oHttpMsg.body().size() + strPadding.size();
         stFrameHead.ucFlag |= H2_FRAME_FLAG_PADDED;
         EncodeFrameHeader(stFrameHead, pBuff);
-        pBuff->Write(&(htonl(strPadding.size())), 1);
+        uint16 unNetLength = htons(strPadding.size());
+        pBuff->Write(&unNetLength, 1);
         pBuff->Write(oHttpMsg.body().c_str(), oHttpMsg.body().size());
         pBuff->Write(strPadding.c_str(), strPadding.size());
     }
@@ -537,7 +539,8 @@ E_CODEC_STATUS Http2Frame::EncodeHeaders(CodecHttp2* pCodecH2,
         {
             stFrameHead.uiLength = pCodecH2->GetMaxFrameSize();
             EncodeFrameHeader(stFrameHead, pBuff);
-            pBuff->Write(&(htonl(strPadding.size())), 1);
+            uint16 unNetLength = htons(strPadding.size());
+            pBuff->Write(&unNetLength, 1);
             EncodePriority(stPriority, pBuff);
             pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength - uiAddtionLength);
             pBuff->Write(strPadding.c_str(), strPadding.size());
@@ -548,7 +551,8 @@ E_CODEC_STATUS Http2Frame::EncodeHeaders(CodecHttp2* pCodecH2,
         {
             stFrameHead.ucFlag |= H2_FRAME_FLAG_END_HEADERS;
             EncodeFrameHeader(stFrameHead, pBuff);
-            pBuff->Write(&(htonl(strPadding.size())), 1);
+            uint16 unNetLength = htons(strPadding.size());
+            pBuff->Write(&unNetLength, 1);
             EncodePriority(stPriority, pBuff);
             pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength);
             pBuff->Write(strPadding.c_str(), strPadding.size());
@@ -623,7 +627,8 @@ E_CODEC_STATUS Http2Frame::EncodeRstStream(CodecHttp2* pCodecH2,
     stFrameHead.uiStreamIdentifier = uiStreamId;
     stFrameHead.uiLength = 4;
     EncodeFrameHeader(stFrameHead, pBuff);
-    pBuff->Write(&(htonl(iErrCode)), 4);
+    uint32 uiErrCode = htonl(iErrCode);
+    pBuff->Write(&uiErrCode, 4);
     return(CODEC_STATUS_OK);
 }
 
@@ -689,7 +694,8 @@ E_CODEC_STATUS Http2Frame::EncodePushPromise(CodecHttp2* pCodecH2,
         {
             stFrameHead.uiLength = pCodecH2->GetMaxFrameSize();
             EncodeFrameHeader(stFrameHead, pBuff);
-            pBuff->Write(&(htonl(strPadding.size())), 1);
+            uint16 unNetLength = htons(strPadding.size());
+            pBuff->Write(&unNetLength, 1);
             // ignore R
             pBuff->Write(&uiPromiseStreamId, 4);
             pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength - uiAddtionLength);
@@ -701,7 +707,8 @@ E_CODEC_STATUS Http2Frame::EncodePushPromise(CodecHttp2* pCodecH2,
         {
             stFrameHead.ucFlag |= H2_FRAME_FLAG_END_HEADERS;
             EncodeFrameHeader(stFrameHead, pBuff);
-            pBuff->Write(&(htonl(strPadding.size())), 1);
+            uint16 unNetLength = htons(strPadding.size());
+            pBuff->Write(&unNetLength, 1);
             // ignore R
             pBuff->Write(&uiPromiseStreamId, 4);
             pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength);
@@ -764,8 +771,11 @@ E_CODEC_STATUS Http2Frame::EncodeGoaway(CodecHttp2* pCodecH2,
     stFrameHead.uiStreamIdentifier = 0x0;
     stFrameHead.uiLength = 8 + strDebugData.size();
     EncodeFrameHeader(stFrameHead, pBuff);
-    pBuff->Write(&(htonl(pCodecH2->GetLastStreamId())), 4);
-    pBuff->Write(&(htonl(iErrCode)), 4);
+
+    uint32 uiNetStreamId = htonl(pCodecH2->GetLastStreamId());
+    uint32 uiNetErrCode = htonl(iErrCode);
+    pBuff->Write(&uiNetStreamId, 4);
+    pBuff->Write(&uiNetErrCode, 4);
     pBuff->Write(strDebugData.c_str(), strDebugData.size());
     return(CODEC_STATUS_OK);
 }

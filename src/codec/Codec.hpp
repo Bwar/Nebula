@@ -22,6 +22,7 @@
 #include "Definition.hpp"
 #include "CodecDefine.hpp"
 #include "logger/NetLogger.hpp"
+#include "CodecUtil.hpp"
 
 namespace neb
 {
@@ -108,6 +109,10 @@ public:
 
     template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
 
+    inline void SetErrno(int32 iErrno)
+    {
+        m_iErrno = iErrno;
+    }
 protected:
     const std::string& GetKey() const
     {
@@ -122,10 +127,6 @@ protected:
     bool Rc5Decrypt(const std::string& strSrc, std::string& strDest);
     bool AesEncrypt(const std::string& strSrc, std::string& strDest);
     bool AesDecrypt(const std::string& strSrc, std::string& strDest);
-    inline void SetErrno(int32 iErrno)
-    {
-        m_iErrno = iErrno;
-    }
 
 protected:
     std::shared_ptr<NetLogger> m_pLogger;
