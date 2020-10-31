@@ -152,7 +152,7 @@ bool Worker::Init(CJsonObject& oJsonConf)
 
     bool bCpuAffinity = false;
     oJsonConf.Get("cpu_affinity", bCpuAffinity);
-    if (bCpuAffinity)
+    if (bCpuAffinity && !m_stNodeInfo.bThreadMode)
     {
 #ifndef __CYGWIN__
         /* get logical cpu number */

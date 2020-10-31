@@ -58,8 +58,8 @@ Manager::Manager(const std::string& strConfFile)
     CreateEvents();
     if (m_stNodeInfo.bThreadMode)
     {
+        CreateWorkerThread();   // Loader可能需要用到Worker线程ID，故先创建Worker
         CreateLoaderThread();
-        CreateWorkerThread();
     }
     else
     {
@@ -452,6 +452,7 @@ void Manager::CreateLoader()
         m_pDispatcher->AddIoReadEvent(pChannelData);
         m_pDispatcher->AddIoReadEvent(pChannelControl);
         m_pSessionManager->SendOnlineNodesToWorker();
+        m_pSessionManager->NewSocketWhenLoaderCreated();
     }
     else
     {
@@ -503,7 +504,9 @@ void Manager::CreateLoaderThread()
     m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
     m_pDispatcher->AddIoReadEvent(pChannelData);
     m_pDispatcher->AddIoReadEvent(pChannelControl);
+    m_pSessionManager->SetLoaderActorBuilder(m_pLoaderActorBuilder);
     m_pSessionManager->SendOnlineNodesToWorker();
+    m_pSessionManager->NewSocketWhenLoaderCreated();
 }
 
 void Manager::CreateWorker()
@@ -558,6 +561,7 @@ void Manager::CreateWorker()
             m_pDispatcher->AddIoReadEvent(pChannelData);
             m_pDispatcher->AddIoReadEvent(pChannelControl);
             m_pSessionManager->NewSocketWhenWorkerCreated(iDataFds[0]);
+            m_pSessionManager->SendOnlineNodesToWorker();    // optional
         }
         else
         {
@@ -598,6 +602,9 @@ void Manager::CreateWorkerThread()
         pWorker->SetLoaderActorBuilder(m_pLoaderActorBuilder);
         std::thread t(&Worker::Run, pWorker);
         t.detach();
+        std::ostringstream ossThreadId;
+        ossThreadId << t.get_id();
+        m_pSessionManager->AddWorkerThreadId(strtoull(ossThreadId.str().c_str(), NULL, 10));
         m_pSessionManager->AddWorkerInfo(i, getpid(), iControlFds[0], iDataFds[0]);
         std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
         std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
@@ -605,6 +612,7 @@ void Manager::CreateWorkerThread()
         m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
         m_pDispatcher->AddIoReadEvent(pChannelData);
         m_pDispatcher->AddIoReadEvent(pChannelControl);
+        m_pSessionManager->SendOnlineNodesToWorker();  // optional
         m_pSessionManager->NewSocketWhenWorkerCreated(iDataFds[0]);
     }
 }

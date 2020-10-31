@@ -756,6 +756,7 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(HttpMsg& oHttpMsg)
     }
 }
 
+/*
 E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("");
@@ -816,6 +817,7 @@ E_CODEC_STATUS SocketChannelSslImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, 
             return(CODEC_STATUS_ERR);
     }
 }
+*/
 
 bool SocketChannelSslImpl::Close()
 {

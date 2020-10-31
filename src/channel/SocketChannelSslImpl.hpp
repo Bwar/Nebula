@@ -69,7 +69,7 @@ public:
     virtual E_CODEC_STATUS Send(const HttpMsg& oHttpMsg, uint32 ulStepSeq) override;
     virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody) override;
     virtual E_CODEC_STATUS Recv(HttpMsg& oHttpMsg) override;
-    virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg) override;
+    //virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody, HttpMsg& oHttpMsg) override;
     virtual bool Close() override;
 
 protected:

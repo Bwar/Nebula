@@ -351,6 +351,18 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
         auto module_iter = m_mapModule.find(oHttpMsg.path());
         if (module_iter == m_mapModule.end())
         {
+            if (oHttpMsg.has_upgrade() && oHttpMsg.upgrade().is_upgrade())
+            {
+                module_iter = m_mapModule.find("http_upgrade");
+                if (module_iter != m_mapModule.end())
+                {
+                    std::ostringstream oss;
+                    oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
+                    module_iter->second->SetTraceId(oss.str());
+                    module_iter->second->AnyMessage(pChannel, oHttpMsg);
+                    return(true);
+                }
+            }
             module_iter = m_mapModule.find("/switch");
             if (module_iter == m_mapModule.end())
             {
@@ -610,6 +622,10 @@ bool ActorBuilder::OnRedisCmdResult(std::shared_ptr<RedisChannel> pChannel, redi
                     }
                 }
             }
+            if (CMD_STATUS_RUNNING != eResult)
+            {
+                RemoveStep(std::dynamic_pointer_cast<Step>(*step_iter));
+            }
             //freeReplyObject(reply);
         }
         else
@@ -618,7 +634,10 @@ bool ActorBuilder::OnRedisCmdResult(std::shared_ptr<RedisChannel> pChannel, redi
         }
     }
 
-    RemoveStep(std::dynamic_pointer_cast<Step>(*step_iter));
+    if (pChannel->listPipelineStep.size() == 0 && !pChannel->IsPipeline())
+    {
+        m_pLabor->GetDispatcher()->AddNamedRedisChannel(pChannel->GetIdentify(), pChannel);
+    }
     return(true);
 }
 
@@ -839,6 +858,8 @@ void ActorBuilder::LoadSysCmd()
         MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
         strModulePath = "/status";
         MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
+        strModulePath = "http_upgrade";
+        MakeSharedModule(nullptr, "neb::ModuleHttpUpgrade", strModulePath);
     }
     m_pSessionLogger = std::dynamic_pointer_cast<SessionLogger>(MakeSharedSession(nullptr, "neb::SessionLogger"));
 }

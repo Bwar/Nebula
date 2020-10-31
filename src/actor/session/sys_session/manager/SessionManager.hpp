@@ -38,6 +38,9 @@ public:
     Worker* MutableLoader(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd);
     const WorkerInfo* GetWorkerInfo(int32 iWorkerIndex) const;
     bool SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad);
+    void SetLoaderActorBuilder(ActorBuilder* pActorBuilder);
+    const std::vector<uint64>& GetWorkerThreadId() const;
+    void AddWorkerThreadId(uint64 ullThreadId);
     int GetNextWorkerDataFd();
     std::pair<int, int> GetMinLoadWorkerDataFd();
     bool CheckWorker();
@@ -56,6 +59,7 @@ private:
     std::unordered_map<int, WorkerInfo*>::iterator m_iterWorkerInfo;
     std::unordered_map<int, int> m_mapWorkerStartNum;       ///< 进程被启动次数，key为WorkerIdx
     std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
+    std::vector<uint64> m_vecWorkerThreadId;                    ///< Worker线程ID（线程模式下）
     std::unordered_map<std::string, std::string> m_mapOnlineNodes;     ///< 订阅的节点在线信息
 };
 

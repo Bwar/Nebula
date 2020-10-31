@@ -13,6 +13,7 @@
 #include "codec/CodecHttp.hpp"
 #include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
+#include "pb/http.pb.h"
 
 namespace neb
 {

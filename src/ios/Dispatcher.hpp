@@ -138,9 +138,9 @@ public:
 
     // SendTo() for redis
     bool SendTo(std::shared_ptr<RedisChannel> pRedisChannel, Actor* pSender);
-    bool SendTo(const std::string& strIdentify, Actor* pSender);
-    bool SendTo(const std::string& strHost, int iPort, Actor* pSender);
-    bool AutoRedisCmd(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep);
+    bool SendTo(const std::string& strIdentify, Actor* pSender, bool bPipeline = true);
+    bool SendTo(const std::string& strHost, int iPort, Actor* pSender, bool bPipeline = true);
+    bool AutoRedisCmd(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep, bool bPipeline = true);
 
     // SendTo() for unix domain socket
     bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender);
@@ -210,7 +210,7 @@ private:
 
     /* named Channel */
     std::unordered_map<std::string, std::list<std::shared_ptr<SocketChannel> > > m_mapNamedSocketChannel;      ///< key为Identify，连接存在时，if(http连接)list.size()>=1;else list.size()==1;
-    std::unordered_map<std::string, std::list<std::shared_ptr<RedisChannel> > > m_mapNamedRedisChannel;        ///< key为identify，list.size()==1
+    std::unordered_map<std::string, std::list<std::shared_ptr<RedisChannel> > > m_mapNamedRedisChannel;        ///< key为identify，连接存在时，if(pipeline)list.size()==1;else list.size()>=1;
     std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapLoaderAndWorkerChannel;     ///< Loader和Worker之间通信通道
     std::unordered_map<int32, std::shared_ptr<SocketChannel> >::iterator m_iterLoaderAndWorkerChannel;
 

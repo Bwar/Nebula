@@ -45,7 +45,19 @@ public:
         return(m_pRedisCtx);
     }
 
+    bool IsPipeline() const
+    {
+        return(m_bPipeline);
+    }
+
+protected:
+    void SetPipeline(bool bPipeline)
+    {
+        m_bPipeline = bPipeline;
+    }
+
 private:
+    bool m_bPipeline;                       ///< 是否支持pipeline
     bool bIsReady;                          ///< redis连接是否准备就绪
     redisAsyncContext* m_pRedisCtx;         ///< redis连接上下文地址
     std::string m_strIdentify;              ///< 连接标识（可以为空，不为空时用于标识业务层与连接的关系）

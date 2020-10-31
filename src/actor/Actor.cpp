@@ -172,14 +172,14 @@ bool Actor::SendTo(std::shared_ptr<RedisChannel> pChannel)
     return(m_pLabor->GetDispatcher()->SendTo(pChannel, this));
 }
 
-bool Actor::SendTo(const std::string& strIdentify)
+bool Actor::SendTo(const std::string& strIdentify, bool bPipeline)
 {
-    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, this));
+    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, this, bPipeline));
 }
 
-bool Actor::SendTo(const std::string& strHost, int iPort)
+bool Actor::SendTo(const std::string& strHost, int iPort, bool bPipeline)
 {
-    return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, this));
+    return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, this, bPipeline));
 }
 
 bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)

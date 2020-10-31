@@ -13,7 +13,7 @@ namespace neb
 {
 
 RedisChannel::RedisChannel(redisAsyncContext *c)
-    : bIsReady(false), m_pRedisCtx(c)
+    : m_bPipeline(false), bIsReady(false), m_pRedisCtx(c)
 {
 }
 

@@ -11,6 +11,7 @@
 #include "SessionManager.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <algorithm>
 #include "util/process_helper.h"
 #include "util/json/CJsonObject.hpp"
 #include "labor/NodeInfo.hpp"
@@ -193,7 +194,7 @@ Worker* SessionManager::MutableLoader(int iWorkerIndex, const std::string& strWo
         Worker* pLoader = nullptr;
         try
         {
-            pLoader = new Loader(strWorkPath, iControlFd, iDataFd, iWorkerIndex);
+            pLoader = new Loader(strWorkPath, iControlFd, iDataFd, iWorkerIndex, m_vecWorkerThreadId);
         }
         catch(std::bad_alloc& e)
         {
@@ -252,6 +253,28 @@ bool SessionManager::SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad)
     {
         LOG4_ERROR("%d is not a worker fd!", iWorkerFd);
         return(false);
+    }
+}
+
+void SessionManager::SetLoaderActorBuilder(ActorBuilder* pActorBuilder)
+{
+    for (auto it = m_mapWorker.begin(); it != m_mapWorker.end(); ++it)
+    {
+        it->second->SetLoaderActorBuilder(pActorBuilder);
+    }
+}
+
+const std::vector<uint64>& SessionManager::GetWorkerThreadId() const
+{
+    return(m_vecWorkerThreadId);
+}
+
+void SessionManager::AddWorkerThreadId(uint64 ullThreadId)
+{
+    if (std::find(m_vecWorkerThreadId.begin(), m_vecWorkerThreadId.end(), ullThreadId)
+        != m_vecWorkerThreadId.end())
+    {
+        m_vecWorkerThreadId.push_back(ullThreadId);
     }
 }
 

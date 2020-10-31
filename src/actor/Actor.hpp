@@ -194,8 +194,9 @@ protected:
      * @note 只有RedisStep及其派生类才能调用此方法，调用此方法时将调用者自身(RedisStep)添加到
      *       RedisChannel的pipeline中。
      * @param strIdentify RedisChannel通道标识
+     * @param bPipeline 是否支持pipeline
      */
-    bool SendTo(const std::string& strIdentify);
+    bool SendTo(const std::string& strIdentify, bool bPipeline = true);
 
     /**
      * @brief 发送到redis channel
@@ -203,8 +204,9 @@ protected:
      *       RedisChannel的pipeline中。
      * @param strHost RedisChannel地址
      * @param iPort RedisChannel端口
+     * @param bPipeline 是否支持pipeline
      */
-    bool SendTo(const std::string& strHost, int iPort);
+    bool SendTo(const std::string& strHost, int iPort, bool bPipeline = true);
 
     /**
      * @brief 从worker发送到loader或从loader发送到worker
