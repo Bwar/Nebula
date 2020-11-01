@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package neb;
+
+/* When an error occurs, the err flag in a context is set to hold the type of
+ * error that occured. REDIS_ERR_IO means there was an I/O error and you
+ * should use the "errno" variable to find out what is wrong.
+ * For other values, the "errstr" field will hold a description. */
+enum E_REDIS_ERR
+{
+    REDIS_OK                = 0;
+    REDIS_ERR_IO            = 1;  /* Error in read or write */
+    REDIS_ERR_OTHER         = 2;  /* Everything else... */
+    REDIS_ERR_EOF           = 3;  /* End of file */
+    REDIS_ERR_PROTOCOL      = 4;  /* Protocol error */
+    REDIS_ERR_OOM           = 5;  /* Out of memory */
+    REDIS_ERR               = -1;
+}
+
+enum E_REDIS_REPLY
+{
+    REDIS_REPLY_UNDEFINE    = 0;
+    REDIS_REPLY_STRING      = 1;
+    REDIS_REPLY_ARRAY       = 2;
+    REDIS_REPLY_INTEGER     = 3;
+    REDIS_REPLY_NIL         = 4;
+    REDIS_REPLY_STATUS      = 5;
+    REDIS_REPLY_ERROR       = 6;
+}
+
+message RedisReply
+{
+    int32 type                  = 1;    // REDIS_REPLY_*
+    int64 integer               = 2;    // The integer when type is REDIS_REPLY_INTEGER
+    // int len; /* Length of string */
+    bytes str                   = 3;    // Used for both REDIS_REPLY_ERROR and REDIS_REPLY_STRING
+    // size_t elements; /* number of elements, for REDIS_REPLY_ARRAY */
+    repeated RedisReply element = 4;    //elements vector for REDIS_REPLY_ARRAY
+}
+
