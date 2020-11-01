@@ -142,7 +142,7 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
             iWriteLen = pBuff->Write(&ucSecondByte, 1);
             iHadWriteLen += iWriteLen;
             uint64 ullPayload = iNeedWriteLen;
-            ullPayload = htonll(ullPayload);
+            ullPayload = CodecUtil::H2N(ullPayload);
             iWriteLen = pBuff->Write(&ullPayload, sizeof(ullPayload));
             iHadWriteLen += iWriteLen;
         }
