@@ -120,5 +120,340 @@ E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply)
     return(eStatus);
 }
 
+E_CODEC_STATUS CodecResp::EncodeSimpleString(const RedisReply& oReply, CBuffer* pBuff)
+{
+    pBuff->WriteByte(RESP_SIMPLE_STRING);
+    pBuff->Write(oReply.str().c_str(), oReply.str().size());
+    pBuff->WriteByte('\r');
+    pBuff->WriteByte('\n');
+    return(CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecResp::EncodeError(const RedisReply& oReply, CBuffer* pBuff)
+{
+    pBuff->WriteByte(RESP_ERROR);
+    pBuff->Write(oReply.str().c_str(), oReply.str().size());
+    pBuff->WriteByte('\r');
+    pBuff->WriteByte('\n');
+    return(CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecResp::EncodeInteger(const RedisReply& oReply, CBuffer* pBuff)
+{
+    char szInteger[64] = {0};
+    snprintf(szInteger, 64, "%ld", oReply.integer());
+    pBuff->WriteByte(RESP_INTEGER);
+    pBuff->Write(&szInteger, strlen(szInteger));
+    pBuff->WriteByte('\r');
+    pBuff->WriteByte('\n');
+    return(CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecResp::EncodeBulkString(const RedisReply& oReply, CBuffer* pBuff)
+{
+    char szStringLen[64] = {0};
+    snprintf(szStringLen, 64, "%lu", oReply.str().size());
+    pBuff->WriteByte(RESP_BULK_STRING);
+    pBuff->Write(szStringLen, strlen(szStringLen));
+    pBuff->WriteByte('\r');
+    pBuff->WriteByte('\n');
+    if (oReply.str().size() > 0)
+    {
+        pBuff->Write(oReply.str().c_str(), oReply.str().size());
+    }
+    pBuff->WriteByte('\r');
+    pBuff->WriteByte('\n');
+    return(CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecResp::EncodeArray(const RedisReply& oReply, CBuffer* pBuff)
+{
+    char szArraySize[64] = {0};
+    snprintf(szArraySize, 64, "%d", oReply.element_size());
+    pBuff->WriteByte(RESP_ARRAY);
+    pBuff->Write(szArraySize, strlen(szArraySize));
+    pBuff->WriteByte('\r');
+    pBuff->WriteByte('\n');
+    E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
+    for (int i = 0; i < oReply.element_size(); ++i)
+    {
+        auto& rElement = oReply.element(i);
+        switch (rElement.type())
+        {
+            case REDIS_REPLY_STRING:
+                eStatus = EncodeBulkString(rElement, pBuff);
+                break;
+            case REDIS_REPLY_ARRAY:
+                eStatus = EncodeArray(rElement, pBuff);
+                break;
+            case REDIS_REPLY_INTEGER:
+                eStatus = EncodeInteger(rElement, pBuff);
+                break;
+            case REDIS_REPLY_STATUS:
+                eStatus = EncodeSimpleString(rElement, pBuff);
+                break;
+            case REDIS_REPLY_ERROR:
+                eStatus = EncodeError(rElement, pBuff);
+                break;
+            case REDIS_REPLY_NIL:
+                eStatus = EncodeNull(rElement, pBuff);
+                break;
+            default:
+                LOG4_ERROR("invalid redis reply type %d", oReply.type());
+                return(CODEC_STATUS_ERR);
+        }
+        if (CODEC_STATUS_OK != eStatus)
+        {
+            return(eStatus);
+        }
+    }
+    return(CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecResp::EncodeNull(const RedisReply& oReply, CBuffer* pBuff)
+{
+    char szInteger[64] = {0};
+    snprintf(szInteger, 64, "%d", -1);
+    pBuff->WriteByte(RESP_BULK_STRING);
+    pBuff->Write(&szInteger, strlen(szInteger));
+    pBuff->WriteByte('\r');
+    pBuff->WriteByte('\n');
+    return(CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecResp::DecodeSimpleString(CBuffer* pBuff, RedisReply& oReply)
+{
+    size_t uiReadableBytes = pBuff->ReadableBytes();
+    char cLastChar = 0;
+    uint32 uiStringLen = 0;
+    const char* pData = pBuff->GetRawReadBuffer();
+    for (size_t i = 0; i < uiReadableBytes; ++i)
+    {
+        switch (pData[i])
+        {
+            case '\n':
+                if ('\r' == cLastChar)
+                {
+                    cLastChar = '\n';
+                    oReply.set_type(REDIS_REPLY_STATUS);
+                    oReply.set_str(pBuff->GetRawReadBuffer(), uiStringLen);
+                    pBuff->AdvanceReadIndex(i + 1);
+                    return(CODEC_STATUS_OK);
+                }
+                else
+                {
+                    return(CODEC_STATUS_ERR);
+                }
+                break;
+            case '\r':
+                cLastChar = '\r';
+                break;
+            default:
+                ++uiStringLen;
+        }
+    }
+    return(CODEC_STATUS_PAUSE);
+}
+
+E_CODEC_STATUS CodecResp::DecodeError(CBuffer* pBuff, RedisReply& oReply)
+{
+    size_t uiReadableBytes = pBuff->ReadableBytes();
+    char cLastChar = 0;
+    uint32 uiStringLen = 0;
+    const char* pData = pBuff->GetRawReadBuffer();
+    for (size_t i = 0; i < uiReadableBytes; ++i)
+    {
+        switch (pData[i])
+        {
+            case '\n':
+                if ('\r' == cLastChar)
+                {
+                    cLastChar = '\n';
+                    oReply.set_type(REDIS_REPLY_ERROR);
+                    oReply.set_str(pBuff->GetRawReadBuffer(), uiStringLen);
+                    pBuff->AdvanceReadIndex(i + 1);
+                    return(CODEC_STATUS_OK);
+                }
+                else
+                {
+                    return(CODEC_STATUS_ERR);
+                }
+                break;
+            case '\r':
+                cLastChar = '\r';
+                break;
+            default:
+                ++uiStringLen;
+        }
+    }
+    return(CODEC_STATUS_PAUSE);
+}
+
+E_CODEC_STATUS CodecResp::DecodeInteger(CBuffer* pBuff, RedisReply& oReply)
+{
+    size_t uiReadableBytes = pBuff->ReadableBytes();
+    char cLastChar = 0;
+    const char* pData = pBuff->GetRawReadBuffer();
+    for (size_t i = 0; i < uiReadableBytes; ++i)
+    {
+        switch (*pData)
+        {
+            case '\n':
+                if ('\r' == cLastChar)
+                {
+                    cLastChar = '\n';
+                    oReply.set_type(REDIS_REPLY_INTEGER);
+                    oReply.set_integer(StringConverter::RapidAtoi<int64>(pBuff->GetRawReadBuffer()));
+                    pBuff->AdvanceReadIndex(i + 1);
+                    return(CODEC_STATUS_OK);
+                }
+                else
+                {
+                    return(CODEC_STATUS_ERR);
+                }
+                break;
+            case '\r':
+                cLastChar = '\r';
+                break;
+            default:
+                ;
+        }
+    }
+    return(CODEC_STATUS_PAUSE);
+}
+
+E_CODEC_STATUS CodecResp::DecodeBulkString(CBuffer* pBuff, RedisReply& oReply)
+{
+    size_t uiReadableBytes = pBuff->ReadableBytes();
+    char cLastChar = 0;
+    int32 iStringLen = 0;
+    bool bGotStringLen = false;
+    const char* pData = pBuff->GetRawReadBuffer();
+    for (size_t i = 0; i <= uiReadableBytes; ++i)
+    {
+        switch (pData[i])
+        {
+            case '\n':
+                if ('\r' == cLastChar)
+                {
+                    cLastChar = '\n';
+                    if (bGotStringLen)
+                    {
+                        if (iStringLen == -1)
+                        {
+                            oReply.set_type(REDIS_REPLY_NIL);
+                        }
+                        else
+                        {
+                            oReply.set_type(REDIS_REPLY_STRING);
+                            oReply.set_str(pBuff->GetRawReadBuffer(), iStringLen);
+                        }
+                        pBuff->AdvanceReadIndex(i + 1);
+                        return(CODEC_STATUS_OK);
+                    }
+                    else
+                    {
+                        iStringLen = StringConverter::RapidAtoi<int32>(pBuff->GetRawReadBuffer());
+                        bGotStringLen = true;
+                        if (uiReadableBytes - i < (uint32)iStringLen)
+                        {
+                            return(CODEC_STATUS_PAUSE);
+                        }
+                        else
+                        {
+                            i += (uint32)iStringLen;
+                        }
+                    }
+                }
+                else
+                {
+                    return(CODEC_STATUS_ERR);
+                }
+                break;
+            case '\r':
+                cLastChar = '\r';
+                break;
+            default:
+                ;
+        }
+    }
+    return(CODEC_STATUS_PAUSE);
+}
+
+E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
+{
+    size_t uiReadableBytes = pBuff->ReadableBytes();
+    char cLastChar = 0;
+    int32 iArraySize = 0;
+    const char* pData = pBuff->GetRawReadBuffer();
+    for (size_t i = 0; i < uiReadableBytes; ++i)
+    {
+        switch (pData[i])
+        {
+            case '\n':
+                if ('\r' == cLastChar)
+                {
+                    cLastChar = '\n';
+                    iArraySize = StringConverter::RapidAtoi<int32>(pBuff->GetRawReadBuffer());
+                    pBuff->AdvanceReadIndex(i + 1);
+
+                    if (iArraySize == -1)
+                    {
+                        oReply.set_type(REDIS_REPLY_NIL);
+                    }
+                    else
+                    {
+                        oReply.set_type(REDIS_REPLY_ARRAY);
+                        for (int32 i = 0; i < iArraySize; ++i)
+                        {
+                            char cFirstByte = 0;
+                            auto pElement = oReply.add_element();
+                            pBuff->ReadByte(cFirstByte);
+                            E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
+                            switch (cFirstByte)
+                            {
+                                case RESP_SIMPLE_STRING:
+                                    eStatus = DecodeSimpleString(pBuff, *pElement);
+                                    break;
+                                case RESP_INTEGER:
+                                    eStatus = DecodeInteger(pBuff, *pElement);
+                                    break;
+                                case RESP_BULK_STRING:
+                                    eStatus = DecodeBulkString(pBuff, *pElement);
+                                    break;
+                                case RESP_ARRAY:
+                                    eStatus = DecodeArray(pBuff, *pElement);
+                                    break;
+                                case RESP_ERROR:
+                                    eStatus = DecodeError(pBuff, *pElement);
+                                    break;
+                                default:
+                                    oReply.set_type(REDIS_REPLY_ERROR);
+                                    oReply.set_integer(REDIS_ERR_PROTOCOL);
+                                    return(CODEC_STATUS_ERR);
+                            }
+                            if (CODEC_STATUS_OK != eStatus)
+                            {
+                                return(eStatus);
+                            }
+                        }
+                        return(CODEC_STATUS_OK);
+                    }
+                }
+                else
+                {
+                    return(CODEC_STATUS_ERR);
+                }
+                break;
+            case '\r':
+                cLastChar = '\r';
+                break;
+            default:
+                ;
+        }
+    }
+    return(CODEC_STATUS_PAUSE);
+}
+
 }
 
