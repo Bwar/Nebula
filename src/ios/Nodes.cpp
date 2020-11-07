@@ -13,6 +13,8 @@
 #define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
 #include "cryptopp/md5.h"
 #include "cryptopp/hex.h"
+#include "cryptopp/filters.h"
+#include "util/encrypt/city.h"
 
 namespace neb
 {
@@ -30,17 +32,19 @@ Nodes::~Nodes()
 bool Nodes::GetNode(const std::string& strNodeType, const std::string& strHashKey, std::string& strNodeIdentify)
 {
     uint32 uiKeyHash = 0;
-    if (HASH_fnv1_64 == m_iHashAlgorithm)
+    switch (m_iHashAlgorithm)
     {
-        uiKeyHash = hash_fnv1_64(strHashKey.c_str(), strHashKey.size());
-    }
-    else if (HASH_murmur3_32 == m_iHashAlgorithm)
-    {
-        uiKeyHash = murmur3_32(strHashKey.c_str(), strHashKey.size(), 0x000001b3);
-    }
-    else
-    {
-        uiKeyHash = hash_fnv1a_64(strHashKey.c_str(), strHashKey.size());
+        case HASH_cityhash_32:
+            uiKeyHash = CityHash32(strHashKey.c_str(), strHashKey.size());
+            break;
+        case HASH_fnv1_64:
+            uiKeyHash = hash_fnv1_64(strHashKey.c_str(), strHashKey.size());
+            break;
+        case HASH_murmur3_32:
+            uiKeyHash = murmur3_32(strHashKey.c_str(), strHashKey.size(), 0x000001b3);
+            break;
+        default:
+            uiKeyHash = hash_fnv1a_64(strHashKey.c_str(), strHashKey.size());
     }
 
     auto node_type_iter = m_mapNode.find(strNodeType);
@@ -220,7 +224,11 @@ void Nodes::DelNode(const std::string& strNodeType, const std::string& strNodeId
             for (std::vector<uint32>::iterator hash_iter = node_iter->second.begin();
                             hash_iter != node_iter->second.end(); ++hash_iter)
             {
-                node_type_iter->second->mapHash2Node.erase(node_type_iter->second->mapHash2Node.find(*hash_iter));
+                auto it = node_type_iter->second->mapHash2Node.find(*hash_iter);
+                if (it != node_type_iter->second->mapHash2Node.end())
+                {
+                    node_type_iter->second->mapHash2Node.erase(it);
+                }
             }
             node_type_iter->second->mapNode2Hash.erase(node_iter);
             node_type_iter->second->itPollingNode = node_type_iter->second->mapNode2Hash.begin();

@@ -18,6 +18,8 @@
 namespace neb
 {
 
+class Loader;
+
 class SessionManager : public Session,
     public DynamicCreator<SessionManager, bool>, public ActorSys
 {
@@ -35,7 +37,7 @@ public:
     void AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
     void AddLoaderInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
     Worker* MutableWorker(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd);
-    Worker* MutableLoader(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd);
+    Loader* MutableLoader(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd);
     const WorkerInfo* GetWorkerInfo(int32 iWorkerIndex) const;
     bool SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad);
     void SetLoaderActorBuilder(ActorBuilder* pActorBuilder);

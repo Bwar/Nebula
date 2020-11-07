@@ -31,6 +31,7 @@ enum E_HASH_ALGORITHM
     HASH_fnv1a_64           = 0,
     HASH_fnv1_64            = 1,
     HASH_murmur3_32         = 2,
+    HASH_cityhash_32        = 3,
 };
 
 /**
@@ -44,7 +45,7 @@ public:
      * @param iVirtualNodeNum 每个实体节点对应的虚拟节点数量
      * @param dSessionTimeout 超时时间，0表示永不超时
      */
-    Nodes(int iHashAlgorithm = HASH_fnv1a_64, int iVirtualNodeNum = 200);
+    Nodes(int iHashAlgorithm = HASH_cityhash_32, int iVirtualNodeNum = 200);
     virtual ~Nodes();
 
     /* 实体节点hash信息

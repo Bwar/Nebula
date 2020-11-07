@@ -60,7 +60,7 @@ enum E_CODEC_STATUS
     CODEC_STATUS_WANT_READ  = 4,    ///< 等待对端握手信息（此时，应该不再监听FD的可写事件，直到对端握手信息到达。此状态用于SSL连接握手）
     CODEC_STATUS_WANT_WRITE = 5,    ///< 等待己端握手信息（此时，应发起握手信息，并添加FD的可写事件监听。此状态用于SSL连接握手）或握手成功等待数据发送
     CODEC_STATUS_INVALID    = 6,    ///< 使用了错误的编解码方式（此时为调用错误，应修改调用方式）
-    CODEC_STATUS_ERR        = 7,    ///< 编解码失败
+    CODEC_STATUS_ERR        = 7,    ///< 编解码失败，需关闭连接
     CODEC_STATUS_EOF        = 8,    ///< 连接正常关闭
     CODEC_STATUS_INT        = 9,    ///< 连接非正常关闭
 };
@@ -135,7 +135,7 @@ private:
     int32 m_iErrno;
     E_CODEC_TYPE m_eCodecType;
     std::string m_strKey;       // 密钥
-    static std::vector<E_CODEC_TYPE> m_vecAutoSwitchCodecType;
+    static std::vector<E_CODEC_TYPE> m_vecAutoSwitchCodecType;   // 自动转换有效的编解码类型
 
     friend class SocketChannel;
 };

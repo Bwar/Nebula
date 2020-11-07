@@ -41,6 +41,7 @@ public:
     virtual void SetLogLevel(int iLev)
     {
         m_iLogLevel = iLev;
+        m_pLog->SetLogLevel(iLev);
     }
 
     virtual void SetNetLogLevel(int iLev)

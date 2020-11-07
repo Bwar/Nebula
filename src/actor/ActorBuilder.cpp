@@ -1218,12 +1218,20 @@ void ActorBuilder::BootLoadCmd(CJsonObject& oCmdConf)
     for (int i = 0; i < oCmdConf["cmd"].GetArraySize(); ++i)
     {
         oCmdConf["cmd"][i].Get("cmd", iCmd);
-        MakeSharedCmd(nullptr, oCmdConf["cmd"][i]("class"), iCmd);
+        auto pCmd = MakeSharedCmd(nullptr, oCmdConf["cmd"][i]("class"), iCmd);
+        if (pCmd != nullptr)
+        {
+            LOG4_INFO("succeed in loading %s with cmd %d", oCmdConf["cmd"][i]("class").c_str(), iCmd);
+        }
     }
     for (int j = 0; j < oCmdConf["module"].GetArraySize(); ++j)
     {
         oCmdConf["module"][j].Get("path", strUrlPath);
-        MakeSharedModule(nullptr, oCmdConf["module"][j]("class"), strUrlPath);
+        auto pModule = MakeSharedModule(nullptr, oCmdConf["module"][j]("class"), strUrlPath);
+        if (pModule != nullptr)
+        {
+            LOG4_INFO("succeed in loading %s with module %s", oCmdConf["module"][j]("class").c_str(), strUrlPath.c_str());
+        }
     }
 }
 

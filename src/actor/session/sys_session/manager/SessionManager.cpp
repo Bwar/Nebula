@@ -186,12 +186,12 @@ Worker* SessionManager::MutableWorker(int iWorkerIndex, const std::string& strWo
     }
 }
 
-Worker* SessionManager::MutableLoader(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd)
+Loader* SessionManager::MutableLoader(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd)
 {
     auto iter = m_mapWorker.find(iWorkerIndex);
     if (iter == m_mapWorker.end())
     {
-        Worker* pLoader = nullptr;
+        Loader* pLoader = nullptr;
         try
         {
             pLoader = new Loader(strWorkPath, iControlFd, iDataFd, iWorkerIndex, m_vecWorkerThreadId);
@@ -201,12 +201,12 @@ Worker* SessionManager::MutableLoader(int iWorkerIndex, const std::string& strWo
             LOG4_ERROR("new Worker error: %s", e.what());
             return(nullptr);
         }
-        m_mapWorker.insert(std::make_pair(iWorkerIndex, pLoader));
+        m_mapWorker.insert(std::make_pair(iWorkerIndex, (Worker*)pLoader));
         return(pLoader);
     }
     else
     {
-        return(iter->second);
+        return((Loader*)iter->second);
     }
 }
 
@@ -295,11 +295,15 @@ int SessionManager::GetNextWorkerDataFd()
         {
             m_iterWorkerInfo = m_mapWorkerInfo.begin();
         }
-        else if (m_iterWorkerInfo->second->iDataFd == m_iLoaderDataFd)
+        if (m_iterWorkerInfo->second->iDataFd == m_iLoaderDataFd)
         {
             ++m_iterWorkerInfo;
             if (m_iterWorkerInfo == m_mapWorkerInfo.end())
             {
+                if (m_mapWorkerInfo.size() == 1)
+                {
+                    return(-1);
+                }
                 m_iterWorkerInfo = m_mapWorkerInfo.begin();
             }
         }

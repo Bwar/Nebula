@@ -1132,7 +1132,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, Actor* pSender, bool bPi
             return(false);
         }
         std::shared_ptr<RedisStep> pRedisStep = std::dynamic_pointer_cast<RedisStep>(pSender->shared_from_this());
-        return(AutoRedisCmd(strHost, iPort, pRedisStep));
+        return(AutoRedisCmd(strHost, iPort, pRedisStep, bPipeline));
     }
     else
     {
@@ -1153,7 +1153,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, Actor* pSender, bool bPi
                 return(false);
             }
             std::shared_ptr<RedisStep> pRedisStep = std::dynamic_pointer_cast<RedisStep>(pSender->shared_from_this());
-            return(AutoRedisCmd(strHost, iPort, pRedisStep));
+            return(AutoRedisCmd(strHost, iPort, pRedisStep, bPipeline));
         }
         else
         {
@@ -1191,14 +1191,14 @@ bool Dispatcher::SendTo(const std::string& strHost, int iPort, Actor* pSender, b
     if (named_iter != m_mapNamedRedisChannel.end())
     {
         std::shared_ptr<RedisStep> pRedisStep = std::dynamic_pointer_cast<RedisStep>(pSender->shared_from_this());
-        return(AutoRedisCmd(strHost, iPort, pRedisStep));
+        return(AutoRedisCmd(strHost, iPort, pRedisStep, bPipeline));
     }
     else
     {
         if (named_iter->second.empty())
         {
             std::shared_ptr<RedisStep> pRedisStep = std::dynamic_pointer_cast<RedisStep>(pSender->shared_from_this());
-            return(AutoRedisCmd(strHost, iPort, pRedisStep));
+            return(AutoRedisCmd(strHost, iPort, pRedisStep, bPipeline));
         }
         else
         {

@@ -9,7 +9,6 @@
  ******************************************************************************/
 
 #include "CJsonObject.hpp"
-#include <sstream>
 
 #ifdef _WIN32
 #define snprintf _snprintf_s
@@ -308,9 +307,30 @@ std::string CJsonObject::operator()(const std::string& strKey) const
     }
     else if (pJsonStruct->type == cJSON_Int)
     {
-        std::ostringstream ossNumber;
-        ossNumber << pJsonStruct->valueint;
-        return(ossNumber.str());
+        char szNumber[128] = {0};
+        if (pJsonStruct->sign == -1)
+        {
+            if (pJsonStruct->valueint <= (int64)INT_MAX && (int64)pJsonStruct->valueint >= (int64)INT_MIN)
+            {
+                snprintf(szNumber, sizeof(szNumber), "%d", (int32)pJsonStruct->valueint);
+            }
+            else
+            {
+                snprintf(szNumber, sizeof(szNumber), "%ld", (int64)pJsonStruct->valueint);
+            }
+        }
+        else
+        {
+            if ((uint64)pJsonStruct->valueint <= (uint64)UINT_MAX)
+            {
+                snprintf(szNumber, sizeof(szNumber), "%u", (uint32)pJsonStruct->valueint);
+            }
+            else
+            {
+                snprintf(szNumber, sizeof(szNumber), "%lu", pJsonStruct->valueint);
+            }
+        }
+        return(std::string(szNumber));
     }
     else if (pJsonStruct->type == cJSON_Double)
     {
@@ -363,9 +383,30 @@ std::string CJsonObject::operator()(unsigned int uiWhich) const
     }
     else if (pJsonStruct->type == cJSON_Int)
     {
-        std::ostringstream ossNumber;
-        ossNumber << pJsonStruct->valueint;
-        return(ossNumber.str());
+        char szNumber[128] = {0};
+        if (pJsonStruct->sign == -1)
+        {
+            if (pJsonStruct->valueint <= (int64)INT_MAX && (int64)pJsonStruct->valueint >= (int64)INT_MIN)
+            {
+                snprintf(szNumber, sizeof(szNumber), "%d", (int32)pJsonStruct->valueint);
+            }
+            else
+            {
+                snprintf(szNumber, sizeof(szNumber), "%ld", (int64)pJsonStruct->valueint);
+            }
+        }
+        else
+        {
+            if ((uint64)pJsonStruct->valueint <= (uint64)UINT_MAX)
+            {
+                snprintf(szNumber, sizeof(szNumber), "%u", (uint32)pJsonStruct->valueint);
+            }
+            else
+            {
+                snprintf(szNumber, sizeof(szNumber), "%lu", pJsonStruct->valueint);
+            }
+        }
+        return(std::string(szNumber));
     }
     else if (pJsonStruct->type == cJSON_Double)
     {
@@ -515,6 +556,29 @@ std::string CJsonObject::ToFormattedString() const
     return(strJsonData);
 }
 
+bool CJsonObject::KeyExist(const std::string& strKey) const
+{
+    cJSON* pJsonStruct = NULL;
+    if (m_pJsonData != NULL)
+    {
+        if (m_pJsonData->type == cJSON_Object)
+        {
+            pJsonStruct = cJSON_GetObjectItem(m_pJsonData, strKey.c_str());
+        }
+    }
+    else if (m_pExternJsonDataRef != NULL)
+    {
+        if(m_pExternJsonDataRef->type == cJSON_Object)
+        {
+            pJsonStruct = cJSON_GetObjectItem(m_pExternJsonDataRef, strKey.c_str());
+        }
+    }
+    if (pJsonStruct == NULL)
+    {
+        return(false);
+    }
+    return(true);
+}
 
 bool CJsonObject::Get(const std::string& strKey, CJsonObject& oJsonObject) const
 {
@@ -1262,6 +1326,20 @@ bool CJsonObject::Add(const std::string& strKey, double dValue)
     }
     m_pKeyTravers = pFocusData;
     return(true);
+}
+
+bool CJsonObject::ReplaceAdd(const std::string& strKey,const CJsonObject& oJsonObject)
+{
+  if(Replace(strKey,oJsonObject) == false)
+    return Add(strKey,oJsonObject);
+  return true;
+}
+
+bool CJsonObject::ReplaceAdd(const std::string& strKey,const std::string& strValue)
+{
+  if(Replace(strKey,strValue) == false)
+    return Add(strKey,strValue);
+  return true;
 }
 
 bool CJsonObject::AddNull(const std::string& strKey)
