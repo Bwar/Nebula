@@ -1013,13 +1013,14 @@ bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& 
 
 bool Dispatcher::SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq)
 {
-    char szIdentify[256] = {0};
-    snprintf(szIdentify, sizeof(szIdentify), "%s:%d", strHost.c_str(), iPort);
-    LOG4_TRACE("identify: %s", szIdentify);
-    auto named_iter = m_mapNamedSocketChannel.find(szIdentify);
+    std::ostringstream ossIdentify;
+    ossIdentify << strHost << ":" << iPort;
+    std::string strIdentify = std::move(ossIdentify.str());
+    LOG4_TRACE("identify: %s", strIdentify.c_str());
+    auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
     {
-        LOG4_TRACE("no channel match %s.", szIdentify);
+        LOG4_TRACE("no channel match %s.", strIdentify.c_str());
         return(AutoSend(strHost, iPort, strUrlPath, oHttpMsg, uiHttpStepSeq));
     }
     else
@@ -1383,12 +1384,12 @@ bool Dispatcher::AutoSend(const std::string& strHost, int iPort, const std::stri
     {
         connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
         freeaddrinfo(pAddrResult);           /* No longer needed */
-        char szIdentify[32] = {0};
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
-        snprintf(szIdentify, sizeof(szIdentify), "%s:%d", strHost.c_str(), iPort);
-        pChannel->m_pImpl->SetIdentify(szIdentify);
+        std::ostringstream ossIdentify;
+        ossIdentify << strHost << ":" << iPort;
+        pChannel->m_pImpl->SetIdentify(ossIdentify.str());
         pChannel->m_pImpl->SetRemoteAddr(strHost);
         E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(oHttpMsg, uiHttpStepSeq);
         if (CODEC_STATUS_OK != eCodecStatus
@@ -1519,7 +1520,7 @@ bool Dispatcher::Disconnect(const std::string& strIdentify, bool bChannelNotice)
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter != m_mapNamedSocketChannel.end())
     {
-        std::list<std::shared_ptr<SocketChannel>>::iterator channel_iter;
+        std::unordered_set<std::shared_ptr<SocketChannel>>::iterator channel_iter;
         while (named_iter->second.size() > 1)
         {
             channel_iter = named_iter->second.begin();
@@ -1565,13 +1566,13 @@ bool Dispatcher::AddNamedSocketChannel(const std::string& strIdentify, std::shar
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
     {
-        std::list<std::shared_ptr<SocketChannel>> listChannel;
-        listChannel.push_back(pChannel);
-        m_mapNamedSocketChannel.insert(std::make_pair(strIdentify, listChannel));
+        std::unordered_set<std::shared_ptr<SocketChannel>> setChannel;
+        setChannel.insert(pChannel);
+        m_mapNamedSocketChannel.insert(std::make_pair(strIdentify, std::move(setChannel)));
     }
     else
     {
-        named_iter->second.push_back(pChannel);
+        named_iter->second.insert(pChannel);
     }
     pChannel->m_pImpl->SetIdentify(strIdentify);
     return(true);
@@ -1600,14 +1601,14 @@ bool Dispatcher::AddNamedRedisChannel(const std::string& strIdentify, std::share
     auto named_iter = m_mapNamedRedisChannel.find(strIdentify);
     if (named_iter == m_mapNamedRedisChannel.end())
     {
-        std::list<std::shared_ptr<RedisChannel> > listChannel;
-        listChannel.push_back(pChannel);
-        m_mapNamedRedisChannel.insert(std::make_pair(strIdentify, listChannel));
+        std::unordered_set<std::shared_ptr<RedisChannel> > setChannel;
+        setChannel.insert(pChannel);
+        m_mapNamedRedisChannel.insert(std::make_pair(strIdentify, std::move(setChannel)));
         return(true);
     }
     else
     {
-        named_iter->second.push_back(pChannel);
+        named_iter->second.insert(pChannel);
     }
     pChannel->SetIdentify(strIdentify);
     return(true);

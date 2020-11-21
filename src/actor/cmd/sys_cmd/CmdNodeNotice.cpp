@@ -43,7 +43,7 @@ bool CmdNodeNotice::AnyMessage(
         std::string strNodeHost;
         int iNodePort = 0;
         int iWorkerNum = 0;
-        char szIdentify[64] = {0};
+        std::ostringstream ossIdentify;
         for (int i = 0; i < oJson["del_nodes"].GetArraySize(); ++i)
         {
             if (oJson["del_nodes"][i].Get("node_type",strNodeType)
@@ -53,9 +53,9 @@ bool CmdNodeNotice::AnyMessage(
             {
                 for(int j = 1; j <= iWorkerNum; ++j)
                 {
-                    snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
-                    GetLabor(this)->GetDispatcher()->DelNodeIdentify(strNodeType, std::string(szIdentify));
-                    LOG4_DEBUG("DelNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
+                    ossIdentify << strNodeHost << ":" << iNodePort << "." << j;
+                    GetLabor(this)->GetDispatcher()->DelNodeIdentify(strNodeType, ossIdentify.str());
+                    LOG4_DEBUG("DelNodeIdentify(%s,%s)", strNodeType.c_str(), ossIdentify.str().c_str());
                 }
             }
         }
@@ -69,9 +69,9 @@ bool CmdNodeNotice::AnyMessage(
             {
                 for(int j = 1; j <= iWorkerNum; ++j)
                 {
-                    snprintf(szIdentify, sizeof(szIdentify), "%s:%d.%d", strNodeHost.c_str(), iNodePort, j);
-                    GetLabor(this)->GetDispatcher()->AddNodeIdentify(strNodeType, std::string(szIdentify));
-                    LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), szIdentify);
+                    ossIdentify << strNodeHost << ":" << iNodePort << "." << j;
+                    GetLabor(this)->GetDispatcher()->AddNodeIdentify(strNodeType, ossIdentify.str());
+                    LOG4_DEBUG("AddNodeIdentify(%s,%s)", strNodeType.c_str(), ossIdentify.str().c_str());
                 }
             }
         }
