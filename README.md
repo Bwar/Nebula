@@ -125,6 +125,13 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.3
+   - add non-pipeline mode support for redis connection
+   - the worker thread to start before the Loader thread in thread mode, and bring the worker thread ID to the Loader
+   - merge CodecResp and CodecHttp2 written by @nebim
+   - add third-party cityhash
+   - update CJsonObject
+   - bug fixed
 #### v1.2
    - delay start when loading a large amount of data
 #### v1.1

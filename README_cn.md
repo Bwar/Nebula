@@ -114,6 +114,13 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.3
+   - 增加redis连接的非pipeline模式支持
+   - 增加线程模式下Worker线程比Loader线程先启动，并把worker线程Id带到Loader
+   - 初步合并@nebim写的CodecResp和CodecHttp2
+   - 增加第三方cityhash
+   - 更新CJsonObject
+   - bug修复
 #### v1.2
    - 增加延迟启动功能：因loader加载大量本地数据文件而延迟绑定端口提供服务并向Beacon注册。
    - 线程模式下Manager不再监控和重启不健康的worker和loader服务。
