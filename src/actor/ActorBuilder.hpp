@@ -213,7 +213,7 @@ void ActorBuilder::Logger(const std::string& strTraceId, int iLogLevel, const ch
 template <typename ...Targs>
 std::shared_ptr<Actor> ActorBuilder::MakeSharedActor(Actor* pCreator, const std::string& strActorName, Targs&&... args)
 {
-    Actor* pActor = ActorFactory<Targs...>::Instance()->Create(strActorName, std::forward<Targs>(args)...);
+    Actor* pActor = ActorFactory<Targs...>::Instance()->Create(m_pLogger, strActorName, std::forward<Targs>(args)...);
     if (nullptr == pActor)
     {
         /**
@@ -282,8 +282,8 @@ std::shared_ptr<Chain> ActorBuilder::MakeSharedChain(Actor* pCreator, const std:
 template <typename ...Targs>
 Actor* ActorBuilder::NewActor(const std::string& strActorName, Targs... args)
 {
-    LOG4_TRACE("\"%s\" created by NewActor().", strActorName.c_str());
-    return(ActorFactory<Targs...>::Instance()->Create(strActorName, std::forward<Targs>(args)...));
+    LOG4_INFO("\"%s\" created by NewActor() instead.", strActorName.c_str());
+    return(ActorFactory<Targs...>::Instance()->Create(m_pLogger, strActorName, std::forward<Targs>(args)...));
 }
 
 } /* namespace neb */

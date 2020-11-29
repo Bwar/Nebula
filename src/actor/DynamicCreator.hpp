@@ -66,7 +66,7 @@ public:
     }
     virtual ~DynamicCreator(){};
 
-    static T* CreateObject(Targs&&... args)
+    static T* CreateObject(std::shared_ptr<NetLogger> pLogger, Targs&&... args)
     {
         T* pT = nullptr;
         try
@@ -75,7 +75,7 @@ public:
         }
         catch(std::bad_alloc& e)
         {
-            //std::cerr << e.what() << std::endl;     // TODO write log
+            pLogger->WriteLog(Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "%s", e.what());
             return(nullptr);
         }
         return(pT);

@@ -107,7 +107,7 @@ public:
     static const std::vector<E_CODEC_TYPE>& GetAutoSwitchCodecType();
     static void AddAutoSwitchCodecType(E_CODEC_TYPE eCodecType);
 
-    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args);
+    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
     inline void SetErrno(int32 iErrno)
     {
@@ -141,7 +141,7 @@ private:
 };
 
 template <typename ...Targs>
-void Codec::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs... args)
+void Codec::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args)
 {
     m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }

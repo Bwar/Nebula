@@ -13,6 +13,7 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include "logger/NetLogger.hpp"
 
 namespace neb
 {
@@ -34,14 +35,14 @@ public:
 
     virtual ~ActorFactory(){};
 
-    bool Regist(const std::string& strTypeName, std::function<Actor*(Targs&&... args)> pFunc);
+    bool Regist(const std::string& strTypeName, std::function<Actor*(std::shared_ptr<NetLogger>, Targs&&... args)> pFunc);
     bool UnRegist(const std::string& strTypeName);
-    Actor* Create(const std::string& strTypeName, Targs&&... args);
+    Actor* Create(std::shared_ptr<NetLogger> pLogger, const std::string& strTypeName, Targs&&... args);
 
 private:
     ActorFactory(){};
     static ActorFactory<Targs...>* s_pActorFactory;
-    std::unordered_map<std::string, std::function<Actor*(Targs&&...)> > m_mapCreateFunction;
+    std::unordered_map<std::string, std::function<Actor*(std::shared_ptr<NetLogger>, Targs&&...)> > m_mapCreateFunction;
 };
 
 
@@ -49,7 +50,7 @@ template<typename ...Targs>
 ActorFactory<Targs...>* ActorFactory<Targs...>::s_pActorFactory = nullptr;
 
 template<typename ...Targs>
-bool ActorFactory<Targs...>::Regist(const std::string& strTypeName, std::function<Actor*(Targs&&... args)> pFunc)
+bool ActorFactory<Targs...>::Regist(const std::string& strTypeName, std::function<Actor*(std::shared_ptr<NetLogger>, Targs&&... args)> pFunc)
 {
     if (nullptr == pFunc)
     {
@@ -76,16 +77,19 @@ bool ActorFactory<Targs...>::UnRegist(const std::string& strTypeName)
 }
 
 template<typename ...Targs>
-Actor* ActorFactory<Targs...>::Create(const std::string& strTypeName, Targs&&... args)
+Actor* ActorFactory<Targs...>::Create(std::shared_ptr<NetLogger> pLogger,
+        const std::string& strTypeName, Targs&&... args)
 {
     auto iter = m_mapCreateFunction.find(strTypeName);
     if (iter == m_mapCreateFunction.end())
     {
+        pLogger->WriteLog(Logger::WARNING, __FILE__, __LINE__, __FUNCTION__,
+                "no CreateObject found for \"%s\"", strTypeName.c_str());
         return (nullptr);
     }
     else
     {
-        return (iter->second(std::forward<Targs>(args)...));
+        return (iter->second(pLogger, std::forward<Targs>(args)...));
     }
 }
 
