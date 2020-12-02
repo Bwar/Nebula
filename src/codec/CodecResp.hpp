@@ -33,7 +33,6 @@ public:
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);
     virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody);
 
-    virtual E_CODEC_STATUS Encode(std::shared_ptr<RedisStep> pRedisStep, CBuffer* pBuff); // TODO move to dispatcher
     virtual E_CODEC_STATUS Encode(const RedisReply& oReply, CBuffer* pBuff);
     virtual E_CODEC_STATUS Decode(CBuffer* pBuff, RedisReply& oReply);
 

@@ -9,7 +9,6 @@
  ******************************************************************************/
 #include "CodecResp.hpp"
 #include "util/StringConverter.hpp"
-#include "actor/step/RedisStep.hpp" // TODO move to dispatcher
 
 namespace neb
 {
@@ -31,23 +30,6 @@ E_CODEC_STATUS CodecResp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBod
 E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     return(CODEC_STATUS_INVALID);
-}
-
-E_CODEC_STATUS CodecResp::Encode(std::shared_ptr<RedisStep> pRedisStep, CBuffer* pBuff)
-{
-    RedisReply oReply;
-    oReply.set_type(REDIS_REPLY_ARRAY);
-    auto pElement = oReply.add_element();
-    pElement->set_type(REDIS_REPLY_STRING);
-    pElement->set_str(pRedisStep->GetCmd());
-    auto& rArgs = pRedisStep->GetCmdArguments();
-    for (size_t i = 0; i < rArgs.size(); ++i)
-    {
-        pElement = oReply.add_element();
-        pElement->set_type(REDIS_REPLY_STRING);
-        pElement->set_str(rArgs[i].first);
-    }
-    return(Encode(oReply, pBuff));
 }
 
 E_CODEC_STATUS CodecResp::Encode(const RedisReply& oReply, CBuffer* pBuff)
@@ -87,6 +69,10 @@ E_CODEC_STATUS CodecResp::Encode(const RedisReply& oReply, CBuffer* pBuff)
 
 E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply)
 {
+    if (pBuff->ReadableBytes() == 0)
+    {
+        return(CODEC_STATUS_PAUSE);
+    }
     char cFirstByte = 0;
     size_t uiReadIndex = pBuff->GetReadIndex();
     pBuff->ReadByte(cFirstByte);
@@ -227,6 +213,7 @@ E_CODEC_STATUS CodecResp::DecodeSimpleString(CBuffer* pBuff, RedisReply& oReply)
     char cLastChar = 0;
     uint32 uiStringLen = 0;
     const char* pData = pBuff->GetRawReadBuffer();
+    const char* pPartBegin = pData;
     for (size_t i = 0; i < uiReadableBytes; ++i)
     {
         switch (pData[i])
@@ -236,7 +223,7 @@ E_CODEC_STATUS CodecResp::DecodeSimpleString(CBuffer* pBuff, RedisReply& oReply)
                 {
                     cLastChar = '\n';
                     oReply.set_type(REDIS_REPLY_STATUS);
-                    oReply.set_str(pBuff->GetRawReadBuffer(), uiStringLen);
+                    oReply.set_str(pPartBegin, uiStringLen);
                     pBuff->AdvanceReadIndex(i + 1);
                     return(CODEC_STATUS_OK);
                 }
@@ -261,6 +248,7 @@ E_CODEC_STATUS CodecResp::DecodeError(CBuffer* pBuff, RedisReply& oReply)
     char cLastChar = 0;
     uint32 uiStringLen = 0;
     const char* pData = pBuff->GetRawReadBuffer();
+    const char* pPartBegin = pData;
     for (size_t i = 0; i < uiReadableBytes; ++i)
     {
         switch (pData[i])
@@ -270,7 +258,7 @@ E_CODEC_STATUS CodecResp::DecodeError(CBuffer* pBuff, RedisReply& oReply)
                 {
                     cLastChar = '\n';
                     oReply.set_type(REDIS_REPLY_ERROR);
-                    oReply.set_str(pBuff->GetRawReadBuffer(), uiStringLen);
+                    oReply.set_str(pPartBegin, uiStringLen);
                     pBuff->AdvanceReadIndex(i + 1);
                     return(CODEC_STATUS_OK);
                 }
@@ -294,6 +282,7 @@ E_CODEC_STATUS CodecResp::DecodeInteger(CBuffer* pBuff, RedisReply& oReply)
     size_t uiReadableBytes = pBuff->ReadableBytes();
     char cLastChar = 0;
     const char* pData = pBuff->GetRawReadBuffer();
+    const char* pPartBegin = pData;
     for (size_t i = 0; i < uiReadableBytes; ++i)
     {
         switch (*pData)
@@ -303,7 +292,7 @@ E_CODEC_STATUS CodecResp::DecodeInteger(CBuffer* pBuff, RedisReply& oReply)
                 {
                     cLastChar = '\n';
                     oReply.set_type(REDIS_REPLY_INTEGER);
-                    oReply.set_integer(StringConverter::RapidAtoi<int64>(pBuff->GetRawReadBuffer()));
+                    oReply.set_integer(StringConverter::RapidAtoi<int64>(pPartBegin));
                     pBuff->AdvanceReadIndex(i + 1);
                     return(CODEC_STATUS_OK);
                 }
@@ -329,6 +318,7 @@ E_CODEC_STATUS CodecResp::DecodeBulkString(CBuffer* pBuff, RedisReply& oReply)
     int32 iStringLen = 0;
     bool bGotStringLen = false;
     const char* pData = pBuff->GetRawReadBuffer();
+    const char* pPartBegin = pData;
     for (size_t i = 0; i <= uiReadableBytes; ++i)
     {
         switch (pData[i])
@@ -346,14 +336,15 @@ E_CODEC_STATUS CodecResp::DecodeBulkString(CBuffer* pBuff, RedisReply& oReply)
                         else
                         {
                             oReply.set_type(REDIS_REPLY_STRING);
-                            oReply.set_str(pBuff->GetRawReadBuffer(), iStringLen);
+                            oReply.set_str(pPartBegin, iStringLen);
                         }
                         pBuff->AdvanceReadIndex(i + 1);
                         return(CODEC_STATUS_OK);
                     }
                     else
                     {
-                        iStringLen = StringConverter::RapidAtoi<int32>(pBuff->GetRawReadBuffer());
+                        iStringLen = StringConverter::RapidAtoi<int32>(pPartBegin);
+                        pPartBegin = pData + i + 1;
                         bGotStringLen = true;
                         if (uiReadableBytes - i < (uint32)iStringLen)
                         {
@@ -386,6 +377,7 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
     char cLastChar = 0;
     int32 iArraySize = 0;
     const char* pData = pBuff->GetRawReadBuffer();
+    const char* pPartBegin = pData;
     for (size_t i = 0; i < uiReadableBytes; ++i)
     {
         switch (pData[i])
@@ -394,12 +386,13 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
                 if ('\r' == cLastChar)
                 {
                     cLastChar = '\n';
-                    iArraySize = StringConverter::RapidAtoi<int32>(pBuff->GetRawReadBuffer());
+                    iArraySize = StringConverter::RapidAtoi<int32>(pPartBegin);
                     pBuff->AdvanceReadIndex(i + 1);
 
                     if (iArraySize == -1)
                     {
                         oReply.set_type(REDIS_REPLY_NIL);
+                        return(CODEC_STATUS_OK);
                     }
                     else
                     {
