@@ -19,7 +19,9 @@
 #include "step/HttpStep.hpp"
 #include "step/PbStep.hpp"
 #include "step/RedisStep.hpp"
-#include "step/Step.hpp"
+#include "step/RawStep.hpp"
+#include "cmd/CmdRedis.hpp"
+#include "cmd/CmdRaw.hpp"
 #include "model/Model.hpp"
 #include "chain/Chain.hpp"
 #include "actor/session/sys_session/SessionLogger.hpp"
@@ -127,7 +129,7 @@ bool ActorBuilder::OnStepTimeout(std::shared_ptr<Step> pStep)
 bool ActorBuilder::OnSessionTimeout(std::shared_ptr<Session> pSession)
 {
     ev_timer* watcher = pSession->MutableTimerWatcher();
-    LOG4_TRACE("CHECK watchar = 0x%x", watcher);
+    //LOG4_TRACE("CHECK watchar = 0x%x", watcher);
     ev_tstamp after = pSession->GetActiveTime() - m_pLabor->GetNowTime() + pSession->GetTimeout();
     if (after > 0)    // 定时时间内被重新刷新过，重新设置定时器
     {
@@ -136,7 +138,7 @@ bool ActorBuilder::OnSessionTimeout(std::shared_ptr<Session> pSession)
     }
     else    // 会话已超时
     {
-        LOG4_TRACE("session_id: %s", pSession->GetSessionId().c_str());
+        //LOG4_TRACE("session_id: %s", pSession->GetSessionId().c_str());
         if (CMD_STATUS_RUNNING == pSession->Timeout())
         {
             m_pLabor->GetDispatcher()->RefreshEvent(watcher, pSession->GetTimeout());
@@ -298,6 +300,7 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
     }
     else    // 回调
     {
+        pChannel->m_pImpl->PopStepSeq();
         auto step_iter = m_mapCallbackStep.find(oMsgHead.seq());
         if (step_iter != m_mapCallbackStep.end())   // 步骤回调
         {
@@ -404,12 +407,14 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
     }
     else
     {
-        auto http_step_iter = m_mapCallbackStep.find(pChannel->GetStepSeq());
+        auto http_step_iter = m_mapCallbackStep.find(pChannel->m_pImpl->PopStepSeq());
+        if (!pChannel->IsPipeline() && pChannel->m_pImpl->GetPipelineStepSeq().empty())
+        {
+            m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);
+        }
         if (http_step_iter == m_mapCallbackStep.end())
         {
             LOG4_TRACE("no callback for http response from %s!", oHttpMsg.url().c_str());
-            m_pLabor->GetDispatcher()->SetChannelStatus(pChannel, CHANNEL_STATUS_ESTABLISHED, 0);
-            m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);       // push back to named socket channel pool.
         }
         else
         {
@@ -420,8 +425,6 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
             {
                 uint32 uiChainId = http_step_iter->second->GetChainId();
                 RemoveStep(http_step_iter->second);
-                m_pLabor->GetDispatcher()->SetChannelStatus(pChannel, CHANNEL_STATUS_ESTABLISHED, 0);
-                m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);       // push back to named socket channel pool.
                 if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
                 {
                     auto chain_iter = m_mapChain.find(uiChainId);
@@ -439,6 +442,131 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
         }
     }
     return(true);
+}
+
+bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg, uint32 uiFinalStepSeq)
+{
+    if (pChannel->IsClient())
+    {
+        std::unordered_map<uint32, std::shared_ptr<Step>>::iterator step_iter;
+        if (uiFinalStepSeq == 0) // callback from SocketChannel by redis msg
+        {
+            step_iter = m_mapCallbackStep.find(pChannel->m_pImpl->PopStepSeq());
+        }
+        else // callback from StepRedisCluster
+        {
+            step_iter = m_mapCallbackStep.find(uiFinalStepSeq);
+        }
+        if (!pChannel->IsPipeline() && pChannel->m_pImpl->GetPipelineStepSeq().empty())
+        {
+            m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel); // push back to named socket channel pool.
+        }
+        if (step_iter == m_mapCallbackStep.end())
+        {
+            LOG4_TRACE("no callback for redis reply from %s!", pChannel->GetIdentify().c_str());
+            return(false);
+        }
+        else
+        {
+            E_CMD_STATUS eResult;
+            http_step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+            LOG4_TRACE("callback of redis cmd: %s", (std::dynamic_pointer_cast<RedisStep>(step_iter->second))->CmdToString().c_str());
+            eResult = (std::dynamic_pointer_cast<RedisStep>(step_iter->second))->Callback(pChannel, oRedisMsg);
+            if (CMD_STATUS_RUNNING != eResult)
+            {
+                uint32 uiChainId = http_step_iter->second->GetChainId();
+                RemoveStep(http_step_iter->second);
+                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
+                {
+                    auto chain_iter = m_mapChain.find(uiChainId);
+                    if (chain_iter != m_mapChain.end())
+                    {
+                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                        eResult = chain_iter->second->Next();
+                        if (CMD_STATUS_RUNNING != eResult)
+                        {
+                            RemoveChain(uiChainId);
+                        }
+                    }
+                }
+            }
+            return(eResult);
+        }
+    }
+    else
+    {
+        auto cmd_iter = m_mapCmd.find(CMD_REQ_REDIS_PROXY);
+        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
+        {
+            auto pCmdRedis = std::dynamic_pointer_cast<CmdRedis>(cmd_iter->second);
+            if (pCmdRedis == nullptr)
+            {
+                LOG4_ERROR("cmd %d is not a CmdRedis instance!", CMD_REQ_REDIS_PROXY);
+                return(false);
+            }
+            return(pCmdRedis->AnyMessage(pChannel, oRedisMsg));
+        }
+        LOG4_ERROR("no instance of CmdRedis or derived class of CmdRedis found for cmd %d", CMD_REQ_REDIS_PROXY);
+        return(false);
+    }
+}
+
+bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer)
+{
+    if (pChannel->IsClient())
+    {
+        auto step_iter = m_mapCallbackStep.find(pChannel->m_pImpl->PopStepSeq());
+        if (!pChannel->IsPipeline() && pChannel->m_pImpl->GetPipelineStepSeq().empty())
+        {
+            m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel); // push back to named socket channel pool.
+        }
+        if (step_iter == m_mapCallbackStep.end())
+        {
+            LOG4_TRACE("no callback for raw data reply from %s!", pChannel->GetIdentify().c_str());
+            return(false);
+        }
+        else
+        {
+            E_CMD_STATUS eResult;
+            http_step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+            eResult = (std::dynamic_pointer_cast<RedisStep>(step_iter->second))->Callback(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes());
+            if (CMD_STATUS_RUNNING != eResult)
+            {
+                uint32 uiChainId = http_step_iter->second->GetChainId();
+                RemoveStep(http_step_iter->second);
+                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
+                {
+                    auto chain_iter = m_mapChain.find(uiChainId);
+                    if (chain_iter != m_mapChain.end())
+                    {
+                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                        eResult = chain_iter->second->Next();
+                        if (CMD_STATUS_RUNNING != eResult)
+                        {
+                            RemoveChain(uiChainId);
+                        }
+                    }
+                }
+            }
+            return(eResult);
+        }
+    }
+    else
+    {
+        auto cmd_iter = m_mapCmd.find(CMD_REQ_RAW_DATA);
+        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
+        {
+            auto pCmdRaw = std::dynamic_pointer_cast<CmdRaw>(cmd_iter->second);
+            if (pCmdRaw == nullptr)
+            {
+                LOG4_ERROR("cmd %d is not a CmdRaw instance!", CMD_REQ_RAW_DATA);
+                return(false);
+            }
+            return(pCmdRaw->AnyMessage(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes()));
+        }
+        LOG4_ERROR("no instance of CmdRaw or derived class of CmdRaw found for cmd %d", CMD_REQ_RAW_DATA);
+        return(false);
+    }
 }
 
 bool ActorBuilder::OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, int iErrno, const std::string& strErrMsg)
@@ -479,166 +607,6 @@ bool ActorBuilder::OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiSte
         LOG4_WARNING(m_pErrBuff);
         return(false);
     }
-}
-
-bool ActorBuilder::OnRedisConnected(std::shared_ptr<RedisChannel> pChannel, const redisAsyncContext *c, int status)
-{
-    if (status == REDIS_OK)
-    {
-        pChannel->bIsReady = true;
-        int iCmdStatus;
-        for (auto step_iter = pChannel->listPipelineStep.begin();
-                        step_iter != pChannel->listPipelineStep.end(); )
-        {
-            size_t args_size = (*step_iter)->GetCmdArguments().size() + 1;
-            const char* argv[args_size];
-            size_t arglen[args_size];
-            argv[0] = (*step_iter)->GetCmd().c_str();
-            arglen[0] = (*step_iter)->GetCmd().size();
-            std::vector<std::pair<std::string, bool> >::const_iterator c_iter = (*step_iter)->GetCmdArguments().begin();
-            for (size_t i = 1; c_iter != (*step_iter)->GetCmdArguments().end(); ++c_iter, ++i)
-            {
-                argv[i] = c_iter->first.c_str();
-                arglen[i] = c_iter->first.size();
-            }
-            iCmdStatus = redisAsyncCommandArgv((redisAsyncContext*)c, Dispatcher::RedisCmdCallback, nullptr, args_size, argv, arglen);
-            if (iCmdStatus == REDIS_OK)
-            {
-                LOG4_TRACE("succeed in sending redis cmd: %s", (*step_iter)->CmdToString().c_str());
-                ++step_iter;
-            }
-            else
-            {
-                E_CMD_STATUS eResult;
-                uint32 uiChainId;
-                auto interrupt_step_iter = step_iter;
-                for (; step_iter != pChannel->listPipelineStep.end(); ++step_iter)
-                {
-                    eResult = (*step_iter)->Callback(c, status, nullptr);
-                    uiChainId = (*step_iter)->GetChainId();
-                    RemoveStep(*step_iter);
-                    if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
-                    {
-                        if (0 != uiChainId)
-                        {
-                            auto chain_iter = m_mapChain.find(uiChainId);
-                            if (chain_iter != m_mapChain.end())
-                            {
-                                chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                                eResult = chain_iter->second->Next();
-                                if (CMD_STATUS_RUNNING != eResult)
-                                {
-                                    RemoveChain(uiChainId);
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        RemoveChain(uiChainId);
-                    }
-                }
-                for (auto erase_step_iter = interrupt_step_iter;
-                               erase_step_iter != pChannel->listPipelineStep.end();)
-                {
-                    RemoveChain((*erase_step_iter)->GetChainId());
-                }
-                pChannel->listPipelineStep.clear();
-                return(false);
-            }
-        }
-    }
-    else
-    {
-        for (auto step_iter = pChannel->listPipelineStep.begin();
-                        step_iter != pChannel->listPipelineStep.end(); ++step_iter)
-        {
-            (*step_iter)->Callback(c, status, nullptr);
-            RemoveChain((*step_iter)->GetChainId());
-            RemoveStep(*step_iter);
-        }
-        pChannel->listPipelineStep.clear();
-        return(false);
-    }
-    return(true);
-}
-
-void ActorBuilder::OnRedisDisconnected(std::shared_ptr<RedisChannel> pChannel, const redisAsyncContext *c, int status)
-{
-    for (auto step_iter = pChannel->listPipelineStep.begin();
-                    step_iter != pChannel->listPipelineStep.end(); ++step_iter)
-    {
-        LOG4_ERROR("RedisDisconnect callback error %d of redis cmd: %s",
-                        c->err, (*step_iter)->CmdToString().c_str());
-        (*step_iter)->Callback(c, c->err, nullptr);
-        RemoveChain((*step_iter)->GetChainId());
-        RemoveStep(std::dynamic_pointer_cast<Step>(*step_iter));
-    }
-    pChannel->listPipelineStep.clear();
-}
-
-bool ActorBuilder::OnRedisCmdResult(std::shared_ptr<RedisChannel> pChannel, redisAsyncContext *c, void *reply, void *privdata)
-{
-    if (pChannel->listPipelineStep.empty())
-    {
-        LOG4_ERROR("no redis step!");
-        return(false);
-    }
-
-    auto step_iter = pChannel->listPipelineStep.begin();
-    if (nullptr == reply)
-    {
-        LOG4_ERROR("redis %s error %d: %s", pChannel->GetIdentify().c_str(), c->err, c->errstr);
-        for ( ; step_iter != pChannel->listPipelineStep.end(); ++step_iter)
-        {
-            LOG4_ERROR("callback error %d of redis cmd: %s", c->err, (*step_iter)->CmdToString().c_str());
-            (*step_iter)->Callback(c, c->err, (redisReply*)reply);
-            RemoveChain((*step_iter)->GetChainId());
-            RemoveStep(*step_iter);
-        }
-        pChannel->listPipelineStep.clear();
-    }
-    else
-    {
-        if (step_iter != pChannel->listPipelineStep.end())
-        {
-            LOG4_TRACE("callback of redis cmd: %s", (*step_iter)->CmdToString().c_str());
-            E_CMD_STATUS eResult = (*step_iter)->Callback(c, REDIS_OK, (redisReply*)reply);
-            pChannel->listPipelineStep.erase(step_iter);
-            if (CMD_STATUS_RUNNING != eResult && CMD_STATUS_FAULT != eResult)
-            {
-                uint32 uiChainId = (*step_iter)->GetChainId();
-                if (0 != uiChainId)
-                {
-                    auto chain_iter = m_mapChain.find(uiChainId);
-                    if (chain_iter != m_mapChain.end())
-                    {
-                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                        eResult = chain_iter->second->Next();
-                        if (CMD_STATUS_RUNNING != eResult)
-                        {
-                            RemoveChain(uiChainId);
-                        }
-                    }
-                }
-            }
-            if (CMD_STATUS_RUNNING != eResult)
-            {
-                RemoveStep(std::dynamic_pointer_cast<Step>(*step_iter));
-            }
-            //freeReplyObject(reply);
-        }
-        else
-        {
-            LOG4_ERROR("no redis callback data found!");
-        }
-    }
-
-    if (pChannel->listPipelineStep.size() == 0 && !pChannel->IsPipeline())
-    {
-        m_pLabor->GetDispatcher()->AddNamedRedisChannel(pChannel->GetIdentify(), pChannel);
-    }
-    return(true);
 }
 
 void ActorBuilder::AddAssemblyLine(std::shared_ptr<Session> pSession)
@@ -878,6 +846,7 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
         case Actor::ACT_PB_STEP:
         case Actor::ACT_HTTP_STEP:
         case Actor::ACT_REDIS_STEP:
+        case Actor::ACT_RAW_STEP:
             if (TransformToSharedStep(pCreator, pSharedActor))
             {
                 return(pSharedActor);
@@ -940,6 +909,10 @@ bool ActorBuilder::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor>
         pSharedActor->SetTraceId(pCreator->GetTraceId());
     }
 
+    while (m_mapCallbackStep.find(pSharedActor->GetSequence()) != m_mapCallbackStep.end())
+    {
+        pSharedActor->ForceNewSequence();
+    }
     std::shared_ptr<Step> pSharedStep = std::dynamic_pointer_cast<Step>(pSharedActor);
     for (auto iter = pSharedStep->m_setNextStepSeq.begin(); iter != pSharedStep->m_setNextStepSeq.end(); ++iter)
     {
@@ -1118,6 +1091,26 @@ bool ActorBuilder::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor
         return(true);
     }
     return(false);
+}
+
+bool ActorBuilder::SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq)
+{
+    bool bSendResult = false;
+    auto iter = m_mapClusterChannelStep.find(strIdentify);
+    if (iter == m_mapClusterChannelStep.end())
+    {
+        auto pSharedStep = MakeSharedStep(nullptr, "neb::StepRedisCluster", strIdentify, bWithSsl, bPipeline);
+        if (pSharedStep != nullptr)
+        {
+            m_mapClusterChannelStep.insert(std::make_pair(strIdentify, pSharedStep));
+            bSendResult = pSharedStep->SendTo(strIdentify, oRedisMsg, bWithSsl, bPipeline, uiStepSeq);
+        }
+    }
+    else
+    {
+        bSendResult = iter->second->SendTo(strIdentify, oRedisMsg, bWithSsl, bPipeline, uiStepSeq);
+    }
+    return(bSendResult);
 }
 
 std::shared_ptr<Session> ActorBuilder::GetSession(uint32 uiSessionId)

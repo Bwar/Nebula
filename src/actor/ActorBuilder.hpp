@@ -27,23 +27,24 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
 #endif
 #include "ev.h"
-#include "hiredis/hiredis.h"
-#include "hiredis/async.h"
-#include "hiredis/adapters/libev.h"
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
 
 #include "pb/msg.pb.h"
 #include "pb/http.pb.h"
+#include "pb/redis.pb.h"
 #include "pb/neb_sys.pb.h"
 #include "Definition.hpp"
 #include "Error.hpp"
+#include "util/CBuffer.hpp"
 #include "ActorFactory.hpp"
 #include "logger/NetLogger.hpp"
 
 namespace neb
 {
+
+typedef RedisReply RedisMsg;
 
 class Manager;
 class Worker;
@@ -94,10 +95,9 @@ public:
     bool OnChainTimeout(std::shared_ptr<Chain> pChain);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
+    bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg, uint32 uiFinalStepSeq = 0);
+    bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer);
     bool OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, int iErrno, const std::string& strErrMsg);
-    bool OnRedisConnected(std::shared_ptr<RedisChannel> pChannel, const redisAsyncContext *c, int status);
-    void OnRedisDisconnected(std::shared_ptr<RedisChannel> pChannel, const redisAsyncContext *c, int status);
-    bool OnRedisCmdResult(std::shared_ptr<RedisChannel> pChannel, redisAsyncContext *c, void *reply, void *privdata);
 
 public:
     template <typename ...Targs>
@@ -139,6 +139,7 @@ public:
     bool TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
 public:
+    bool SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const ReidsMsg& oRedisMsg, uint32 uiStepSeq);
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
     virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
@@ -189,6 +190,7 @@ private:
 
     // Step and Session
     std::unordered_map<uint32, std::shared_ptr<Step> > m_mapCallbackStep;
+    std::unordered_map<std::string, std::shared_ptr<Step> > m_mapClusterChannelStep;    //集群回调，发往集群的请求和响应都会经由ClusterChannelStep截获再收发
     std::unordered_map<std::string, std::shared_ptr<Session> > m_mapCallbackSession;
     std::unordered_set<std::shared_ptr<Session> > m_setAssemblyLine;   ///< 资源就绪后执行队列
 

@@ -117,10 +117,12 @@ bool HttpStep::HttpRequest(const HttpMsg& oHttpMsg)
             strHost = oHttpMsg.url().substr(stUrl.field_data[UF_HOST].off, stUrl.field_data[UF_HOST].len);
         }
 
+        /*
         if(stUrl.field_set & (1 << UF_PATH))
         {
             strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, stUrl.field_data[UF_PATH].len);
         }
+        */
 
         if (iPort == 80)
         {
@@ -131,7 +133,7 @@ bool HttpStep::HttpRequest(const HttpMsg& oHttpMsg)
                 iPort = 443;
             }
         }
-        return(SendTo(strHost, iPort, strPath, oHttpMsg));
+        return(SendTo(strHost, iPort, oHttpMsg));
     }
     else
     {

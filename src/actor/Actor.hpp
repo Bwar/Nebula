@@ -26,6 +26,7 @@
 #include "Definition.hpp"
 #include "pb/msg.pb.h"
 #include "pb/http.pb.h"
+#include "pb/redis.pb.h"
 #include "util/json/CJsonObject.hpp"
 #include "channel/Channel.hpp"
 #include "labor/Labor.hpp"
@@ -35,13 +36,14 @@
 namespace neb
 {
 
+typedef RedisReply RedisMsg;
+
 class Labor;
 class Dispatcher;
 class ActorBuilder;
 class ActorSys;
 
 class SocketChannel;
-class RedisChannel;
 class Actor;
 class Cmd;
 class Module;
@@ -66,8 +68,9 @@ public:
         ACT_PB_STEP             = 6,        ///< Step步骤对象，处理pb请求或响应
         ACT_HTTP_STEP           = 7,        ///< Step步骤对象，处理http请求或响应
         ACT_REDIS_STEP          = 8,        ///< Step步骤对象，处理redis请求或响应
-        ACT_MODEL              = 9,        ///< Model模型对象，Model（IO无关）与Step（异步IO相关）共同构成功能链
-        ACT_CHAIN               = 10,       ///< Chain链对象，用于将Model和Step组合成功能链
+        ACT_RAW_STEP            = 9,        ///< Step步骤对象，处理未经编解码的裸数据
+        ACT_MODEL               = 10,       ///< Model模型对象，Model（IO无关）与Step（异步IO相关）共同构成功能链
+        ACT_CHAIN               = 11,       ///< Chain链对象，用于将Model和Step组合成功能链
     };
 
 public:
@@ -134,30 +137,46 @@ protected:
      * @param stCtx 消息通道上下文
      * @return 是否发送成功
      */
-    bool SendTo(std::shared_ptr<SocketChannel> pChannel);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel);
 
     /**
-     * @brief 发送数据
-     * @note 使用指定连接将数据发送。如果能直接得知stCtx（比如刚从该连接接收到数据，欲回确认包），就
-     * 应调用此函数发送。此函数是SendTo()函数中最高效的一个。
-     * @param stCtx 消息通道上下文
+     * @brief 发送PB响应数据
+     * @note 使用指定连接将数据发送
+     * @param pChannel 消息通道
      * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
-     * @brief 发送数据
-     * @param stCtx 消息通道上下文
+     * @brief 发送HTTP响应
+     * @param pChannel 消息通道
      * @param oHttpMsg http消息
      * @return 是否发送成功
      */
-    bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
 
     /**
-     * @brief 发送数据
+     * @brief 发送redis响应
+     * @param pChannel 消息通道
+     * @param oRedisReply redis消息
+     * @return 是否发送成功
+     */
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, const RedisReply& oRedisReply);
+
+    /**
+     * @brief 发送raw响应
+     * @param pChannel 消息通道
+     * @param pRawData raw消息
+     * @param uiRawDataSize raw消息长度
+     * @return 是否发送成功
+     */
+    virtual bool SendTo(std::shared_ptr<SocketChannel> pChannel, const char* pRawData, uint32 uiRawDataSize);
+
+    /**
+     * @brief 发送请求
      * @note 指定连接标识符将数据发送。此函数先查找与strIdentify匹配的Channel，如果找到就调用
      * SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
      * 发送，如果未找到则调用SendToWithAutoConnect(const std::string& strIdentify,
@@ -169,44 +188,40 @@ protected:
      * @param oCodecType 编解码方式
      * @return 是否发送成功
      */
-    bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    virtual bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
     /**
-     * @brief 发送数据
+     * @brief 发送http请求
      * @param strHost IP地址
      * @param iPort 端口
-     * @param strUrlPath 路径
      * @param oHttpMsg http消息
      * @return 是否发送成功
      */
-    bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg);
+    virtual bool SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg);
 
     /**
-     * @brief 发送到redis channel
-     * @note 只有RedisStep及其派生类才能调用此方法，调用此方法时将调用者自身(RedisStep)添加到
-     *       RedisChannel的pipeline中。
-     * @param pChannel RedisChannel指针
-     */
-    bool SendTo(std::shared_ptr<RedisChannel> pChannel);
-
-    /**
-     * @brief 发送到redis channel
-     * @note 只有RedisStep及其派生类才能调用此方法，调用此方法时将调用者自身(RedisStep)添加到
-     *       RedisChannel的pipeline中。
-     * @param strIdentify RedisChannel通道标识
+     * @brief 发送redis请求
+     * @note 只有RedisStep及其派生类才能调用此方法
+     * @param strIdentify RedisChannel通道标识，格式如： 192.168.125.53:6379
+     * @param oRedisMsg redis消息
+     * @param bWithSsl 是否需要SSL
      * @param bPipeline 是否支持pipeline
+     * @param uiStepSeq 应用层无用参数，框架层的系统Actor会用到
+     * @return 是否发送成功
      */
-    bool SendTo(const std::string& strIdentify, bool bPipeline = true);
+    bool SendTo(const std::string& strIdentify, const oRedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
+    bool SendToCluster(const std::string& strIdentify, const oRedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
 
     /**
-     * @brief 发送到redis channel
-     * @note 只有RedisStep及其派生类才能调用此方法，调用此方法时将调用者自身(RedisStep)添加到
-     *       RedisChannel的pipeline中。
-     * @param strHost RedisChannel地址
-     * @param iPort RedisChannel端口
+     * @brief 发送raw请求
+     * @note 只有RawStep及其派生类才能调用此方法。
+     * @param strIdentify Channel通道标识
+     * @param pRawData裸数据
+     * @param bWithSsl 是否需要SSL
      * @param bPipeline 是否支持pipeline
+     * @return 是否发送成功
      */
-    bool SendTo(const std::string& strHost, int iPort, bool bPipeline = true);
+    virtual bool SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl = false, bool bPipeline = false);
 
     /**
      * @brief 从worker发送到loader或从loader发送到worker
@@ -215,7 +230,7 @@ protected:
      * @param oMsgBody 数据包体
      * @return 是否发送成功
      */
-    bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    virtual bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 发送到下一个同一类型的节点
@@ -227,7 +242,7 @@ protected:
      * @param oCodecType 编解码方式
      * @return 是否发送成功
      */
-    bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    virtual bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
     /**
      * @brief 以取模方式选择发送到同一类型节点
@@ -240,11 +255,18 @@ protected:
      * @param oCodecType 编解码方式
      * @return 是否发送成功
      */
-    bool SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    virtual bool SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
-    bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    virtual bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
-    bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    virtual bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+
+    /**
+     * @brief 关闭raw数据通道
+     * @note 当且仅当raw数据传输的无编解码通道才可以由Actor的应用层关闭，对于http连接
+     * 等只应由框架层管理的通道，调用此函数不能关闭连接，也不应该尝试自己去关闭。
+     */
+    virtual bool CloseRawChannel(std::shared_ptr<SocketChannel> pChannel);
 
     int32 GetStepNum() const;
 
@@ -266,6 +288,7 @@ protected:
 
 private:
     void SetLabor(Labor* pLabor);
+    uint32 ForceNewSequence();
     ev_timer* MutableTimerWatcher();
     void SetActorName(const std::string& strActorName);
     void SetTraceId(const std::string& strTraceId);

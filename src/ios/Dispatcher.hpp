@@ -119,10 +119,14 @@ public:
 public:
     bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
 
-    // SendTo() for nebula socket
-    bool SendTo(std::shared_ptr<SocketChannel> pChannel);
-    bool SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender = nullptr);
-    bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
+    template <typename ...Targs>
+    bool SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args);
+    template <typename ...Targs>
+    bool SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    template <typename ...Targs>
+    bool SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    template <typename ...Targs>
+    bool Dispatcher::AutoSend(const std::string& strIdentify, const std::string& strHost, int iPort, int iRemoteWorkerIndex, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
     bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
     bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
@@ -227,6 +231,222 @@ void Dispatcher::Logger(int iLogLevel, const char* szFileName, unsigned int uiFi
 {
     m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }
+
+template <typename ...Targs>
+bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args)
+{
+    E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(std::forward<Targs>(args)...);
+    switch (eStatus)
+    {
+        case CODEC_STATUS_OK:
+            return(true);
+        case CODEC_STATUS_PAUSE:
+        case CODEC_STATUS_WANT_WRITE:
+            AddIoWriteEvent(pChannel);
+            return(true);
+        case CODEC_STATUS_WANT_READ:
+            RemoveIoWriteEvent(pChannel);
+            return(true);
+        case CODEC_STATUS_EOF:      // a case: http1.0 respone and close
+            DiscardSocketChannel(pChannel);
+            return(true);
+        default:
+            DiscardSocketChannel(pChannel);
+            return(false);
+    }
+}
+
+template <typename ...Targs>
+bool Dispatcher::SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+{
+    LOG4_TRACE("identify: %s", strIdentify.c_str());
+    // 将strIdentify分割的功能只在此SendTo()函数内两处调用，定义为Dispatcher的成员函数语义上不太合适，故定义lambda表达式
+    auto split = [](const std::string& strIdentify, std::string& strHost, int& iPort, int& iWorkerIndex, std::string& strError)->bool
+    {
+        size_t iPosIpPortSeparator = strIdentify.rfind(':');
+        size_t iPosPortWorkerIndexSeparator = strIdentify.rfind('.');
+        if (iPosIpPortSeparator == std::string::npos)
+        {
+            return(false);
+        }
+        strHost = strIdentify.substr(0, iPosIpPortSeparator);
+        std::string strPort;
+        if (iPosPortWorkerIndexSeparator != std::string::npos)
+        {
+            strPort = strIdentify.substr(iPosIpPortSeparator + 1, iPosPortWorkerIndexSeparator - (iPosIpPortSeparator + 1));
+            iPort = atoi(strPort.c_str());
+            if (iPort == 0)
+            {
+                return(false);
+            }
+            std::string strWorkerIndex = strIdentify.substr(iPosPortWorkerIndexSeparator + 1, std::string::npos);
+            iWorkerIndex = atoi(strWorkerIndex.c_str());
+            if (iWorkerIndex > 200)
+            {
+                strError = "worker index must smaller than 200";
+                return(false);
+            }
+        }
+        else
+        {
+            strPort = strIdentify.substr(iPosIpPortSeparator + 1, std::string::npos);
+            iPort = atoi(strPort.c_str());
+            if (iPort == 0)
+            {
+                return(false);
+            }
+        }
+        return(true);
+    };
+
+    auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
+    if (named_iter == m_mapNamedSocketChannel.end())
+    {
+        LOG4_TRACE("no channel match %s.", strIdentify.c_str());
+        std::string strError;
+        std::string strHost;
+        int iPort = 0;
+        int iWorkerIndex = 0;
+        if (!split(strIdentify, strHost, iPort, iWorkerIndex, strError))
+        {
+            LOG4_ERROR("%s", strError.c_str());
+            return(false);
+        }
+        return(AutoSend(strIdentify, strHost, iPort, iWorkerIndex, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        if (named_iter->second.empty())
+        {
+            std::string strError;
+            std::string strHost;
+            int iPort = 0;
+            int iWorkerIndex = 0;
+            if (!split(strIdentify, strHost, iPort, iWorkerIndex, strError))
+            {
+                LOG4_ERROR("%s", strError.c_str());
+                return(false);
+            }
+            return(AutoSend(strIdentify, strHost, iPort, iWorkerIndex, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            auto channel_iter = named_iter->second.begin();
+            bool bResult = SendTo((*channel_iter), std::forward<Targs>(args)...);
+            if (!bPipeline && bResult)
+            {
+                named_iter->second.erase(channel_iter);
+            }
+            return(bResult);
+        }
+    }
+}
+
+template <typename ...Targs>
+bool Dispatcher::SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+{
+    LOG4_TRACE("host %s port %d", strHost.c_str(), iPort);
+    std::ostringstream ossIdentify;
+    ossIdentify << strHost << ":" << iPort;
+    auto named_iter = m_mapNamedSocketChannel.find(ossIdentify.str());
+    if (named_iter == m_mapNamedSocketChannel.end())
+    {
+        LOG4_TRACE("no channel match %s.", ossIdentify.str().c_str());
+        return(AutoSend(ossIdentify.str(), strHost, iPort, 0, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        auto channel_iter = named_iter->second.begin();
+        bool bResult = SendTo((*channel_iter), std::forward<Targs>(args)...);
+        if (!bPipeline && bResult)
+        {
+            named_iter->second.erase(channel_iter);
+        }
+        return(bResult);
+    }
+}
+
+template <typename ...Targs>
+bool Dispatcher::AutoSend(
+        const std::string& strIdentify, const std::string& strHost, int iPort,
+        int iRemoteWorkerIndex, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+{
+    LOG4_TRACE("%s", strIdentify.c_str());
+    struct addrinfo stAddrHints;
+    struct addrinfo* pAddrResult;
+    struct addrinfo* pAddrCurrent;
+    memset(&stAddrHints, 0, sizeof(struct addrinfo));
+    stAddrHints.ai_family = AF_UNSPEC;
+    stAddrHints.ai_socktype = SOCK_STREAM;
+    stAddrHints.ai_protocol = IPPROTO_IP;
+    int iCode = getaddrinfo(strHost.c_str(), std::to_string(iPort).c_str(), &stAddrHints, &pAddrResult);
+    if (0 != iCode)
+    {
+        LOG4_ERROR("getaddrinfo(\"%s\", \"%d\") error %d: %s",
+                strHost.c_str(), iPort, iCode, gai_strerror(iCode));
+        return(false);
+    }
+    int iFd = -1;
+    for (pAddrCurrent = pAddrResult;
+            pAddrCurrent != NULL; pAddrCurrent = pAddrCurrent->ai_next)
+    {
+        iFd = socket(pAddrCurrent->ai_family,
+                pAddrCurrent->ai_socktype, pAddrCurrent->ai_protocol);
+        if (iFd == -1)
+        {
+            continue;
+        }
+
+        break;
+    }
+
+    /* No address succeeded */
+    if (pAddrCurrent == NULL)
+    {
+        LOG4_ERROR("Could not connect to \"%s:%d\"", strHost.c_str(), iPort);
+        freeaddrinfo(pAddrResult);           /* No longer needed */
+        return(false);
+    }
+
+    x_sock_set_block(iFd, 0);
+    int nREUSEADDR = 1;
+    setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
+    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, eCodecType, true, bWithSsl);
+    if (nullptr != pChannel)
+    {
+        connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
+        freeaddrinfo(pAddrResult);           /* No longer needed */
+        AddIoTimeout(pChannel, 1.5);
+        AddIoReadEvent(pChannel);
+        AddIoWriteEvent(pChannel);
+        pChannel->m_pImpl->SetIdentify(strIdentify);
+        pChannel->m_pImpl->SetRemoteAddr(strHost);
+        pChannel->m_pImpl->SetPipeline(bPipeline);
+        E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(std::forward<Targs>(args)...);
+        if (CODEC_STATUS_OK != eCodecStatus
+                && CODEC_STATUS_PAUSE != eCodecStatus
+                && CODEC_STATUS_WANT_WRITE != eCodecStatus
+                && CODEC_STATUS_WANT_READ != eCodecStatus)
+        {
+            DiscardSocketChannel(pChannel);
+        }
+
+        pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+        pChannel->m_pImpl->SetRemoteWorkerIndex(iRemoteWorkerIndex);
+        if (bPipeline)
+        {
+            AddNamedSocketChannel(strIdentify, pChannel);
+        }
+        return(true);
+    }
+    else    // 没有足够资源分配给新连接，直接close掉
+    {
+        freeaddrinfo(pAddrResult);           /* No longer needed */
+        close(iFd);
+        return(false);
+    }
+}
+
 
 } /* namespace neb */
 

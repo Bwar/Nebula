@@ -12,8 +12,8 @@
 namespace neb
 {
 
-RedisStep::RedisStep(std::shared_ptr<Step> pNextStep)
-    : Step(ACT_REDIS_STEP, pNextStep, gc_dNoTimeout)
+RedisStep::RedisStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
+    : Step(ACT_REDIS_STEP, pNextStep, dTimeout)
 {
 }
 
@@ -30,6 +30,7 @@ void RedisStep::SetCmd(const std::string& strCmd)
 {
     m_vecCmdArguments.clear();
     m_strCmd = strCmd;
+    std::transform(m_strCmd.begin(), m_strCmd.end(), m_strCmd.begin(), [](unsigned char c)->unsigned char{return std::toupper(c);});
 }
 
 void RedisStep::Append(const std::string& strArgument, bool bIsBinaryArg)
@@ -53,6 +54,22 @@ std::string RedisStep::CmdToString() const
         }
     }
     return strCmd;
+}
+
+const RedisRequest& RedisStep::GenrateRedisRequest()
+{
+    m_oRedisRequest.Clear();
+    m_oRedisRequest.set_type(REDIS_REPLY_ARRAY);
+    auto pElement = m_oRedisRequest.add_element();
+    pElement->set_type(REDIS_REPLY_STRING);
+    pElement->set_str(m_strCmd);
+    for (size_t i = 0; i < m_vecCmdArguments.size(); ++i)
+    {
+        pElement = m_oRedisRequest.add_element();
+        pElement->set_type(REDIS_REPLY_STRING);
+        pElement->set_str(m_vecCmdArguments[i].first);
+    }
+    return(m_oRedisRequest);
 }
 
 } /* namespace neb */

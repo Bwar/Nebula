@@ -40,9 +40,6 @@ public:
             const MsgHead& oMsgHead,
             const MsgBody& oMsgBody,
             void* data = NULL) = 0;
-
-private:
-    friend class ActorBuilder;
 };
 
 } /* namespace neb */

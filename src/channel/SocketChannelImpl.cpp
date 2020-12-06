@@ -11,6 +11,7 @@
 #include "codec/CodecProto.hpp"
 #include "codec/CodecPrivate.hpp"
 #include "codec/CodecHttp.hpp"
+#include "codec/CodecResp.hpp"
 #include "labor/Labor.hpp"
 #include "labor/Manager.hpp"
 #include "logger/NetLogger.hpp"
@@ -21,7 +22,7 @@ namespace neb
 
 SocketChannelImpl::SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
     : m_ucChannelStatus(CHANNEL_STATUS_INIT),
-      m_unRemoteWorkerIdx(0), m_iFd(iFd), m_uiSeq(ulSeq), m_uiForeignSeq(0), m_uiStepSeq(0),
+      m_unRemoteWorkerIdx(0), m_iFd(iFd), m_uiSeq(ulSeq), m_uiForeignSeq(0), m_bPipeline(true),
       m_uiUnitTimeMsgNum(0), m_uiMsgNum(0),
       m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
       m_pIoWatcher(NULL), m_pTimerWatcher(NULL),
@@ -34,7 +35,7 @@ SocketChannelImpl::SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_
 SocketChannelImpl::~SocketChannelImpl()
 {
     LOG4_DEBUG("SocketChannelImpl::~SocketChannelImpl() fd %d, seq %u", m_iFd, m_uiSeq);
-    m_vecStepWaitForConnected.clear();
+    m_listPipelineStepSeq.clear();
     if (CHANNEL_STATUS_CLOSED != m_ucChannelStatus)
     {
         Close();
@@ -52,9 +53,22 @@ bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
     LOG4_TRACE("fd[%d], codec_type[%d]", m_iFd, eCodecType);
     try
     {
-        m_pRecvBuff = new CBuffer();
-        m_pSendBuff = new CBuffer();
-        m_pWaitForSendBuff = new CBuffer();
+        if (m_pRecvBuff == nullptr)
+        {
+            m_pRecvBuff = new CBuffer();
+        }
+        if (m_pSendBuff == nullptr)
+        {
+            m_pSendBuff = new CBuffer();
+        }
+        if (m_pWaitForSendBuff == nullptr)
+        {
+            m_pWaitForSendBuff = new CBuffer();
+        }
+        if (m_pCodec != nullptr)
+        {
+            DELETE(m_pCodec);
+        }
         switch (eCodecType)
         {
             case CODEC_NEBULA:
@@ -70,6 +84,12 @@ bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
             case CODEC_HTTP:
                 m_pCodec = new CodecHttp(m_pLogger, eCodecType);
                 m_pCodec->SetKey(m_strKey);
+                break;
+            case CODEC_RESP:
+                m_pCodec = new CodecResp(m_pLogger, eCodecType);
+                m_pCodec->SetKey(m_strKey);
+                break;
+            case CODEC_UNKNOW:
                 break;
             default:
                 LOG4_ERROR("no codec defined for code type %d", eCodecType);
@@ -88,6 +108,17 @@ bool SocketChannelImpl::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
 E_CODEC_TYPE SocketChannelImpl::GetCodecType() const
 {
     return(m_pCodec->GetCodecType());
+}
+
+uint32 SocketChannelImpl::PopStepSeq()
+{
+    if (m_listPipelineStepSeq.empty())
+    {
+        return(0);
+    }
+    uint32 uiStepSeq = m_listPipelineStepSeq.front();
+    m_listPipelineStepSeq.pop_front();
+    return(uiStepSeq);
 }
 
 ev_tstamp SocketChannelImpl::GetKeepAlive()
@@ -123,8 +154,13 @@ E_CODEC_STATUS SocketChannelImpl::Send()
     {
         return(CODEC_STATUS_PAUSE);
     }
+    if (m_pCodec == nullptr)
+    {
+        LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
+        return(CODEC_STATUS_ERR);
+    }
     int iNeedWriteLen = 0;
-    int iWriteLen = 0;
+    int iWrittenLen = 0;
     iNeedWriteLen = m_pSendBuff->ReadableBytes();
     if (0 == iNeedWriteLen)
     {
@@ -144,9 +180,9 @@ E_CODEC_STATUS SocketChannelImpl::Send()
     }
 
     m_dActiveTime = m_pLabor->GetNowTime();
-    iWriteLen = Write(m_pSendBuff, m_iErrno);
-    LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
-    if (iWriteLen >= 0)
+    iWrittenLen = Write(m_pSendBuff, m_iErrno);
+    LOG4_TRACE("iNeedWriteLen = %d, iWrittenLen = %d", iNeedWriteLen, iWrittenLen);
+    if (iWrittenLen >= 0)
     {
         m_vecStepWaitForConnected.clear();
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
@@ -155,7 +191,7 @@ E_CODEC_STATUS SocketChannelImpl::Send()
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
         }
         m_dActiveTime = m_pLabor->GetNowTime();
-        if (iNeedWriteLen == iWriteLen && 0 == m_pWaitForSendBuff->ReadableBytes())
+        if (iNeedWriteLen == iWrittenLen && 0 == m_pWaitForSendBuff->ReadableBytes())
         {
             return(CODEC_STATUS_OK);
         }
@@ -181,10 +217,10 @@ E_CODEC_STATUS SocketChannelImpl::Send()
 E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], cmd[%u], seq[%u]", m_iFd, m_uiSeq, iCmd, uiSeq);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (m_pCodec == nullptr)
     {
-        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
+        return(CODEC_STATUS_ERR);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int32 iMsgBodyLen = oMsgBody.ByteSize();
@@ -198,6 +234,9 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
         case CHANNEL_STATUS_ESTABLISHED:
             eCodecStatus = m_pCodec->Encode(oMsgHead, oMsgBody, m_pSendBuff);
             break;
+        case CHANNEL_STATUS_CLOSED:
+            LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
+            return(CODEC_STATUS_EOF);
         case CHANNEL_STATUS_TELL_WORKER:
         case CHANNEL_STATUS_WORKER:
         case CHANNEL_STATUS_TRANSFER_TO_WORKER:
@@ -226,10 +265,10 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
                     break;
                 default:
                     eCodecStatus = m_pCodec->Encode(oMsgHead, oMsgBody, m_pWaitForSendBuff);
-                    if (CODEC_STATUS_OK == eCodecStatus)
+                    if (CODEC_STATUS_OK == eCodecStatus && (gc_uiCmdReq & iCmd))
                     {
                         eCodecStatus = CODEC_STATUS_PAUSE;
-                        m_vecStepWaitForConnected.push_back(uiSeq);
+                        m_listPipelineStepSeq.push_back(uiSeq);
                     }
                     break;
             }
@@ -252,9 +291,9 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
     }
 
     errno = 0;
-    int iWriteLen = Write(m_pSendBuff, m_iErrno);
-    LOG4_TRACE("iNeedWriteLen = %d, iWriteLen = %d", iNeedWriteLen, iWriteLen);
-    if (iWriteLen >= 0)
+    int iWrittenLen = Write(m_pSendBuff, m_iErrno);
+    LOG4_TRACE("iNeedWriteLen = %d, iWrittenLen = %d", iNeedWriteLen, iWrittenLen);
+    if (iWrittenLen >= 0)
     {
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
@@ -262,7 +301,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
         }
         m_dActiveTime = m_pLabor->GetNowTime();
-        if (iNeedWriteLen == iWriteLen)
+        if (iNeedWriteLen == iWrittenLen)
         {
             if (CMD_RSP_TELL_WORKER == iCmd)
             {
@@ -295,10 +334,10 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
 E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_uiSeq, m_ucChannelStatus);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (m_pCodec == nullptr)
     {
-        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
+        return(CODEC_STATUS_ERR);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     switch (m_ucChannelStatus)
@@ -306,6 +345,9 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
         case CHANNEL_STATUS_ESTABLISHED:
             eCodecStatus = ((CodecHttp*)m_pCodec)->Encode(oHttpMsg, m_pSendBuff);
             break;
+        case CHANNEL_STATUS_CLOSED:
+            LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
+            return(CODEC_STATUS_EOF);
         case CHANNEL_STATUS_TELL_WORKER:
         case CHANNEL_STATUS_WORKER:
         case CHANNEL_STATUS_TRANSFER_TO_WORKER:
@@ -313,10 +355,10 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
         case CHANNEL_STATUS_TRY_CONNECT:
         case CHANNEL_STATUS_INIT:
             eCodecStatus = ((CodecHttp*)m_pCodec)->Encode(oHttpMsg, m_pWaitForSendBuff);
-            if (CODEC_STATUS_OK == eCodecStatus)
+            if (CODEC_STATUS_OK == eCodecStatus && uiStepSeq > 0)
             {
                 eCodecStatus = CODEC_STATUS_PAUSE;
-                m_vecStepWaitForConnected.push_back(uiStepSeq);
+                m_listPipelineStepSeq.push_back(uiStepSeq);
             }
             break;
         default:
@@ -335,19 +377,181 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
         return(eCodecStatus);
     }
 
-    int iWriteLen = Write(m_pSendBuff, m_iErrno);
-    LOG4_TRACE("fd[%d], channel_seq[%u] iWriteLen = %d, m_iErrno = %d",
-            GetFd(), GetSequence(), iWriteLen, m_iErrno);
-    if (iWriteLen >= 0)
+    int iWrittenLen = Write(m_pSendBuff, m_iErrno);
+    LOG4_TRACE("fd[%d], channel_seq[%u] iWrittenLen = %d, m_iErrno = %d",
+            GetFd(), GetSequence(), iWrittenLen, m_iErrno);
+    if (iWrittenLen >= 0)
     {
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
         }
-        m_uiStepSeq = uiStepSeq;
+        if (uiStepSeq > 0)
+        {
+            m_listPipelineStepSeq.push_back(uiStepSeq);
+        }
         m_dActiveTime = m_pLabor->GetNowTime();
-        if (iNeedWriteLen == iWriteLen)
+        if (iNeedWriteLen == iWrittenLen)
+        {
+            return(CODEC_STATUS_OK);
+        }
+        else
+        {
+            return(CODEC_STATUS_PAUSE);
+        }
+    }
+    else
+    {
+        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+        {
+            m_dActiveTime = m_pLabor->GetNowTime();
+            return(CODEC_STATUS_PAUSE);
+        }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+        LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
+        return(CODEC_STATUS_INT);
+    }
+}
+
+E_CODEC_STATUS SocketChannelImpl::Send(const RedisMsg& oRedisMsg, uint32 uiStepSeq)
+{
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_uiSeq, m_ucChannelStatus);
+    if (m_pCodec == nullptr)
+    {
+        LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
+        return(CODEC_STATUS_ERR);
+    }
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
+    switch (m_ucChannelStatus)
+    {
+        case CHANNEL_STATUS_ESTABLISHED:
+            eCodecStatus = ((CodecResp*)m_pCodec)->Encode(oRedisMsg, m_pSendBuff);
+            break;
+        case CHANNEL_STATUS_CLOSED:
+            LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
+            return(CODEC_STATUS_EOF);
+        case CHANNEL_STATUS_TELL_WORKER:
+        case CHANNEL_STATUS_WORKER:
+        case CHANNEL_STATUS_TRANSFER_TO_WORKER:
+        case CHANNEL_STATUS_CONNECTED:
+        case CHANNEL_STATUS_TRY_CONNECT:
+        case CHANNEL_STATUS_INIT:
+            eCodecStatus = ((CodecResp*)m_pCodec)->Encode(oRedisMsg, m_pWaitForSendBuff);
+            if (CODEC_STATUS_OK == eCodecStatus && uiStepSeq > 0)
+            {
+                eCodecStatus = CODEC_STATUS_PAUSE;
+                m_listPipelineStepSeq.push_back(uiStepSeq);
+            }
+            break;
+        default:
+            LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), m_ucChannelStatus);
+            return(CODEC_STATUS_OK);
+    }
+
+    if (CODEC_STATUS_OK != eCodecStatus)
+    {
+        return(eCodecStatus);
+    }
+
+    int iNeedWriteLen = m_pSendBuff->ReadableBytes();
+    if (iNeedWriteLen <= 0)
+    {
+        return(eCodecStatus);
+    }
+
+    int iWrittenLen = Write(m_pSendBuff, m_iErrno);
+    LOG4_TRACE("fd[%d], channel_seq[%u] iWrittenLen = %d, m_iErrno = %d",
+            GetFd(), GetSequence(), iWrittenLen, m_iErrno);
+    if (iWrittenLen >= 0)
+    {
+        if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
+        {
+            m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
+        }
+        if (uiStepSeq > 0)
+        {
+            m_listPipelineStepSeq.push_back(uiStepSeq);
+        }
+        m_dActiveTime = m_pLabor->GetNowTime();
+        if (iNeedWriteLen == iWrittenLen)
+        {
+            return(CODEC_STATUS_OK);
+        }
+        else
+        {
+            return(CODEC_STATUS_PAUSE);
+        }
+    }
+    else
+    {
+        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+        {
+            m_dActiveTime = m_pLabor->GetNowTime();
+            return(CODEC_STATUS_PAUSE);
+        }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+        LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
+        return(CODEC_STATUS_INT);
+    }
+}
+
+E_CODEC_STATUS SocketChannelImpl::Send(const char* pRaw, uint32 uiRawSize, uint32 uiStepSeq)
+{
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_uiSeq, m_ucChannelStatus);
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
+    switch (m_ucChannelStatus)
+    {
+        case CHANNEL_STATUS_ESTABLISHED:
+            m_pSendBuff->Write(pRaw, uiRawSize);
+            break;
+        case CHANNEL_STATUS_CLOSED:
+            LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
+            return(CODEC_STATUS_EOF);
+        case CHANNEL_STATUS_TELL_WORKER:
+        case CHANNEL_STATUS_WORKER:
+        case CHANNEL_STATUS_TRANSFER_TO_WORKER:
+        case CHANNEL_STATUS_CONNECTED:
+        case CHANNEL_STATUS_TRY_CONNECT:
+        case CHANNEL_STATUS_INIT:
+            m_pWaitForSendBuff->Write(pRaw, uiRawSize);
+            eCodecStatus = CODEC_STATUS_PAUSE;
+            break;
+        default:
+            LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), m_ucChannelStatus);
+            return(CODEC_STATUS_OK);
+    }
+
+    if (CODEC_STATUS_OK != eCodecStatus)
+    {
+        return(eCodecStatus);
+    }
+
+    int iNeedWriteLen = m_pSendBuff->ReadableBytes();
+    if (iNeedWriteLen <= 0)
+    {
+        return(eCodecStatus);
+    }
+
+    int iWrittenLen = Write(m_pSendBuff, m_iErrno);
+    LOG4_TRACE("fd[%d], channel_seq[%u] iWrittenLen = %d, m_iErrno = %d",
+            GetFd(), GetSequence(), iWrittenLen, m_iErrno);
+    if (iWrittenLen >= 0)
+    {
+        if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
+        {
+            m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
+        }
+        if (uiStepSeq > 0)
+        {
+            m_listPipelineStepSeq.push_back(uiStepSeq);
+        }
+        m_dActiveTime = m_pLabor->GetNowTime();
+        if (iNeedWriteLen == iWrittenLen)
         {
             return(CODEC_STATUS_OK);
         }
@@ -373,10 +577,10 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
 E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_uiSeq, m_ucChannelStatus);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (m_pCodec == nullptr)
     {
-        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.")
+        return(CODEC_STATUS_ERR);
     }
     int iReadLen = 0;
     iReadLen = Read(m_pRecvBuff, m_iErrno);
@@ -407,6 +611,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                         }
                     }
                     break;
+                case CHANNEL_STATUS_CLOSED:
+                    LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
+                    return(CODEC_STATUS_EOF);
                 case CHANNEL_STATUS_TELL_WORKER:
                 case CHANNEL_STATUS_WORKER:
                 case CHANNEL_STATUS_TRANSFER_TO_WORKER:
@@ -478,6 +685,11 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
         return(CODEC_STATUS_EOF);
     }
+    if (m_pCodec == nullptr)
+    {
+        LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
+        return(CODEC_STATUS_ERR);
+    }
     int iReadLen = 0;
     iReadLen = Read(m_pRecvBuff, m_iErrno);
     LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
@@ -542,6 +754,132 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
     }
 }
 
+E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
+{
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    {
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
+        return(CODEC_STATUS_EOF);
+    }
+    if (m_pCodec == nullptr)
+    {
+        LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
+        return(CODEC_STATUS_ERR);
+    }
+    int iReadLen = 0;
+    iReadLen = Read(m_pRecvBuff, m_iErrno);
+    LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
+            m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
+    if (iReadLen > 0)
+    {
+        if (m_pRecvBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pRecvBuff->ReadableBytes() < m_pRecvBuff->Capacity() / 2))
+        {
+            m_pRecvBuff->Compact(m_pRecvBuff->ReadableBytes() * 2);
+        }
+        m_dActiveTime = m_pLabor->GetNowTime();
+        E_CODEC_STATUS eCodecStatus = ((CodecResp*)m_pCodec)->Decode(m_pRecvBuff, oRedisReply);
+        if (CODEC_STATUS_OK == eCodecStatus)
+        {
+            ++m_uiUnitTimeMsgNum;
+            ++m_uiMsgNum;
+            if (m_uiMsgNum == 1)
+            {
+                m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+            }
+        }
+        else
+        {
+            if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
+            {
+                return(CODEC_STATUS_INVALID);
+            }
+        }
+        return(eCodecStatus);
+    }
+    else if (iReadLen == 0)
+    {
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+        LOG4_TRACE("fd %d closed by peer, error %d %s!",
+                        m_iFd, m_iErrno, m_strErrMsg.c_str());
+        if (m_pRecvBuff->ReadableBytes() > 0)
+        {
+            ((CodecResp*)m_pCodec)->Decode(m_pRecvBuff, oRedisReply);
+        }
+        return(CODEC_STATUS_EOF);
+    }
+    else
+    {
+        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+        {
+            m_dActiveTime = m_pLabor->GetNowTime();
+            return(CODEC_STATUS_PAUSE);
+        }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
+        return(CODEC_STATUS_INT);
+    }
+}
+
+E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
+{
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    {
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
+        return(CODEC_STATUS_EOF);
+    }
+    int iReadLen = 0;
+    iReadLen = Read(m_pRecvBuff, m_iErrno);
+    LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
+            m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
+    if (iReadLen > 0)
+    {
+        if (m_pRecvBuff->Capacity() > CBuffer::BUFFER_MAX_READ
+            && (m_pRecvBuff->ReadableBytes() < m_pRecvBuff->Capacity() / 2))
+        {
+            m_pRecvBuff->Compact(m_pRecvBuff->ReadableBytes() * 2);
+        }
+        m_dActiveTime = m_pLabor->GetNowTime();
+        if (oRawBuff.Write(m_pRecvBuff, m_pRecvBuff->ReadableBytes()) > 0)
+        {
+            ++m_uiUnitTimeMsgNum;
+            ++m_uiMsgNum;
+            if (m_uiMsgNum == 1)
+            {
+                m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+            }
+            return(CODEC_STATUS_OK);
+        }
+        return(CODEC_STATUS_PAUSE);
+    }
+    else if (iReadLen == 0)
+    {
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+        LOG4_TRACE("fd %d closed by peer, error %d %s!",
+                        m_iFd, m_iErrno, m_strErrMsg.c_str());
+        if (m_pRecvBuff->ReadableBytes() > 0)
+        {
+            oRawBuff->Write(m_pRecvBuff, m_pRecvBuff->ReadableBytes());
+        }
+        return(CODEC_STATUS_EOF);
+    }
+    else
+    {
+        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+        {
+            m_dActiveTime = m_pLabor->GetNowTime();
+            return(CODEC_STATUS_PAUSE);
+        }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
+        return(CODEC_STATUS_INT);
+    }
+}
+
 E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
@@ -573,13 +911,57 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
     }
     // 当http1.0响应包未带Content-Length头时，m_pRecvBuff可读字节数为0，以关闭连接表示数据发送完毕。
     E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
+    if (CODEC_STATUS_OK == eCodecStatus)
+    {
+        ++m_uiUnitTimeMsgNum;
+        ++m_uiMsgNum;
+    }
     return(eCodecStatus);
+}
+
+E_CODEC_STATUS SocketChannelImpl::Fetch(RedisReply& oRedisReply)
+{
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    {
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
+        return(CODEC_STATUS_EOF);
+    }
+    E_CODEC_STATUS eCodecStatus = ((CodecResp*)m_pCodec)->Decode(m_pRecvBuff, oRedisReply);
+    if (CODEC_STATUS_OK == eCodecStatus)
+    {
+        ++m_uiUnitTimeMsgNum;
+        ++m_uiMsgNum;
+    }
+    return(eCodecStatus);
+}
+
+E_CODEC_STATUS SocketChannelImpl::Fetch(CBuffer& oRawBuff)
+{
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    {
+        LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
+        return(CODEC_STATUS_EOF);
+    }
+    if (oRawBuff.Write(m_pRecvBuff, m_pRecvBuff->ReadableBytes()) > 0)
+    {
+        ++m_uiUnitTimeMsgNum;
+        ++m_uiMsgNum;
+        return(CODEC_STATUS_OK);
+    }
+    return(CODEC_STATUS_PAUSE);
 }
 
 void SocketChannelImpl::SetSecretKey(const std::string& strKey)
 {
     m_strKey = strKey;
     m_pCodec->SetKey(m_strKey);
+}
+
+void SocketChannelImpl::SetRemoteWorkerIndex(uint16 unRemoteWorkerIndex)
+{
+    m_unRemoteWorkerIdx = unRemoteWorkerIndex;
 }
 
 bool SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)

@@ -36,25 +36,29 @@ public:
     static int SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger);
     static int RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType, std::shared_ptr<NetLogger> pLogger);
 
+    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsClient = false);
+
     int GetFd() const;
+    bool IsClient() const
+    {
+        return(m_bIsClientConnection);
+    }
+    bool IsPipeline() const;
     const std::string& GetIdentify() const;
     const std::string& GetRemoteAddr() const;
     const std::string& GetClientData() const;
     E_CODEC_TYPE GetCodecType() const;
-    uint32 GetStepSeq() const;
-
-    // 设置对称加密密钥
-    void SetSecretKey(const std::string& strKey)
-    {
-        m_pImpl->SetSecretKey(strKey);
-    }
 
 private:
+    bool m_bIsClientConnection;
+    // Hide most of the channel implementation for Actors
+    // 以m_pImpl对Actor及其派生类隐藏框架层才需要的Channel大部分实现
     //std::unique_ptr<SocketChannelImpl> m_pImpl;
     std::shared_ptr<SocketChannelImpl> m_pImpl;
     std::shared_ptr<NetLogger> m_pLogger;
     
     friend class Dispatcher;
+    friend class ActorBuilder;
 };
 
 } /* namespace neb */

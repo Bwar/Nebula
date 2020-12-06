@@ -21,7 +21,7 @@ namespace neb
 {
 
 SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, ev_tstamp dKeepAlive)
-    : m_pImpl(nullptr), m_pLogger(pLogger)
+    : m_bIsClientConnection(false), m_pImpl(nullptr), m_pLogger(pLogger)
 {
     if (bWithSsl)
     {
@@ -45,9 +45,20 @@ SocketChannel::~SocketChannel()
     m_pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "");
 }
 
+bool SocketChannel::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
+{
+    m_bIsClientConnection = bIsClient;
+    return(m_pImpl->Init(eCodecType, bIsClient));
+}
+
 int SocketChannel::GetFd() const
 {
     return(m_pImpl->GetFd());
+}
+
+bool SocketChannel::IsPipeline() const
+{
+    return(m_pImpl->IsPipeline());
 }
 
 const std::string& SocketChannel::GetIdentify() const
@@ -68,11 +79,6 @@ const std::string& SocketChannel::GetClientData() const
 E_CODEC_TYPE SocketChannel::GetCodecType() const
 {
     return(m_pImpl->GetCodecType());
-}
-
-uint32 SocketChannel::GetStepSeq() const
-{
-    return(m_pImpl->GetStepSeq());
 }
 
 int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger)

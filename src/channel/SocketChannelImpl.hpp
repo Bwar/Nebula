@@ -26,6 +26,7 @@
 #include "util/json/CJsonObject.hpp"
 
 #include "pb/http.pb.h"
+#include "pb/redis.pb.h"
 #include "codec/Codec.hpp"
 #include "Channel.hpp"
 #include "Definition.hpp"
@@ -34,8 +35,9 @@
 namespace neb
 {
 
+typedef RedisReply RedisMsg;
+
 class Labor;
-class Dispatcher;
 class NetLogger;
 class SocketChannel;
 
@@ -52,10 +54,16 @@ public:
     virtual E_CODEC_STATUS Send();
     virtual E_CODEC_STATUS Send(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     virtual E_CODEC_STATUS Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq);
+    virtual E_CODEC_STATUS Send(const RedisMsg& oRedisMsg, uint32 uiStepSeq);
+    virtual E_CODEC_STATUS Send(const char* pRaw, uint32 uiRawSize, uint32 uiStepSeq);
     virtual E_CODEC_STATUS Recv(MsgHead& oMsgHead, MsgBody& oMsgBody);
     virtual E_CODEC_STATUS Recv(HttpMsg& oHttpMsg);
+    virtual E_CODEC_STATUS Recv(RedisReply& oRedisReply);
+    virtual E_CODEC_STATUS Recv(CBuffer& oRawBuff);
     E_CODEC_STATUS Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody);
     E_CODEC_STATUS Fetch(HttpMsg& oHttpMsg);
+    E_CODEC_STATUS Fetch(RedisReply& oRedisReply);
+    E_CODEC_STATUS Fetch(CBuffer& oRawBuff);
 
     template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
@@ -70,14 +78,16 @@ public:
         return(m_uiSeq);
     }
 
-    uint32 GetStepSeq() const
-    {
-        return(m_uiStepSeq);
-    }
+    uint32 PopStepSeq();
 
     ev_tstamp GetActiveTime() const
     {
         return(m_dActiveTime);
+    }
+
+    bool IsPipeline() const
+    {
+        return(m_bPipeline);
     }
 
     ev_tstamp GetKeepAlive();
@@ -95,6 +105,11 @@ public:
     const std::string& GetRemoteAddr() const
     {
         return(m_strRemoteAddr);
+    }
+
+    uint16 GetRemoteWorkerIndex() const
+    {
+        return(m_unRemoteWorkerIdx);
     }
 
     const std::string& GetClientData() const
@@ -119,9 +134,14 @@ public:
         return(m_uiUnitTimeMsgNum);
     }
 
-    const std::vector<uint32>& GetStepWaitForConnected() const
+    const std::list<uint32>& GetPipelineStepSeq() const
     {
-        return(m_vecStepWaitForConnected);
+        return(m_listPipelineStepSeq);
+    }
+
+    Labor* GetLabor()
+    {
+        return(m_pLabor);
     }
 
     int GetErrno() const
@@ -157,10 +177,9 @@ public:
         m_ucChannelStatus = (uint8)eStatus;
     }
 
-    void SetChannelStatus(E_CHANNEL_STATUS eStatus, uint32 uiStepSeq)
+    void SetPipeline(bool bPipeline)
     {
-        m_ucChannelStatus = (uint8)eStatus;
-        m_uiStepSeq = uiStepSeq;
+        m_bPipeline = bPipeline;
     }
 
     void SetClientData(const std::string& strClientData)
@@ -179,6 +198,8 @@ public:
     }
 
     void SetSecretKey(const std::string& strKey);
+
+    void SetRemoteWorkerIndex(uint16 unRemoteWorkerIndex);
 
     bool SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive);
     bool AutoSwitchCodec();
@@ -200,7 +221,7 @@ private:
     int32 m_iFd;                          ///< 文件描述符
     uint32 m_uiSeq;                       ///< 文件描述符创建时对应的序列号
     uint32 m_uiForeignSeq;                ///< 外来的seq，每个连接的包都是有序的，用作接入Server数据包检查，防止篡包
-    uint32 m_uiStepSeq;                   ///< 正在等待回调的Step seq（比如发出一个HttpPost或HttpGet请求，m_uiStepSeq即为正在等待响应的HttpStep的seq）
+    uint32 m_bPipeline;                   ///< 是否支持pipeline
     uint32 m_uiUnitTimeMsgNum;            ///< 统计单位时间内接收消息数量
     uint32 m_uiMsgNum;                    ///< 接收消息数量
     ev_tstamp m_dActiveTime;              ///< 最后一次访问时间
@@ -217,14 +238,11 @@ private:
     std::string m_strErrMsg;
     std::string m_strIdentify;            ///< 连接标识（可以为空，不为空时用于标识业务层与连接的关系）
     std::string m_strRemoteAddr;          ///< 对端IP地址（不是客户端地址，但可能跟客户端地址相同）
-    std::vector<uint32> m_vecStepWaitForConnected;  ///< 等待连接成功的Step
+    std::list<uint32> m_listPipelineStepSeq;  ///< 等待回调的Step seq
     std::set<E_CODEC_TYPE> m_setSkipCodecType;  ///< Codec转换需跳过的CodecType
     Labor* m_pLabor;
     SocketChannel* m_pSocketChannel;
     std::shared_ptr<NetLogger> m_pLogger;
-
-
-    friend class Dispatcher;
 };
 
 template <typename ...Targs>

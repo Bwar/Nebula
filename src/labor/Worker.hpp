@@ -30,7 +30,6 @@ extern "C" {
 #include "util/CBuffer.hpp"
 #include "labor/Labor.hpp"
 #include "channel/SocketChannel.hpp"
-#include "channel/RedisChannel.hpp"
 #include "codec/Codec.hpp"
 #include "logger/NetLogger.hpp"
 #include "NodeInfo.hpp"

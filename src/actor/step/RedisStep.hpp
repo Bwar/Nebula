@@ -13,9 +13,12 @@
 #include <set>
 #include <list>
 #include "actor/step/Step.hpp"
+#include "pb/redis.pb.h"
 
 namespace neb
 {
+
+typedef RedisReply RedisRequest;
 
 /**
  * @brief StepRedis在回调后一定会被删除
@@ -23,30 +26,19 @@ namespace neb
 class RedisStep: public Step
 {
 public:
-    RedisStep(std::shared_ptr<Step> pNextStep = nullptr);
+    RedisStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
     RedisStep(const RedisStep&) = delete;
     RedisStep& operator=(const RedisStep&) = delete;
     virtual ~RedisStep();
 
     /**
      * @brief redis步骤回调
-     * @param c redis连接上下文
-     * @param status 回调状态
-     * @param pReply 执行结果集
+     * @param pChannel 数据来源通道
+     * @param oRedisReply redis响应
      */
     virtual E_CMD_STATUS Callback(
-                    const redisAsyncContext *c,
-                    int status,
-                    redisReply* pReply) = 0;
-
-    /**
-     * @brief redis超时
-     * @note 此函数暂时无用，不会有redis超时回调
-     */
-    virtual E_CMD_STATUS Timeout()
-    {
-        return(CMD_STATUS_FAULT);
-    }
+                    std::shared_ptr<SocketChannel> pChannel,
+                    const RedisReply& oRedisReply) = 0;
 
 public:
     /**
@@ -88,11 +80,15 @@ public:
         return(m_vecCmdArguments);
     }
 
+protected:
+    const RedisRequest& GenrateRedisRequest();
+
 private:
     std::string m_strErr;
     std::string m_strHashKey;
     std::string m_strCmd;
     std::vector<std::pair<std::string, bool> > m_vecCmdArguments;
+    RedisRequest m_oRedisRequest;
 };
 
 } /* namespace neb */
