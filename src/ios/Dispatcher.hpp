@@ -32,7 +32,6 @@ extern "C" {
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 #include "ev.h"
-#include "hiredis/async.h"
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
@@ -43,11 +42,13 @@ extern "C" {
 
 #include <string>
 #include <unordered_map>
+#include <sstream>
 #include <memory>
 
+#include "util/process_helper.h"
 #include "pb/msg.pb.h"
 #include "channel/SocketChannel.hpp"
-#include "channel/RedisChannel.hpp"
+#include "logger/NetLogger.hpp"
 
 namespace neb
 {
@@ -92,9 +93,6 @@ public:
 public:
     static void IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents);
     static void IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
-    static void RedisConnectCallback(const redisAsyncContext *c, int status);
-    static void RedisDisconnectCallback(const redisAsyncContext *c, int status);
-    static void RedisCmdCallback(redisAsyncContext *c, void *reply, void *privdata);
     static void PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void SignalCallback(struct ev_loop* loop, struct ev_signal* watcher, int revents);
     static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
@@ -106,9 +104,6 @@ public:
     bool OnIoWrite(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoError(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoTimeout(std::shared_ptr<SocketChannel> pChannel);
-    bool OnRedisConnected(const redisAsyncContext *c, int status);
-    bool OnRedisDisconnected(const redisAsyncContext *c, int status);
-    bool OnRedisCmdResult(redisAsyncContext *c, void *reply, void *privdata);
     bool OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher);
 
     template <typename ...Targs>
@@ -118,7 +113,6 @@ public:
 
 public:
     bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
-
     template <typename ...Targs>
     bool SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args);
     template <typename ...Targs>
@@ -135,19 +129,8 @@ public:
     bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender);
     std::shared_ptr<SocketChannel> StressSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
-    // SendTo() for http
-    bool SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
-    bool SendTo(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
-    bool AutoSend(const std::string& strHost, int iPort, const std::string& strUrlPath, const HttpMsg& oHttpMsg, uint32 uiHttpStepSeq = 0);
-
-    // SendTo() for redis
-    bool SendTo(std::shared_ptr<RedisChannel> pRedisChannel, Actor* pSender);
-    bool SendTo(const std::string& strIdentify, Actor* pSender, bool bPipeline = true);
-    bool SendTo(const std::string& strHost, int iPort, Actor* pSender, bool bPipeline = true);
-    bool AutoRedisCmd(const std::string& strHost, int iPort, std::shared_ptr<RedisStep> pRedisStep, bool bPipeline = true);
-
     // SendTo() for unix domain socket
-    bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender);
+    bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     bool SendTo(int iFd, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     bool Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
@@ -159,8 +142,6 @@ public:
     void SetChannelIdentify(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify);
     bool AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel);
     void DelNamedSocketChannel(const std::string& strIdentify);
-    bool AddNamedRedisChannel(const std::string& strIdentify, std::shared_ptr<RedisChannel> pChannel);
-    void DelNamedRedisChannel(const std::string& strIdentify);
     void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     void SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData);
@@ -194,7 +175,6 @@ protected:
     int32 GetConnectionNum() const;
     int32 GetClientNum() const;
     void SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus);
-    void SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus, uint32 ulStepSeq);
     bool AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout = 60.0);
     bool AcceptFdAndTransfer(int iFd, int iFamily = AF_INET);
     bool AcceptServerConn(int iFd);
@@ -210,11 +190,9 @@ private:
 
     // Channel
     std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapSocketChannel;
-    std::unordered_map<redisAsyncContext*, std::shared_ptr<RedisChannel> >  m_mapRedisChannel;
 
     /* named Channel */
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<SocketChannel> > > m_mapNamedSocketChannel;      ///< key为Identify，连接存在时，if(http连接)set.size()>=1;else set.size()==1;
-    std::unordered_map<std::string, std::unordered_set<std::shared_ptr<RedisChannel> > > m_mapNamedRedisChannel;        ///< key为identify，连接存在时，if(pipeline)set.size()==1;else set.size()>=1;
     std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapLoaderAndWorkerChannel;     ///< Loader和Worker之间通信通道
     std::unordered_map<int32, std::shared_ptr<SocketChannel> >::iterator m_iterLoaderAndWorkerChannel;
 
@@ -271,7 +249,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType,
         }
         strHost = strIdentify.substr(0, iPosIpPortSeparator);
         std::string strPort;
-        if (iPosPortWorkerIndexSeparator != std::string::npos)
+        if (iPosPortWorkerIndexSeparator != std::string::npos && iPosPortWorkerIndexSeparator > iPosIpPortSeparator)
         {
             strPort = strIdentify.substr(iPosIpPortSeparator + 1, iPosPortWorkerIndexSeparator - (iPosIpPortSeparator + 1));
             iPort = atoi(strPort.c_str());
