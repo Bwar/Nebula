@@ -20,8 +20,8 @@
 #include "step/PbStep.hpp"
 #include "step/RedisStep.hpp"
 #include "step/RawStep.hpp"
-#include "cmd/CmdRedis.hpp"
-#include "cmd/CmdRaw.hpp"
+#include "cmd/RedisCmd.hpp"
+#include "cmd/RawCmd.hpp"
 #include "model/Model.hpp"
 #include "chain/Chain.hpp"
 #include "actor/session/sys_session/SessionLogger.hpp"
@@ -469,13 +469,13 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Redi
         else
         {
             E_CMD_STATUS eResult;
-            http_step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+            step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
             LOG4_TRACE("callback of redis cmd: %s", (std::dynamic_pointer_cast<RedisStep>(step_iter->second))->CmdToString().c_str());
-            eResult = (std::dynamic_pointer_cast<RedisStep>(step_iter->second))->Callback(pChannel, oRedisMsg);
+            eResult = step_iter->second->Callback(pChannel, oRedisMsg);
             if (CMD_STATUS_RUNNING != eResult)
             {
-                uint32 uiChainId = http_step_iter->second->GetChainId();
-                RemoveStep(http_step_iter->second);
+                uint32 uiChainId = step_iter->second->GetChainId();
+                RemoveStep(step_iter->second);
                 if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
                 {
                     auto chain_iter = m_mapChain.find(uiChainId);
@@ -498,15 +498,15 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Redi
         auto cmd_iter = m_mapCmd.find(CMD_REQ_REDIS_PROXY);
         if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
         {
-            auto pCmdRedis = std::dynamic_pointer_cast<CmdRedis>(cmd_iter->second);
-            if (pCmdRedis == nullptr)
+            auto pRedisCmd = std::dynamic_pointer_cast<RedisCmd>(cmd_iter->second);
+            if (pRedisCmd == nullptr)
             {
-                LOG4_ERROR("cmd %d is not a CmdRedis instance!", CMD_REQ_REDIS_PROXY);
+                LOG4_ERROR("cmd %d is not a RedisCmd instance!", CMD_REQ_REDIS_PROXY);
                 return(false);
             }
-            return(pCmdRedis->AnyMessage(pChannel, oRedisMsg));
+            return(pRedisCmd->AnyMessage(pChannel, oRedisMsg));
         }
-        LOG4_ERROR("no instance of CmdRedis or derived class of CmdRedis found for cmd %d", CMD_REQ_REDIS_PROXY);
+        LOG4_ERROR("no instance of RedisCmd or derived class of RedisCmd found for cmd %d", CMD_REQ_REDIS_PROXY);
         return(false);
     }
 }
@@ -528,12 +528,12 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const CBuf
         else
         {
             E_CMD_STATUS eResult;
-            http_step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-            eResult = (std::dynamic_pointer_cast<RedisStep>(step_iter->second))->Callback(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes());
+            step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+            eResult = step_iter->second->Callback(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes());
             if (CMD_STATUS_RUNNING != eResult)
             {
-                uint32 uiChainId = http_step_iter->second->GetChainId();
-                RemoveStep(http_step_iter->second);
+                uint32 uiChainId = step_iter->second->GetChainId();
+                RemoveStep(step_iter->second);
                 if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
                 {
                     auto chain_iter = m_mapChain.find(uiChainId);
@@ -556,15 +556,15 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const CBuf
         auto cmd_iter = m_mapCmd.find(CMD_REQ_RAW_DATA);
         if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
         {
-            auto pCmdRaw = std::dynamic_pointer_cast<CmdRaw>(cmd_iter->second);
-            if (pCmdRaw == nullptr)
+            auto pRawCmd = std::dynamic_pointer_cast<RawCmd>(cmd_iter->second);
+            if (pRawCmd == nullptr)
             {
-                LOG4_ERROR("cmd %d is not a CmdRaw instance!", CMD_REQ_RAW_DATA);
+                LOG4_ERROR("cmd %d is not a RawCmd instance!", CMD_REQ_RAW_DATA);
                 return(false);
             }
-            return(pCmdRaw->AnyMessage(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes()));
+            return(pRawCmd->AnyMessage(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes()));
         }
-        LOG4_ERROR("no instance of CmdRaw or derived class of CmdRaw found for cmd %d", CMD_REQ_RAW_DATA);
+        LOG4_ERROR("no instance of RawCmd or derived class of RawCmd found for cmd %d", CMD_REQ_RAW_DATA);
         return(false);
     }
 }
@@ -941,6 +941,7 @@ bool ActorBuilder::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor>
     }
     else
     {
+        LOG4_ERROR("step %u exist.", pSharedStep->GetSequence());
         return(false);
     }
 }
@@ -976,6 +977,7 @@ bool ActorBuilder::TransformToSharedSession(Actor* pCreator, std::shared_ptr<Act
     }
     else
     {
+        LOG4_ERROR("session \"%s\" exist.", pSharedSession->GetSessionId().c_str());
         return(false);
     }
 }
@@ -999,6 +1001,10 @@ bool ActorBuilder::TransformToSharedCmd(Actor* pCreator, std::shared_ptr<Actor> 
             }
             return(true);
         }
+    }
+    else
+    {
+        LOG4_ERROR("cmd %d exist.", pSharedCmd->GetCmd());
     }
     return(false);
 }
@@ -1024,6 +1030,10 @@ bool ActorBuilder::TransformToSharedModule(Actor* pCreator, std::shared_ptr<Acto
             return(true);
         }
     }
+    else
+    {
+        LOG4_ERROR("module path \"%s\" exist.", pSharedModule->GetModulePath().c_str());
+    }
     return(false);
 }
 
@@ -1037,6 +1047,10 @@ bool ActorBuilder::TransformToSharedModel(Actor* pCreator, std::shared_ptr<Actor
         {
             return(true);
         }
+    }
+    else
+    {
+        LOG4_ERROR("operator \"%s\" exist.", pSharedModel->GetActorName().c_str());
     }
     return(false);
 }
@@ -1089,6 +1103,10 @@ bool ActorBuilder::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor
             m_pLabor->GetDispatcher()->AddEvent(timer_watcher, ChainTimeoutCallback, pSharedChain->m_dTimeout);
         }
         return(true);
+    }
+    else
+    {
+        LOG4_ERROR("chain %u exist.", pSharedChain->GetSequence());
     }
     return(false);
 }

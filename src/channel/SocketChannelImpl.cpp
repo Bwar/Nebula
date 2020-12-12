@@ -184,7 +184,6 @@ E_CODEC_STATUS SocketChannelImpl::Send()
     LOG4_TRACE("iNeedWriteLen = %d, iWrittenLen = %d", iNeedWriteLen, iWrittenLen);
     if (iWrittenLen >= 0)
     {
-        m_vecStepWaitForConnected.clear();
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -579,7 +578,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_uiSeq, m_ucChannelStatus);
     if (m_pCodec == nullptr)
     {
-        LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.")
+        LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
         return(CODEC_STATUS_ERR);
     }
     int iReadLen = 0;
@@ -637,6 +636,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                             m_ucChannelStatus = CHANNEL_STATUS_TRANSFER_TO_WORKER;
                             break;
                         default:
+                            LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[from %d to %d] may be a fault.",
+                                    m_iFd, m_uiSeq, m_ucChannelStatus, CHANNEL_STATUS_ESTABLISHED);
+                            m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
                             break;
                     }
                 }
@@ -710,6 +712,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
             if (m_uiMsgNum == 1)
             {
                 m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+                m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
             }
         }
         else
@@ -787,6 +790,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
             if (m_uiMsgNum == 1)
             {
                 m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+                m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
             }
         }
         else
@@ -850,6 +854,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
             if (m_uiMsgNum == 1)
             {
                 m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+                m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
             }
             return(CODEC_STATUS_OK);
         }
@@ -862,7 +867,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
                         m_iFd, m_iErrno, m_strErrMsg.c_str());
         if (m_pRecvBuff->ReadableBytes() > 0)
         {
-            oRawBuff->Write(m_pRecvBuff, m_pRecvBuff->ReadableBytes());
+            oRawBuff.Write(m_pRecvBuff, m_pRecvBuff->ReadableBytes());
         }
         return(CODEC_STATUS_EOF);
     }
@@ -896,6 +901,11 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
         m_uiForeignSeq = oMsgHead.seq();
         ++m_uiUnitTimeMsgNum;
         ++m_uiMsgNum;
+        if (m_uiMsgNum == 1)
+        {
+            m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+            m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
+        }
         LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_uiSeq, oMsgHead.cmd(), oMsgHead.seq());
     }
     return(eCodecStatus);
@@ -915,6 +925,11 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
     {
         ++m_uiUnitTimeMsgNum;
         ++m_uiMsgNum;
+        if (m_uiMsgNum == 1)
+        {
+            m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+            m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
+        }
     }
     return(eCodecStatus);
 }
@@ -932,6 +947,11 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(RedisReply& oRedisReply)
     {
         ++m_uiUnitTimeMsgNum;
         ++m_uiMsgNum;
+        if (m_uiMsgNum == 1)
+        {
+            m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+            m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
+        }
     }
     return(eCodecStatus);
 }
@@ -948,6 +968,11 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(CBuffer& oRawBuff)
     {
         ++m_uiUnitTimeMsgNum;
         ++m_uiMsgNum;
+        if (m_uiMsgNum == 1)
+        {
+            m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+            m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
+        }
         return(CODEC_STATUS_OK);
     }
     return(CODEC_STATUS_PAUSE);

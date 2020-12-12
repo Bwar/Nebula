@@ -139,7 +139,7 @@ public:
     bool TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
 public:
-    bool SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const ReidsMsg& oRedisMsg, uint32 uiStepSeq);
+    bool SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq);
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
     virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);

@@ -120,13 +120,13 @@ public:
     template <typename ...Targs>
     bool SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     template <typename ...Targs>
-    bool Dispatcher::AutoSend(const std::string& strIdentify, const std::string& strHost, int iPort, int iRemoteWorkerIndex, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
-    bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
-    bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
-    bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
-    bool Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
-    bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA, Actor* pSender = nullptr);
-    bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, Actor* pSender);
+    bool AutoSend(const std::string& strIdentify, const std::string& strHost, int iPort, int iRemoteWorkerIndex, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    bool Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     std::shared_ptr<SocketChannel> StressSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
     // SendTo() for unix domain socket

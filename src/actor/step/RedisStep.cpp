@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include "actor/step/RedisStep.hpp"
+#include <algorithm>
 
 namespace neb
 {

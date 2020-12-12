@@ -77,7 +77,7 @@ class CBuffer
         {
             m_write_idx += step;
         }
-        inline bool Readable()
+        inline bool Readable() const
         {
             return m_write_idx > m_read_idx;
         }
@@ -85,7 +85,7 @@ class CBuffer
         {
             return m_buffer_len > m_write_idx;
         }
-        inline size_t ReadableBytes()
+        inline size_t ReadableBytes() const
         {
             return Readable() ? m_write_idx - m_read_idx : 0;
         }

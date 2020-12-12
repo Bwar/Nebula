@@ -51,6 +51,15 @@ public:
         return(CMD_STATUS_FAULT);
     }
 
+    virtual E_CMD_STATUS Callback(std::shared_ptr<SocketChannel> pChannel,
+            const MsgHead& oMsgHead, const MsgBody& oMsgBody, void* data = NULL);
+    virtual E_CMD_STATUS Callback(std::shared_ptr<SocketChannel> pChannel,
+            const HttpMsg& oHttpMsg, void* data = NULL);
+    virtual E_CMD_STATUS Callback(std::shared_ptr<SocketChannel> pChannel,
+            const RedisReply& oRedisReply);
+    virtual E_CMD_STATUS Callback(std::shared_ptr<SocketChannel> pChannel,
+            const char* pRawData, uint32 uiRawDataSize);
+
 protected:
     /**
      * @brief 执行当前步骤接下来的步骤

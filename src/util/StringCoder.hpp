@@ -13,6 +13,7 @@
 #include <assert.h>
 #include <string>
 #include <map>
+#include <vector>
 
 namespace neb
 {
@@ -37,6 +38,7 @@ void EncodeParameter(const std::map<std::string, std::string>& mapParameters, st
 
 void DecodeParameter(const std::string& strParameter, std::map<std::string, std::string>& mapParameters);
 
+void Split(const std::string& strSrc, const std::string& strPattern, std::vector<std::string>& vecDest);
 
 } /* namespace neb */
 

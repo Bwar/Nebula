@@ -73,6 +73,10 @@ enum E_CMD
 
     CMD_REQ_LOG4_TRACE                  = 401,  ///< 分布式网络日志请求
     CMD_RSP_LOG4_TRACE                  = 402,  ///< 分布式网络日志响应（无须响应）
+    CMD_REQ_REDIS_PROXY                 = 403,  ///< redis代理固定虚Cmd，不会在网络中传输，redis代理插件加载时必须配置成CMD_REQ_REDIS_PROXY
+    CMD_RSP_REDIS_PROXY                 = 404,  ///< 不使用
+    CMD_REQ_RAW_DATA                    = 405,  ///< 裸数据传输固定虚Cmd，不会在网络中传输，处理raw数据的插件加载时必须配置成CMD_REQ_RAW_DATA
+    CMD_RSP_RAW_DATA                    = 406,  ///< 不使用
 
     // 接入层转发命令字，如客户端数据转发给Logic，Logic数据转发给客户端等
     CMD_REQ_FROM_CLIENT                 = 501,  ///< 客户端发送过来需由接入层转发的数据，传输的MsgHead里的Cmd不会被改变（无业务逻辑直接转发的场景，如登录等接入层有业务逻辑的场景不适用）

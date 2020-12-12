@@ -217,6 +217,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             }
             break;
         case CODEC_UNKNOW:
+        {
             CBuffer oBuff;
             for (int i = 0; ; ++i)
             {
@@ -239,6 +240,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     break;
                 }
             }
+        }
             break;
         default:
             for (int i = 0; ; ++i)
@@ -344,6 +346,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
             }
             break;
         case CODEC_UNKNOW:
+        {
             CBuffer oBuff;
             for (int i = 0; ; ++i)
             {
@@ -358,6 +361,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     break;
                 }
             }
+        }
             break;
         default:
             for (int i = 0; ; ++i)
@@ -730,7 +734,7 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, int32 iCmd, uint32
     {
         if (0 != oMsgBody.req_target().route_id())
         {
-            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, eCodecType, pSender));
+            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, eCodecType));
         }
         else if (oMsgBody.req_target().route().length() > 0)
         {
@@ -747,7 +751,7 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, int32 iCmd, uint32
         }
         else
         {
-            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType, pSender));
+            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType));
         }
     }
     else
@@ -797,10 +801,6 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
         {
             LOG4_ERROR("no connected channel to manager!");
             return(false);
-        }
-        if (nullptr != pSender)
-        {
-            (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pSender->GetTraceId());
         }
         E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
         if (CODEC_STATUS_OK == eStatus)
