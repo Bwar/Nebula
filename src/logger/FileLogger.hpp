@@ -24,7 +24,8 @@ public:
             const std::string& strLogFile,
             int iLogLev = Logger::INFO,
             unsigned int uiMaxFileSize = neb::gc_uiMaxLogFileSize,
-            unsigned int uiMaxRollFileIndex = neb::gc_uiMaxRollLogFileIndex);
+            unsigned int uiMaxRollFileIndex = neb::gc_uiMaxRollLogFileIndex,
+            bool bAlwaysFlush = true);
     virtual ~FileLogger()
     {
 #if __GNUC__ < 5
@@ -70,6 +71,7 @@ private:
     unsigned int m_uiLogNum;
     unsigned int m_uiMaxFileSize;       // 日志文件大小
     unsigned int m_uiMaxRollFileIndex;  // 滚动日志文件数量
+    bool m_bAlwaysFlush;
     std::string m_strLogFileBase;       // 日志文件基本名（如 log/program_name.log）
 };
 

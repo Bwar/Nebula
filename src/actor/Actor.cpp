@@ -70,6 +70,11 @@ const std::string& Actor::GetNodeIdentify() const
     return(m_pLabor->GetNodeInfo().strNodeIdentify);
 }
 
+const NodeInfo& Actor::GetNodeInfo() const
+{
+    return(m_pLabor->GetNodeInfo());
+}
+
 ev_tstamp Actor::GetDataReportInterval() const
 {
     return(m_pLabor->GetNodeInfo().dDataReportInterval);

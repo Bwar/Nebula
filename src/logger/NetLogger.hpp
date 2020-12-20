@@ -28,6 +28,7 @@ public:
         unsigned int uiMaxFileSize = gc_uiMaxLogFileSize,
         unsigned int uiMaxRollFileIndex = gc_uiMaxRollLogFileIndex,
         unsigned int uiMaxLogLineLen = gc_uiMaxLogLineLen,
+        bool bAlwaysFlush = true,
         Labor* pLabor = nullptr);
     virtual ~NetLogger();
 

@@ -129,10 +129,15 @@ bool Worker::Init(CJsonObject& oJsonConf)
     {
         m_stNodeInfo.dStepTimeout = 0.5;
     }
+    m_stNodeInfo.uiWorkerNum = strtoul(oJsonConf("worker_num").c_str(), NULL, 10);
+    oJsonConf.Get("data_report", m_stNodeInfo.dDataReportInterval);
     oJsonConf.Get("node_type", m_stNodeInfo.strNodeType);
     oJsonConf.Get("host", m_stNodeInfo.strHostForServer);
     oJsonConf.Get("port", m_stNodeInfo.iPortForServer);
-    oJsonConf.Get("data_report", m_stNodeInfo.dDataReportInterval);
+    oJsonConf.Get("access_host", m_stNodeInfo.strHostForClient);
+    oJsonConf.Get("access_port", m_stNodeInfo.iPortForClient);
+    oJsonConf.Get("gateway", m_stNodeInfo.strGateway);
+    oJsonConf.Get("gateway_port", m_stNodeInfo.iGatewayPort);
     m_oNodeConf = oJsonConf;
     m_oCustomConf = oJsonConf["custom"];
     std::ostringstream oss;
@@ -239,6 +244,7 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf, const std::string& strLogN
         int32 iMaxLogLineLen = 1024;
         int32 iLogLevel = 0;
         int32 iNetLogLevel = 0;
+        bool bAlwaysFlushLog = true;
         std::string strLogname = m_stNodeInfo.strWorkPath + std::string("/") + oJsonConf("log_path")
                         + std::string("/") + strLogNameBase + std::string(".log");
         std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
@@ -247,6 +253,7 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf, const std::string& strLogN
         oJsonConf.Get("log_max_line_len", iMaxLogLineLen);
         oJsonConf.Get("net_log_level", iNetLogLevel);
         oJsonConf.Get("log_level", iLogLevel);
+        oJsonConf.Get("always_flush_log", bAlwaysFlushLog);
         m_pLogger = std::make_shared<neb::NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, iMaxLogLineLen, this);
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_NOTICE("%s program begin...", getproctitle());

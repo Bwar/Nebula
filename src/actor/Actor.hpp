@@ -109,6 +109,7 @@ protected:
     const std::string& GetNodeType() const;
     const std::string& GetWorkPath() const;
     const std::string& GetNodeIdentify() const;
+    const NodeInfo& GetNodeInfo() const;
     time_t GetNowTime() const;
     long GetNowTimeMs() const;
     ev_tstamp GetDataReportInterval() const;
@@ -209,8 +210,8 @@ protected:
      * @param uiStepSeq 应用层无用参数，框架层的系统Actor会用到
      * @return 是否发送成功
      */
-    bool SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
-    bool SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
+    virtual bool SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
+    virtual bool SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
 
     /**
      * @brief 发送raw请求

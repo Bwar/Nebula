@@ -153,6 +153,79 @@ void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeId
     {
         std::shared_ptr<tagNode> pNode = std::make_shared<tagNode>();
         m_mapNode.insert(std::make_pair(strNodeType, pNode));
+        std::string strHashKey;
+        char szVirtualNodeIdentify[40] = {0};
+        uint32 uiKeyHash = 0;
+        std::vector<uint32> vecHash;
+        for (int i = 0; i < m_iVirtualNodeNum; ++i)
+        {
+            snprintf(szVirtualNodeIdentify, 40, "%d@%s#%d", m_iVirtualNodeNum - i, strNodeIdentify.c_str(), i);
+            strHashKey = szVirtualNodeIdentify;
+            switch (m_iHashAlgorithm)
+            {
+                case HASH_cityhash_32:
+                    uiKeyHash = CityHash32(strHashKey.c_str(), strHashKey.size());
+                    break;
+                case HASH_fnv1_64:
+                    uiKeyHash = hash_fnv1_64(strHashKey.c_str(), strHashKey.size());
+                    break;
+                case HASH_murmur3_32:
+                    uiKeyHash = murmur3_32(strHashKey.c_str(), strHashKey.size(), 0x000001b3);
+                    break;
+                default:
+                    uiKeyHash = hash_fnv1a_64(strHashKey.c_str(), strHashKey.size());
+            }
+            vecHash.push_back(uiKeyHash);
+            pNode->mapHash2Node.insert(std::make_pair(uiKeyHash, strNodeIdentify));
+        }
+        pNode->mapNode2Hash.insert(std::make_pair(strNodeIdentify, std::move(vecHash)));
+        pNode->itPollingNode = pNode->mapNode2Hash.begin();
+        pNode->itHashRing = pNode->mapHash2Node.begin();
+    }
+    else
+    {
+        auto node_iter = node_type_iter->second->mapNode2Hash.find(strNodeIdentify);
+        if (node_iter == node_type_iter->second->mapNode2Hash.end())
+        {
+            std::string strHashKey;
+            char szVirtualNodeIdentify[40] = {0};
+            uint32 uiKeyHash = 0;
+            std::vector<uint32> vecHash;
+            for (int i = 0; i < m_iVirtualNodeNum; ++i)
+            {
+                snprintf(szVirtualNodeIdentify, 40, "%d@%s#%d", m_iVirtualNodeNum - i, strNodeIdentify.c_str(), i);
+                strHashKey = szVirtualNodeIdentify;
+                switch (m_iHashAlgorithm)
+                {
+                    case HASH_cityhash_32:
+                        uiKeyHash = CityHash32(strHashKey.c_str(), strHashKey.size());
+                        break;
+                    case HASH_fnv1_64:
+                        uiKeyHash = hash_fnv1_64(strHashKey.c_str(), strHashKey.size());
+                        break;
+                    case HASH_murmur3_32:
+                        uiKeyHash = murmur3_32(strHashKey.c_str(), strHashKey.size(), 0x000001b3);
+                        break;
+                    default:
+                        uiKeyHash = hash_fnv1a_64(strHashKey.c_str(), strHashKey.size());
+                }
+                vecHash.push_back(uiKeyHash);
+                node_type_iter->second->mapHash2Node.insert(std::make_pair(uiKeyHash, strNodeIdentify));
+            }
+            node_type_iter->second->mapNode2Hash.insert(std::make_pair(strNodeIdentify, std::move(vecHash)));
+            node_type_iter->second->itPollingNode = node_type_iter->second->mapNode2Hash.begin();
+            node_type_iter->second->itHashRing = node_type_iter->second->mapHash2Node.begin();
+        }
+    }
+}
+
+void Nodes::AddNodeKetama(const std::string& strNodeType, const std::string& strNodeIdentify)
+{
+    auto node_type_iter = m_mapNode.find(strNodeType);
+    if (node_type_iter == m_mapNode.end())
+    {
+        std::shared_ptr<tagNode> pNode = std::make_shared<tagNode>();
+        m_mapNode.insert(std::make_pair(strNodeType, pNode));
         std::string strHash;
         char szVirtualNodeIdentify[40] = {0};
         int32 iPointPerHash = 4;

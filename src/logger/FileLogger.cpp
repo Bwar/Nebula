@@ -27,9 +27,9 @@ namespace neb
 FileLogger* FileLogger::s_pInstance = nullptr;
 
 FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
-        unsigned int uiMaxFileSize, unsigned int uiMaxRollFileIndex)
+        unsigned int uiMaxFileSize, unsigned int uiMaxRollFileIndex, bool bAlwaysFlush)
     : m_iLogLevel(iLogLev), m_uiLogNum(0), m_uiMaxFileSize(uiMaxFileSize),
-      m_uiMaxRollFileIndex(uiMaxRollFileIndex), m_strLogFileBase(strLogFile)
+      m_uiMaxRollFileIndex(uiMaxRollFileIndex), m_bAlwaysFlush(bAlwaysFlush), m_strLogFileBase(strLogFile)
 {
 #if __GNUC__ < 5
     m_szTime = (char*)malloc(20);
@@ -70,7 +70,10 @@ int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLi
 
     fprintf(m_fp, "\n");
 
-    fflush(m_fp);
+    if (m_bAlwaysFlush)
+    {
+        fflush(m_fp);
+    }
     ++m_uiLogNum;
 
     return 0;
@@ -97,7 +100,10 @@ int FileLogger::WriteLog(const std::string& strTraceId, int iLev, const char* sz
     fprintf(m_fp, "\n");
     ++m_uiLogNum;
 
-    fflush(m_fp);
+    if (m_bAlwaysFlush)
+    {
+        fflush(m_fp);
+    }
 
     return 0;
 }
@@ -233,7 +239,10 @@ int FileLogger::Vappend(const std::string& strTraceId, int iLev, const char* szF
     fprintf(m_fp, oss.str().c_str());
     //fprintf(m_fp, "[%s] [%s,%03d] ", std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S").c_str(), duration_in_ms.count() % 1000, Logger::LogLevMsg[iLev].c_str());
     vfprintf(m_fp, szLogStr, ap);
-    fflush(m_fp);
+    if (m_bAlwaysFlush)
+    {
+        fflush(m_fp);
+    }
     return 0;
 }
 

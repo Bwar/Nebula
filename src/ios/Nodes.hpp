@@ -42,10 +42,10 @@ class Nodes
 public:
     /**
      * @note 节点管理Session构造函数
+     * @param iHashAlgorithm hash算法
      * @param iVirtualNodeNum 每个实体节点对应的虚拟节点数量
-     * @param dSessionTimeout 超时时间，0表示永不超时
      */
-    Nodes(int iHashAlgorithm = HASH_cityhash_32, int iVirtualNodeNum = 200);
+    Nodes(int iHashAlgorithm = HASH_murmur3_32, int iVirtualNodeNum = 200);
     virtual ~Nodes();
 
     /* 实体节点hash信息
@@ -88,13 +88,16 @@ public:
     /**
      * @brief 添加节点
      * @note 添加节点信息，每个节点均有一个主节点一个被节点构成。
+     * @param strNodeType 节点类型
      * @param strNodeIdentify 节点标识
      */
     void AddNode(const std::string& strNodeType, const std::string& strNodeIdentify);
+    void AddNodeKetama(const std::string& strNodeType, const std::string& strNodeIdentify);
 
     /**
      * @brief 删除节点
      * @note 删除节点信息，每个节点均有一个主节点一个被节点构成。
+     * @param strNodeType 节点类型
      * @param strNodeIdentify 节点标识
      */
     void DelNode(const std::string& strNodeType, const std::string& strNodeIdentify);

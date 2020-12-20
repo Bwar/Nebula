@@ -388,7 +388,19 @@ bool Dispatcher::AutoSend(
 
     x_sock_set_block(iFd, 0);
     int nREUSEADDR = 1;
+    int iKeepAlive = 1;
+    int iKeepIdle = 60;
+    int iKeepInterval = 5;
+    int iKeepCount = 3;
+    int iTcpNoDelay = 1;
+    int iTcpQuickAck = 1;
     setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
+    setsockopt(iFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive));
+    setsockopt(iFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle));
+    setsockopt(iFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval));
+    setsockopt(iFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount));
+    setsockopt(iFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay));
+    setsockopt(iFd, IPPROTO_TCP, TCP_QUICKACK, (void*)&iTcpQuickAck, sizeof(iTcpQuickAck));
     std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, eCodecType, true, bWithSsl);
     if (nullptr != pChannel)
     {

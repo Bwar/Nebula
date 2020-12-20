@@ -347,10 +347,10 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
 
 bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
 {
-    LOG4_DEBUG("oInHttpMsg.type() = %d, oInHttpMsg.path() = %s",
-                    oHttpMsg.type(), oHttpMsg.path().c_str());
     if (HTTP_REQUEST == oHttpMsg.type())    // 新请求
     {
+        LOG4_DEBUG("oInHttpMsg.type() = %d, oInHttpMsg.path() = %s",
+                    oHttpMsg.type(), oHttpMsg.path().c_str());
         auto module_iter = m_mapModule.find(oHttpMsg.path());
         if (module_iter == m_mapModule.end())
         {
