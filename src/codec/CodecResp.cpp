@@ -285,7 +285,7 @@ E_CODEC_STATUS CodecResp::DecodeInteger(CBuffer* pBuff, RedisReply& oReply)
     const char* pPartBegin = pData;
     for (size_t i = 0; i < uiReadableBytes; ++i)
     {
-        switch (*pData)
+        switch (pData[i])
         {
             case '\n':
                 if ('\r' == cLastChar)
@@ -376,6 +376,7 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
     size_t uiReadableBytes = pBuff->ReadableBytes();
     char cLastChar = 0;
     int32 iArraySize = 0;
+    size_t uiReadIndex = pBuff->GetReadIndex();
     const char* pData = pBuff->GetRawReadBuffer();
     const char* pPartBegin = pData;
     for (size_t i = 0; i < uiReadableBytes; ++i)
@@ -397,8 +398,9 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
                     else
                     {
                         oReply.set_type(REDIS_REPLY_ARRAY);
-                        for (int32 i = 0; i < iArraySize; ++i)
+                        for (int32 j = 0; j < iArraySize; ++j)
                         {
+                            uiReadIndex = pBuff->GetReadIndex();
                             char cFirstByte = 0;
                             auto pElement = oReply.add_element();
                             pBuff->ReadByte(cFirstByte);
@@ -429,6 +431,7 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
                             {
                                 return(eStatus);
                             }
+                            i += (pBuff->GetReadIndex() - uiReadIndex);
                         }
                         return(CODEC_STATUS_OK);
                     }
