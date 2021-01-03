@@ -80,8 +80,10 @@ public:
         return(m_vecCmdArguments);
     }
 
-protected:
     const RedisRequest& GenrateRedisRequest();
+
+protected:
+    std::shared_ptr<RedisRequest> MutableRedisRequest();
 
 private:
     std::string m_strErr;

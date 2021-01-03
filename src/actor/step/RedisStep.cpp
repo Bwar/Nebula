@@ -73,4 +73,20 @@ const RedisRequest& RedisStep::GenrateRedisRequest()
     return(m_oRedisRequest);
 }
 
+std::shared_ptr<RedisRequest>  RedisStep::MutableRedisRequest()
+{
+    auto pRequest = std::make_shared<RedisRequest>();
+    pRequest->set_type(REDIS_REPLY_ARRAY);
+    auto pElement = pRequest->add_element();
+    pElement->set_type(REDIS_REPLY_STRING);
+    pElement->set_str(m_strCmd);
+    for (size_t i = 0; i < m_vecCmdArguments.size(); ++i)
+    {
+        pElement = m_oRedisRequest.add_element();
+        pElement->set_type(REDIS_REPLY_STRING);
+        pElement->set_str(m_vecCmdArguments[i].first);
+    }
+    return(pRequest);
+}
+
 } /* namespace neb */
