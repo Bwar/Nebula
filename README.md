@@ -8,7 +8,7 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 /_/ |_/\___/_.___/\__,_/_/\__,_/
                                 one-click installation 
 ```
-# Nebula : a powerful framwork for building highly concurrent, distributed, and resilient message-driven applications for C++.
+# Nebula : a powerful framework for building highly concurrent, distributed, and resilient message-driven applications for C++.
 [![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)<br/>
 
 1. [Overview](#Overview)
@@ -46,7 +46,7 @@ Nebula can be used as a single high-performance TCP server, but building a clust
 
 <a name="GettingStart"></a>
 ## Getting Start
-   Nebula was developed with C++11/C++14 standard, requires a compiler capable of the C++11-standard and at least gcc4.8(some C++14 features are replaced by C++11 standard when encountering a lower version of the compiler).
+   Nebula was developed with C++11/C++14 standard, requires a compiler capable of the C++11-standard and at least gcc4.8 (some C++14 features are replaced by C++11 standard when encountering a lower version of the compiler).
    We provides [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap), which allows developers to build and deploy Nebula quickly. Nebula will be a framework that be widely used. A distributed solution based on NebulaBootstrap will make it easy to develop micro-service applications in C++.
    All dependencies will be automatically resolved in the following build steps.
 
@@ -66,7 +66,7 @@ Nebula can be used as a single high-performance TCP server, but building a clust
   + plugins &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; plugins path.
     - logic &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; plugins for logic server(optional).
   + script &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; script path. deploy.sh, startup.sh and shutdown.sh were depend on this path.
-  + temp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; temp file path(optional).
+  + temp &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; temp file path (optional).
   - configure.sh &nbsp;&nbsp;&nbsp; run configure.sh for a simple configuration when deploy for the first time.
   - deploy.sh &nbsp;&nbsp;&nbsp;&nbsp; auto build and deploy.
   - shutdown.sh &nbsp;&nbsp;&nbsp;&nbsp; shutdown one or more server.
@@ -159,7 +159,7 @@ A simple testing can be start with a NebulaInterface only, and also can be start
    - add cpu affinity inorder to support cpu binding.
    - add dynamic library unload.
 #### v0.7
-   - add configuration management(check [Nebcli](https://github.com/Bwar/Nebcli) for detail).
+   - add configuration management (check [Nebcli](https://github.com/Bwar/Nebcli) for detail).
 #### v0.6
    - NebulaBeacon adds node status information query, registration center leader-fllower election.
    - NebulaInterface adds hello demo.
