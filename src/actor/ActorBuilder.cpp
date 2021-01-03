@@ -470,7 +470,6 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Redi
         {
             E_CMD_STATUS eResult;
             step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-            LOG4_TRACE("callback of redis cmd: %s", (std::dynamic_pointer_cast<RedisStep>(step_iter->second))->CmdToString().c_str());
             eResult = step_iter->second->Callback(pChannel, oRedisMsg);
             if (CMD_STATUS_RUNNING != eResult)
             {
@@ -1111,17 +1110,36 @@ bool ActorBuilder::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor
     return(false);
 }
 
-bool ActorBuilder::SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq)
+bool ActorBuilder::SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq, bool bEnableReadOnly)
 {
     bool bSendResult = false;
     auto iter = m_mapClusterChannelStep.find(strIdentify);
     if (iter == m_mapClusterChannelStep.end())
     {
-        auto pSharedStep = MakeSharedStep(nullptr, "neb::StepRedisCluster", strIdentify, bWithSsl, bPipeline);
+        auto pSharedStep = MakeSharedStep(nullptr, "neb::StepRedisCluster", strIdentify, (bool)bWithSsl, (bool)bPipeline, (bool)bEnableReadOnly);
         if (pSharedStep != nullptr)
         {
             m_mapClusterChannelStep.insert(std::make_pair(strIdentify, pSharedStep));
             bSendResult = pSharedStep->SendTo(strIdentify, oRedisMsg, bWithSsl, bPipeline, uiStepSeq);
+        }
+    }
+    else
+    {
+        bSendResult = iter->second->SendTo(strIdentify, oRedisMsg, bWithSsl, bPipeline, uiStepSeq);
+    }
+    return(bSendResult);
+}
+
+bool ActorBuilder::SendToOneOf(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq)
+{
+    bool bSendResult = false;
+    auto iter = m_mapCallbackSession.find(strIdentify);
+    if (iter == m_mapCallbackSession.end())
+    {
+        auto pSharedSession = MakeSharedSession(nullptr, "neb::SessionOneOf", strIdentify, (bool)bWithSsl, (bool)bPipeline);
+        if (pSharedSession != nullptr)
+        {
+            bSendResult = pSharedSession->SendTo(strIdentify, oRedisMsg, bWithSsl, bPipeline, uiStepSeq);
         }
     }
     else

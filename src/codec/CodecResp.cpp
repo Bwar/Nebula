@@ -69,7 +69,7 @@ E_CODEC_STATUS CodecResp::Encode(const RedisReply& oReply, CBuffer* pBuff)
 
 E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply)
 {
-    if (pBuff->ReadableBytes() == 0)
+    if (pBuff->ReadableBytes() < 0)
     {
         return(CODEC_STATUS_PAUSE);
     }
@@ -329,15 +329,8 @@ E_CODEC_STATUS CodecResp::DecodeBulkString(CBuffer* pBuff, RedisReply& oReply)
                     cLastChar = '\n';
                     if (bGotStringLen)
                     {
-                        if (iStringLen == -1)
-                        {
-                            oReply.set_type(REDIS_REPLY_NIL);
-                        }
-                        else
-                        {
-                            oReply.set_type(REDIS_REPLY_STRING);
-                            oReply.set_str(pPartBegin, iStringLen);
-                        }
+                        oReply.set_type(REDIS_REPLY_STRING);
+                        oReply.set_str(pPartBegin, iStringLen);
                         pBuff->AdvanceReadIndex(i + 1);
                         return(CODEC_STATUS_OK);
                     }
@@ -346,6 +339,12 @@ E_CODEC_STATUS CodecResp::DecodeBulkString(CBuffer* pBuff, RedisReply& oReply)
                         iStringLen = StringConverter::RapidAtoi<int32>(pPartBegin);
                         pPartBegin = pData + i + 1;
                         bGotStringLen = true;
+                        if (iStringLen == -1)
+                        {
+                            oReply.set_type(REDIS_REPLY_NIL);
+                            pBuff->AdvanceReadIndex(i + 1);
+                            return(CODEC_STATUS_OK);
+                        }
                         if (uiReadableBytes - i < (uint32)iStringLen)
                         {
                             return(CODEC_STATUS_PAUSE);
@@ -400,6 +399,10 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
                         oReply.set_type(REDIS_REPLY_ARRAY);
                         for (int32 j = 0; j < iArraySize; ++j)
                         {
+                            if (pBuff->ReadableBytes() == 0)
+                            {
+                                return(CODEC_STATUS_PAUSE);
+                            }
                             uiReadIndex = pBuff->GetReadIndex();
                             char cFirstByte = 0;
                             auto pElement = oReply.add_element();

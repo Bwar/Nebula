@@ -181,7 +181,7 @@ bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, con
     return(m_pLabor->GetDispatcher()->SendTo(strIdentify, eCodecType, false, true, iCmd, uiSeq, oMsgBody)); 
 }
 
-bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg)
+bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq)
 {
     bool bWithSsl = false;
     bool bPipeline = false;
@@ -207,12 +207,17 @@ bool Actor::SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg, bo
     return(m_pLabor->GetDispatcher()->SendTo(strIdentify, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
 }
 
-bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
+bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
 {
-    return(m_pLabor->GetActorBuilder()->SendToCluster(strIdentify, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
+    return(m_pLabor->GetActorBuilder()->SendToCluster(strIdentify, bWithSsl, bPipeline, oRedisMsg, GetSequence(), bEnableReadOnly));
 }
 
-bool Actor::SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl, bool bPipeline)
+bool Actor::SendToOneOf(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
+{
+    return(m_pLabor->GetActorBuilder()->SendToOneOf(strIdentify, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
+}
+
+bool Actor::SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
     return(m_pLabor->GetDispatcher()->SendTo(strIdentify, CODEC_UNKNOW, bWithSsl, bPipeline, pRawData, uiRawDataSize, GetSequence()));
 }

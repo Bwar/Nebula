@@ -196,9 +196,10 @@ protected:
      * @param strHost IP地址
      * @param iPort 端口
      * @param oHttpMsg http消息
+     * @param uiStepSeq 应用层无用参数，框架层的系统Actor会用到
      * @return 是否发送成功
      */
-    virtual bool SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg);
+    virtual bool SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq);
 
     /**
      * @brief 发送redis请求
@@ -211,7 +212,24 @@ protected:
      * @return 是否发送成功
      */
     virtual bool SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
-    virtual bool SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
+
+    /**
+     * @brief 发送redis请求
+     * @note 只有RedisStep及其派生类才能调用此方法
+     * @param strIdentify RedisChannel通道标识，格式如： 192.168.125.53:6379
+     * @param oRedisMsg redis消息
+     * @param bWithSsl 是否需要SSL
+     * @param bPipeline 是否支持pipeline
+     * @param bEnableReadOnly redis cluster集群从节点，官方默认设置的是不分担读请求
+     * 只作备份和故障转移用，当有请求读向从节点时，会被重定向对应的主节点来处理。
+     * 这个readonly告诉redis cluster从节点客户端愿意读取可能过时的数据并对写请求不感兴趣
+     * @return 是否发送成功
+     */
+    virtual bool SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, bool bEnableReadOnly = false);
+    /**
+     * @brief 发送redis请求到类似于codis proxy的服务
+     */
+    virtual bool SendToOneOf(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
 
     /**
      * @brief 发送raw请求
@@ -220,9 +238,10 @@ protected:
      * @param pRawData裸数据
      * @param bWithSsl 是否需要SSL
      * @param bPipeline 是否支持pipeline
+     * @param uiStepSeq 应用层无用参数，框架层的系统Actor会用到
      * @return 是否发送成功
      */
-    virtual bool SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl = false, bool bPipeline = false);
+    virtual bool SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl = false, bool bPipeline = false, uint32 uiStepSeq = 0);
 
     /**
      * @brief 从worker发送到loader或从loader发送到worker

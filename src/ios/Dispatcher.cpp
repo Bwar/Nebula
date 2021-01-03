@@ -286,14 +286,13 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             RemoveIoWriteEvent(pChannel);
             return(true);
         default: // 编解码出错或连接关闭或连接中断
-            if (CODEC_STATUS_INVALID == eCodecStatus)
+            if (CODEC_STATUS_INVALID == eCodecStatus && !pChannel->IsClient())
             {
                 if (pChannel->m_pImpl->AutoSwitchCodec())
                 {
                     return(DataFetchAndHandle(pChannel));
                 }
             }
-            LOG4_TRACE("codec error or connection closed!");
             if (CHANNEL_STATUS_ESTABLISHED != pChannel->m_pImpl->GetChannelStatus())
             {
                 auto& listUncompletedStep = pChannel->m_pImpl->GetPipelineStepSeq();
@@ -399,14 +398,13 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
             RemoveIoWriteEvent(pChannel);
             return(true);
         default: // 编解码出错或连接关闭或连接中断
-            if (CODEC_STATUS_INVALID == eCodecStatus)
+            if (CODEC_STATUS_INVALID == eCodecStatus && !pChannel->IsClient())
             {
                 if (pChannel->m_pImpl->AutoSwitchCodec())
                 {
                     return(DataFetchAndHandle(pChannel));
                 }
             }
-            LOG4_TRACE("codec error or connection closed!");
             if (CHANNEL_STATUS_ESTABLISHED != pChannel->m_pImpl->GetChannelStatus())
             {
                 auto& listUncompletedStep = pChannel->m_pImpl->GetPipelineStepSeq();
