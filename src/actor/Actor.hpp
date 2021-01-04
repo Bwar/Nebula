@@ -199,7 +199,7 @@ protected:
      * @param uiStepSeq 应用层无用参数，框架层的系统Actor会用到
      * @return 是否发送成功
      */
-    virtual bool SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq);
+    virtual bool SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq = 0);
 
     /**
      * @brief 发送redis请求
