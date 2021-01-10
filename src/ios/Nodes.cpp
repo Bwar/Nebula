@@ -15,6 +15,7 @@
 #include "cryptopp/hex.h"
 #include "cryptopp/filters.h"
 #include "util/encrypt/city.h"
+#include "util/StringCoder.hpp"
 
 namespace neb
 {
@@ -27,6 +28,7 @@ Nodes::Nodes(int iHashAlgorithm, int iVirtualNodeNum)
 Nodes::~Nodes()
 {
     m_mapNode.clear();
+    m_mapNodeType.clear();
 }
 
 bool Nodes::GetNode(const std::string& strNodeType, const std::string& strHashKey, std::string& strNodeIdentify)
@@ -54,6 +56,15 @@ bool Nodes::GetNode(const std::string& strNodeType, const std::string& strHashKe
     }
     else
     {
+        if (node_type_iter->second->bCheckFailedNode)
+        {
+            node_type_iter->second->bCheckFailedNode = false;
+            if (node_type_iter->second->setFailedNode.size() > 0)
+            {
+                strNodeIdentify = *(node_type_iter->second->setFailedNode.begin());
+                return(true);
+            }
+        }
         auto c_iter = node_type_iter->second->mapHash2Node.lower_bound(uiKeyHash);
         if (c_iter == node_type_iter->second->mapHash2Node.end())
         {
@@ -77,6 +88,15 @@ bool Nodes::GetNode(const std::string& strNodeType, uint32 uiHash, std::string& 
     }
     else
     {
+        if (node_type_iter->second->bCheckFailedNode)
+        {
+            node_type_iter->second->bCheckFailedNode = false;
+            if (node_type_iter->second->setFailedNode.size() > 0)
+            {
+                strNodeIdentify = *(node_type_iter->second->setFailedNode.begin());
+                return(true);
+            }
+        }
         auto c_iter = node_type_iter->second->mapHash2Node.lower_bound(uiHash);
         if (c_iter == node_type_iter->second->mapHash2Node.end())
         {
@@ -119,6 +139,15 @@ bool Nodes::GetNode(const std::string& strNodeType, std::string& strNodeIdentify
     }
     else
     {
+        if (node_type_iter->second->bCheckFailedNode)
+        {
+            node_type_iter->second->bCheckFailedNode = false;
+            if (node_type_iter->second->setFailedNode.size() > 0)
+            {
+                strNodeIdentify = *(node_type_iter->second->setFailedNode.begin());
+                return(true);
+            }
+        }
         node_type_iter->second->itPollingNode++;
         if (node_type_iter->second->itPollingNode == node_type_iter->second->mapNode2Hash.end())
         {
@@ -153,6 +182,7 @@ void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeId
     {
         std::shared_ptr<tagNode> pNode = std::make_shared<tagNode>();
         m_mapNode.insert(std::make_pair(strNodeType, pNode));
+        pNode->strNodeType = strNodeType;
         std::string strHashKey;
         char szVirtualNodeIdentify[40] = {0};
         uint32 uiKeyHash = 0;
@@ -217,6 +247,17 @@ void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeId
             node_type_iter->second->itHashRing = node_type_iter->second->mapHash2Node.begin();
         }
     }
+    auto node_id_iter = m_mapNodeType.find(strNodeIdentify);
+    if (node_id_iter == m_mapNodeType.end())
+    {
+        std::unordered_set<std::string> setNodeType;
+        setNodeType.insert(strNodeType);
+        m_mapNodeType.insert(std::make_pair(strNodeIdentify, std::move(setNodeType)));
+    }
+    else
+    {
+        node_id_iter->second.insert(strNodeType);
+    }
 }
 
 void Nodes::AddNodeKetama(const std::string& strNodeType, const std::string& strNodeIdentify)
@@ -226,6 +267,7 @@ void Nodes::AddNodeKetama(const std::string& strNodeType, const std::string& str
     {
         std::shared_ptr<tagNode> pNode = std::make_shared<tagNode>();
         m_mapNode.insert(std::make_pair(strNodeType, pNode));
+        pNode->strNodeType = strNodeType;
         std::string strHash;
         char szVirtualNodeIdentify[40] = {0};
         int32 iPointPerHash = 4;
@@ -284,6 +326,36 @@ void Nodes::AddNodeKetama(const std::string& strNodeType, const std::string& str
             node_type_iter->second->itHashRing = node_type_iter->second->mapHash2Node.begin();
         }
     }
+    auto node_id_iter = m_mapNodeType.find(strNodeIdentify);
+    if (node_id_iter == m_mapNodeType.end())
+    {
+        std::unordered_set<std::string> setNodeType;
+        setNodeType.insert(strNodeType);
+        m_mapNodeType.insert(std::make_pair(strNodeIdentify, std::move(setNodeType)));
+    }
+    else
+    {
+        node_id_iter->second.insert(strNodeType);
+    }
+}
+
+bool Nodes::SplitAddAndGetNode(const std::string& strNodeType, std::string& strNodeIdentify)
+{
+    std::vector<std::string> vecAddress;
+    Split(strNodeType, ",", vecAddress);
+    if (vecAddress.size() <= 1)
+    {
+        return(false);
+    }
+    for (size_t i = 0; i < vecAddress.size(); ++i)
+    {
+        if (vecAddress[i].size() < 5)
+        {
+            continue;
+        }
+        AddNode(strNodeType, vecAddress[i]);
+    }
+    return(GetNode(strNodeType, strNodeIdentify));
 }
 
 void Nodes::DelNode(const std::string& strNodeType, const std::string& strNodeIdentify)
@@ -308,9 +380,87 @@ void Nodes::DelNode(const std::string& strNodeType, const std::string& strNodeId
             node_type_iter->second->itHashRing = node_type_iter->second->mapHash2Node.begin();
         }
 
+        if (node_type_iter->second->setFailedNode.size() > 0)
+        {
+            auto it = node_type_iter->second->setFailedNode.find(strNodeIdentify);
+            if (it != node_type_iter->second->setFailedNode.end())
+            {
+                node_type_iter->second->setFailedNode.erase(it);
+            }
+        }
+
         if (node_type_iter->second->mapNode2Hash.empty())
         {
             m_mapNode.erase(node_type_iter);
+        }
+    }
+    auto node_id_iter = m_mapNodeType.find(strNodeIdentify);
+    if (node_id_iter != m_mapNodeType.end())
+    {
+        m_mapNodeType.erase(node_id_iter);
+    }
+}
+
+void Nodes::NodeFailed(const std::string& strNodeIdentify)
+{
+    auto node_id_iter = m_mapNodeType.find(strNodeIdentify);
+    if (node_id_iter == m_mapNodeType.end())
+    {
+        ;   // not found
+    }
+    else
+    {
+        for (auto type_it = node_id_iter->second.begin(); type_it != node_id_iter->second.end(); ++type_it)
+        {
+            auto node_type_iter = m_mapNode.find(*type_it);
+            if (node_type_iter != m_mapNode.end())
+            {
+                auto node_iter = node_type_iter->second->mapNode2Hash.find(strNodeIdentify);
+                if (node_iter != node_type_iter->second->mapNode2Hash.end())
+                {
+                    for (auto hash_iter = node_iter->second.begin();
+                            hash_iter != node_iter->second.end(); ++hash_iter)
+                    {
+                        auto it = node_type_iter->second->mapHash2Node.find(*hash_iter);
+                        if (it != node_type_iter->second->mapHash2Node.end())
+                        {
+                            node_type_iter->second->mapHash2Node.erase(it);
+                        }
+                    }
+                    node_type_iter->second->mapNode2Hash.erase(node_iter);
+                    node_type_iter->second->itPollingNode = node_type_iter->second->mapNode2Hash.begin();
+                    node_type_iter->second->itHashRing = node_type_iter->second->mapHash2Node.begin();
+                }
+                node_type_iter->second->setFailedNode.insert(strNodeIdentify);
+            }
+        }
+    }
+}
+
+void Nodes::NodeRecover(const std::string& strNodeIdentify)
+{
+    auto node_id_iter = m_mapNodeType.find(strNodeIdentify);
+    if (node_id_iter == m_mapNodeType.end())
+    {
+        ;   // not found
+    }
+    else
+    {
+        for (auto type_it = node_id_iter->second.begin(); type_it != node_id_iter->second.end(); ++type_it)
+        {
+            auto node_type_iter = m_mapNode.find(*type_it);
+            if (node_type_iter != m_mapNode.end())
+            {
+                if (node_type_iter->second->setFailedNode.size() > 0)
+                {
+                    auto it = node_type_iter->second->setFailedNode.find(strNodeIdentify);
+                    if (it != node_type_iter->second->setFailedNode.end())
+                    {
+                        node_type_iter->second->setFailedNode.erase(it);
+                    }
+                }
+                AddNode(*type_it, strNodeIdentify);
+            }
         }
     }
 }
@@ -327,6 +477,14 @@ bool Nodes::IsNodeType(const std::string& strNodeIdentify, const std::string& st
         }
     }
     return(false);
+}
+
+void Nodes::CheckFailedNode()
+{
+    for (auto iter = m_mapNode.begin(); iter != m_mapNode.end(); ++iter)
+    {
+        iter->second->bCheckFailedNode = true;
+    }
 }
 
 uint32 Nodes::hash_fnv1_64(const char *key, size_t key_length)

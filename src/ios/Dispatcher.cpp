@@ -18,7 +18,6 @@
 #include "actor/step/Step.hpp"
 #include "actor/step/RedisStep.hpp"
 #include "actor/session/sys_session/manager/SessionManager.hpp"
-#include "Nodes.hpp"
 
 namespace neb
 {
@@ -30,11 +29,6 @@ Dispatcher::Dispatcher(Labor* pLabor, std::shared_ptr<NetLogger> pLogger)
     m_pErrBuff = (char*)malloc(gc_iErrBuffLen);
 
     m_loop = ev_loop_new(EVFLAG_FORKCHECK | EVFLAG_SIGNALFD);
-/*#if __cplusplus >= 201401L
-    m_pSessionNode = std::make_unique<Nodes>();
-#else
-    m_pSessionNode = std::unique_ptr<Nodes>(new Nodes());
-#endif*/
 }
 
 Dispatcher::~Dispatcher()
@@ -92,6 +86,7 @@ void Dispatcher::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, i
         {
             ((Worker*)(pDispatcher->m_pLabor))->CheckParent();
         }
+        pDispatcher->CheckFailedNode();
     }
     ev_timer_stop (loop, watcher);
     ev_timer_set (watcher, NODE_BEAT + ev_time() - ev_now(loop), 0);
@@ -295,6 +290,10 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             }
             if (CHANNEL_STATUS_ESTABLISHED != pChannel->m_pImpl->GetChannelStatus())
             {
+                if (pChannel->IsClient())
+                {
+                    m_pSessionNode->NodeFailed(pChannel->GetIdentify());
+                }
                 auto& listUncompletedStep = pChannel->m_pImpl->GetPipelineStepSeq();
                 for (auto it = listUncompletedStep.begin();
                         it != listUncompletedStep.end(); ++it)
@@ -407,6 +406,10 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
             }
             if (CHANNEL_STATUS_ESTABLISHED != pChannel->m_pImpl->GetChannelStatus())
             {
+                if (pChannel->IsClient())
+                {
+                    m_pSessionNode->NodeFailed(pChannel->GetIdentify());
+                }
                 auto& listUncompletedStep = pChannel->m_pImpl->GetPipelineStepSeq();
                 for (auto it = listUncompletedStep.begin();
                         it != listUncompletedStep.end(); ++it)
@@ -575,6 +578,10 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
         }
     }
 
+    if (pChannel->IsClient() && pChannel->m_pImpl->GetMsgNum() == 0)
+    {
+        m_pSessionNode->NodeRecover(pChannel->GetIdentify());
+    }
     E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send();
     if (CODEC_STATUS_OK == eCodecStatus)
     {
@@ -692,97 +699,6 @@ bool Dispatcher::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp
             ev_timer_start (m_loop, timer_watcher);
         }
         return(true);
-    }
-}
-
-bool Dispatcher::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
-{
-    LOG4_TRACE("node_type: %s", strNodeType.c_str());
-    std::string strOnlineNode;
-    if (m_pSessionNode->GetNode(strNodeType, strOnlineNode))
-    {
-        return(SendTo(strOnlineNode, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
-    }
-    else
-    {
-        LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
-        return(false);
-    }
-}
-
-bool Dispatcher::SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
-{
-    LOG4_TRACE("nody_type: %s, factor: %d", strNodeType.c_str(), uiFactor);
-    std::string strOnlineNode;
-    if (m_pSessionNode->GetNode(strNodeType, uiFactor, strOnlineNode))
-    {
-        return(SendTo(strOnlineNode, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
-    }
-    else
-    {
-        LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
-        return(false);
-    }
-}
-
-bool Dispatcher::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
-{
-    LOG4_TRACE("nody_type: %s", strNodeType.c_str());
-    if (oMsgBody.has_req_target())
-    {
-        if (0 != oMsgBody.req_target().route_id())
-        {
-            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, eCodecType));
-        }
-        else if (oMsgBody.req_target().route().length() > 0)
-        {
-            std::string strOnlineNode;
-            if (m_pSessionNode->GetNode(strNodeType, oMsgBody.req_target().route(), strOnlineNode))
-            {
-                return(SendTo(strOnlineNode, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
-            }
-            else
-            {
-                LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
-                return(false);
-            }
-        }
-        else
-        {
-            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType));
-        }
-    }
-    else
-    {
-        LOG4_ERROR("MsgBody is not a request message!");
-        return(false);
-    }
-};
-
-bool Dispatcher::Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
-{
-    LOG4_TRACE("node_type: %s", strNodeType.c_str());
-    std::unordered_set<std::string> setOnlineNodes;
-    if (m_pSessionNode->GetNode(strNodeType, setOnlineNodes))
-    {
-        bool bSendResult = false;
-        for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
-        {
-            bSendResult |= SendTo(*node_iter, eCodecType, false, true, iCmd, uiSeq, oMsgBody);
-        }
-        return(bSendResult);
-    }
-    else
-    {
-        if ("BEACON" == strNodeType)
-        {
-            LOG4_WARNING("no beacon config.");
-        }
-        else
-        {
-            LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
-        }
-        return(false);
     }
 }
 

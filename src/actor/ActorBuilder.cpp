@@ -1130,25 +1130,6 @@ bool ActorBuilder::SendToCluster(const std::string& strIdentify, bool bWithSsl, 
     return(bSendResult);
 }
 
-bool ActorBuilder::SendToOneOf(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq)
-{
-    bool bSendResult = false;
-    auto iter = m_mapCallbackSession.find(strIdentify);
-    if (iter == m_mapCallbackSession.end())
-    {
-        auto pSharedSession = MakeSharedSession(nullptr, "neb::SessionOneOf", strIdentify, (bool)bWithSsl, (bool)bPipeline);
-        if (pSharedSession != nullptr)
-        {
-            bSendResult = pSharedSession->SendTo(strIdentify, oRedisMsg, bWithSsl, bPipeline, uiStepSeq);
-        }
-    }
-    else
-    {
-        bSendResult = iter->second->SendTo(strIdentify, oRedisMsg, bWithSsl, bPipeline, uiStepSeq);
-    }
-    return(bSendResult);
-}
-
 std::shared_ptr<Session> ActorBuilder::GetSession(uint32 uiSessionId)
 {
     std::ostringstream oss;

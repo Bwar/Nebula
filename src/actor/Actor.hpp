@@ -229,7 +229,7 @@ protected:
     /**
      * @brief 发送redis请求到类似于codis proxy的服务
      */
-    virtual bool SendToOneOf(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
+    virtual bool SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true);
 
     /**
      * @brief 发送raw请求

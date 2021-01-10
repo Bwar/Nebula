@@ -13,6 +13,12 @@
 namespace neb
 {
 
+const char CodecResp::RESP_SIMPLE_STRING = '+';
+const char CodecResp::RESP_ERROR = '-';
+const char CodecResp::RESP_INTEGER = ':';
+const char CodecResp::RESP_BULK_STRING = '$';
+const char CodecResp::RESP_ARRAY = '*';
+
 CodecResp::CodecResp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
     : Codec(pLogger, eCodecType)
 {

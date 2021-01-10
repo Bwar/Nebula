@@ -49,6 +49,7 @@ extern "C" {
 #include "pb/msg.pb.h"
 #include "channel/SocketChannel.hpp"
 #include "logger/NetLogger.hpp"
+#include "Nodes.hpp"
 
 namespace neb
 {
@@ -121,10 +122,14 @@ public:
     bool SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     template <typename ...Targs>
     bool AutoSend(const std::string& strIdentify, const std::string& strHost, int iPort, int iRemoteWorkerIndex, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
-    bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
-    bool SendOriented(const std::string& strNodeType, unsigned int uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
-    bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
-    bool Broadcast(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    template <typename ...Targs>
+    bool SendRoundRobin(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    template <typename ...Targs>
+    bool SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args);
+    template <typename ...Targs>
+    bool SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args);
+    template <typename ...Targs>
+    bool Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
     bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     std::shared_ptr<SocketChannel> StressSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
@@ -178,6 +183,7 @@ protected:
     bool AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout = 60.0);
     bool AcceptFdAndTransfer(int iFd, int iFamily = AF_INET);
     bool AcceptServerConn(int iFd);
+    void CheckFailedNode();
     void EvBreak();
 
 private:
@@ -185,6 +191,7 @@ private:
     Labor* m_pLabor;
     struct ev_loop* m_loop;
     int32 m_iClientNum;
+    time_t m_lLastCheckNodeTime;
     std::shared_ptr<NetLogger> m_pLogger;
     std::unique_ptr<Nodes> m_pSessionNode;
 
@@ -437,6 +444,106 @@ bool Dispatcher::AutoSend(
     }
 }
 
+template <typename ...Targs>
+bool Dispatcher::SendRoundRobin(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+{
+    LOG4_TRACE("node_type: %s", strNodeType.c_str());
+    std::string strOnlineNode;
+    if (m_pSessionNode->GetNode(strNodeType, strOnlineNode))
+    {
+        return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        LOG4_TRACE("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+        if (m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
+        {
+            return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        }
+        LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
+        return(false);
+    }
+}
+
+template <typename ...Targs>
+bool Dispatcher::SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args)
+{
+    LOG4_TRACE("node_type: %s", strNodeType.c_str());
+    std::string strOnlineNode;
+    if (m_pSessionNode->GetNode(strNodeType, uiFactor, strOnlineNode))
+    {
+        return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        LOG4_TRACE("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+        if (m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
+        {
+            return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        }
+        LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
+        return(false);
+    }
+}
+
+template <typename ...Targs>
+bool Dispatcher::SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args)
+{
+    LOG4_TRACE("node_type: %s", strNodeType.c_str());
+    std::string strOnlineNode;
+    if (m_pSessionNode->GetNode(strNodeType, strFactor, strOnlineNode))
+    {
+        return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        LOG4_TRACE("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+        if (m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
+        {
+            return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        }
+        LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
+        return(false);
+    }
+}
+
+template <typename ...Targs>
+bool Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+{
+    LOG4_TRACE("node_type: %s", strNodeType.c_str());
+    std::unordered_set<std::string> setOnlineNodes;
+    if (m_pSessionNode->GetNode(strNodeType, setOnlineNodes))
+    {
+        bool bSendResult = false;
+        for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
+        {
+            bSendResult |= SendTo(*node_iter, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...);
+        }
+        return(bSendResult);
+    }
+    else
+    {
+        if ("BEACON" == strNodeType)
+        {
+            LOG4_WARNING("no beacon config.");
+        }
+        else
+        {
+            LOG4_TRACE("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+            if (m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
+            {
+                bool bSendResult = false;
+                for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
+                {
+                    bSendResult |= SendTo(*node_iter, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...);
+                }
+                return(bSendResult);
+            }
+            LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
+        }
+        return(false);
+    }
+}
 
 } /* namespace neb */
 

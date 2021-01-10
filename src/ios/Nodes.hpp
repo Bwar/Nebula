@@ -55,10 +55,13 @@ public:
 
     struct tagNode
     {
+        bool bCheckFailedNode = false;
+        std::string strNodeType;
         T_NODE2HASH_MAP mapNode2Hash;
         T_NODE2HASH_MAP::iterator itPollingNode;
         std::map<uint32, std::string> mapHash2Node;
         std::map<uint32, std::string>::const_iterator itHashRing;
+        std::unordered_set<std::string> setFailedNode;
 
         tagNode(){}
         ~tagNode(){}
@@ -92,7 +95,18 @@ public:
      * @param strNodeIdentify 节点标识
      */
     void AddNode(const std::string& strNodeType, const std::string& strNodeIdentify);
+
+    /** @deprecate */
     void AddNodeKetama(const std::string& strNodeType, const std::string& strNodeIdentify);
+
+    /**
+     * @brief 添加并获取节点
+     * @note 将形如192.168.1.47:6379,192.168.1.53:6379,192.168.1.38:6379的
+     * strNodeType分割后添加节点信息并且获取其中一个节点。
+     * @param[in] strNodeType 节点类型
+     * @param[out] strNodeIdentify 节点标识
+     */
+    bool SplitAddAndGetNode(const std::string& strNodeType, std::string& strNodeIdentify);
 
     /**
      * @brief 删除节点
@@ -102,7 +116,22 @@ public:
      */
     void DelNode(const std::string& strNodeType, const std::string& strNodeIdentify);
 
+    /**
+     * @brief 节点失败
+     * @not 节点失败达到一定数量会熔断，待探测成功后会重新加入服务节点列表。
+     * @param strNodeIdentify 节点标识
+     */
+    void NodeFailed(const std::string& strNodeIdentify);
+
+    /**
+     * @brief 节点恢复
+     * @param strNodeIdentify 节点标识
+     */
+    void NodeRecover(const std::string& strNodeIdentify);
+
     bool IsNodeType(const std::string& strNodeIdentify, const std::string& strNodeType);
+
+    void CheckFailedNode();
 
 protected:
     uint32 hash_fnv1_64(const char *key, size_t key_length);
@@ -113,7 +142,8 @@ private:
     const int m_iHashAlgorithm;
     const int m_iVirtualNodeNum;
 
-    std::unordered_map<std::string,  std::shared_ptr<tagNode> > m_mapNode;
+    std::unordered_map<std::string, std::shared_ptr<tagNode> > m_mapNode;
+    std::unordered_map<std::string, std::unordered_set<std::string>> m_mapNodeType;  // key为节点标识
 };
 
 } /* namespace neb */

@@ -16,12 +16,6 @@
 namespace neb
 {
 
-const char RESP_SIMPLE_STRING = '+';
-const char RESP_ERROR = '-';
-const char RESP_INTEGER = ':';
-const char RESP_BULK_STRING = '$';
-const char RESP_ARRAY = '*';
-
 class RedisStep;
 
 class CodecResp: public neb::Codec
@@ -48,6 +42,13 @@ protected:
     E_CODEC_STATUS DecodeInteger(CBuffer* pBuff, RedisReply& oReply);
     E_CODEC_STATUS DecodeBulkString(CBuffer* pBuff, RedisReply& oReply);
     E_CODEC_STATUS DecodeArray(CBuffer* pBuff, RedisReply& oReply);
+
+private:
+    static const char RESP_SIMPLE_STRING;
+    static const char RESP_ERROR;
+    static const char RESP_INTEGER;
+    static const char RESP_BULK_STRING;
+    static const char RESP_ARRAY;
 };
 
 } /* namespace neb */

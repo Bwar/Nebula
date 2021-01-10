@@ -212,9 +212,9 @@ bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedis
     return(m_pLabor->GetActorBuilder()->SendToCluster(strIdentify, bWithSsl, bPipeline, oRedisMsg, GetSequence(), bEnableReadOnly));
 }
 
-bool Actor::SendToOneOf(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
+bool Actor::SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline)
 {
-    return(m_pLabor->GetActorBuilder()->SendToOneOf(strIdentify, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
+    return(m_pLabor->GetActorBuilder()->SendRoundRobin(strIdentify, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
 }
 
 bool Actor::SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
@@ -231,19 +231,38 @@ bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType));
+    return(m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, uiFactor, iCmd, uiSeq, oMsgBody, eCodecType));
+    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, eCodecType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType));
+    if (oMsgBody.has_req_target())
+    {
+        if (0 != oMsgBody.req_target().route_id())
+        {
+            return(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, eCodecType);
+        }
+        else if (oMsgBody.req_target().route().length() > 0)
+        {
+            return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, eCodecType, false, true, oMsgBody.req_target().route(), iCmd, uiSeq, oMsgBody));
+        }
+        else
+        {
+            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType));
+        }
+    }
+    else
+    {
+        LOG4_ERROR("MsgBody is not a request message.");
+        return(false);
+    }
 }
 
 bool Actor::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
