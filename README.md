@@ -50,6 +50,11 @@ Nebula can be used as a single high-performance TCP server, but building a clust
    We provides [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap), which allows developers to build and deploy Nebula quickly. Nebula will be a framework that be widely used. A distributed solution based on NebulaBootstrap will make it easy to develop micro-service applications in C++.
    All dependencies will be automatically resolved in the following build steps.
 
+   first install gcc and auto tools. centos:
+```
+   sudo yum install -y gcc gcc-c++
+   sudo yum install -y autoconf automake libtool
+```
    build step：
 1. wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip
 2. unzip master.zip; rm master.zip; mv NebulaBootstrap-master NebulaBootstrap; chmod u+x deploy.sh; chmod u+x deploy.sh
