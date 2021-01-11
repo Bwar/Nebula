@@ -214,7 +214,7 @@ bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedis
 
 bool Actor::SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline)
 {
-    return(m_pLabor->GetActorBuilder()->SendRoundRobin(strIdentify, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
+    return(m_pLabor->GetDispatcher()->SendRoundRobin(strIdentify, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
 }
 
 bool Actor::SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
@@ -247,7 +247,7 @@ bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSe
     {
         if (0 != oMsgBody.req_target().route_id())
         {
-            return(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, eCodecType);
+            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, eCodecType));
         }
         else if (oMsgBody.req_target().route().length() > 0)
         {

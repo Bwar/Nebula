@@ -706,7 +706,7 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
 {
     if (m_pLabor->GetLaborType() == Labor::LABOR_MANAGER)
     {
-        return(Broadcast("BEACON", iCmd, uiSeq, oMsgBody, CODEC_NEBULA));
+        return(Broadcast("BEACON", CODEC_NEBULA, false, true, iCmd, uiSeq, oMsgBody));
     }
     else
     {
@@ -1179,6 +1179,7 @@ bool Dispatcher::Init()
 #endif
     Codec::AddAutoSwitchCodecType(CODEC_HTTP);
     Codec::AddAutoSwitchCodecType(CODEC_PROTO);
+    Codec::AddAutoSwitchCodecType(CODEC_RESP);
     Codec::AddAutoSwitchCodecType(CODEC_PRIVATE);
     return(true);
 }
@@ -1523,6 +1524,15 @@ bool Dispatcher::AcceptServerConn(int iFd)
         }
     }
     return(false);
+}
+
+void Dispatcher::CheckFailedNode()
+{
+    if (GetNowTime() - m_lLastCheckNodeTime >= 60)
+    {
+        m_pSessionNode->CheckFailedNode();
+        m_lLastCheckNodeTime = GetNowTime();
+    }
 }
 
 void Dispatcher::EvBreak()

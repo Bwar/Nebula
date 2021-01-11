@@ -60,7 +60,6 @@ class Worker;
 class LoadStress;  // not in Nebula project
 class Actor;
 class ActorBuilder;
-class Nodes;
 struct tagClientConnWatcherData;
 
 typedef void (*signal_callback)(struct ev_loop*,ev_signal*,int);
@@ -508,7 +507,7 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCode
 }
 
 template <typename ...Targs>
-bool Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool Dispatcher::Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::unordered_set<std::string> setOnlineNodes;
@@ -530,6 +529,7 @@ bool Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWi
         else
         {
             LOG4_TRACE("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+            std::string strOnlineNode;
             if (m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
             {
                 bool bSendResult = false;
