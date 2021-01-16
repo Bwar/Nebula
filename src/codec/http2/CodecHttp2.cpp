@@ -81,6 +81,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
     if (m_uiGoawayLastStreamId > 0 && m_stFrameHead.uiStreamIdentifier > m_uiGoawayLastStreamId)
     {
         SetErrno(H2_ERR_CANCEL);
+        pBuff->SetReadIndex(iReadIdx);
         return(CODEC_STATUS_PART_ERR);
     }
 

@@ -146,7 +146,7 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         oJsonConf.Get("log_max_line_len", iMaxLogLineLen);
         oJsonConf.Get("log_level", iLogLevel);
         oJsonConf.Get("always_flush_log", bAlwaysFlushLog);
-        m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, iMaxLogLineLen, this);
+        m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, iMaxLogLineLen, bAlwaysFlushLog, this);
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_NOTICE("%s program begin, and work path %s...", oJsonConf("server_name").c_str(), m_stNodeInfo.strWorkPath.c_str());
         return(true);

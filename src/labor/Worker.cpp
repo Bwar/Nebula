@@ -254,7 +254,7 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf, const std::string& strLogN
         oJsonConf.Get("net_log_level", iNetLogLevel);
         oJsonConf.Get("log_level", iLogLevel);
         oJsonConf.Get("always_flush_log", bAlwaysFlushLog);
-        m_pLogger = std::make_shared<neb::NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, iMaxLogLineLen, this);
+        m_pLogger = std::make_shared<neb::NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, iMaxLogLineLen, bAlwaysFlushLog, this);
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_NOTICE("%s program begin...", getproctitle());
         return(true);

@@ -23,7 +23,7 @@ namespace neb
 {
 
 Dispatcher::Dispatcher(Labor* pLabor, std::shared_ptr<NetLogger> pLogger)
-   : m_pErrBuff(NULL), m_pLabor(pLabor), m_loop(NULL), m_iClientNum(0),
+   : m_pErrBuff(NULL), m_pLabor(pLabor), m_loop(NULL), m_iClientNum(0), m_lLastCheckNodeTime(0),
      m_pLogger(pLogger), m_pSessionNode(nullptr)
 {
     m_pErrBuff = (char*)malloc(gc_iErrBuffLen);

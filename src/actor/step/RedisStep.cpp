@@ -82,7 +82,7 @@ std::shared_ptr<RedisRequest>  RedisStep::MutableRedisRequest()
     pElement->set_str(m_strCmd);
     for (size_t i = 0; i < m_vecCmdArguments.size(); ++i)
     {
-        pElement = m_oRedisRequest.add_element();
+        pElement = pRequest->add_element();
         pElement->set_type(REDIS_REPLY_STRING);
         pElement->set_str(m_vecCmdArguments[i].first);
     }

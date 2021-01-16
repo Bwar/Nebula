@@ -120,13 +120,16 @@ public:
     template <typename ...Targs>
     bool SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     template <typename ...Targs>
-    bool AutoSend(const std::string& strIdentify, const std::string& strHost, int iPort, int iRemoteWorkerIndex, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    bool AutoSend(const std::string& strIdentify, const std::string& strHost,
+            int iPort, int iRemoteWorkerIndex, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     template <typename ...Targs>
     bool SendRoundRobin(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     template <typename ...Targs>
-    bool SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args);
+    bool SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType,
+            bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args);
     template <typename ...Targs>
-    bool SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args);
+    bool SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType,
+            bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args);
     template <typename ...Targs>
     bool Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
@@ -341,6 +344,10 @@ bool Dispatcher::SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCod
     else
     {
         auto channel_iter = named_iter->second.begin();
+        if (channel_iter == named_iter->second.end())
+        {
+            return(AutoSend(ossIdentify.str(), strHost, iPort, 0, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        }
         bool bResult = SendTo((*channel_iter), std::forward<Targs>(args)...);
         if (!bPipeline && bResult)
         {
@@ -532,12 +539,15 @@ bool Dispatcher::Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecTy
             std::string strOnlineNode;
             if (m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
             {
-                bool bSendResult = false;
-                for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
+                if (m_pSessionNode->GetNode(strNodeType, setOnlineNodes))
                 {
-                    bSendResult |= SendTo(*node_iter, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...);
+                    bool bSendResult = false;
+                    for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
+                    {
+                        bSendResult |= SendTo(*node_iter, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...);
+                    }
+                    return(bSendResult);
                 }
-                return(bSendResult);
             }
             LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
         }

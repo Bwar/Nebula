@@ -75,7 +75,7 @@ E_CODEC_STATUS CodecResp::Encode(const RedisReply& oReply, CBuffer* pBuff)
 
 E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply)
 {
-    if (pBuff->ReadableBytes() < 0)
+    if (pBuff->ReadableBytes() < 1)
     {
         return(CODEC_STATUS_PAUSE);
     }

@@ -1100,7 +1100,7 @@ bool SocketChannelImpl::Close()
         if (0 == close(m_iFd))
         {
             m_ucChannelStatus = CHANNEL_STATUS_CLOSED;
-            LOG4_DEBUG("channel[%d], channel_seq[%u] close successfully.", m_iFd, GetSequence());
+            LOG4_TRACE("channel[%d], channel_seq[%u] close successfully.", m_iFd, GetSequence());
             return(true);
         }
         else

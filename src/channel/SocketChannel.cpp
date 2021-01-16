@@ -29,7 +29,7 @@ SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32
         pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "with openssl, create SocekChannelSslImpl.");
         m_pImpl = std::dynamic_pointer_cast<SocketChannelImpl>(std::make_shared<SocketChannelSslImpl>(this, pLogger, iFd, ulSeq, dKeepAlive));
 #else
-        pLogger->WriteLog(Logger::INFO, __FILE__, __LINE__, __FUNCTION__, "without openssl, SocekChannelImpl instead.");
+        pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "without openssl, SocekChannelImpl instead.");
         m_pImpl = std::make_shared<SocketChannelImpl>(this, pLogger, iFd, ulSeq, dKeepAlive);
 #endif
     }
