@@ -88,7 +88,6 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 ## 依赖 
    * [protobuf](https://github.com/google/protobuf)
    * [libev](http://software.schmorp.de/pkg/libev.html) 或 [libev](https://github.com/kindy/libev)
-   * [hiredis](https://github.com/redis/hiredis)
    * [crypto++](https://github.com/weidai11/cryptopp)
    * [http_parse](https://github.com/nodejs/http-parser) 已集成到 Nebula/src/util/http
    * [CJsonObject](https://github.com/Bwar/CJsonObject) 已集成到 Nebula/src/util/json
@@ -110,10 +109,18 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 ## 开发任务
    -  完成开发指南
    -  支持http2
-   -  原生支持redis cluster、codis、dubbo、grpc等协议
+   -  原生支持dubbo、grpc等协议
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.4
+   - 以原生的CodecResp替代hiredis客户端
+   - 增加redis cluster支持
+   - 增加裸数据（RawData）传输支持
+   - 增加日志实时flush可配置化
+   - 增加IP地址组合节点类型支持
+   - Dispatcher分发优化
+   - bug修复
 #### v1.3
    - 增加redis连接的非pipeline模式支持
    - 增加线程模式下Worker线程比Loader线程先启动，并把worker线程Id带到Loader

@@ -23,6 +23,14 @@
 ### 安装说明
 &emsp;&emsp;NebulaBootstrap使原本依赖很少的Nebula部署起来更轻而易举，获取安装源->解压安装包，给脚本加可执行权限->一键安装。
 
+&emsp;&emsp;如果系统缺少autotool工具请先安装一下，ubuntu使用apt-get安装，centos使用yum安装，下面以centos为例：
+```
+   sudo yum install -y gcc gcc-c++
+   sudo yum install -y autoconf automake libtool
+```
+
+开始安装
+
 ```bash
 # 获取安装源
 wget https://github.com/Bwar/NebulaBootstrap/archive/master.zip

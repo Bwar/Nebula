@@ -105,7 +105,6 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 ## Depend on 
    * [protobuf](https://github.com/google/protobuf)
    * [libev](http://software.schmorp.de/pkg/libev.html) or [libev](https://github.com/kindy/libev)
-   * [hiredis](https://github.com/redis/hiredis)
    * [crypto++](https://github.com/weidai11/cryptopp)
    * [http_parse](https://github.com/nodejs/http-parser) integrate into Nebula/src/util/http 
    * [CJsonObject](https://github.com/Bwar/CJsonObject) integrate into Nebula/src/util/json
@@ -130,6 +129,14 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.4
+   - replace hiredis client with native CodecResp
+   - add redis cluster client
+   - add raw data transmission 
+   - add log real-time flush configurability
+   - add support for IP address combination node type
+   - dispatcher optimization
+   - bug fixed
 #### v1.3
    - add non-pipeline mode support for redis connection
    - the worker thread to start before the Loader thread in thread mode, and bring the worker thread ID to the Loader
