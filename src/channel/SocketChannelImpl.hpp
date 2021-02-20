@@ -90,6 +90,11 @@ public:
         return(m_bPipeline);
     }
 
+    bool bIsClient() const
+    {
+        return(m_bIsClientConnection);
+    }
+
     ev_tstamp GetKeepAlive();
 
     uint8 GetChannelStatus() const
@@ -201,7 +206,7 @@ public:
 
     void SetRemoteWorkerIndex(uint16 unRemoteWorkerIndex);
 
-    bool SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive);
+    Codec* SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive, bool bIsUpgrade = false);
     bool AutoSwitchCodec();
 
     ev_io* MutableIoWatcher();
@@ -217,6 +222,7 @@ protected:
 private:
     uint8 m_ucChannelStatus;
     char m_szErrBuff[256];
+    bool m_bIsClientConnection;
     uint16 m_unRemoteWorkerIdx;           ///< 对端Worker进程ID,若不涉及则无需关心
     int32 m_iFd;                          ///< 文件描述符
     uint32 m_uiSeq;                       ///< 文件描述符创建时对应的序列号
@@ -232,6 +238,7 @@ private:
     CBuffer* m_pSendBuff;
     CBuffer* m_pWaitForSendBuff;    ///< 等待发送的数据缓冲区（数据到达时，连接并未建立，等连接建立并且pSendBuff发送完毕后立即发送）
     Codec* m_pCodec;                      ///< 编解码器
+    HttpMsg* m_pHoldingHttpMsg;           // 如果有http协议转换
     int m_iErrno;
     std::string m_strKey;                 ///< 密钥
     std::string m_strClientData;         ///< 客户端相关数据（例如IM里的用户昵称、头像等，登录或连接时保存起来，后续发消息或其他操作无须客户端再带上来）

@@ -38,7 +38,7 @@ class CodecHttp2;
 class Http2Stream: public Codec
 {
 public:
-    Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
+    Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, uint32 m_uiStreamId);
     virtual ~Http2Stream();
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
@@ -66,15 +66,27 @@ public:
         return(m_bEndHeaders);
     }
 
+    E_H2_STREAM_STATES GetStreamState()
+    {
+        return(m_eStreamState);
+    }
+
     void SetState(E_H2_STREAM_STATES eStreamState)
     {
         m_eStreamState = eStreamState;
     }
 
+    void EncodeSetState(const tagH2FrameHead& stFrameHead);
+
+    void WindowInit(uint32 uiWindowSize);
+    void WindowUpdate(int32 iIncrement);
+
 private:
     E_H2_STREAM_STATES m_eStreamState;
     uint32 m_uiStreamId;
-    bool m_bEndHeaders = false;
+    int32 m_iSendWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    uint32 m_uiRecvWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    bool m_bEndHeaders;
     std::unique_ptr<Http2Frame> m_pFrame;
     HttpMsg m_oHttpMsg;
 };

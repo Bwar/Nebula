@@ -37,9 +37,109 @@ void protobuf_AssignDesc_http_2eproto();
 void protobuf_ShutdownFile_http_2eproto();
 
 class HttpMsg;
+class HttpMsg_Header;
 class HttpMsg_Upgrade;
 
 // ===================================================================
+
+class HttpMsg_Header : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:HttpMsg.Header) */ {
+ public:
+  HttpMsg_Header();
+  virtual ~HttpMsg_Header();
+
+  HttpMsg_Header(const HttpMsg_Header& from);
+
+  inline HttpMsg_Header& operator=(const HttpMsg_Header& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const HttpMsg_Header& default_instance();
+
+  void Swap(HttpMsg_Header* other);
+
+  // implements Message ----------------------------------------------
+
+  inline HttpMsg_Header* New() const { return New(NULL); }
+
+  HttpMsg_Header* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const HttpMsg_Header& from);
+  void MergeFrom(const HttpMsg_Header& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(HttpMsg_Header* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional string name = 1;
+  void clear_name();
+  static const int kNameFieldNumber = 1;
+  const ::std::string& name() const;
+  void set_name(const ::std::string& value);
+  void set_name(const char* value);
+  void set_name(const char* value, size_t size);
+  ::std::string* mutable_name();
+  ::std::string* release_name();
+  void set_allocated_name(::std::string* name);
+
+  // optional string value = 2;
+  void clear_value();
+  static const int kValueFieldNumber = 2;
+  const ::std::string& value() const;
+  void set_value(const ::std::string& value);
+  void set_value(const char* value);
+  void set_value(const char* value, size_t size);
+  ::std::string* mutable_value();
+  ::std::string* release_value();
+  void set_allocated_value(::std::string* value);
+
+  // @@protoc_insertion_point(class_scope:HttpMsg.Header)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::internal::ArenaStringPtr name_;
+  ::google::protobuf::internal::ArenaStringPtr value_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_http_2eproto();
+  friend void protobuf_AssignDesc_http_2eproto();
+  friend void protobuf_ShutdownFile_http_2eproto();
+
+  void InitAsDefaultInstance();
+  static HttpMsg_Header* default_instance_;
+};
+// -------------------------------------------------------------------
 
 class HttpMsg_Upgrade : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:HttpMsg.Upgrade) */ {
  public:
@@ -193,6 +293,7 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
 
   // nested types ----------------------------------------------------
 
+  typedef HttpMsg_Header Header;
   typedef HttpMsg_Upgrade Upgrade;
 
   // accessors -------------------------------------------------------
@@ -323,9 +424,33 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::google::protobuf::uint32 stream_id() const;
   void set_stream_id(::google::protobuf::uint32 value);
 
-  // optional string hpack_data = 21;
+  // repeated .HttpMsg.Header pseudo_header = 21;
+  int pseudo_header_size() const;
+  void clear_pseudo_header();
+  static const int kPseudoHeaderFieldNumber = 21;
+  const ::HttpMsg_Header& pseudo_header(int index) const;
+  ::HttpMsg_Header* mutable_pseudo_header(int index);
+  ::HttpMsg_Header* add_pseudo_header();
+  ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header >*
+      mutable_pseudo_header();
+  const ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header >&
+      pseudo_header() const;
+
+  // repeated .HttpMsg.Header trailer_header = 22;
+  int trailer_header_size() const;
+  void clear_trailer_header();
+  static const int kTrailerHeaderFieldNumber = 22;
+  const ::HttpMsg_Header& trailer_header(int index) const;
+  ::HttpMsg_Header* mutable_trailer_header(int index);
+  ::HttpMsg_Header* add_trailer_header();
+  ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header >*
+      mutable_trailer_header();
+  const ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header >&
+      trailer_header() const;
+
+  // optional string hpack_data = 23;
   void clear_hpack_data();
-  static const int kHpackDataFieldNumber = 21;
+  static const int kHpackDataFieldNumber = 23;
   const ::std::string& hpack_data() const;
   void set_hpack_data(const ::std::string& value);
   void set_hpack_data(const char* value);
@@ -334,10 +459,10 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_hpack_data();
   void set_allocated_hpack_data(::std::string* hpack_data);
 
-  // repeated string adding_without_index_headers = 22;
+  // repeated string adding_without_index_headers = 24;
   int adding_without_index_headers_size() const;
   void clear_adding_without_index_headers();
-  static const int kAddingWithoutIndexHeadersFieldNumber = 22;
+  static const int kAddingWithoutIndexHeadersFieldNumber = 24;
   const ::std::string& adding_without_index_headers(int index) const;
   ::std::string* mutable_adding_without_index_headers(int index);
   void set_adding_without_index_headers(int index, const ::std::string& value);
@@ -350,10 +475,10 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   const ::google::protobuf::RepeatedPtrField< ::std::string>& adding_without_index_headers() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_adding_without_index_headers();
 
-  // repeated string deleting_without_index_headers = 23;
+  // repeated string deleting_without_index_headers = 25;
   int deleting_without_index_headers_size() const;
   void clear_deleting_without_index_headers();
-  static const int kDeletingWithoutIndexHeadersFieldNumber = 23;
+  static const int kDeletingWithoutIndexHeadersFieldNumber = 25;
   const ::std::string& deleting_without_index_headers(int index) const;
   ::std::string* mutable_deleting_without_index_headers(int index);
   void set_deleting_without_index_headers(int index, const ::std::string& value);
@@ -366,10 +491,10 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   const ::google::protobuf::RepeatedPtrField< ::std::string>& deleting_without_index_headers() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_deleting_without_index_headers();
 
-  // repeated string adding_never_index_headers = 24;
+  // repeated string adding_never_index_headers = 26;
   int adding_never_index_headers_size() const;
   void clear_adding_never_index_headers();
-  static const int kAddingNeverIndexHeadersFieldNumber = 24;
+  static const int kAddingNeverIndexHeadersFieldNumber = 26;
   const ::std::string& adding_never_index_headers(int index) const;
   ::std::string* mutable_adding_never_index_headers(int index);
   void set_adding_never_index_headers(int index, const ::std::string& value);
@@ -382,10 +507,10 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   const ::google::protobuf::RepeatedPtrField< ::std::string>& adding_never_index_headers() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_adding_never_index_headers();
 
-  // repeated string deleting_never_index_headers = 25;
+  // repeated string deleting_never_index_headers = 27;
   int deleting_never_index_headers_size() const;
   void clear_deleting_never_index_headers();
-  static const int kDeletingNeverIndexHeadersFieldNumber = 25;
+  static const int kDeletingNeverIndexHeadersFieldNumber = 27;
   const ::std::string& deleting_never_index_headers(int index) const;
   ::std::string* mutable_deleting_never_index_headers(int index);
   void set_deleting_never_index_headers(int index, const ::std::string& value);
@@ -398,21 +523,21 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   const ::google::protobuf::RepeatedPtrField< ::std::string>& deleting_never_index_headers() const;
   ::google::protobuf::RepeatedPtrField< ::std::string>* mutable_deleting_never_index_headers();
 
-  // optional uint32 dynamic_table_update_size = 26;
+  // optional uint32 dynamic_table_update_size = 28;
   void clear_dynamic_table_update_size();
-  static const int kDynamicTableUpdateSizeFieldNumber = 26;
+  static const int kDynamicTableUpdateSizeFieldNumber = 28;
   ::google::protobuf::uint32 dynamic_table_update_size() const;
   void set_dynamic_table_update_size(::google::protobuf::uint32 value);
 
-  // optional bool with_huffman = 27;
+  // optional bool with_huffman = 29;
   void clear_with_huffman();
-  static const int kWithHuffmanFieldNumber = 27;
+  static const int kWithHuffmanFieldNumber = 29;
   bool with_huffman() const;
   void set_with_huffman(bool value);
 
-  // optional string headers_frame_padding = 28;
+  // optional string headers_frame_padding = 30;
   void clear_headers_frame_padding();
-  static const int kHeadersFramePaddingFieldNumber = 28;
+  static const int kHeadersFramePaddingFieldNumber = 30;
   const ::std::string& headers_frame_padding() const;
   void set_headers_frame_padding(const ::std::string& value);
   void set_headers_frame_padding(const char* value);
@@ -421,9 +546,9 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_headers_frame_padding();
   void set_allocated_headers_frame_padding(::std::string* headers_frame_padding);
 
-  // optional string data_frame_padding = 29;
+  // optional string data_frame_padding = 31;
   void clear_data_frame_padding();
-  static const int kDataFramePaddingFieldNumber = 29;
+  static const int kDataFramePaddingFieldNumber = 31;
   const ::std::string& data_frame_padding() const;
   void set_data_frame_padding(const ::std::string& value);
   void set_data_frame_padding(const char* value);
@@ -432,9 +557,9 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_data_frame_padding();
   void set_allocated_data_frame_padding(::std::string* data_frame_padding);
 
-  // optional string push_promise_frame_padding = 30;
+  // optional string push_promise_frame_padding = 32;
   void clear_push_promise_frame_padding();
-  static const int kPushPromiseFramePaddingFieldNumber = 30;
+  static const int kPushPromiseFramePaddingFieldNumber = 32;
   const ::std::string& push_promise_frame_padding() const;
   void set_push_promise_frame_padding(const ::std::string& value);
   void set_push_promise_frame_padding(const char* value);
@@ -443,10 +568,10 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
   ::std::string* release_push_promise_frame_padding();
   void set_allocated_push_promise_frame_padding(::std::string* push_promise_frame_padding);
 
-  // map<uint32, uint32> settings = 31;
+  // map<uint32, uint32> settings = 33;
   int settings_size() const;
   void clear_settings();
-  static const int kSettingsFieldNumber = 31;
+  static const int kSettingsFieldNumber = 33;
   const ::google::protobuf::Map< ::google::protobuf::uint32, ::google::protobuf::uint32 >&
       settings() const;
   ::google::protobuf::Map< ::google::protobuf::uint32, ::google::protobuf::uint32 >*
@@ -491,11 +616,13 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
       0 > params_;
   ::HttpMsg_Upgrade* upgrade_;
   ::google::protobuf::internal::ArenaStringPtr path_;
-  ::google::protobuf::internal::ArenaStringPtr hpack_data_;
+  ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header > pseudo_header_;
   ::google::protobuf::uint32 stream_id_;
   bool is_decoding_;
   bool chunk_notice_;
   bool with_huffman_;
+  ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header > trailer_header_;
+  ::google::protobuf::internal::ArenaStringPtr hpack_data_;
   ::google::protobuf::RepeatedPtrField< ::std::string> adding_without_index_headers_;
   ::google::protobuf::RepeatedPtrField< ::std::string> deleting_without_index_headers_;
   ::google::protobuf::RepeatedPtrField< ::std::string> adding_never_index_headers_;
@@ -529,6 +656,98 @@ class HttpMsg : public ::google::protobuf::Message /* @@protoc_insertion_point(c
 // ===================================================================
 
 #if !PROTOBUF_INLINE_NOT_IN_HEADERS
+// HttpMsg_Header
+
+// optional string name = 1;
+inline void HttpMsg_Header::clear_name() {
+  name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& HttpMsg_Header::name() const {
+  // @@protoc_insertion_point(field_get:HttpMsg.Header.name)
+  return name_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void HttpMsg_Header::set_name(const ::std::string& value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:HttpMsg.Header.name)
+}
+inline void HttpMsg_Header::set_name(const char* value) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:HttpMsg.Header.name)
+}
+inline void HttpMsg_Header::set_name(const char* value, size_t size) {
+  
+  name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:HttpMsg.Header.name)
+}
+inline ::std::string* HttpMsg_Header::mutable_name() {
+  
+  // @@protoc_insertion_point(field_mutable:HttpMsg.Header.name)
+  return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* HttpMsg_Header::release_name() {
+  // @@protoc_insertion_point(field_release:HttpMsg.Header.name)
+  
+  return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void HttpMsg_Header::set_allocated_name(::std::string* name) {
+  if (name != NULL) {
+    
+  } else {
+    
+  }
+  name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
+  // @@protoc_insertion_point(field_set_allocated:HttpMsg.Header.name)
+}
+
+// optional string value = 2;
+inline void HttpMsg_Header::clear_value() {
+  value_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& HttpMsg_Header::value() const {
+  // @@protoc_insertion_point(field_get:HttpMsg.Header.value)
+  return value_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void HttpMsg_Header::set_value(const ::std::string& value) {
+  
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:HttpMsg.Header.value)
+}
+inline void HttpMsg_Header::set_value(const char* value) {
+  
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:HttpMsg.Header.value)
+}
+inline void HttpMsg_Header::set_value(const char* value, size_t size) {
+  
+  value_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:HttpMsg.Header.value)
+}
+inline ::std::string* HttpMsg_Header::mutable_value() {
+  
+  // @@protoc_insertion_point(field_mutable:HttpMsg.Header.value)
+  return value_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* HttpMsg_Header::release_value() {
+  // @@protoc_insertion_point(field_release:HttpMsg.Header.value)
+  
+  return value_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void HttpMsg_Header::set_allocated_value(::std::string* value) {
+  if (value != NULL) {
+    
+  } else {
+    
+  }
+  value_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set_allocated:HttpMsg.Header.value)
+}
+
+// -------------------------------------------------------------------
+
 // HttpMsg_Upgrade
 
 // optional bool is_upgrade = 1;
@@ -953,7 +1172,67 @@ inline void HttpMsg::set_stream_id(::google::protobuf::uint32 value) {
   // @@protoc_insertion_point(field_set:HttpMsg.stream_id)
 }
 
-// optional string hpack_data = 21;
+// repeated .HttpMsg.Header pseudo_header = 21;
+inline int HttpMsg::pseudo_header_size() const {
+  return pseudo_header_.size();
+}
+inline void HttpMsg::clear_pseudo_header() {
+  pseudo_header_.Clear();
+}
+inline const ::HttpMsg_Header& HttpMsg::pseudo_header(int index) const {
+  // @@protoc_insertion_point(field_get:HttpMsg.pseudo_header)
+  return pseudo_header_.Get(index);
+}
+inline ::HttpMsg_Header* HttpMsg::mutable_pseudo_header(int index) {
+  // @@protoc_insertion_point(field_mutable:HttpMsg.pseudo_header)
+  return pseudo_header_.Mutable(index);
+}
+inline ::HttpMsg_Header* HttpMsg::add_pseudo_header() {
+  // @@protoc_insertion_point(field_add:HttpMsg.pseudo_header)
+  return pseudo_header_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header >*
+HttpMsg::mutable_pseudo_header() {
+  // @@protoc_insertion_point(field_mutable_list:HttpMsg.pseudo_header)
+  return &pseudo_header_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header >&
+HttpMsg::pseudo_header() const {
+  // @@protoc_insertion_point(field_list:HttpMsg.pseudo_header)
+  return pseudo_header_;
+}
+
+// repeated .HttpMsg.Header trailer_header = 22;
+inline int HttpMsg::trailer_header_size() const {
+  return trailer_header_.size();
+}
+inline void HttpMsg::clear_trailer_header() {
+  trailer_header_.Clear();
+}
+inline const ::HttpMsg_Header& HttpMsg::trailer_header(int index) const {
+  // @@protoc_insertion_point(field_get:HttpMsg.trailer_header)
+  return trailer_header_.Get(index);
+}
+inline ::HttpMsg_Header* HttpMsg::mutable_trailer_header(int index) {
+  // @@protoc_insertion_point(field_mutable:HttpMsg.trailer_header)
+  return trailer_header_.Mutable(index);
+}
+inline ::HttpMsg_Header* HttpMsg::add_trailer_header() {
+  // @@protoc_insertion_point(field_add:HttpMsg.trailer_header)
+  return trailer_header_.Add();
+}
+inline ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header >*
+HttpMsg::mutable_trailer_header() {
+  // @@protoc_insertion_point(field_mutable_list:HttpMsg.trailer_header)
+  return &trailer_header_;
+}
+inline const ::google::protobuf::RepeatedPtrField< ::HttpMsg_Header >&
+HttpMsg::trailer_header() const {
+  // @@protoc_insertion_point(field_list:HttpMsg.trailer_header)
+  return trailer_header_;
+}
+
+// optional string hpack_data = 23;
 inline void HttpMsg::clear_hpack_data() {
   hpack_data_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -997,7 +1276,7 @@ inline void HttpMsg::set_allocated_hpack_data(::std::string* hpack_data) {
   // @@protoc_insertion_point(field_set_allocated:HttpMsg.hpack_data)
 }
 
-// repeated string adding_without_index_headers = 22;
+// repeated string adding_without_index_headers = 24;
 inline int HttpMsg::adding_without_index_headers_size() const {
   return adding_without_index_headers_.size();
 }
@@ -1052,7 +1331,7 @@ HttpMsg::mutable_adding_without_index_headers() {
   return &adding_without_index_headers_;
 }
 
-// repeated string deleting_without_index_headers = 23;
+// repeated string deleting_without_index_headers = 25;
 inline int HttpMsg::deleting_without_index_headers_size() const {
   return deleting_without_index_headers_.size();
 }
@@ -1107,7 +1386,7 @@ HttpMsg::mutable_deleting_without_index_headers() {
   return &deleting_without_index_headers_;
 }
 
-// repeated string adding_never_index_headers = 24;
+// repeated string adding_never_index_headers = 26;
 inline int HttpMsg::adding_never_index_headers_size() const {
   return adding_never_index_headers_.size();
 }
@@ -1162,7 +1441,7 @@ HttpMsg::mutable_adding_never_index_headers() {
   return &adding_never_index_headers_;
 }
 
-// repeated string deleting_never_index_headers = 25;
+// repeated string deleting_never_index_headers = 27;
 inline int HttpMsg::deleting_never_index_headers_size() const {
   return deleting_never_index_headers_.size();
 }
@@ -1217,7 +1496,7 @@ HttpMsg::mutable_deleting_never_index_headers() {
   return &deleting_never_index_headers_;
 }
 
-// optional uint32 dynamic_table_update_size = 26;
+// optional uint32 dynamic_table_update_size = 28;
 inline void HttpMsg::clear_dynamic_table_update_size() {
   dynamic_table_update_size_ = 0u;
 }
@@ -1231,7 +1510,7 @@ inline void HttpMsg::set_dynamic_table_update_size(::google::protobuf::uint32 va
   // @@protoc_insertion_point(field_set:HttpMsg.dynamic_table_update_size)
 }
 
-// optional bool with_huffman = 27;
+// optional bool with_huffman = 29;
 inline void HttpMsg::clear_with_huffman() {
   with_huffman_ = false;
 }
@@ -1245,7 +1524,7 @@ inline void HttpMsg::set_with_huffman(bool value) {
   // @@protoc_insertion_point(field_set:HttpMsg.with_huffman)
 }
 
-// optional string headers_frame_padding = 28;
+// optional string headers_frame_padding = 30;
 inline void HttpMsg::clear_headers_frame_padding() {
   headers_frame_padding_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1289,7 +1568,7 @@ inline void HttpMsg::set_allocated_headers_frame_padding(::std::string* headers_
   // @@protoc_insertion_point(field_set_allocated:HttpMsg.headers_frame_padding)
 }
 
-// optional string data_frame_padding = 29;
+// optional string data_frame_padding = 31;
 inline void HttpMsg::clear_data_frame_padding() {
   data_frame_padding_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1333,7 +1612,7 @@ inline void HttpMsg::set_allocated_data_frame_padding(::std::string* data_frame_
   // @@protoc_insertion_point(field_set_allocated:HttpMsg.data_frame_padding)
 }
 
-// optional string push_promise_frame_padding = 30;
+// optional string push_promise_frame_padding = 32;
 inline void HttpMsg::clear_push_promise_frame_padding() {
   push_promise_frame_padding_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
@@ -1377,7 +1656,7 @@ inline void HttpMsg::set_allocated_push_promise_frame_padding(::std::string* pus
   // @@protoc_insertion_point(field_set_allocated:HttpMsg.push_promise_frame_padding)
 }
 
-// map<uint32, uint32> settings = 31;
+// map<uint32, uint32> settings = 33;
 inline int HttpMsg::settings_size() const {
   return settings_.size();
 }
@@ -1396,6 +1675,8 @@ HttpMsg::mutable_settings() {
 }
 
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 

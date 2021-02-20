@@ -10,10 +10,19 @@
 #ifndef SRC_CODEC_CODECUTIL_HPP_
 #define SRC_CODEC_CODECUTIL_HPP_
 
+#include <string>
 #include "Definition.hpp"
 
 namespace neb
 {
+
+enum E_COMPRESSION
+{
+    COMPRESS_NA             = 0, // not compress
+    COMPRESS_GZIP           = 1,
+    COMPRESS_DEFLATE        = 2,
+    COMPRESS_SNAPPY         = 3,
+};
 
 class CodecUtil
 {
@@ -40,6 +49,13 @@ public:
     static uint32 H2N(uint32 uiValue);
     static uint64 N2H(uint64 ullValue);
     static uint64 H2N(uint64 ullValue);
+
+    static bool Gzip(const std::string& strSrc, std::string& strDest);
+    static bool Gunzip(const std::string& strSrc, std::string& strDest);
+    //static bool Deflate(const std::string& strSrc, std::string& strDest);
+    //static bool Undeflate(const std::string& strSrc, std::string& strDest);
+    static bool AesEncrypt(const std::string& strKey, const std::string& strSrc, std::string& strDest);
+    static bool AesDecrypt(const std::string& strKey, const std::string& strSrc, std::string& strDest);
 
 protected:
     static inline bool IsLittleEndian()

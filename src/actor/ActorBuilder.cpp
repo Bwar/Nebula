@@ -351,21 +351,23 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
     {
         LOG4_DEBUG("oInHttpMsg.type() = %d, oInHttpMsg.path() = %s",
                     oHttpMsg.type(), oHttpMsg.path().c_str());
-        auto module_iter = m_mapModule.find(oHttpMsg.path());
-        if (module_iter == m_mapModule.end())
+        if (oHttpMsg.has_upgrade() && oHttpMsg.upgrade().is_upgrade())
         {
-            if (oHttpMsg.has_upgrade() && oHttpMsg.upgrade().is_upgrade())
+            auto module_iter = m_mapModule.find("http_upgrade");
+            if (module_iter != m_mapModule.end())
             {
-                module_iter = m_mapModule.find("http_upgrade");
-                if (module_iter != m_mapModule.end())
+                std::ostringstream oss;
+                oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
+                module_iter->second->SetTraceId(oss.str());
+                if (module_iter->second->AnyMessage(pChannel, oHttpMsg))
                 {
-                    std::ostringstream oss;
-                    oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
-                    module_iter->second->SetTraceId(oss.str());
-                    module_iter->second->AnyMessage(pChannel, oHttpMsg);
                     return(true);
                 }
             }
+        }
+        auto module_iter = m_mapModule.find(oHttpMsg.path());
+        if (module_iter == m_mapModule.end())
+        {
             module_iter = m_mapModule.find("/switch");
             if (module_iter == m_mapModule.end())
             {

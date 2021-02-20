@@ -29,7 +29,8 @@ public:
                     const HttpMsg& oHttpMsg);
 
 protected:
-    bool WebSocket(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
+    bool UpgradeToHttp2(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, const std::string& strHttp2Setting);
+    bool UpgradeToWebSocket(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
 
 private:
     const std::string mc_strWebSocketMagicGuid;

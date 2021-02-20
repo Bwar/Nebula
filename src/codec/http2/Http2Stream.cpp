@@ -14,139 +14,93 @@
 namespace neb
 {
 
-Http2Stream::Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
+Http2Stream::Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, uint32 uiStreamId)
     : Codec(pLogger, eCodecType),
-      m_eStreamState(H2_STREAM_IDLE), m_uiStreamId(0)
+      m_eStreamState(H2_STREAM_IDLE), m_uiStreamId(uiStreamId), m_bEndHeaders(false), m_pFrame(nullptr)
 {
 #if __cplusplus >= 201401L
-    m_pFrame = std::make_unique<Http2Frame>(pLogger, eCodecType);
+    m_pFrame = std::make_unique<Http2Frame>(pLogger, eCodecType, this);
 #else
-    m_pFrame = std::unique_ptr<Http2Frame>(new Http2Frame(pLogger, eCodecType));
+    m_pFrame = std::unique_ptr<Http2Frame>(new Http2Frame(pLogger, eCodecType, this));
 #endif
 }
 
 Http2Stream::~Http2Stream()
 {
+    LOG4_TRACE("codec type %d", GetCodecType());
 }
 
 E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
         const HttpMsg& oHttpMsg, CBuffer* pBuff)
 {
-    tagH2FrameHead stFrameHead;
-    m_pFrame->Encode(pCodecH2, oHttpMsg, pBuff);
-    switch (m_eStreamState)
+    tagPriority stPriority;
+    std::string strPadding;
+    if (HTTP_REQUEST == oHttpMsg.type())
     {
-        case H2_STREAM_IDLE:
-            switch (stFrameHead.ucType)
+        std::string strSchema = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(':'));
+        if (strSchema.size() > 0)
+        {
+            auto pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
+            pHeader->set_name(":scheme");
+            pHeader->set_value(strSchema);
+        }
+        else
+        {
+            auto pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
+            pHeader->set_name(":scheme");
+            pHeader->set_value("http");
+        }
+        struct http_parser_url stUrl;
+        if(0 == http_parser_parse_url(oHttpMsg.url().c_str(), oHttpMsg.url().length(), 0, &stUrl))
+        {
+            std::string strAuthority;
+            if(stUrl.field_set & (1 << UF_USERINFO) )
             {
-                case H2_FRAME_HEADERS:
-                    m_eStreamState = H2_STREAM_OPEN;
-                    if (H2_FRAME_FLAG_END_HEADERS & stFrameHead.ucFlag)
-                    {
-                        m_bEndHeaders = true;
-                    }
-                    break;
-                case H2_FRAME_PRIORITY:
-                    break;
-                default:
-                    pCodecH2->SetErrno(H2_ERR_PROTOCOL_ERROR);
-                    m_pFrame->EncodeGoaway(pCodecH2, H2_ERR_PROTOCOL_ERROR,
-                            "The endpoint detected an unspecific protocol error."
-                            " This error is for use when a more specific error "
-                            "code is not available.", pBuff);
-                    return(CODEC_STATUS_ERR);
+                strAuthority += oHttpMsg.url().substr(stUrl.field_data[UF_USERINFO].off, stUrl.field_data[UF_USERINFO].len);
+                strAuthority += "@";
             }
-            if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
+            if(stUrl.field_set & (1 << UF_HOST) )
             {
-                m_eStreamState = H2_STREAM_HALF_CLOSE_REMOTE;
+                strAuthority += oHttpMsg.url().substr(stUrl.field_data[UF_HOST].off, stUrl.field_data[UF_HOST].len);
             }
-            break;
-        case H2_STREAM_RESERVED_LOCAL:
-            switch (stFrameHead.ucType)
+            if(stUrl.field_set & (1 << UF_PORT))
             {
-                case H2_FRAME_RST_STREAM:
-                    m_eStreamState = H2_STREAM_CLOSE;
-                    break;
-                default:
-                    break;
+                strAuthority += ":";
+                strAuthority += oHttpMsg.url().substr(stUrl.field_data[UF_PORT].off, stUrl.field_data[UF_PORT].len);
             }
-            break;
-        case H2_STREAM_RESERVED_REMOTE:
-            switch (stFrameHead.ucType)
+            auto pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
+            pHeader->set_name(":authority");
+            pHeader->set_value(strAuthority);
+            std::string strPath = "/";
+            if(stUrl.field_set & (1 << UF_PATH))
             {
-                case H2_FRAME_HEADERS:
-                    m_eStreamState = H2_STREAM_HALF_CLOSE_LOCAL;
-                    if (H2_FRAME_FLAG_END_HEADERS & stFrameHead.ucFlag)
-                    {
-                        m_bEndHeaders = true;
-                    }
-                    break;
-                case H2_FRAME_RST_STREAM:
-                    m_eStreamState = H2_STREAM_CLOSE;
-                    break;
-                default:
-                    break;
+                //strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, stUrl.field_data[UF_PATH].len);
+                strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off);     // including: ?param1=aaa&param2=bbb
             }
-            break;
-        case H2_STREAM_OPEN:
-            switch (stFrameHead.ucType)
-            {
-                case H2_FRAME_RST_STREAM:
-                    m_eStreamState = H2_STREAM_CLOSE;
-                    break;
-                default:
-                    break;
-            }
-            if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
-            {
-                m_eStreamState = H2_STREAM_HALF_CLOSE_REMOTE;
-            }
-            break;
-        case H2_STREAM_HALF_CLOSE_LOCAL:
-            switch (stFrameHead.ucType)
-            {
-                case H2_FRAME_RST_STREAM:
-                    m_eStreamState = H2_STREAM_CLOSE;
-                    break;
-                default:
-                    break;
-            }
-            if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
-            {
-                m_eStreamState = H2_STREAM_CLOSE;
-            }
-            break;
-        case H2_STREAM_HALF_CLOSE_REMOTE:
-            /**
-             * If an endpoint receives additional frames, other than WINDOW_UPDATE,
-             * PRIORITY, or RST_STREAM, for a stream that is in this state, it
-             * MUST respond with a stream error (Section 5.4.2) of type.
-             */
-            switch (stFrameHead.ucType)
-            {
-                case H2_FRAME_RST_STREAM:
-                    m_eStreamState = H2_STREAM_CLOSE;
-                    break;
-                case H2_FRAME_WINDOW_UPDATE:
-                case H2_FRAME_PRIORITY:
-                    break;
-                default:
-                    m_pFrame->EncodeRstStream(pCodecH2,
-                            stFrameHead.uiStreamIdentifier, H2_ERR_STREAM_CLOSED, pBuff);
-                    return(CODEC_STATUS_PART_ERR);
-            }
-            break;
-        case H2_STREAM_CLOSE:
-            break;
-        default:
-            break;
+            pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
+            pHeader->set_name(":path");
+            pHeader->set_value(strPath);
+        }
+        auto pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
+        pHeader->set_name(":method");
+        pHeader->set_value(http_method_str((http_method)oHttpMsg.method()));
+        (const_cast<HttpMsg&>(oHttpMsg)).mutable_headers()->insert({"user-agent", "grpc-c++-nebula"});
+        (const_cast<HttpMsg&>(oHttpMsg)).mutable_headers()->insert({"grpc-accept-encoding", "gzip"});
     }
-    return(CODEC_STATUS_OK);
+    else
+    {
+        auto pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
+        pHeader->set_name(":status");
+        pHeader->set_value(std::to_string(oHttpMsg.status_code()));
+    }
+    return(m_pFrame->Encode(pCodecH2, oHttpMsg, stPriority, strPadding, pBuff));
 }
 
 E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
         const tagH2FrameHead& stFrameHead, CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff)
 {
+    LOG4_TRACE("m_eStreamState = %d, stFrameHead.ucType = %u", m_eStreamState, stFrameHead.ucType);
+    m_oHttpMsg.set_stream_id(m_uiStreamId);
     switch (m_eStreamState)
     {
         case H2_STREAM_IDLE:
@@ -154,12 +108,10 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             {
                 case H2_FRAME_HEADERS:
                     m_eStreamState = H2_STREAM_OPEN;
-                    if (H2_FRAME_FLAG_END_HEADERS & stFrameHead.ucFlag)
-                    {
-                        m_bEndHeaders = true;
-                    }
                     break;
-                case H2_FRAME_PRIORITY:
+                case H2_FRAME_PUSH_PROMISE:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_RESERVED_REMOTE);
+                    m_eStreamState = H2_STREAM_RESERVED_REMOTE;
                     break;
                 default:
                     pCodecH2->SetErrno(H2_ERR_PROTOCOL_ERROR);
@@ -167,17 +119,19 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
                             "The endpoint detected an unspecific protocol error."
                             " This error is for use when a more specific error "
                             "code is not available.", pReactBuff);
+                    LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u", m_eStreamState, stFrameHead.ucType);
                     return(CODEC_STATUS_ERR);
             }
-            if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
+            if (H2_FRAME_FLAG_END_HEADERS & stFrameHead.ucFlag)
             {
-                m_eStreamState = H2_STREAM_HALF_CLOSE_REMOTE;
+                m_bEndHeaders = true;
             }
             break;
         case H2_STREAM_RESERVED_LOCAL:
             switch (stFrameHead.ucType)
             {
                 case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
                     m_eStreamState = H2_STREAM_CLOSE;
                     break;
                 default:
@@ -188,6 +142,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             switch (stFrameHead.ucType)
             {
                 case H2_FRAME_HEADERS:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_HALF_CLOSE_LOCAL);
                     m_eStreamState = H2_STREAM_HALF_CLOSE_LOCAL;
                     if (H2_FRAME_FLAG_END_HEADERS & stFrameHead.ucFlag)
                     {
@@ -195,6 +150,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
                     }
                     break;
                 case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
                     m_eStreamState = H2_STREAM_CLOSE;
                     break;
                 default:
@@ -205,6 +161,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             switch (stFrameHead.ucType)
             {
                 case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
                     m_eStreamState = H2_STREAM_CLOSE;
                     break;
                 case H2_FRAME_CONTINUATION:
@@ -218,6 +175,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             }
             if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
             {
+                LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_HALF_CLOSE_REMOTE);
                 m_eStreamState = H2_STREAM_HALF_CLOSE_REMOTE;
             }
             break;
@@ -232,6 +190,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
                     }
                     break;
                 case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
                     m_eStreamState = H2_STREAM_CLOSE;
                     break;
                 default:
@@ -239,6 +198,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             }
             if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
             {
+                LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
                 m_eStreamState = H2_STREAM_CLOSE;
             }
             break;
@@ -251,6 +211,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             switch (stFrameHead.ucType)
             {
                 case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
                     m_eStreamState = H2_STREAM_CLOSE;
                     break;
                 case H2_FRAME_WINDOW_UPDATE:
@@ -259,6 +220,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
                 default:
                     m_pFrame->EncodeRstStream(pCodecH2,
                             stFrameHead.uiStreamIdentifier, H2_ERR_STREAM_CLOSED, pReactBuff);
+                    LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u", m_eStreamState, stFrameHead.ucType);
                     return(CODEC_STATUS_PART_ERR);
             }
             break;
@@ -270,6 +232,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
                 default:
                     m_pFrame->EncodeRstStream(pCodecH2,
                             stFrameHead.uiStreamIdentifier, H2_ERR_STREAM_CLOSED, pReactBuff);
+                    LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u", m_eStreamState, stFrameHead.ucType);
                     return(CODEC_STATUS_PART_ERR);
             }
             break;
@@ -277,19 +240,32 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             break;
     }
     E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
+    LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u, m_bEndHeaders = %d", m_eStreamState, stFrameHead.ucType, m_bEndHeaders);
     if (m_bEndHeaders)
     {
         eStatus = m_pFrame->Decode(pCodecH2, stFrameHead, pBuff, m_oHttpMsg, pReactBuff);
-        m_oHttpMsg.set_stream_id(m_uiStreamId);
-        if (pCodecH2->IsChunkNotice())
+        LOG4_TRACE("eStatus = %d", eStatus);
+        if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PART_OK == eStatus)
         {
-            oHttpMsg = std::move(m_oHttpMsg);
-        }
-        else
-        {
-            if (m_eStreamState == H2_STREAM_CLOSE)
+            if (oHttpMsg.stream_id() & 0x01)
+            {
+                oHttpMsg.set_type(HTTP_REQUEST);
+            }
+            else
+            {
+                oHttpMsg.set_type(HTTP_RESPONSE);
+            }
+            if (pCodecH2->IsChunkNotice())
             {
                 oHttpMsg = std::move(m_oHttpMsg);
+            }
+            else
+            {
+                if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
+                {
+                    oHttpMsg = std::move(m_oHttpMsg);
+                    eStatus = CODEC_STATUS_OK;
+                }
             }
         }
     }
@@ -304,11 +280,132 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             m_pFrame->EncodeGoaway(pCodecH2, H2_ERR_PROTOCOL_ERROR, "The endpoint "
                     "detected an unspecific protocol error. This error is for "
                     "use when a more specific error code is not available.", pReactBuff);
+            LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u, m_bEndHeaders = %d", m_eStreamState, stFrameHead.ucType, m_bEndHeaders);
             return(CODEC_STATUS_ERR);
         }
         eStatus = m_pFrame->Decode(pCodecH2, stFrameHead, pBuff, m_oHttpMsg, pReactBuff);
+        LOG4_TRACE("eStatus = %d", eStatus);
     }
     return(eStatus);
+}
+
+void Http2Stream::EncodeSetState(const tagH2FrameHead& stFrameHead)
+{
+    LOG4_TRACE("stream %u m_eStreamState = %d, stFrameHead.ucType = %u", m_uiStreamId, m_eStreamState, stFrameHead.ucType);
+    switch (m_eStreamState)
+    {
+        case H2_STREAM_IDLE:
+            switch (stFrameHead.ucType)
+            {
+                case H2_FRAME_HEADERS:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_OPEN);
+                    m_eStreamState = H2_STREAM_OPEN;
+                    if (H2_FRAME_FLAG_END_HEADERS & stFrameHead.ucFlag)
+                    {
+                        m_bEndHeaders = true;
+                    }
+                    break;
+                case H2_FRAME_PUSH_PROMISE:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_RESERVED_LOCAL);
+                    m_eStreamState = H2_STREAM_RESERVED_LOCAL;
+                    break;
+                default:
+                    LOG4_ERROR("protocol error %d", H2_ERR_PROTOCOL_ERROR);
+            }
+            break;
+        case H2_STREAM_RESERVED_LOCAL:
+            switch (stFrameHead.ucType)
+            {
+                case H2_FRAME_HEADERS:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_HALF_CLOSE_REMOTE);
+                    m_eStreamState = H2_STREAM_HALF_CLOSE_REMOTE;
+                    if (H2_FRAME_FLAG_END_HEADERS & stFrameHead.ucFlag)
+                    {
+                        m_bEndHeaders = true;
+                    }
+                    break;
+                case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
+                    m_eStreamState = H2_STREAM_CLOSE;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case H2_STREAM_RESERVED_REMOTE:
+            switch (stFrameHead.ucType)
+            {
+                case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
+                    m_eStreamState = H2_STREAM_CLOSE;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case H2_STREAM_OPEN:
+            switch (stFrameHead.ucType)
+            {
+                case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
+                    m_eStreamState = H2_STREAM_CLOSE;
+                    break;
+                default:
+                    break;
+            }
+            if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
+            {
+                LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_HALF_CLOSE_REMOTE);
+                m_eStreamState = H2_STREAM_HALF_CLOSE_REMOTE;
+            }
+            break;
+        case H2_STREAM_HALF_CLOSE_LOCAL:
+            switch (stFrameHead.ucType)
+            {
+                case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
+                    m_eStreamState = H2_STREAM_CLOSE;
+                    break;
+                default:
+                    break;
+            }
+            break;
+        case H2_STREAM_HALF_CLOSE_REMOTE:
+            /**
+             * If an endpoint receives additional frames, other than WINDOW_UPDATE,
+             * PRIORITY, or RST_STREAM, for a stream that is in this state, it
+             * MUST respond with a stream error (Section 5.4.2) of type.
+             */
+            switch (stFrameHead.ucType)
+            {
+                case H2_FRAME_RST_STREAM:
+                    LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
+                    m_eStreamState = H2_STREAM_CLOSE;
+                    break;
+                default:
+                    break;
+            }
+            if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
+            {
+                LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_CLOSE);
+                m_eStreamState = H2_STREAM_CLOSE;
+            }
+            break;
+        case H2_STREAM_CLOSE:
+            break;
+        default:
+            break;
+    }
+}
+
+void Http2Stream::WindowInit(uint32 uiWindowSize)
+{
+    m_iSendWindowSize = (int32)uiWindowSize;
+}
+
+void Http2Stream::WindowUpdate(int32 iIncrement)
+{
+    m_iSendWindowSize += iIncrement;
 }
 
 } /* namespace neb */

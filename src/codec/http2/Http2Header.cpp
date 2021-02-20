@@ -224,7 +224,20 @@ void Http2Header::EncodeStringLiteral(const std::string& strLiteral, CBuffer* pB
 
 void Http2Header::EncodeStringLiteralWithHuffman(const std::string& strLiteral, CBuffer* pBuff)
 {
-    Huffman::Instance()->Encode(strLiteral, pBuff);
+    CBuffer oBuff;
+    Huffman::Instance()->Encode(strLiteral, &oBuff);
+    if (oBuff.ReadableBytes() < strLiteral.size())
+    {
+        Http2Header::EncodeInt(oBuff.ReadableBytes(), (size_t)H2_HPACK_PREFIX_7_BITS,
+                (char)0x80, pBuff);
+        pBuff->Write(oBuff.GetRawReadBuffer(), oBuff.ReadableBytes());
+    }
+    else
+    {
+        Http2Header::EncodeInt(strLiteral.size(), (size_t)H2_HPACK_PREFIX_7_BITS,
+                (char)0, pBuff);
+        pBuff->Write(strLiteral.c_str(), strLiteral.size());
+    }
 }
 
 bool Http2Header::DecodeStringLiteral(CBuffer* pBuff, std::string& strLiteral, bool& bWithHuffman)

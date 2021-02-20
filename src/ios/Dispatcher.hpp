@@ -140,10 +140,11 @@ public:
     bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     bool SendTo(int iFd, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
+    std::shared_ptr<SocketChannel> GetLastActivityChannel();
     bool Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
     bool Disconnect(const std::string& strIdentify, bool bChannelNotice = true);
     bool DiscardNamedChannel(const std::string& strIdentify);
-    bool SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType);
+    Codec* SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType, bool bIsUpgrade = false);
 
 public:
     void SetChannelIdentify(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify);
@@ -196,6 +197,7 @@ private:
     time_t m_lLastCheckNodeTime;
     std::shared_ptr<NetLogger> m_pLogger;
     std::unique_ptr<Nodes> m_pSessionNode;
+    std::shared_ptr<SocketChannel> m_pLastActivityChannel;  // 最近一个发送或接收过数据的channel
 
     // Channel
     std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapSocketChannel;
@@ -223,12 +225,14 @@ template <typename ...Targs>
 bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args)
 {
     E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(std::forward<Targs>(args)...);
+    m_pLastActivityChannel = pChannel;
     switch (eStatus)
     {
         case CODEC_STATUS_OK:
             return(true);
         case CODEC_STATUS_PAUSE:
         case CODEC_STATUS_WANT_WRITE:
+        case CODEC_STATUS_PART_OK:
             AddIoWriteEvent(pChannel);
             return(true);
         case CODEC_STATUS_WANT_READ:
@@ -426,6 +430,7 @@ bool Dispatcher::AutoSend(
         pChannel->m_pImpl->SetRemoteAddr(strHost);
         pChannel->m_pImpl->SetPipeline(bPipeline);
         E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(std::forward<Targs>(args)...);
+        m_pLastActivityChannel = pChannel;
         if (CODEC_STATUS_OK != eCodecStatus
                 && CODEC_STATUS_PAUSE != eCodecStatus
                 && CODEC_STATUS_WANT_WRITE != eCodecStatus

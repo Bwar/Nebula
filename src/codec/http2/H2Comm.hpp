@@ -13,11 +13,11 @@
 namespace neb
 {
 
-const uint32 H2_FRAME_HEAD_SIZE = 72;
-const uint32 SETTINGS_MAX_FRAME_SIZE = (2^24) - 1;
-const uint32 DEFAULT_SETTINGS_MAX_FRAME_SIZE = (2^14);
-const uint32 SETTINGS_MAX_INITIAL_WINDOW_SIZE = (2^31) - 1;
-const uint32 DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE = (2^16) - 1;
+const uint32 H2_FRAME_HEAD_SIZE = 9;
+const uint32 SETTINGS_MAX_FRAME_SIZE = 16777215;                // (2^24) - 1;
+const uint32 DEFAULT_SETTINGS_MAX_FRAME_SIZE = 16384;           // (2^14);
+const uint32 SETTINGS_MAX_INITIAL_WINDOW_SIZE = 2147483647;     // (2^31) - 1;
+const uint32 DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE = 65535;  // (2^16) - 1;
 
 /*
  * @see https://httpwg.org/specs/rfc7540.html#FRAME_SIZE_ERROR

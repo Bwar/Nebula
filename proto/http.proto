@@ -2,6 +2,11 @@ syntax = "proto3";
 
 message HttpMsg
 {
+    message Header
+    {
+        string name                 = 1;
+        string value                = 2;
+    }
 	message Upgrade
 	{
 	    bool is_upgrade             = 1;
@@ -28,15 +33,17 @@ message HttpMsg
 
     // http2 only
     uint32 stream_id                = 20;       ///< 流ID，请求发送时为0则自动分配新的流ID，响应或push时为0则视为错误
-    string hpack_data               = 21;       ///< 压缩后的头部数据（解码过程中使用）
-    repeated string adding_without_index_headers   = 22;   ///< 添加不需要新增到动态表的http头
-    repeated string deleting_without_index_headers = 23;   ///< 删除不需要新增到动态表的http头
-    repeated string adding_never_index_headers     = 24;   ///< 添加永不新增到动态表的http头
-    repeated string deleting_never_index_headers   = 25;   ///< 删除永不新增到动态表的http头
-    uint32 dynamic_table_update_size               = 26;   ///< 更改动态表size
-    bool with_huffman                              = 27;   ///< 是否使用huffman编码
-    string headers_frame_padding                   = 28;   ///< 头部帧填充字节
-    string data_frame_padding                      = 29;   ///< 数据帧填充字节
-    string push_promise_frame_padding              = 30;   ///< PUSH_PROMISE帧填充字节
-    map<uint32, uint32> settings                   = 31;   ///< SETTINGS类型和参数值
+    repeated Header pseudo_header                  = 21;   ///< 伪头部
+    repeated Header trailer_header                 = 22;   ///< 跟踪消息，如grpc的Trailers
+    string hpack_data                              = 23;       ///< 压缩后的头部数据（解码过程中使用）
+    repeated string adding_without_index_headers   = 24;   ///< 添加不需要新增到动态表的http头
+    repeated string deleting_without_index_headers = 25;   ///< 删除不需要新增到动态表的http头
+    repeated string adding_never_index_headers     = 26;   ///< 添加永不新增到动态表的http头
+    repeated string deleting_never_index_headers   = 27;   ///< 删除永不新增到动态表的http头
+    uint32 dynamic_table_update_size               = 28;   ///< 更改动态表size
+    bool with_huffman                              = 29;   ///< 是否使用huffman编码
+    string headers_frame_padding                   = 30;   ///< 头部帧填充字节
+    string data_frame_padding                      = 31;   ///< 数据帧填充字节
+    string push_promise_frame_padding              = 32;   ///< PUSH_PROMISE帧填充字节
+    map<uint32, uint32> settings                   = 33;   ///< SETTINGS类型和参数值
 }

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     ActorFriend.hpp
+ * @file     ActorSys.hpp
  * @brief    Actor友元类，用于访问Actor的保护或私有成员
  * @author   Bwar
  * @date:    2019年9月21日

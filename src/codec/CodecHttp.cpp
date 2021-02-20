@@ -764,7 +764,9 @@ int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
             pHttpMsg->set_keep_alive(0.0);
         }
 
-        if (std::string("Upgrade") == strHeadValue)
+        size_t uiPos = 0;
+        uiPos = strHeadValue.find_first_of("Upgrade");
+        if (0 == uiPos)
         {
             pHttpMsg->mutable_upgrade()->set_is_upgrade(true);
         }

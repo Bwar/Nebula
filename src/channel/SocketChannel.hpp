@@ -39,10 +39,7 @@ public:
     virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsClient = false);
 
     int GetFd() const;
-    bool IsClient() const
-    {
-        return(m_bIsClientConnection);
-    }
+    bool IsClient() const;
     bool IsPipeline() const;
     const std::string& GetIdentify() const;
     const std::string& GetRemoteAddr() const;
@@ -50,7 +47,6 @@ public:
     E_CODEC_TYPE GetCodecType() const;
 
 private:
-    bool m_bIsClientConnection;
     // Hide most of the channel implementation for Actors
     // 以m_pImpl对Actor及其派生类隐藏框架层才需要的Channel大部分实现
     //std::unique_ptr<SocketChannelImpl> m_pImpl;

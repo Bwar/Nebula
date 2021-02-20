@@ -32,6 +32,7 @@
 #include "labor/Labor.hpp"
 #include "codec/Codec.hpp"
 #include "ActorBuilder.hpp"
+#include "ActorSender.hpp"
 
 namespace neb
 {
@@ -41,6 +42,7 @@ typedef RedisReply RedisMsg;
 class Labor;
 class Dispatcher;
 class ActorBuilder;
+class ActorSender;
 class ActorSys;
 
 class SocketChannel;
@@ -281,6 +283,8 @@ protected:
 
     virtual bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
+    std::shared_ptr<SocketChannel> GetLastActivityChannel();
+
     /**
      * @brief 关闭raw数据通道
      * @note 当且仅当raw数据传输的无编解码通道才可以由Actor的应用层关闭，对于http连接
@@ -327,6 +331,7 @@ private:
     friend class Dispatcher;
     friend class ActorBuilder;
     friend class ActorSys;
+    friend class ActorSender;
     friend class Chain;
 };
 

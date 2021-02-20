@@ -44,6 +44,7 @@ enum E_CODEC_TYPE
     CODEC_WS_EXTEND_PB      = 7,        ///< 带Extension data的websocket协议扩展，Application data为pb
     CODEC_NEBULA_IN_NODE    = 8,        ///< 节点各进程间通信协议，与CODEC_NEBULA协议相同，使用的编解码类也相同，只为区别节点内部连接与外部连接
     CODEC_RESP              = 9,        ///< redis数据传输协议resp
+    CODEC_HTTP2             = 10,       ///< http2编解码
 };
 
 /**

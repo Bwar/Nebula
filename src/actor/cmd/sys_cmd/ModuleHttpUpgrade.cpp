@@ -7,12 +7,16 @@
  * @note
  * Modify history:
  ******************************************************************************/
-#include <actor/cmd/sys_cmd/ModuleHttpUpgrade.hpp>
+#include "actor/cmd/sys_cmd/ModuleHttpUpgrade.hpp"
+#include <cstring>
 #include <cryptopp/base64.h>
 #include <cryptopp/sha.h>
 #include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
 #include "ios/Dispatcher.hpp"
+#include "codec/http2/H2Comm.hpp"
+#include "codec/http2/Http2Frame.hpp"
+#include "codec/http2/CodecHttp2.hpp"
 
 namespace neb
 {
@@ -32,9 +36,18 @@ bool ModuleHttpUpgrade::AnyMessage(std::shared_ptr<SocketChannel> pChannel, cons
 {
     if (oHttpMsg.has_upgrade() && oHttpMsg.upgrade().is_upgrade())
     {
+        if (std::string("h2") == oHttpMsg.upgrade().protocol()
+                || std::string("h2c") == oHttpMsg.upgrade().protocol())
+        {
+            auto h_iter = oHttpMsg.headers().find("HTTP2-Settings");
+            if (h_iter != oHttpMsg.headers().end())
+            {
+                return(UpgradeToHttp2(pChannel, oHttpMsg, h_iter->second));
+            }
+        }
         if (std::string("websocket") == oHttpMsg.upgrade().protocol())
         {
-            return(WebSocket(pChannel, oHttpMsg));
+            return(UpgradeToWebSocket(pChannel, oHttpMsg));
         }
     }
     HttpMsg oOutHttpMsg;
@@ -47,11 +60,11 @@ bool ModuleHttpUpgrade::AnyMessage(std::shared_ptr<SocketChannel> pChannel, cons
     return(false);
 }
 
-bool ModuleHttpUpgrade::WebSocket(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
+bool ModuleHttpUpgrade::UpgradeToWebSocket(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
 {
     HttpMsg oOutHttpMsg;
     oOutHttpMsg.set_type(HTTP_RESPONSE);
-    oOutHttpMsg.set_status_code(400);
+    oOutHttpMsg.set_status_code(101);
     oOutHttpMsg.set_http_major(oHttpMsg.http_major());
     oOutHttpMsg.set_http_minor(oHttpMsg.http_minor());
     if (1 == oHttpMsg.http_major() && 1 == oHttpMsg.http_minor()
@@ -131,6 +144,59 @@ bool ModuleHttpUpgrade::WebSocket(std::shared_ptr<SocketChannel> pChannel, const
     }
     SendTo(pChannel, oOutHttpMsg);
     return(false);
+}
+
+bool ModuleHttpUpgrade::UpgradeToHttp2(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, const std::string& strHttp2Setting)
+{
+    HttpMsg oOutHttpMsg;
+    oOutHttpMsg.set_type(HTTP_RESPONSE);
+    oOutHttpMsg.set_status_code(101);
+    oOutHttpMsg.set_http_major(oHttpMsg.http_major());
+    oOutHttpMsg.set_http_minor(oHttpMsg.http_minor());
+    oOutHttpMsg.mutable_headers()->insert(
+            google::protobuf::MapPair<std::string, std::string>("Connection", "Upgrade"));
+    oOutHttpMsg.mutable_headers()->insert(
+            google::protobuf::MapPair<std::string, std::string>("Upgrade", oHttpMsg.upgrade().protocol()));
+
+    std::string strHttp2SettingPayload;
+    std::string strSettingFrame;
+    CryptoPP::Base64Decoder oDecoder;
+    oDecoder.Put((CryptoPP::byte*)strHttp2Setting.data(), strHttp2Setting.size());
+    oDecoder.MessageEnd();
+    CryptoPP::word64 size = oDecoder.MaxRetrievable();
+    if(size && size <= SIZE_MAX)
+    {
+        strHttp2SettingPayload.resize(size);
+        oDecoder.Get((CryptoPP::byte*)strHttp2SettingPayload.data(), strHttp2SettingPayload.size());
+    }
+    if (strHttp2SettingPayload.size() % 6 != 0)
+    {
+        LOG4_ERROR("invalid strHttp2Setting \"%s\"", strHttp2Setting.c_str());
+        return(false);
+    }
+    const char* pH2SettingPayload = strHttp2SettingPayload.data();
+    uint32 uiSettingNum = strHttp2SettingPayload.size() / 6;
+    tagSetting stSetting;
+    std::vector<tagSetting> vecSetting;
+    for (uint32 i = 0; i < uiSettingNum; ++i)
+    {
+        memcpy(&stSetting.unIdentifier, pH2SettingPayload + (i * 6), 2);
+        memcpy(&stSetting.uiValue, pH2SettingPayload + (i * 6) + 2, 4);
+        stSetting.unIdentifier = CodecUtil::N2H(stSetting.unIdentifier);
+        stSetting.uiValue = CodecUtil::N2H(stSetting.uiValue);
+        vecSetting.push_back(stSetting);
+    }
+    Http2Frame::EncodeSetting(vecSetting, strSettingFrame);
+    oOutHttpMsg.set_body(strSettingFrame);
+    SendTo(pChannel, oOutHttpMsg);
+
+    auto pCodec = GetLabor(this)->GetDispatcher()->SwitchCodec(pChannel, CODEC_HTTP2, true);
+    if (pCodec == nullptr)
+    {
+        return(false);
+    }
+    ((CodecHttp2*)pCodec)->Setting(vecSetting);
+    return(true);
 }
 
 } /* namespace neb */

@@ -21,7 +21,7 @@ namespace neb
 {
 
 SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, ev_tstamp dKeepAlive)
-    : m_bIsClientConnection(false), m_pImpl(nullptr), m_pLogger(pLogger)
+    : m_pImpl(nullptr), m_pLogger(pLogger)
 {
     if (bWithSsl)
     {
@@ -47,11 +47,15 @@ SocketChannel::~SocketChannel()
 
 bool SocketChannel::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
 {
-    m_bIsClientConnection = bIsClient;
     return(m_pImpl->Init(eCodecType, bIsClient));
 }
 
 int SocketChannel::GetFd() const
+{
+    return(m_pImpl->GetFd());
+}
+
+bool SocketChannel::IsClient() const
 {
     return(m_pImpl->GetFd());
 }

@@ -8,21 +8,29 @@
  * Modify history:
  ******************************************************************************/
 #include "CodecHttp2.hpp"
+#include <algorithm>
 #include "Http2Stream.hpp"
 #include "Http2Frame.hpp"
 #include "Http2Header.hpp"
+#include "codec/CodecUtil.hpp"
+#include "util/StringConverter.hpp"
 
 namespace neb
 {
 
-CodecHttp2::CodecHttp2(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
-    : Codec(pLogger, eCodecType)
+CodecHttp2::CodecHttp2(std::shared_ptr<NetLogger> pLogger,
+        E_CODEC_TYPE eCodecType, bool bChannelIsClient)
+    : Codec(pLogger, eCodecType),
+      m_bChannelIsClient(bChannelIsClient)
 {
-#if __cplusplus >= 201401L
-    m_pFrame = std::make_unique<Http2Frame>(pLogger, eCodecType);
-#else
-    m_pFrame = std::unique_ptr<Http2Frame>(new Http2Frame(pLogger, eCodecType));
-#endif
+    try
+    {
+        m_pFrame = new Http2Frame(pLogger, eCodecType);
+    }
+    catch(std::bad_alloc& e)
+    {
+        LOG4_ERROR("%s", e.what());
+    }
 }
 
 CodecHttp2::~CodecHttp2()
@@ -35,10 +43,57 @@ CodecHttp2::~CodecHttp2()
         iter->second = nullptr;
     }
     m_mapStream.clear();
+    if (m_pFrame != nullptr)
+    {
+        delete m_pFrame;
+        m_pFrame = nullptr;
+    }
+    LOG4_TRACE("codec type %d", GetCodecType());
+}
+
+void CodecHttp2::ConnectionSetting(CBuffer* pBuff)
+{
+    std::vector<tagSetting> vecSetting;
+    tagSetting stSetting;
+    if (m_bChannelIsClient)
+    {
+        stSetting.unIdentifier = H2_SETTINGS_INITIAL_WINDOW_SIZE;
+        stSetting.uiValue = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+        m_uiRecvWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+        vecSetting.push_back(stSetting);
+        stSetting.unIdentifier = H2_SETTINGS_MAX_FRAME_SIZE;
+        stSetting.uiValue = DEFAULT_SETTINGS_MAX_FRAME_SIZE;
+        vecSetting.push_back(stSetting);
+        m_pFrame->EncodeSetting(this, vecSetting, pBuff);
+    }
+    else
+    {
+        stSetting.unIdentifier = H2_SETTINGS_INITIAL_WINDOW_SIZE;
+        stSetting.uiValue = 4194304;
+        m_uiRecvWindowSize = 4194304;
+        vecSetting.push_back(stSetting);
+        stSetting.unIdentifier = H2_SETTINGS_MAX_FRAME_SIZE;
+        stSetting.uiValue = 4194304;
+        vecSetting.push_back(stSetting);
+        stSetting.unIdentifier = H2_SETTINGS_MAX_HEADER_LIST_SIZE;
+        stSetting.uiValue = 8192;
+        vecSetting.push_back(stSetting);
+        m_pFrame->EncodeSetting(this, vecSetting, pBuff);
+        m_pFrame->EncodeWindowUpdate(this, 0, 4128769, pBuff);
+        m_pFrame->EncodePing(this, false, 0, 0, pBuff);
+    }
 }
 
 E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
 {
+    if (m_bWantMagic && m_bChannelIsClient)
+    {
+        if (pBuff->ReadableBytes() >= 24)
+        {
+            pBuff->Write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24);
+            m_bWantMagic = false;
+        }
+    }
     m_bChunkNotice = oHttpMsg.chunk_notice();
     for (int i = 0; i < oHttpMsg.adding_without_index_headers_size(); ++i)
     {
@@ -48,64 +103,191 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     {
         m_setEncodingNeverIndexHeaders.insert(oHttpMsg.adding_never_index_headers(i));
     }
-    return(CODEC_STATUS_OK);
+    if (oHttpMsg.settings_size() > 0)
+    {
+        std::vector<tagSetting> vecSetting;
+        tagSetting stSetting;
+        for (auto it = oHttpMsg.settings().begin(); it != oHttpMsg.settings().end(); ++it)
+        {
+            stSetting.unIdentifier = it->first;
+            stSetting.uiValue = it->second;
+        }
+        m_pFrame->EncodeSetting(this, vecSetting, pBuff);
+    }
+    if (HTTP_REQUEST == oHttpMsg.type())
+    {
+        if (oHttpMsg.stream_id() != 0)
+        {
+            LOG4_ERROR("request stream id must be zero.");
+            return(CODEC_STATUS_PART_ERR);
+        }
+        const_cast<HttpMsg&>(oHttpMsg).set_stream_id(StreamIdGenerate());
+    }
+    else
+    {
+        if (oHttpMsg.stream_id() == 0)
+        {
+            LOG4_ERROR("response stream id can not be zero.");
+            return(CODEC_STATUS_PART_ERR);
+        }
+    }
+    //const_cast<HttpMsg&>(oHttpMsg).set_with_huffman(true);
+    if (oHttpMsg.stream_id() != m_pCodingStream->GetStreamId())
+    {
+        auto stream_iter = m_mapStream.find(oHttpMsg.stream_id());
+        if (stream_iter == m_mapStream.end())
+        {
+            if (NewCodingStream(oHttpMsg.stream_id()) == nullptr)
+            {
+                return(CODEC_STATUS_ERR);
+            }
+        }
+        else
+        {
+            m_pCodingStream = stream_iter->second;
+        }
+    }
+    size_t uiReadIdx = pBuff->GetReadIndex();
+    LOG4_TRACE("%s", oHttpMsg.DebugString().c_str());
+    E_CODEC_STATUS eCodecStatus = m_pCodingStream->Encode(this, oHttpMsg, pBuff);
+    if (CODEC_STATUS_PAUSE == eCodecStatus
+            || CODEC_STATUS_ERR == eCodecStatus)
+    {
+        pBuff->SetReadIndex(uiReadIdx);
+    }
+    if (CODEC_STATUS_PART_ERR == eCodecStatus
+            || CODEC_STATUS_OK == eCodecStatus)
+    {
+        LOG4_TRACE("m_bChannelIsClient = %d, m_stFrameHead.uiStreamIdentifier = %u",
+                m_bChannelIsClient, m_stFrameHead.uiStreamIdentifier);
+        if (m_pCodingStream->GetStreamState() == H2_STREAM_CLOSE)
+        {
+            CloseStream(m_stFrameHead.uiStreamIdentifier);
+        }
+    }
+    return(eCodecStatus);
+}
+
+E_CODEC_STATUS CodecHttp2::Encode(CBuffer* pBuff)
+{
+    // TODO encode not complete stream data frame
 }
 
 E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff)
 {
     LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
-    if (pBuff->ReadableBytes() <= H2_FRAME_HEAD_SIZE)
+    LOG4_TRACE("%s", pBuff->GetRawReadBuffer());
+    if (m_bWantMagic && !m_bChannelIsClient)
     {
+        if (pBuff->ReadableBytes() >= 24)
+        {
+            std::string strMagic;
+            strMagic.assign(pBuff->GetRawReadBuffer(), 24);
+            if (strMagic == "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n")
+            {
+                m_bWantMagic = false;
+                pBuff->AdvanceReadIndex(24);
+                return(Decode(pBuff, oHttpMsg, pReactBuff));
+            }
+            LOG4_ERROR("need upgrade magic.");
+            return(CODEC_STATUS_ERR);
+        }
+        return(CODEC_STATUS_PAUSE);
+    }
+    if (pBuff->ReadableBytes() < H2_FRAME_HEAD_SIZE)
+    {
+        if (pBuff->ReadableBytes() == 0 && m_pHoldingHttpMsg != nullptr)
+        {
+            oHttpMsg = std::move(*m_pHoldingHttpMsg);
+            oHttpMsg.set_http_major(2);
+            oHttpMsg.set_http_minor(0);
+            oHttpMsg.mutable_headers()->erase(
+                    oHttpMsg.mutable_headers()->find("Connection"));
+            oHttpMsg.mutable_upgrade()->set_is_upgrade(false);
+            oHttpMsg.mutable_upgrade()->set_protocol("");
+            oHttpMsg.set_stream_id(1);
+            try
+            {
+                m_pCodingStream = new Http2Stream(m_pLogger, GetCodecType(), oHttpMsg.stream_id());
+                m_pCodingStream->SetState(H2_STREAM_HALF_CLOSE_REMOTE);
+                m_mapStream.insert(std::make_pair((uint32)1, m_pCodingStream));
+            }
+            catch(std::bad_alloc& e)
+            {
+                LOG4_ERROR("%s", e.what());
+            }
+            delete m_pHoldingHttpMsg;
+            m_pHoldingHttpMsg = nullptr;
+            return(CODEC_STATUS_OK);
+        }
         return(CODEC_STATUS_PAUSE);
     }
 
-    int iReadIdx = pBuff->GetReadIndex();
-    pBuff->Read(&m_stFrameHead.uiLength, 3);
-    pBuff->Read(&m_stFrameHead.ucType, 1);
-    pBuff->Read(&m_stFrameHead.ucFlag, 1);
-    pBuff->Read(&m_stFrameHead.uiStreamIdentifier, 4);
-    m_stFrameHead.cR = (m_stFrameHead.uiStreamIdentifier & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
-    m_stFrameHead.uiLength = ntohl(m_stFrameHead.uiLength);
-    m_stFrameHead.uiStreamIdentifier = ntohl(m_stFrameHead.uiStreamIdentifier & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
+    size_t uiReadIdx = pBuff->GetReadIndex();
+    Http2Frame::DecodeFrameHeader(pBuff, m_stFrameHead);
+    LOG4_TRACE("m_stFrameHead.uiLength = %u, m_stFrameHead.ucType = %u, m_stFrameHead.ucFlag = %u, m_stFrameHead.uiStreamIdentifier = %u",
+            m_stFrameHead.uiLength, m_stFrameHead.ucType, m_stFrameHead.ucFlag, m_stFrameHead.uiStreamIdentifier);
     if (m_stFrameHead.uiLength > m_uiSettingsMaxFrameSize)
     {
+        LOG4_TRACE("m_uiSettingsMaxFrameSize = %u, m_stFrameHead.uiLength = %u",
+                m_uiSettingsMaxFrameSize, m_stFrameHead.uiLength);
         SetErrno(H2_ERR_FRAME_SIZE_ERROR);
+        pBuff->SetReadIndex(uiReadIdx);
         return(CODEC_STATUS_PART_ERR);
     }
     if (pBuff->ReadableBytes() < m_stFrameHead.uiLength)
     {
-        pBuff->SetReadIndex(iReadIdx);
+        LOG4_TRACE("pBuff->ReadableBytes() = %u, m_stFrameHead.uiLength = %u", pBuff->ReadableBytes(), m_stFrameHead.uiLength);
+        pBuff->SetReadIndex(uiReadIdx);
         return(CODEC_STATUS_PAUSE);
     }
 
     if (m_uiGoawayLastStreamId > 0 && m_stFrameHead.uiStreamIdentifier > m_uiGoawayLastStreamId)
     {
+        LOG4_TRACE("m_uiGoawayLastStreamId = %u, m_stFrameHead.uiStreamIdentifier = %u", m_uiGoawayLastStreamId, m_stFrameHead.uiStreamIdentifier);
         SetErrno(H2_ERR_CANCEL);
-        pBuff->SetReadIndex(iReadIdx);
+        pBuff->SetReadIndex(uiReadIdx);
         return(CODEC_STATUS_PART_ERR);
     }
 
-    if (m_pCodingStream != nullptr)
-    {
-        if (m_stFrameHead.uiStreamIdentifier == m_pCodingStream->GetStreamId())
-        {
-            return(m_pCodingStream->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff));
-        }
-        if (!m_pCodingStream->IsEndHeaders())
-        {
-            // If the END_HEADERS bit is not set, this frame MUST be followed by another CONTINUATION frame.
-            // A receiver MUST treat the receipt of any other type of frame or a frame on a different
-            // stream as a connection error (Section 5.4.1) of type PROTOCOL_ERROR.
-            SetErrno(H2_ERR_PROTOCOL_ERROR);
-            m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "The endpoint "
-                    "detected an unspecific protocol error. This error is for "
-                    "use when a more specific error code is not available.", pReactBuff);
-            return(CODEC_STATUS_ERR);
-        }
-    }
-
+    LOG4_TRACE("m_stFrameHead.uiStreamIdentifier = %u", m_stFrameHead.uiStreamIdentifier);
     if (m_stFrameHead.uiStreamIdentifier > 0)
     {
+        if (m_pCodingStream != nullptr)
+        {
+            if (m_stFrameHead.uiStreamIdentifier == m_pCodingStream->GetStreamId())
+            {
+                E_CODEC_STATUS eCodecStatus = m_pCodingStream->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff);
+                LOG4_TRACE("eCodecStatus = %d", eCodecStatus);
+                if (CODEC_STATUS_PAUSE == eCodecStatus
+                        || CODEC_STATUS_ERR == eCodecStatus)
+                {
+                    pBuff->SetReadIndex(uiReadIdx);
+                }
+                if (CODEC_STATUS_PART_ERR == eCodecStatus
+                        || CODEC_STATUS_OK == eCodecStatus)
+                {
+                    if (m_pCodingStream->GetStreamState() == H2_STREAM_CLOSE)
+                    {
+                        CloseStream(m_stFrameHead.uiStreamIdentifier);
+                    }
+                }
+                oHttpMsg.set_http_major(2);
+                oHttpMsg.set_http_minor(0);
+                return(eCodecStatus);
+            }
+        }
+        if (H2_FRAME_CONTINUATION == m_stFrameHead.ucType)
+        {
+            SetErrno(H2_ERR_PROTOCOL_ERROR);
+            m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "A CONTINUATION "
+                    "frame MUST be preceded by a HEADERS, PUSH_PROMISE or "
+                    "CONTINUATION frame without the END_HEADERS flag set. ", pReactBuff);
+            LOG4_TRACE("The endpoint detected an unspecific protocol error. This error is for "
+                    "use when a more specific error code is not available.");
+            return(CODEC_STATUS_ERR);
+        }
+        LOG4_TRACE("m_stFrameHead.ucType = %u", m_stFrameHead.ucType);
         auto stream_iter = m_mapStream.find(m_stFrameHead.uiStreamIdentifier);
         if (stream_iter == m_mapStream.end())
         {
@@ -122,17 +304,13 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
                 m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "The endpoint "
                         "detected an unspecific protocol error. This error is for "
                         "use when a more specific error code is not available.", pReactBuff);
+                LOG4_TRACE("The endpoint detected an unspecific protocol error. This error is for "
+                        "use when a more specific error code is not available.");
                 return(CODEC_STATUS_ERR);
             }
             m_uiStreamIdGenerate = m_stFrameHead.uiStreamIdentifier;
-            try
+            if (NewCodingStream(oHttpMsg.stream_id()) == nullptr)
             {
-                m_pCodingStream = new Http2Stream(m_pLogger, GetCodecType());
-                m_mapStream.insert(std::make_pair(m_stFrameHead.uiStreamIdentifier, m_pCodingStream));
-            }
-            catch(std::bad_alloc& e)
-            {
-                LOG4_ERROR("%s", e.what());
                 return(CODEC_STATUS_ERR);
             }
         }
@@ -140,11 +318,35 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
         {
             m_pCodingStream = stream_iter->second;
         }
-        return(m_pCodingStream->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff));
+        E_CODEC_STATUS eCodecStatus = m_pCodingStream->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff);
+        if (CODEC_STATUS_PAUSE == eCodecStatus
+                || CODEC_STATUS_ERR == eCodecStatus)
+        {
+            pBuff->SetReadIndex(uiReadIdx);
+        }
+        if (CODEC_STATUS_PART_ERR == eCodecStatus
+                || CODEC_STATUS_OK == eCodecStatus)
+        {
+            if (m_pCodingStream->GetStreamState() == H2_STREAM_CLOSE)
+            {
+                CloseStream(m_stFrameHead.uiStreamIdentifier);
+            }
+        }
+        oHttpMsg.set_http_major(2);
+        oHttpMsg.set_http_minor(0);
+        return(eCodecStatus);
     }
     else
     {
-        return(m_pFrame->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff));
+        E_CODEC_STATUS eCodecStatus = m_pFrame->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff);
+        if (CODEC_STATUS_PAUSE == eCodecStatus
+                || CODEC_STATUS_ERR == eCodecStatus)
+        {
+            pBuff->SetReadIndex(uiReadIdx);
+        }
+        oHttpMsg.set_http_major(2);
+        oHttpMsg.set_http_minor(0);
+        return(eCodecStatus);
     }
 }
 
@@ -300,6 +502,10 @@ E_H2_ERR_CODE CodecHttp2::Setting(const std::vector<tagSetting>& vecSetting)
             case H2_SETTINGS_INITIAL_WINDOW_SIZE:
                 if (vecSetting[i].uiValue <= SETTINGS_MAX_INITIAL_WINDOW_SIZE)
                 {
+                    for (auto it = m_mapStream.begin(); it != m_mapStream.end(); ++it)
+                    {
+                        it->second->WindowUpdate((int32)vecSetting[i].uiValue - m_uiSettingsMaxWindowSize);
+                    }
                     m_uiSettingsMaxWindowSize = vecSetting[i].uiValue;
                 }
                 else
@@ -311,6 +517,7 @@ E_H2_ERR_CODE CodecHttp2::Setting(const std::vector<tagSetting>& vecSetting)
                 if (vecSetting[i].uiValue <= SETTINGS_MAX_FRAME_SIZE)
                 {
                     m_uiSettingsMaxFrameSize = vecSetting[i].uiValue;
+                    LOG4_TRACE("set max frame size to %u", m_uiSettingsMaxFrameSize);
                 }
                 else
                 {
@@ -329,7 +536,18 @@ E_H2_ERR_CODE CodecHttp2::Setting(const std::vector<tagSetting>& vecSetting)
 
 void CodecHttp2::WindowUpdate(uint32 uiStreamId, uint32 uiIncrement)
 {
-    // TODO window update
+    if (uiStreamId == 0)
+    {
+        m_uiSendWindowSize += uiIncrement;
+    }
+    else
+    {
+        auto iter = m_mapStream.find(uiStreamId);
+        if (iter != m_mapStream.end())
+        {
+            iter->second->WindowUpdate(uiIncrement);
+        }
+    }
 }
 
 E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBuff, HttpMsg& oHttpMsg)
@@ -342,7 +560,6 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
     int iDynamicTableIndex = -1;
     std::string strHeaderName;
     std::string strHeaderValue;
-    auto pHeader = oHttpMsg.mutable_headers();
     while (pBuff->GetReadIndex() < uiHeaderBlockEndPos)
     {
         uiReadIndex = pBuff->GetReadIndex();
@@ -350,7 +567,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
         pBuff->SetReadIndex(uiReadIndex);
         if (H2_HPACK_CONDITION_INDEXED_HEADER & B)
         {
-            eStatus = UnpackHeaderIndexed(pBuff, pHeader);
+            eStatus = UnpackHeaderIndexed(pBuff, oHttpMsg);
             if (eStatus != CODEC_STATUS_PART_OK)
             {
                 return(eStatus);
@@ -365,9 +582,8 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
             {
                 return(eStatus);
             }
-            pHeader->insert({strHeaderName, strHeaderValue});
-            //UpdateDecodingDynamicTable(iDynamicTableIndex, strHeaderName, strHeaderValue);
-            UpdateDecodingDynamicTable(-1, strHeaderName, strHeaderValue);
+            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
+            UpdateDecodingDynamicTable(0, strHeaderName, strHeaderValue);
         }
         else if (H2_HPACK_CONDITION_LITERAL_HEADER_NEVER_INDEXED & B)
         {
@@ -378,7 +594,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
             {
                 return(eStatus);
             }
-            pHeader->insert({strHeaderName, strHeaderValue});
+            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
             oHttpMsg.add_adding_never_index_headers(strHeaderName);
         }
         else if (H2_HPACK_CONDITION_DYNAMIC_TABLE_SIZE_UPDATE & B)
@@ -392,7 +608,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
                         " protocol using HPACK!");
                 return(CODEC_STATUS_ERR);
             }
-            pHeader->insert({strHeaderName, strHeaderValue});
+            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
             UpdateDecodingDynamicTable(uiTableSize);
         }
         else    // H2_HPACK_CONDITION_LITERAL_HEADER_WITHOUT_INDEXING
@@ -404,7 +620,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
             {
                 return(eStatus);
             }
-            pHeader->insert({strHeaderName, strHeaderValue});
+            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
             oHttpMsg.add_adding_without_index_headers(strHeaderName);
         }
     }
@@ -412,10 +628,8 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
     return(CODEC_STATUS_PART_OK);
 }
 
-void CodecHttp2::PackHeader(const HttpMsg& oHttpMsg, CBuffer* pBuff)
+void CodecHttp2::PackHeader(const HttpMsg& oHttpMsg, int iHeaderType, CBuffer* pBuff)
 {
-    size_t uiTableIndex = 0;
-
     if (oHttpMsg.dynamic_table_update_size() > 0)
     {
         if (oHttpMsg.dynamic_table_update_size() > SETTINGS_MAX_FRAME_SIZE)
@@ -429,34 +643,65 @@ void CodecHttp2::PackHeader(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         }
     }
 
-    for (auto c_iter = oHttpMsg.headers().begin();
-            c_iter != oHttpMsg.headers().end(); ++c_iter)
+    if (iHeaderType & H2_HEADER_PSEUDO)
     {
-        uiTableIndex = Http2Header::GetStaticTableIndex(c_iter->first, c_iter->second);
-        if (uiTableIndex == 0)
+        for (int i = 0; i < oHttpMsg.pseudo_header_size(); ++i)
         {
-            uiTableIndex = GetEncodingTableIndex(c_iter->first, c_iter->second);
+            PackHeader(oHttpMsg.pseudo_header(i).name(), oHttpMsg.pseudo_header(i).value(), oHttpMsg.with_huffman(), pBuff);
         }
-        if (uiTableIndex > 0)
+    }
+    if (iHeaderType & H2_HEADER_NORMAL)
+    {
+        std::string strHeaderName;
+        for (auto c_iter = oHttpMsg.headers().begin();
+                c_iter != oHttpMsg.headers().end(); ++c_iter)
         {
-            PackHeaderIndexed(uiTableIndex, pBuff);
+            strHeaderName = c_iter->first;
+            std::transform(strHeaderName.begin(), strHeaderName.end(), strHeaderName.begin(),
+                    [](unsigned char c) -> unsigned char { return std::tolower(c); });
+            PackHeader(strHeaderName, c_iter->second, oHttpMsg.with_huffman(), pBuff);
         }
-        else
+    }
+    if (iHeaderType & H2_HEADER_TRAILER)
+    {
+        for (int i = 0; i < oHttpMsg.trailer_header_size(); ++i)
         {
-            auto never_index_iter = m_setEncodingNeverIndexHeaders.find(c_iter->first);
-            if (never_index_iter != m_setEncodingNeverIndexHeaders.end())
-            {
-                PackHeaderNeverIndexing(c_iter->first, c_iter->second, oHttpMsg.with_huffman(), pBuff);
-                continue;
-            }
-            auto without_index_iter = m_setEncodingWithoutIndexHeaders.find(c_iter->first);
-            if (without_index_iter != m_setEncodingWithoutIndexHeaders.end())
-            {
-                PackHeaderWithoutIndexing(c_iter->first, c_iter->second, oHttpMsg.with_huffman(), pBuff);
-                continue;
-            }
-            PackHeaderWithIndexing(c_iter->first, c_iter->second, oHttpMsg.with_huffman(), pBuff);
+            PackHeader(oHttpMsg.trailer_header(i).name(), oHttpMsg.trailer_header(i).value(), oHttpMsg.with_huffman(), pBuff);
         }
+    }
+}
+
+void CodecHttp2::PackHeader(const std::string& strHeaderName, const std::string& strHeaderValue, bool bWithHuffman, CBuffer* pBuff)
+{
+    size_t uiTableIndex = 0;
+    uiTableIndex = Http2Header::GetStaticTableIndex(strHeaderName, strHeaderValue);
+    if (uiTableIndex == 0)
+    {
+        uiTableIndex = GetEncodingTableIndex(strHeaderName, strHeaderValue);
+    }
+    if (uiTableIndex > 0)
+    {
+        PackHeaderIndexed(uiTableIndex, pBuff);
+        LOG4_TRACE("PackHeaderIndexed()    %s: %s | uiTableIndex = %u", strHeaderName.c_str(), strHeaderValue.c_str(), uiTableIndex);
+    }
+    else
+    {
+        auto never_index_iter = m_setEncodingNeverIndexHeaders.find(strHeaderName);
+        if (never_index_iter != m_setEncodingNeverIndexHeaders.end())
+        {
+            PackHeaderNeverIndexing(strHeaderName, strHeaderValue, bWithHuffman, pBuff);
+            LOG4_TRACE("PackHeaderNeverIndexing()    %s: %s", strHeaderName.c_str(), strHeaderValue.c_str());
+            return;
+        }
+        auto without_index_iter = m_setEncodingWithoutIndexHeaders.find(strHeaderName);
+        if (without_index_iter != m_setEncodingWithoutIndexHeaders.end())
+        {
+            PackHeaderWithoutIndexing(strHeaderName, strHeaderValue, bWithHuffman, pBuff);
+            LOG4_TRACE("PackHeaderWithoutIndexing()    %s: %s", strHeaderName.c_str(), strHeaderValue.c_str());
+            return;
+        }
+        PackHeaderWithIndexing(strHeaderName, strHeaderValue, bWithHuffman, pBuff);
+        LOG4_TRACE("PackHeaderWithIndexing()    %s: %s", strHeaderName.c_str(), strHeaderValue.c_str());
     }
 }
 
@@ -485,7 +730,7 @@ E_CODEC_STATUS CodecHttp2::PromiseStream(uint32 uiStreamId, CBuffer* pReactBuff)
     Http2Stream* pPromiseStream = nullptr;
     try
     {
-        pPromiseStream = new Http2Stream(m_pLogger, GetCodecType());
+        pPromiseStream = new Http2Stream(m_pLogger, GetCodecType(), uiStreamId);
         pPromiseStream->SetState(H2_STREAM_RESERVED_REMOTE);
         m_mapStream.insert(std::make_pair(uiStreamId, pPromiseStream));
     }
@@ -495,6 +740,11 @@ E_CODEC_STATUS CodecHttp2::PromiseStream(uint32 uiStreamId, CBuffer* pReactBuff)
         return(CODEC_STATUS_PART_ERR);
     }
     return(CODEC_STATUS_PART_OK);
+}
+
+void CodecHttp2::TransferHoldingMsg(HttpMsg* pHoldingHttpMsg)
+{
+    m_pHoldingHttpMsg = pHoldingHttpMsg;
 }
 
 uint32 CodecHttp2::StreamIdGenerate()
@@ -522,6 +772,25 @@ uint32 CodecHttp2::StreamIdGenerate()
         }
     }
     return(m_uiStreamIdGenerate);
+}
+
+Http2Stream* CodecHttp2::NewCodingStream(uint32 uiStreamId)
+{
+    uint32 uiNewWindowSize = m_uiRecvWindowSize + DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    try
+    {
+        m_pCodingStream = new Http2Stream(m_pLogger, GetCodecType(), uiStreamId);
+        m_pCodingStream->WindowInit(m_uiSettingsMaxWindowSize);
+        m_uiRecvWindowSize = (uiNewWindowSize < SETTINGS_MAX_INITIAL_WINDOW_SIZE)
+                ? uiNewWindowSize : SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+        m_mapStream.insert(std::make_pair(uiStreamId, m_pCodingStream));
+        return(m_pCodingStream);
+    }
+    catch(std::bad_alloc& e)
+    {
+        LOG4_ERROR("%s", e.what());
+        return(nullptr);
+    }
 }
 
 TreeNode<tagStreamWeight>* CodecHttp2::FindStreamWeight(uint32 uiStreamId, TreeNode<tagStreamWeight>* pTarget)
@@ -561,8 +830,7 @@ void CodecHttp2::ReleaseStreamWeight(TreeNode<tagStreamWeight>* pNode)
     delete pNode;
 }
 
-E_CODEC_STATUS CodecHttp2::UnpackHeaderIndexed(CBuffer* pBuff,
-        ::google::protobuf::Map< ::std::string, ::std::string >* pHeader)
+E_CODEC_STATUS CodecHttp2::UnpackHeaderIndexed(CBuffer* pBuff, HttpMsg& oHttpMsg)
 {
     uint32 uiTableIndex = (uint32)Http2Header::DecodeInt(H2_HPACK_PREFIX_7_BITS, pBuff);
     if (uiTableIndex == 0)
@@ -573,17 +841,15 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderIndexed(CBuffer* pBuff,
     }
     else if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex)
     {
-        pHeader->insert({
-            Http2Header::sc_vecStaticTable[uiTableIndex].first,
-            Http2Header::sc_vecStaticTable[uiTableIndex].second});
+        ClassifyHeader(Http2Header::sc_vecStaticTable[uiTableIndex].first,
+                Http2Header::sc_vecStaticTable[uiTableIndex].second, oHttpMsg);
         return(CODEC_STATUS_PART_OK);
     }
     else if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex + m_vecDecodingDynamicTable.size())
     {
         uint32 uiDynamicTableIndex = uiTableIndex - Http2Header::sc_uiMaxStaticTableIndex - 1;
-        pHeader->insert({
-            m_vecDecodingDynamicTable[uiDynamicTableIndex].Name(),
-            m_vecDecodingDynamicTable[uiDynamicTableIndex].Value()});
+        ClassifyHeader(m_vecDecodingDynamicTable[uiDynamicTableIndex].Name(),
+                m_vecDecodingDynamicTable[uiDynamicTableIndex].Value(), oHttpMsg);
         return(CODEC_STATUS_PART_OK);
     }
     else
@@ -653,6 +919,65 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
     }
 }
 
+void CodecHttp2::ClassifyHeader(const std::string& strHeaderName, const std::string& strHeaderValue, HttpMsg& oHttpMsg)
+{
+    if (oHttpMsg.stream_id() & 0x01)
+    {
+        if (oHttpMsg.body().size() > 0)
+        {
+            auto pHeader = oHttpMsg.add_trailer_header();
+            pHeader->set_name(strHeaderName);
+            pHeader->set_value(strHeaderValue);
+        }
+        else
+        {
+            if (strHeaderName == ":method")
+            {
+                if (strHeaderValue == "POST")
+                {
+                    oHttpMsg.set_method(HTTP_POST);
+                }
+                else if (strHeaderValue == "GET")
+                {
+                    oHttpMsg.set_method(HTTP_GET);
+                }
+                else
+                {
+                    ;// TODO other http method
+                }
+            }
+            else if (strHeaderName == ":path")
+            {
+                oHttpMsg.set_path(strHeaderValue);
+            }
+            else
+            {
+                oHttpMsg.mutable_headers()->insert({strHeaderName, strHeaderValue});
+            }
+        }
+    }
+    else
+    {
+        if (oHttpMsg.body().size() > 0)
+        {
+            auto pHeader = oHttpMsg.add_trailer_header();
+            pHeader->set_name(strHeaderName);
+            pHeader->set_value(strHeaderValue);
+        }
+        else
+        {
+            if (strHeaderName == ":status")
+            {
+                oHttpMsg.set_status_code(StringConverter::RapidAtoi<int32>(strHeaderValue.c_str()));
+            }
+            else
+            {
+                oHttpMsg.mutable_headers()->insert({strHeaderName, strHeaderValue});
+            }
+        }
+    }
+}
+
 void CodecHttp2::PackHeaderIndexed(size_t uiTableIndex, CBuffer* pBuff)
 {
     Http2Header::EncodeInt(uiTableIndex, (size_t)H2_HPACK_PREFIX_7_BITS,
@@ -669,7 +994,7 @@ void CodecHttp2::PackHeaderWithIndexing(const std::string& strHeaderName,
         uiTableIndex = GetEncodingTableIndex(strHeaderName);
     }
 
-    if (uiTableIndex > 0)
+    if (uiTableIndex > 0)   // Literal Header Field with Incremental Indexing - Indexed Name.
     {
         Http2Header::EncodeInt(uiTableIndex, (size_t)H2_HPACK_PREFIX_6_BITS,
                 (char)H2_HPACK_CONDITION_LITERAL_HEADER_WITH_INDEXING, pBuff);
@@ -682,7 +1007,7 @@ void CodecHttp2::PackHeaderWithIndexing(const std::string& strHeaderName,
             Http2Header::EncodeStringLiteral(strHeaderValue, pBuff);
         }
     }
-    else
+    else    // Literal Header Field with Incremental Indexing - New Name.
     {
         Http2Header::EncodeInt(0, (size_t)H2_HPACK_PREFIX_6_BITS,
                 (char)H2_HPACK_CONDITION_LITERAL_HEADER_WITH_INDEXING, pBuff);
@@ -693,9 +1018,13 @@ void CodecHttp2::PackHeaderWithIndexing(const std::string& strHeaderName,
         }
         else
         {
+            LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
             Http2Header::EncodeStringLiteral(strHeaderName, pBuff);
+            LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
             Http2Header::EncodeStringLiteral(strHeaderValue, pBuff);
+            LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
         }
+        UpdateEncodingDynamicTable(0, strHeaderName, strHeaderValue);
     }
 }
 
@@ -843,19 +1172,19 @@ size_t CodecHttp2::GetEncodingTableIndex(const std::string& strHeaderName, const
 //    return(uiTableIndex);
 //}
 
-void CodecHttp2::UpdateEncodingDynamicTable(int iDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue)
+void CodecHttp2::UpdateEncodingDynamicTable(uint32 uiDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue)
 {
     Http2Header oHeader(strHeaderName, strHeaderValue);
-    if (iDynamicTableIndex < 0 || iDynamicTableIndex >= (int)m_vecEncodingDynamicTable.size())   // new header
+    if (uiDynamicTableIndex <= 0 || uiDynamicTableIndex >= m_vecEncodingDynamicTable.size())   // new header
     {
-        while (m_uiEncodingDynamicTableSize + oHeader.HpackSize() > m_uiSettingsMaxFrameSize
+        while (m_uiEncodingDynamicTableSize + oHeader.HpackSize() > m_uiSettingsHeaderTableSize
                 && m_uiEncodingDynamicTableSize > 0)
         {
             auto& rLastElement = m_vecEncodingDynamicTable.back();
             m_uiEncodingDynamicTableSize -= rLastElement.HpackSize();
             m_vecEncodingDynamicTable.pop_back();
         }
-        if (oHeader.HpackSize() <= m_uiSettingsMaxFrameSize)
+        if (oHeader.HpackSize() <= m_uiSettingsHeaderTableSize)
         {
             m_vecEncodingDynamicTable.insert(m_vecEncodingDynamicTable.begin(),
                     std::move(oHeader));
@@ -865,19 +1194,19 @@ void CodecHttp2::UpdateEncodingDynamicTable(int iDynamicTableIndex, const std::s
     else    // replace header ?
     {
         while ((m_uiEncodingDynamicTableSize + oHeader.HpackSize()
-                - m_vecEncodingDynamicTable[iDynamicTableIndex].HpackSize())
-                > m_uiSettingsMaxFrameSize
+                - m_vecEncodingDynamicTable[uiDynamicTableIndex].HpackSize())
+                > m_uiSettingsHeaderTableSize
                 && m_uiEncodingDynamicTableSize > 0)
         {
             auto& rLastElement = m_vecEncodingDynamicTable.back();
             m_uiEncodingDynamicTableSize -= rLastElement.HpackSize();
             m_vecEncodingDynamicTable.pop_back();
         }
-        if (oHeader.HpackSize() <= m_uiSettingsMaxFrameSize)
+        if (oHeader.HpackSize() <= m_uiSettingsHeaderTableSize)
         {
-            if (iDynamicTableIndex < (int)m_vecEncodingDynamicTable.size())  // replace header
+            if (uiDynamicTableIndex < m_vecEncodingDynamicTable.size())  // replace header
             {
-                m_vecEncodingDynamicTable[iDynamicTableIndex] = std::move(oHeader);
+                m_vecEncodingDynamicTable[uiDynamicTableIndex] = std::move(oHeader);
             }
             else    // new header
             {
@@ -891,8 +1220,8 @@ void CodecHttp2::UpdateEncodingDynamicTable(int iDynamicTableIndex, const std::s
 
 void CodecHttp2::UpdateEncodingDynamicTable(uint32 uiTableSize)
 {
-    m_uiSettingsMaxFrameSize = uiTableSize;
-    while (m_uiEncodingDynamicTableSize > m_uiSettingsMaxFrameSize
+    m_uiSettingsHeaderTableSize = uiTableSize;
+    while (m_uiEncodingDynamicTableSize > m_uiSettingsHeaderTableSize
             && m_uiEncodingDynamicTableSize > 0)
     {
         auto& rLastElement = m_vecEncodingDynamicTable.back();
@@ -901,19 +1230,19 @@ void CodecHttp2::UpdateEncodingDynamicTable(uint32 uiTableSize)
     }
 }
 
-void CodecHttp2::UpdateDecodingDynamicTable(int iDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue)
+void CodecHttp2::UpdateDecodingDynamicTable(uint32 uiDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue)
 {
     Http2Header oHeader(strHeaderName, strHeaderValue);
-    if (iDynamicTableIndex < 0 || iDynamicTableIndex >= (int)m_vecDecodingDynamicTable.size())   // new header
+    if (uiDynamicTableIndex <= 0 || uiDynamicTableIndex >= m_vecDecodingDynamicTable.size())   // new header
     {
-        while (m_uiDecodingDynamicTableSize + oHeader.HpackSize() > m_uiSettingsMaxFrameSize
+        while (m_uiDecodingDynamicTableSize + oHeader.HpackSize() > m_uiSettingsHeaderTableSize
                 && m_uiDecodingDynamicTableSize > 0)
         {
             auto& rLastElement = m_vecDecodingDynamicTable.back();
             m_uiDecodingDynamicTableSize -= rLastElement.HpackSize();
             m_vecDecodingDynamicTable.pop_back();
         }
-        if (oHeader.HpackSize() <= m_uiSettingsMaxFrameSize)
+        if (oHeader.HpackSize() <= m_uiSettingsHeaderTableSize)
         {
             m_vecDecodingDynamicTable.insert(m_vecDecodingDynamicTable.begin(),
                     std::move(oHeader));
@@ -923,19 +1252,19 @@ void CodecHttp2::UpdateDecodingDynamicTable(int iDynamicTableIndex, const std::s
     else    // replace header ?
     {
         while ((m_uiDecodingDynamicTableSize + oHeader.HpackSize()
-                - m_vecDecodingDynamicTable[iDynamicTableIndex].HpackSize())
-                > m_uiSettingsMaxFrameSize
+                - m_vecDecodingDynamicTable[uiDynamicTableIndex].HpackSize())
+                > m_uiSettingsHeaderTableSize
                 && m_uiDecodingDynamicTableSize > 0)
         {
             auto& rLastElement = m_vecDecodingDynamicTable.back();
             m_uiDecodingDynamicTableSize -= rLastElement.HpackSize();
             m_vecDecodingDynamicTable.pop_back();
         }
-        if (oHeader.HpackSize() <= m_uiSettingsMaxFrameSize)
+        if (oHeader.HpackSize() <= m_uiSettingsHeaderTableSize)
         {
-            if (iDynamicTableIndex < (int)m_vecDecodingDynamicTable.size())  // replace header
+            if (uiDynamicTableIndex < m_vecDecodingDynamicTable.size())  // replace header
             {
-                m_vecDecodingDynamicTable[iDynamicTableIndex] = std::move(oHeader);
+                m_vecDecodingDynamicTable[uiDynamicTableIndex] = std::move(oHeader);
             }
             else    // new header
             {
@@ -949,14 +1278,19 @@ void CodecHttp2::UpdateDecodingDynamicTable(int iDynamicTableIndex, const std::s
 
 void CodecHttp2::UpdateDecodingDynamicTable(uint32 uiTableSize)
 {
-    m_uiSettingsMaxFrameSize = uiTableSize;
-    while (m_uiDecodingDynamicTableSize > m_uiSettingsMaxFrameSize
+    m_uiSettingsHeaderTableSize = uiTableSize;
+    while (m_uiDecodingDynamicTableSize > m_uiSettingsHeaderTableSize
             && m_uiDecodingDynamicTableSize > 0)
     {
         auto& rLastElement = m_vecDecodingDynamicTable.back();
         m_uiDecodingDynamicTableSize -= rLastElement.HpackSize();
         m_vecDecodingDynamicTable.pop_back();
     }
+}
+
+void CodecHttp2::CloseStream(uint32 uiStreamId)
+{
+    RstStream(uiStreamId);
 }
 
 } /* namespace neb */

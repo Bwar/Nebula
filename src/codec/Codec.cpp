@@ -9,10 +9,6 @@
  ******************************************************************************/
 #include "Codec.hpp"
 
-#include "cryptopp/default.h"
-#include "cryptopp/cryptlib.h"
-#include "cryptopp/aes.h"
-#include "cryptopp/gzip.h"
 #include "util/encrypt/hconv.h"
 #include "util/encrypt/rc5.h"
 
@@ -28,7 +24,7 @@ Codec::Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
 
 Codec::~Codec()
 {
-    LOG4_TRACE("");
+    LOG4_TRACE("codec_type %d", m_eCodecType);
 }
 
 const std::vector<E_CODEC_TYPE>& Codec::GetAutoSwitchCodecType()
@@ -160,47 +156,12 @@ bool Codec::Unzip(const std::string& strSrc, std::string& strDest)
 
 bool Codec::Gzip(const std::string& strSrc, std::string& strDest)
 {
-    try
-    {
-        CryptoPP::Gzip oGzipper;
-        oGzipper.Put((CryptoPP::byte*)strSrc.c_str(), strSrc.size());
-        oGzipper.MessageEnd();
-
-        CryptoPP::word64 avail = oGzipper.MaxRetrievable();
-        if(avail)
-        {
-            strDest.resize(avail);
-            oGzipper.Get((CryptoPP::byte*)&strDest[0], strDest.size());
-        }
-    }
-    catch(CryptoPP::InvalidDataFormat& e)
-    {
-        LOG4_ERROR("%s", e.GetWhat().c_str());
-        return(false);
-    }
-    return (true);
+    return(CodecUtil::Gzip(strSrc, strDest));
 }
 
 bool Codec::Gunzip(const std::string& strSrc, std::string& strDest)
 {
-    try
-    {
-        CryptoPP::Gunzip oUnZipper;
-        oUnZipper.Put((CryptoPP::byte*)strSrc.c_str(), strSrc.size());
-        oUnZipper.MessageEnd();
-        CryptoPP::word64 avail = oUnZipper.MaxRetrievable();
-        if(avail)
-        {
-            strDest.resize(avail);
-            oUnZipper.Get((CryptoPP::byte*)&strDest[0], strDest.size());
-        }
-    }
-    catch(CryptoPP::InvalidDataFormat& e)
-    {
-        LOG4_ERROR("%s", e.GetWhat().c_str());
-        return(false);
-    }
-    return (true);
+    return(CodecUtil::Gunzip(strSrc, strDest));
 }
 
 bool Codec::Rc5Encrypt(const std::string& strSrc, std::string& strDest)
@@ -276,52 +237,12 @@ bool Codec::Rc5Decrypt(const std::string& strSrc, std::string& strDest)
 
 bool Codec::AesEncrypt(const std::string& strSrc, std::string& strDest)
 {
-    try
-    {
-        CryptoPP::CBC_Mode<CryptoPP::AES>::Encryption oAes;
-        oAes.SetKeyWithIV((const CryptoPP::byte*)GetKey().c_str(), 16, (const CryptoPP::byte*)"2015-08-10 08:53:47");
-        CryptoPP::StreamTransformationFilter oEncryptor(
-                        oAes, NULL, CryptoPP::BlockPaddingSchemeDef::PKCS_PADDING);
-        for (size_t i = 0; i < strSrc.size(); ++i)
-        {
-            oEncryptor.Put((CryptoPP::byte)strSrc[i]);
-        }
-        oEncryptor.MessageEnd();
-        size_t length = oEncryptor.MaxRetrievable();
-        strDest.resize(length, 0);
-        oEncryptor.Get((CryptoPP::byte*)&strDest[0], length);
-    }
-    catch(CryptoPP::InvalidDataFormat& e)
-    {
-        LOG4_ERROR("%s", e.GetWhat().c_str());
-        return(false);
-    }
-    return(true);
+    return(CodecUtil::AesEncrypt(GetKey(), strSrc, strDest));
 }
 
 bool Codec::AesDecrypt(const std::string& strSrc, std::string& strDest)
 {
-    try
-    {
-        CryptoPP::CBC_Mode<CryptoPP::AES>::Decryption oAes;
-        oAes.SetKeyWithIV((const CryptoPP::byte*)GetKey().c_str(), 16, (const CryptoPP::byte*)"2015-08-10 08:53:47");
-        CryptoPP::StreamTransformationFilter oDecryptor(
-                        oAes, NULL, CryptoPP::BlockPaddingSchemeDef::PKCS_PADDING);
-        for (size_t i = 0; i < strSrc.size(); ++i)
-        {
-            oDecryptor.Put((CryptoPP::byte)strSrc[i]);
-        }
-        oDecryptor.MessageEnd();
-    size_t length = oDecryptor.MaxRetrievable();
-    strDest.resize(length, 0);
-    oDecryptor.Get((CryptoPP::byte*)&strDest[0], length);
-    }
-    catch(CryptoPP::InvalidDataFormat& e)
-    {
-        LOG4_ERROR("%s", e.GetWhat().c_str());
-        return(false);
-    }
-    return(true);
+    return(CodecUtil::AesDecrypt(GetKey(), strSrc, strDest));
 }
 
 } /* namespace neb */

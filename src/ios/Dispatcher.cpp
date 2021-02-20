@@ -121,6 +121,7 @@ void Dispatcher::ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_tim
 bool Dispatcher::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE("fd[%d]", pChannel->m_pImpl->GetFd());
+    m_pLastActivityChannel = pChannel;
     if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
     {
         if (pChannel->m_pImpl->GetFd() == ((Manager*)m_pLabor)->GetManagerInfo().iS2SListenFd)
@@ -162,6 +163,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
     switch(pChannel->GetCodecType())
     {
         case CODEC_HTTP:
+        case CODEC_HTTP2:
             for (int i = 0; ; ++i)
             {
                 HttpMsg oHttpMsg;
@@ -174,9 +176,20 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
                 }
 
-                if (CODEC_STATUS_OK == eCodecStatus)
+                if (CODEC_STATUS_OK == eCodecStatus
+                        || CODEC_STATUS_PART_OK == eCodecStatus)
                 {
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+                    if (oHttpMsg.http_major() > 1)
+                    {
+                        if (oHttpMsg.stream_id() > 0)
+                        {
+                            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+                        }
+                    }
+                    else
+                    {
+                        m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+                    }
                 }
                 else if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10) // http1.0 client close
                 {
@@ -274,6 +287,8 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
     switch (eCodecStatus)
     {
         case CODEC_STATUS_PAUSE: 
+        case CODEC_STATUS_PART_OK:
+        case CODEC_STATUS_PART_ERR:
             return(true);
         case CODEC_STATUS_WANT_WRITE: 
             return(SendTo(pChannel));
@@ -314,12 +329,24 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
     switch(pChannel->GetCodecType())
     {
         case CODEC_HTTP:
+        case CODEC_HTTP2:
             {
                 HttpMsg oHttpMsg;
                 eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
-                while (CODEC_STATUS_OK == eCodecStatus)
+                while (CODEC_STATUS_OK == eCodecStatus
+                        || CODEC_STATUS_PART_OK == eCodecStatus)
                 {
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+                    if (oHttpMsg.http_major() > 1)
+                    {
+                        if (oHttpMsg.stream_id() > 0)
+                        {
+                            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+                        }
+                    }
+                    else
+                    {
+                        m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+                    }
                     eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
                 }
                 if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10) // http1.0 client close
@@ -390,6 +417,8 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
     switch (eCodecStatus)
     {
         case CODEC_STATUS_PAUSE: 
+        case CODEC_STATUS_PART_OK:
+        case CODEC_STATUS_PART_ERR:
             return(true);
         case CODEC_STATUS_WANT_WRITE: 
             return(SendTo(pChannel));
@@ -847,6 +876,7 @@ bool Dispatcher::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
         }
     }
     E_CODEC_STATUS eStatus = m_iterLoaderAndWorkerChannel->second->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
+    m_pLastActivityChannel = m_iterLoaderAndWorkerChannel->second;
     if (CODEC_STATUS_OK == eStatus)
     {
         RemoveIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
@@ -877,6 +907,11 @@ bool Dispatcher::SendTo(int iFd, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBo
         return(SendTo(iter->second, iCmd, uiSeq, oMsgBody));
     }
     return(false);
+}
+
+std::shared_ptr<SocketChannel> Dispatcher::GetLastActivityChannel()
+{
+    return(m_pLastActivityChannel);
 }
 
 bool Dispatcher::Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice)
@@ -924,9 +959,9 @@ bool Dispatcher::DiscardNamedChannel(const std::string& strIdentify)
     }
 }
 
-bool Dispatcher::SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType)
+Codec* Dispatcher::SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType, bool bIsUpgrade)
 {
-    return(pChannel->m_pImpl->SwitchCodec(eCodecType, m_pLabor->GetNodeInfo().dIoTimeout));
+    return(pChannel->m_pImpl->SwitchCodec(eCodecType, m_pLabor->GetNodeInfo().dIoTimeout, bIsUpgrade));
 }
 
 bool Dispatcher::AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel)

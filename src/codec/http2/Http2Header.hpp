@@ -40,6 +40,13 @@ enum E_H2_HPACK_PREFIX
     H2_HPACK_PREFIX_8_BITS = 0xFF,
 };
 
+enum E_H2_HEADER_TYPE
+{
+    H2_HEADER_PSEUDO        = 0x01,
+    H2_HEADER_NORMAL        = 0x02,
+    H2_HEADER_TRAILER       = 0x04,
+};
+
 class Http2Header
 {
 public:

@@ -48,8 +48,14 @@ class Http2Stream;
 class Http2Frame: public Codec
 {
 public:
-    Http2Frame(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
+    Http2Frame(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, Http2Stream* pStream = nullptr);
     virtual ~Http2Frame();
+
+    static void WriteMediumInt(uint32 uiValue, CBuffer* pBuff);
+    static void ReadMediumInt(CBuffer* pBuff, uint32& uiValue);
+    static void DecodeFrameHeader(CBuffer* pBuff, tagH2FrameHead& stFrameHead);
+    static void EncodeFrameHeader(const tagH2FrameHead& stFrameHead, CBuffer* pBuff);
+    static E_CODEC_STATUS EncodeSetting(const std::vector<tagSetting>& vecSetting, std::string& strSettingFrame);
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
     {
@@ -61,7 +67,9 @@ public:
     }
 
     virtual E_CODEC_STATUS Encode(CodecHttp2* pCodecH2,
-            const HttpMsg& oHttpMsg, CBuffer* pBuff);
+            const HttpMsg& oHttpMsg,
+            const tagPriority& stPriority,
+            const std::string& strPadding, CBuffer* pBuff);
     virtual E_CODEC_STATUS Decode(CodecHttp2* pCodecH2,
             const tagH2FrameHead& stFrameHead, CBuffer* pBuff,
             HttpMsg& oHttpMsg, CBuffer* pReactBuff);
@@ -99,15 +107,13 @@ protected:
             HttpMsg& oHttpMsg, CBuffer* pReactBuff);
 
 
-    void EncodeFrameHeader(const tagH2FrameHead& stFrameHead, CBuffer* pBuff);
-    void EncodePriority(const tagPriority& stPriority, CBuffer* pBuff);
     E_CODEC_STATUS EncodeData(CodecHttp2* pCodecH2,
-            uint32 uiStreamId, const HttpMsg& oHttpMsg,
+            uint32 uiStreamId, const HttpMsg& oHttpMsg, bool bEndStream,
             const std::string& strPadding, CBuffer* pBuff);
     E_CODEC_STATUS EncodeHeaders(CodecHttp2* pCodecH2,
             uint32 uiStreamId, const HttpMsg& oHttpMsg,
             const tagPriority& stPriority, const std::string& strPadding,
-            CBuffer* pBuff);
+            bool bEndStream, CBuffer* pBuff);
     E_CODEC_STATUS EncodePriority(CodecHttp2* pCodecH2,
             uint32 uiStreamId, const tagPriority& stPriority, CBuffer* pBuff);
     E_CODEC_STATUS EncodeRstStream(CodecHttp2* pCodecH2,
@@ -117,7 +123,8 @@ protected:
     E_CODEC_STATUS EncodeSetting(CodecHttp2* pCodecH2, CBuffer* pBuff); // ACK
     E_CODEC_STATUS EncodePushPromise(CodecHttp2* pCodecH2,
             uint32 uiStreamId, uint32 uiPromiseStreamId,
-            const std::string& strPadding, const HttpMsg& oHttpMsg, CBuffer* pBuff);
+            const std::string& strPadding, const HttpMsg& oHttpMsg,
+            bool bEndStream, CBuffer* pBuff);
     E_CODEC_STATUS EncodePing(CodecHttp2* pCodecH2,
             bool bAck, int32 iPayload1, int32 iPayload2, CBuffer* pBuff);
     E_CODEC_STATUS EncodeGoaway(CodecHttp2* pCodecH2,
@@ -125,11 +132,20 @@ protected:
     E_CODEC_STATUS EncodeWindowUpdate(CodecHttp2* pCodecH2,
             uint32 uiStreamId, uint32 uiIncrement, CBuffer* pBuff);
     E_CODEC_STATUS EncodeContinuation(CodecHttp2* pCodecH2,
-            uint32 uiStreamId, CBuffer* pHpackBuff, CBuffer* pBuff);
+            uint32 uiStreamId, bool bEndStream, CBuffer* pHpackBuff, CBuffer* pBuff);
+
+protected:
+    void EncodePriority(const tagPriority& stPriority, CBuffer* pBuff);
+    void EncodeSetStreamState(const tagH2FrameHead& stFrameHead);
+    E_CODEC_STATUS EncodeData(CodecHttp2* pCodecH2, uint32 uiStreamId,
+            const char* pData, uint32 uiDataLen, bool bEndStream,
+            const std::string& strPadding, uint32& uiEncodedDataLen, CBuffer* pBuff);
 
 private:
     friend class CodecHttp2;
     friend class Http2Stream;
+
+    Http2Stream* m_pStream;
 };
 
 } /* namespace neb */

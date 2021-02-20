@@ -271,6 +271,11 @@ bool Actor::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     return(m_pLabor->GetDispatcher()->SendDataReport(iCmd, uiSeq, oMsgBody));
 }
 
+std::shared_ptr<SocketChannel> Actor::GetLastActivityChannel()
+{
+    return(m_pLabor->GetDispatcher()->GetLastActivityChannel());
+}
+
 bool Actor::CloseRawChannel(std::shared_ptr<SocketChannel> pChannel)
 {
     if (CODEC_UNKNOW == pChannel->GetCodecType())
