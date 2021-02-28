@@ -128,9 +128,9 @@ bool Actor::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& strErrMsg,
     return(m_pLabor->GetActorBuilder()->ExecStep(uiStepSeq, iErrno, strErrMsg, data));
 }
 
-std::shared_ptr<Model> Actor::GetModel(const std::string& strModelName)
+std::shared_ptr<Operator> Actor::GetOperator(const std::string& strOperatorName)
 {
-    return(m_pLabor->GetActorBuilder()->GetModel(strModelName));
+    return(m_pLabor->GetActorBuilder()->GetOperator(strOperatorName));
 }
 
 std::shared_ptr<Context> Actor::GetContext()

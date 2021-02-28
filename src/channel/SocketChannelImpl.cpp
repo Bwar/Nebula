@@ -373,7 +373,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
             return(CODEC_STATUS_OK);
     }
 
-    if (CODEC_STATUS_OK != eCodecStatus || CODEC_STATUS_PART_OK != eCodecStatus)
+    if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PART_OK != eCodecStatus)
     {
         return(eCodecStatus);
     }

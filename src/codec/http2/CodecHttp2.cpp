@@ -26,6 +26,9 @@ CodecHttp2::CodecHttp2(std::shared_ptr<NetLogger> pLogger,
     try
     {
         m_pFrame = new Http2Frame(pLogger, eCodecType);
+        m_pStreamWeightRoot = new TreeNode<TagStreamWeight();
+        m_pStreamWeightRoot->pData = new tagStreamWeight();
+        m_pStreamWeightRoot->pData->uiStreamId = 0;
     }
     catch(std::bad_alloc& e)
     {
@@ -35,8 +38,8 @@ CodecHttp2::CodecHttp2(std::shared_ptr<NetLogger> pLogger,
 
 CodecHttp2::~CodecHttp2()
 {
-    ReleaseStreamWeight(m_pStreamWeight);
-    m_pStreamWeight = nullptr;
+    ReleaseStreamWeight(m_pStreamWeightRoot);
+    m_pStreamWeightRoot = nullptr;
     for (auto iter = m_mapStream.begin(); iter != m_mapStream.end(); ++iter)
     {
         delete iter->second;
@@ -168,11 +171,6 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     return(eCodecStatus);
 }
 
-E_CODEC_STATUS CodecHttp2::Encode(CBuffer* pBuff)
-{
-    // TODO encode not complete stream data frame
-}
-
 E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff)
 {
     LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
@@ -301,15 +299,14 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
             if (m_stFrameHead.uiStreamIdentifier <= m_uiStreamIdGenerate)
             {
                 SetErrno(H2_ERR_PROTOCOL_ERROR);
-                m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "The endpoint "
-                        "detected an unspecific protocol error. This error is for "
-                        "use when a more specific error code is not available.", pReactBuff);
-                LOG4_TRACE("The endpoint detected an unspecific protocol error. This error is for "
-                        "use when a more specific error code is not available.");
+                m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "The "
+                        "identifier of a newly established stream MUST be "
+                        "numerically greater than all streams that the "
+                        "initiating endpoint has opened or reserved.", pReactBuff);
                 return(CODEC_STATUS_ERR);
             }
             m_uiStreamIdGenerate = m_stFrameHead.uiStreamIdentifier;
-            if (NewCodingStream(oHttpMsg.stream_id()) == nullptr)
+            if (NewCodingStream(m_stFrameHead.uiStreamIdentifier) == nullptr)
             {
                 return(CODEC_STATUS_ERR);
             }
@@ -352,27 +349,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
 
 void CodecHttp2::SetPriority(uint32 uiStreamId, const tagPriority& stPriority)
 {
-    if (m_pStreamWeight == nullptr)
-    {
-        try
-        {
-            m_pStreamWeight = new TreeNode<tagStreamWeight>();
-            m_pStreamWeight->pData = new tagStreamWeight();
-            m_pStreamWeight->pData->uiStreamId = stPriority.uiDependency;
-            m_pStreamWeight->pFirstChild = new TreeNode<tagStreamWeight>();
-            m_pStreamWeight->pFirstChild->pData = new tagStreamWeight();
-            m_pStreamWeight->pFirstChild->pData->uiStreamId = uiStreamId;
-            m_pStreamWeight->pFirstChild->pData->ucWeight = stPriority.ucWeight;
-            m_pStreamWeight->pFirstChild->pParent = m_pStreamWeight;
-        }
-        catch(std::bad_alloc& e)
-        {
-            LOG4_ERROR("%s", e.what());
-            return;
-        }
-    }
-
-    auto pCurrentStreamWeight = FindStreamWeight(uiStreamId, m_pStreamWeight);
+    auto pCurrentStreamWeight = FindStreamWeight(uiStreamId, m_pStreamWeightRoot);
     if (pCurrentStreamWeight == nullptr)
     {
         try
@@ -404,11 +381,11 @@ void CodecHttp2::SetPriority(uint32 uiStreamId, const tagPriority& stPriority)
             pLast->pRightBrother = pCurrentStreamWeight->pRightBrother;
         }
     }
-    auto pDependencyStreamWeight = FindStreamWeight(stPriority.uiDependency, m_pStreamWeight);
+    auto pDependencyStreamWeight = FindStreamWeight(stPriority.uiDependency, m_pStreamWeightRoot);
     if (pDependencyStreamWeight == nullptr)
     {
-        pCurrentStreamWeight->pRightBrother = m_pStreamWeight->pRightBrother;
-        m_pStreamWeight->pRightBrother = pCurrentStreamWeight;
+        pCurrentStreamWeight->pRightBrother = m_pStreamWeightRoot->pRightBrother;
+        m_pStreamWeightRoot->pRightBrother = pCurrentStreamWeight;
     }
     else
     {
@@ -430,7 +407,7 @@ void CodecHttp2::RstStream(uint32 uiStreamId)
     auto iter = m_mapStream.find(uiStreamId);
     if (iter != m_mapStream.end())
     {
-        auto pStreamWeight = FindStreamWeight(uiStreamId, m_pStreamWeight);
+        auto pStreamWeight = FindStreamWeight(uiStreamId, m_pStreamWeightRoot);
         if (pStreamWeight != nullptr)
         {
             auto pParent = pStreamWeight->pParent;
@@ -504,7 +481,7 @@ E_H2_ERR_CODE CodecHttp2::Setting(const std::vector<tagSetting>& vecSetting)
                 {
                     for (auto it = m_mapStream.begin(); it != m_mapStream.end(); ++it)
                     {
-                        it->second->WindowUpdate((int32)vecSetting[i].uiValue - m_uiSettingsMaxWindowSize);
+                        it->second->WindowInit(vecSetting[i].uiValue - m_uiSettingsMaxWindowSize);
                     }
                     m_uiSettingsMaxWindowSize = vecSetting[i].uiValue;
                 }
@@ -536,16 +513,45 @@ E_H2_ERR_CODE CodecHttp2::Setting(const std::vector<tagSetting>& vecSetting)
 
 void CodecHttp2::WindowUpdate(uint32 uiStreamId, uint32 uiIncrement)
 {
-    if (uiStreamId == 0)
-    {
-        m_uiSendWindowSize += uiIncrement;
-    }
-    else
+    m_uiSendWindowSize += uiIncrement;
+    if (uiStreamId > 0)
     {
         auto iter = m_mapStream.find(uiStreamId);
         if (iter != m_mapStream.end())
         {
-            iter->second->WindowUpdate(uiIncrement);
+            iter->second->WindowUpdate((int32)uiIncrement);
+        }
+    }
+}
+
+void CodecHttp2::ShrinkSendWindow(uint32 uiStreamId, uint32 uiSendLength)
+{
+    m_uiSendWindowSize -= uiSendLength;
+    if (uiStreamId > 0)
+    {
+        auto iter = m_mapStream.find(uiStreamId);
+        if (iter != m_mapStream.end())
+        {
+            iter->second->WindowUpdate(-uiSendLength);
+        }
+    }
+}
+
+void CodecHttp2::ShrinkRecvWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
+{
+    m_uiRecvWindowSize -= uiRecvLength;
+    if (m_uiRecvWindowSize < DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE / 4)
+    {
+        m_pFrame->EncodeWindowUpdate(this, 0,
+                SETTINGS_MAX_INITIAL_WINDOW_SIZE - m_uiRecvWindowSize, pBuff);
+    }
+    m_uiRecvWindowSize = SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    if (uiStreamId > 0)
+    {
+        auto iter = m_mapStream.find(uiStreamId);
+        if (iter != m_mapStream.end())
+        {
+            iter->second->ShrinkRecvWindow(this, uiStreamId, uiRecvLength, pBuff);
         }
     }
 }
@@ -740,6 +746,40 @@ E_CODEC_STATUS CodecHttp2::PromiseStream(uint32 uiStreamId, CBuffer* pReactBuff)
         return(CODEC_STATUS_PART_ERR);
     }
     return(CODEC_STATUS_PART_OK);
+}
+
+E_CODEC_STATUS CodecHttp2::SendWaittingFrameData(CBuffer* pBuff)
+{
+    if (m_pStreamWeightRoot != nullptr)
+    {
+        E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
+        uint32 uiStreamId = 0;
+        std::vector<uint32> vecCompleteStream;
+        auto pCurrent = m_pStreamWeightRoot->pFirstChild;
+        while (pCurrent)
+        {
+            uiStreamId = pCurrent->pData->uiStreamId;
+            auto iter = m_mapStream.find(uiStreamId);
+            if (iter != m_mapStream.end())
+            {
+                eStatus = iter->second->SendWaittingFrameData(this, pBuff);
+                if (eStatus == CODEC_STATUS_OK)
+                {
+                    vecCompleteStream.push_back(uiStreamId);
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        for (auto id : vecCompleteStream)
+        {
+            CloseStream(id);
+        }
+        return(eStatus);
+    }
+    return(CODEC_STATUS_OK);
 }
 
 void CodecHttp2::TransferHoldingMsg(HttpMsg* pHoldingHttpMsg)

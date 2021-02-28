@@ -49,7 +49,6 @@ public:
     }
 
     virtual E_CODEC_STATUS Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff);
-    virtual E_CODEC_STATUS Encode(CBuffer* pBuff);
     virtual E_CODEC_STATUS Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff);
 
     /**
@@ -66,6 +65,12 @@ public:
     void RstStream(uint32 uiStreamId);
     E_H2_ERR_CODE Setting(const std::vector<tagSetting>& vecSetting);
     void WindowUpdate(uint32 uiStreamId, uint32 uiIncrement);
+    void ShrinkSendWindow(uint32 uiStreamId, uint32 uiSendLength);
+    void ShrinkSendWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
+    uint32 GetSendWindowSize()
+    {
+        return(m_uiSendWindowSize);
+    }
     uint32 GetMaxFrameSize()
     {
         return(m_uiSettingsMaxFrameSize);
@@ -83,6 +88,7 @@ public:
         return(m_uiStreamIdGenerate);
     }
 
+    E_CODEC_STATUS SendWaittingFrameData(CBuffer* pBuff);
     void TransferHoldingMsg(HttpMsg* pHoldingHttpMsg);
 
 protected:
@@ -132,7 +138,7 @@ private:
     Http2Frame* m_pFrame = nullptr;
     Http2Stream* m_pCodingStream = nullptr;
     std::unordered_map<uint32, Http2Stream*> m_mapStream;
-    TreeNode<tagStreamWeight>* m_pStreamWeight = nullptr;
+    TreeNode<tagStreamWeight>* m_pStreamWeightRoot = nullptr;
 
     uint32 m_uiEncodingDynamicTableSize = 0;
     uint32 m_uiDecodingDynamicTableSize = 0;

@@ -567,6 +567,7 @@ bool Dispatcher::FdTransfer(int iFd)
             else
             {
                 pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+                pChannel->m_pImpl->Send();
                 AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
             }
             return(true);

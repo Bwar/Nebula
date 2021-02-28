@@ -12,7 +12,7 @@
 #include "util/json/CJsonObject.hpp"
 #include "actor/context/Context.hpp"
 #include "actor/step/Step.hpp"
-#include "actor/model/Model.hpp"
+#include "actor/operator/Operator.hpp"
 
 namespace neb
 {
@@ -83,7 +83,7 @@ E_CMD_STATUS Chain::Next()
     for (auto iter = vecTurnBlocks.begin(); iter != vecTurnBlocks.end(); ++iter)
     {
         LOG4_TRACE("(%s)", (*iter).c_str());
-        std::shared_ptr<Model> pSharedModel = GetModel(*iter);
+        std::shared_ptr<Operator> pSharedModel = GetModel(*iter);
         if (pSharedModel == nullptr)
         {
             std::shared_ptr<Actor> pSharedActor = MakeSharedActor(*iter);
@@ -94,9 +94,9 @@ E_CMD_STATUS Chain::Next()
                 break;
             }
             // pSharedModel->SetContext(GetContext()); it had been set in MakeSharedActor().
-            if (Actor::ACT_MODEL == pSharedActor->GetActorType())
+            if (Actor::ACT_OPERATOR == pSharedActor->GetActorType())
             {
-                pSharedModel = std::dynamic_pointer_cast<Model>(pSharedActor);
+                pSharedModel = std::dynamic_pointer_cast<Operator>(pSharedActor);
                 eResult = pSharedModel->Submit();
                 pSharedModel->SetContext(nullptr);
                 pSharedModel->SetTraceId("");

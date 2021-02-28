@@ -22,6 +22,7 @@ const uint16 StepRedisCluster::sc_unClusterSlots = 16384;
 
 const std::unordered_set<std::string> StepRedisCluster::s_setSupportExtractCmd =
 {
+    "PING",
     // strings
     "APPEND","BITCOUNT","BITFIELD","BITPOS","DECR","DECRBY","GET",
     "GETBIT","GETRANGE","GETSET","INCR","INCRBY","INCRBYFLOAT","MGET",
@@ -566,16 +567,17 @@ bool StepRedisCluster::ExtractCmd(const RedisMsg& oRedisMsg,
         {
             if (oRedisMsg.element_size() < 2)
             {
-                LOG4_ERROR("param num fault of %s, invalid redis cmd: %s",
-                        strCmd.c_str(), oRedisMsg.DebugString().c_str());
-                return(false);
+                strTag = "";
             }
-            if (REDIS_REPLY_STRING != oRedisMsg.element(1).type() || oRedisMsg.element(1).str().size() == 0)
+            else
             {
-                LOG4_ERROR("cmd element be a REDIS_REPLY_STRING, invalid redis cmd: %s", oRedisMsg.DebugString().c_str());
-                return(false);
+                if (REDIS_REPLY_STRING != oRedisMsg.element(1).type() || oRedisMsg.element(1).str().size() == 0)
+                {
+                    LOG4_ERROR("cmd element be a REDIS_REPLY_STRING, invalid redis cmd: %s", oRedisMsg.DebugString().c_str());
+                    return(false);
+                }
+                GetTag(oRedisMsg.element(1).str(), strTag);
             }
-            GetTag(oRedisMsg.element(1).str(), strTag);
             vecHashKeys.emplace_back(std::move(strTag));
             if (s_setWriteCmd.find(strCmd) == s_setWriteCmd.end())
             {

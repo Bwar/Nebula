@@ -22,7 +22,7 @@
 #include "step/RawStep.hpp"
 #include "cmd/RedisCmd.hpp"
 #include "cmd/RawCmd.hpp"
-#include "model/Model.hpp"
+#include "operator/Operator.hpp"
 #include "chain/Chain.hpp"
 #include "actor/session/sys_session/SessionLogger.hpp"
 #include "ios/Dispatcher.hpp"
@@ -875,8 +875,8 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
                 return(pSharedActor);
             }
             break;
-        case Actor::ACT_MODEL:
-            if (TransformToSharedModel(pCreator, pSharedActor))
+        case Actor::ACT_OPERATOR:
+            if (TransformToSharedOperator(pCreator, pSharedActor))
             {
                 return(pSharedActor);
             }
@@ -888,7 +888,7 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
             }
             break;
         default:
-            LOG4_ERROR("\"%s\" must be a Step, a Session, a Model, a Cmd or a Module.",
+            LOG4_ERROR("\"%s\" must be a Step, a Session, a Operator, a Cmd or a Module.",
                     strActorName.c_str());
             return(nullptr);
     }
@@ -1038,20 +1038,20 @@ bool ActorBuilder::TransformToSharedModule(Actor* pCreator, std::shared_ptr<Acto
     return(false);
 }
 
-bool ActorBuilder::TransformToSharedModel(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
+bool ActorBuilder::TransformToSharedOperator(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
 {
-    std::shared_ptr<Model> pSharedModel = std::dynamic_pointer_cast<Model>(pSharedActor);
-    auto ret = m_mapModel.insert(std::make_pair(pSharedModel->GetActorName(), pSharedModel));
+    std::shared_ptr<Operator> pSharedOperator = std::dynamic_pointer_cast<Operator>(pSharedActor);
+    auto ret = m_mapOperator.insert(std::make_pair(pSharedOperator->GetActorName(), pSharedOperator));
     if (ret.second)
     {
-        if (pSharedModel->Init())
+        if (pSharedOperator->Init())
         {
             return(true);
         }
     }
     else
     {
-        LOG4_ERROR("operator \"%s\" exist.", pSharedModel->GetActorName().c_str());
+        LOG4_ERROR("operator \"%s\" exist.", pSharedOperator->GetActorName().c_str());
     }
     return(false);
 }
@@ -1176,10 +1176,10 @@ bool ActorBuilder::ExecStep(uint32 uiStepSeq, int iErrno, const std::string& str
     }
 }
 
-std::shared_ptr<Model> ActorBuilder::GetModel(const std::string& strModelName)
+std::shared_ptr<Operator> ActorBuilder::GetOperator(const std::string& strOperatorName)
 {
-    auto iter = m_mapModel.find(strModelName);
-    if (iter == m_mapModel.end())
+    auto iter = m_mapOperator.find(strOperatorName);
+    if (iter == m_mapOperator.end())
     {
         return(nullptr);
     }
@@ -1489,10 +1489,10 @@ void ActorBuilder::UnloadDynamicSymbol(CJsonObject& oOneSoConf)
     }
     for (int k = 0; k < oOneSoConf["model"].GetArraySize(); ++k)
     {
-        auto class_iter = m_mapModel.find(oOneSoConf["model"](k));
-        if (class_iter != m_mapModel.end())
+        auto class_iter = m_mapOperator.find(oOneSoConf["model"](k));
+        if (class_iter != m_mapOperator.end())
         {
-            m_mapModel.erase(class_iter);
+            m_mapOperator.erase(class_iter);
         }
     }
 }

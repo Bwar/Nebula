@@ -58,7 +58,7 @@ class Context;
 class Step;
 class RedisStep;
 class HttpStep;
-class Model;
+class Operator;
 class Chain;
 class SessionLogger;
 
@@ -124,7 +124,7 @@ public:
     std::shared_ptr<Context> MakeSharedContext(Actor* pCreator, const std::string& strContextName, Targs&&... args);
 
     template <typename ...Targs>
-    std::shared_ptr<Model> MakeSharedModel(Actor* pCreator, const std::string& strModelName, Targs&&... args);
+    std::shared_ptr<Operator> MakeSharedOperator(Actor* pCreator, const std::string& strOperatorName, Targs&&... args);
 
     template <typename ...Targs>
     std::shared_ptr<Chain> MakeSharedChain(Actor* pCreator, const std::string& strChainName, Targs&&... args);
@@ -135,7 +135,7 @@ public:
     bool TransformToSharedModule(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedSession(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
-    bool TransformToSharedModel(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
+    bool TransformToSharedOperator(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
 
 public:
@@ -143,7 +143,7 @@ public:
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
     virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
-    virtual std::shared_ptr<Model> GetModel(const std::string& strModelName);
+    virtual std::shared_ptr<Operator> GetOperator(const std::string& strOperatorName);
     virtual bool ResetTimeout(std::shared_ptr<Actor> pSharedActor);
     int32 GetStepNum();
     bool ReloadCmdConf();
@@ -183,10 +183,10 @@ private:
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;
     std::unordered_map<std::string, std::shared_ptr<Module> > m_mapModule;
 
-    // Chain and Model
-    std::unordered_map<std::string, std::queue<std::vector<std::string> > > m_mapChainConf; //key为Chain的配置名(ChainFlag)，value为由Model类名和Step类名构成的ChainBlock链
+    // Chain and Operator
+    std::unordered_map<std::string, std::queue<std::vector<std::string> > > m_mapChainConf; //key为Chain的配置名(ChainFlag)，value为由Operator类名和Step类名构成的ChainBlock链
     std::unordered_map<uint32, std::shared_ptr<Chain> > m_mapChain;                         //key为Chain的Sequence，称为ChainId
-    std::unordered_map<std::string, std::shared_ptr<Model> > m_mapModel;                  //key为Model类名
+    std::unordered_map<std::string, std::shared_ptr<Operator> > m_mapOperator;                  //key为Operator类名
 
     // Step and Session
     std::unordered_map<uint32, std::shared_ptr<Step> > m_mapCallbackStep;
@@ -270,9 +270,9 @@ std::shared_ptr<Context> ActorBuilder::MakeSharedContext(Actor* pCreator, const 
 }
 
 template <typename ...Targs>
-std::shared_ptr<Model> ActorBuilder::MakeSharedModel(Actor* pCreator, const std::string& strModelName, Targs&&... args)
+std::shared_ptr<Operator> ActorBuilder::MakeSharedOperator(Actor* pCreator, const std::string& strOperatorName, Targs&&... args)
 {
-    return(std::dynamic_pointer_cast<Model>(MakeSharedActor(pCreator, strModelName, std::forward<Targs>(args)...)));
+    return(std::dynamic_pointer_cast<Operator>(MakeSharedActor(pCreator, strOperatorName, std::forward<Targs>(args)...)));
 }
 
 template <typename ...Targs>

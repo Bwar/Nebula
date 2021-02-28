@@ -11,6 +11,7 @@
 #define SRC_CODEC_HTTP2_HTTP2FRAME_HPP_
 
 #include <string>
+#include <list>
 #include "Definition.hpp"
 #include "codec/Codec.hpp"
 #include "pb/http.pb.h"
@@ -73,6 +74,7 @@ public:
     virtual E_CODEC_STATUS Decode(CodecHttp2* pCodecH2,
             const tagH2FrameHead& stFrameHead, CBuffer* pBuff,
             HttpMsg& oHttpMsg, CBuffer* pReactBuff);
+    E_CODEC_STATUS SendWaittingFrameData(CodecHttp2* pCodecH2, CBuffer* pBuff);
 
 protected:
     E_CODEC_STATUS DecodeData(CodecHttp2* pCodecH2,
@@ -145,6 +147,8 @@ private:
     friend class CodecHttp2;
     friend class Http2Stream;
 
+    std::list<CBuffer*> m_listWaittingFrameData;
+    tagH2FrameHead m_stLastDataFrameHead;
     Http2Stream* m_pStream;
 };
 

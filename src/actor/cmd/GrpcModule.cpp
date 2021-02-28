@@ -25,16 +25,14 @@ GrpcModule::~GrpcModule()
 bool GrpcModule::AnyMessage(
         std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
 {
-    char szLength[5] = {0};
     uint8 ucCompressedFlag = 0;
     uint32 uiMessageLength = 0;
     std::string strMessage;
     ucCompressedFlag = oHttpMsg.body()[0];
-    szLength[0] = oHttpMsg.body()[4];
-    szLength[1] = oHttpMsg.body()[3];
-    szLength[2] = oHttpMsg.body()[2];
-    szLength[3] = oHttpMsg.body()[1];
-    uiMessageLength = StringConverter::RapidAtoi<uint32>(szLength);
+    uiMessageLength |= (oHttpMsg.body()[4] & 0xFF);
+    uiMessageLength |= ((oHttpMsg.body()[3] << 8) & 0xFF);
+    uiMessageLength |= ((oHttpMsg.body()[2] << 16) & 0xFF);
+    uiMessageLength |= ((oHttpMsg.body()[1] << 24) & 0xFF);
     if (ucCompressedFlag)
     {
         auto iter = oHttpMsg.headers().find("grpc-encoding");
