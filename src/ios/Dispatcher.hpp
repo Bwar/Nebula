@@ -536,7 +536,7 @@ bool Dispatcher::Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecTy
     {
         if ("BEACON" == strNodeType)
         {
-            LOG4_WARNING("no beacon config.");
+            LOG4_TRACE("no beacon config.");
         }
         else
         {

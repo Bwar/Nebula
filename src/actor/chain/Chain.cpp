@@ -83,7 +83,7 @@ E_CMD_STATUS Chain::Next()
     for (auto iter = vecTurnBlocks.begin(); iter != vecTurnBlocks.end(); ++iter)
     {
         LOG4_TRACE("(%s)", (*iter).c_str());
-        std::shared_ptr<Operator> pSharedModel = GetModel(*iter);
+        std::shared_ptr<Operator> pSharedModel = GetOperator(*iter);
         if (pSharedModel == nullptr)
         {
             std::shared_ptr<Actor> pSharedActor = MakeSharedActor(*iter);

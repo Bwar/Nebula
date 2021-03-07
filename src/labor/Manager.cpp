@@ -136,8 +136,24 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         int32 iMaxLogLineLen = 1024;
         bool bAlwaysFlushLog = true;
         std::string strLoggingHost;
-        std::string strLogname = m_stNodeInfo.strWorkPath + std::string("/")
-                        + oJsonConf("log_path") + std::string("/") + getproctitle() + std::string(".log");
+        std::string strLogPath;
+        std::string strLogname;
+        if (oJsonConf.Get("log_path", strLogPath))
+        {
+            if (strLogPath[0] == '/')
+            {
+                strLogname = strLogPath + std::string("/") + getproctitle() + std::string(".log");
+            }
+            else
+            {
+                strLogname = m_stNodeInfo.strWorkPath + std::string("/")
+                        + strLogPath + std::string("/") + getproctitle() + std::string(".log");
+            }
+        }
+        else
+        {
+            strLogname = m_stNodeInfo.strWorkPath + std::string("/logs/") + getproctitle() + std::string(".log");
+        }
         std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
         std::ostringstream ssServerName;
         ssServerName << getproctitle() << " " << m_stNodeInfo.strHostForServer << ":" << m_stNodeInfo.iPortForServer;
@@ -447,8 +463,8 @@ void Manager::CreateLoader()
         x_sock_set_block(iDataFds[0], 0);
         m_stNodeInfo.uiLoaderNum = 1;
         m_pSessionManager->AddLoaderInfo(0, iPid, iControlFds[0], iDataFds[0]);
-        std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
-        std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
+        std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
+        std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
         m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
         m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
         m_pDispatcher->AddIoReadEvent(pChannelData);
@@ -500,8 +516,8 @@ void Manager::CreateLoaderThread()
     t.detach();
     m_stNodeInfo.uiLoaderNum = 1;
     m_pSessionManager->AddLoaderInfo(0, getpid(), iControlFds[0], iDataFds[0]);
-    std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
-    std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
+    std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
+    std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
     m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
     m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
     m_pDispatcher->AddIoReadEvent(pChannelData);
@@ -556,8 +572,8 @@ void Manager::CreateWorker()
             x_sock_set_block(iControlFds[0], 0);
             x_sock_set_block(iDataFds[0], 0);
             m_pSessionManager->AddWorkerInfo(i, iPid, iControlFds[0], iDataFds[0]);
-            std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
-            std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
+            std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
+            std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
             m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
             m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
             m_pDispatcher->AddIoReadEvent(pChannelData);
@@ -608,8 +624,8 @@ void Manager::CreateWorkerThread()
         ossThreadId << t.get_id();
         m_pSessionManager->AddWorkerThreadId(strtoull(ossThreadId.str().c_str(), NULL, 10));
         m_pSessionManager->AddWorkerInfo(i, getpid(), iControlFds[0], iDataFds[0]);
-        std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
-        std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
+        std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
+        std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
         m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
         m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
         m_pDispatcher->AddIoReadEvent(pChannelData);
@@ -678,8 +694,8 @@ bool Manager::RestartWorker(int iDeathPid)
             x_sock_set_block(iControlFds[0], 0);
             x_sock_set_block(iDataFds[0], 0);
             m_pSessionManager->AddWorkerInfo(iWorkerIndex, iNewPid, iControlFds[0], iDataFds[0]);
-            std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA);
-            std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA);
+            std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
+            std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
             m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
             m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
             m_pDispatcher->AddIoReadEvent(pChannelData);

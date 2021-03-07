@@ -71,6 +71,11 @@ public:
         return(m_eStreamState);
     }
 
+    int32 GetSendWindowSize()
+    {
+        return(m_iSendWindowSize);
+    }
+
     void SetState(E_H2_STREAM_STATES eStreamState)
     {
         m_eStreamState = eStreamState;
@@ -80,6 +85,8 @@ public:
 
     void WindowInit(uint32 uiWindowSize);
     void WindowUpdate(int32 iIncrement);
+    void ShrinkRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
+    E_CODEC_STATUS SendWaittingFrameData(CodecHttp2* pCodecH2, CBuffer* pBuff);
 
 private:
     E_H2_STREAM_STATES m_eStreamState;

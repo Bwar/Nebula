@@ -143,7 +143,9 @@ ev_tstamp SocketChannelImpl::GetKeepAlive()
 
 bool SocketChannelImpl::NeedAliveCheck() const
 {
-    if (CODEC_HTTP == m_pCodec->GetCodecType() || CODEC_NEBULA == m_pCodec->GetCodecType())
+    if (CODEC_HTTP == m_pCodec->GetCodecType()
+            || CODEC_NEBULA == m_pCodec->GetCodecType()
+            || CODEC_NEBULA_IN_NODE == m_pCodec->GetCodecType())
     {
         return(false);
     }

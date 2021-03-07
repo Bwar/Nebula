@@ -66,7 +66,7 @@ public:
     E_H2_ERR_CODE Setting(const std::vector<tagSetting>& vecSetting);
     void WindowUpdate(uint32 uiStreamId, uint32 uiIncrement);
     void ShrinkSendWindow(uint32 uiStreamId, uint32 uiSendLength);
-    void ShrinkSendWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
+    void ShrinkRecvWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
     uint32 GetSendWindowSize()
     {
         return(m_uiSendWindowSize);

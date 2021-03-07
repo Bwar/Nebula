@@ -408,5 +408,21 @@ void Http2Stream::WindowUpdate(int32 iIncrement)
     m_iSendWindowSize += iIncrement;
 }
 
+void Http2Stream::ShrinkRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
+{
+    m_uiRecvWindowSize -= uiRecvLength;
+    if (m_uiRecvWindowSize < DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE / 4)
+    {
+        m_pFrame->EncodeWindowUpdate(pCodecH2, uiStreamId,
+                SETTINGS_MAX_INITIAL_WINDOW_SIZE - m_uiRecvWindowSize, pBuff);
+    }
+    m_uiRecvWindowSize = SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+}
+
+E_CODEC_STATUS Http2Stream::SendWaittingFrameData(CodecHttp2* pCodecH2, CBuffer* pBuff)
+{
+    return(m_pFrame->SendWaittingFrameData(pCodecH2, pBuff));
+}
+
 } /* namespace neb */
 

@@ -268,7 +268,9 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                 {
                     if (m_pLabor->GetNodeInfo().bIsAccess && !pChannel->m_pImpl->IsChannelVerify())
                     {
-                        if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType() && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
+                        if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType()
+                                && CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()
+                                && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
                         {
                             LOG4_DEBUG("invalid request, please login first!");
                             DiscardSocketChannel(pChannel);
@@ -398,7 +400,9 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                 {
                     if (m_pLabor->GetNodeInfo().bIsAccess && !pChannel->m_pImpl->IsChannelVerify())
                     {
-                        if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType() && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
+                        if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType()
+                                && CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()
+                                && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
                         {
                             LOG4_DEBUG("invalid request, please login first!");
                             DiscardSocketChannel(pChannel);
@@ -500,7 +504,7 @@ bool Dispatcher::FdTransfer(int iFd)
         }
         std::shared_ptr<SocketChannel> pChannel = nullptr;
         LOG4_TRACE("fd[%d] transfer successfully.", iAcceptFd);
-        if (CODEC_NEBULA != iCodec && m_pLabor->WithSsl())
+        if ((CODEC_NEBULA != iCodec) && (CODEC_NEBULA_IN_NODE != iCodec) && m_pLabor->WithSsl())
         {
             pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), false, true);
         }
@@ -670,7 +674,8 @@ bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
     }
     else        // 关闭文件描述符并清理相关资源
     {
-        if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType())   // 非内部服务器间的连接才会在超时中关闭
+        if ((CODEC_NEBULA != pChannel->m_pImpl->GetCodecType())
+            && (CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()))   // 非内部服务器间的连接才会在超时中关闭
         {
             LOG4_TRACE("io timeout!");
             DiscardSocketChannel(pChannel);
@@ -1259,7 +1264,7 @@ std::shared_ptr<SocketChannel> Dispatcher::CreateSocketChannel(int iFd, E_CODEC_
         if (bInitResult)
         {
             m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
-            if (CODEC_NEBULA != eCodecType)
+            if ((CODEC_NEBULA != eCodecType) && (CODEC_NEBULA_IN_NODE != eCodecType))
             {
                 ++m_iClientNum;
             }
@@ -1324,7 +1329,10 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         if (CODEC_NEBULA_IN_NODE == pChannel->m_pImpl->GetCodecType())
         {
             auto inner_channel_iter = m_mapLoaderAndWorkerChannel.find(pChannel->GetFd());
-            m_mapLoaderAndWorkerChannel.erase(inner_channel_iter);
+            if (inner_channel_iter != m_mapLoaderAndWorkerChannel.end())
+            {
+                m_mapLoaderAndWorkerChannel.erase(inner_channel_iter);
+            }
             m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
         }
 
@@ -1332,7 +1340,8 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         if (channel_iter != m_mapSocketChannel.end())
         {
             m_mapSocketChannel.erase(channel_iter);
-            if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType())
+            if ((CODEC_NEBULA != pChannel->m_pImpl->GetCodecType())
+                && (CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()))
             {
                 --m_iClientNum;
             }

@@ -182,12 +182,13 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
     LOG4_DEBUG("cmd %u, seq %u", oMsgHead.cmd(), oMsgHead.seq());
     if (gc_uiCmdReq & oMsgHead.cmd())    // 新请求
     {
-        // 从conf/json配置表里面找到了cmd，则执行对应的actor
+        MsgHead oOutMsgHead;
+        MsgBody oOutMsgBody;
         auto cmd_iter = m_mapCmd.find(gc_uiCmdBit & oMsgHead.cmd());
         if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
         {
             if (oMsgBody.trace_id().length() > 10)
-           {
+            {
                 cmd_iter->second->SetTraceId(oMsgBody.trace_id());
             }
             else
@@ -198,74 +199,86 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
             }
             cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
         }
-        // 如果请求的cmd=9，则设置本server的log level
-        else if (CMD_REQ_SET_LOG_LEVEL == oMsgHead.cmd())
-		{
-			LogLevel oLogLevel;
-			oLogLevel.ParseFromString(oMsgBody.data());
-			LOG4_INFO("log level set to %d, net_log_level set to %d",
-				oLogLevel.log_level(), oLogLevel.net_log_level());
-			m_pLogger->SetLogLevel(oLogLevel.log_level());
-			m_pLogger->SetNetLogLevel(oLogLevel.net_log_level());
-		}
-        // 如果请求的cmd=11，则在本server端重新加载动态库
-		else if (CMD_REQ_RELOAD_SO == oMsgHead.cmd())
-		{
-			CJsonObject oSoConfJson;
-			if (oSoConfJson.Parse(oMsgBody.data()))
-			{
-				DynamicLoad(oSoConfJson);
-			}
-			else
-			{
-				LOG4_ERROR("json parse string error: \"%s\"");
-			}
-		}
-		// 如果是内部消息，且从conf/json配置表里面找到cmd=503，则503对应的actor截获该请求并进行处理
-        // 内部服务往客户端发送  if (std::string("0.0.0.0") == strFromIp)
-		else if (CODEC_NEBULA == pChannel->GetCodecType() && (cmd_iter = m_mapCmd.find(CMD_REQ_TO_CLIENT), cmd_iter != m_mapCmd.end()))
-		{
-			if (oMsgBody.trace_id().length() > 10)
-			{
-				cmd_iter->second->SetTraceId(oMsgBody.trace_id());
-			}
-			else
-			{
-				std::ostringstream oss;
-				oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
-				cmd_iter->second->SetTraceId(oss.str());
-			}
-			cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
-		}
-		// 如果不是内部消息，且从conf/json配置表里面找到了cmd=501，则501对应的actor截获该请求并进行处理
-		else if (cmd_iter = m_mapCmd.find(CMD_REQ_FROM_CLIENT), cmd_iter != m_mapCmd.end())
-		{
-			if (oMsgBody.trace_id().length() > 10)
-			{
-				cmd_iter->second->SetTraceId(oMsgBody.trace_id());
-			}
-			else
-			{
-				std::ostringstream oss;
-				oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
-				cmd_iter->second->SetTraceId(oss.str());
-			}
-			cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
-		}
-		// 如果前面的所有条件均不满足，则向请求方相应ERR_UNKNOWN_CMD的结果
-        else
+        else    // 没有对应的cmd，是需由接入层转发的请求
         {
-			MsgHead oOutMsgHead;
-			MsgBody oOutMsgBody;
-			snprintf(m_pErrBuff, gc_iErrBuffLen, "no handler to dispose cmd %u!", oMsgHead.cmd());
-			LOG4_ERROR(m_pErrBuff);
-			oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
-			oOutMsgBody.mutable_rsp_result()->set_msg(m_pErrBuff);
-			oOutMsgHead.set_cmd(oMsgHead.cmd() + 1);
-			oOutMsgHead.set_seq(oMsgHead.seq());
-			oOutMsgHead.set_len(oOutMsgBody.ByteSize());
-			m_pLabor->GetDispatcher()->SendTo(pChannel, oOutMsgHead.cmd(), oOutMsgHead.seq(), oOutMsgBody);
-			return(false);
+            if (CMD_REQ_SET_LOG_LEVEL == oMsgHead.cmd())
+            {
+                LogLevel oLogLevel;
+                oLogLevel.ParseFromString(oMsgBody.data());
+                LOG4_INFO("log level set to %d, net_log_level set to %d",
+                        oLogLevel.log_level(), oLogLevel.net_log_level());
+                m_pLogger->SetLogLevel(oLogLevel.log_level());
+                m_pLogger->SetNetLogLevel(oLogLevel.net_log_level());
+            }
+            else if (CMD_REQ_RELOAD_SO == oMsgHead.cmd())
+            {
+                CJsonObject oSoConfJson;
+                if (oSoConfJson.Parse(oMsgBody.data()))
+                {
+                    DynamicLoad(oSoConfJson);
+                }
+                else
+                {
+                    LOG4_ERROR("json parse string error: \"%s\"");
+                }
+            }
+            else
+            {
+                if (CODEC_NEBULA == pChannel->GetCodecType())   // 内部服务往客户端发送  if (std::string("0.0.0.0") == strFromIp)
+                {
+                    cmd_iter = m_mapCmd.find(CMD_REQ_TO_CLIENT);
+                    if (cmd_iter != m_mapCmd.end())
+                    {
+                        if (oMsgBody.trace_id().length() > 10)
+                        {
+                            cmd_iter->second->SetTraceId(oMsgBody.trace_id());
+                        }
+                        else
+                        {
+                            std::ostringstream oss;
+                            oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
+                            cmd_iter->second->SetTraceId(oss.str());
+                        }
+                        cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
+                    }
+                    else
+                    {
+                        snprintf(m_pErrBuff, gc_iErrBuffLen, "no handler to dispose cmd %u!", oMsgHead.cmd());
+                        LOG4_ERROR(m_pErrBuff);
+                        oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
+                        oOutMsgBody.mutable_rsp_result()->set_msg(m_pErrBuff);
+                        m_pLabor->GetDispatcher()->SendTo(pChannel, oMsgHead.cmd() + 1, oMsgHead.seq(), oOutMsgBody);
+                        return(false);
+                    }
+                }
+                else
+                {
+                    cmd_iter = m_mapCmd.find(CMD_REQ_FROM_CLIENT);
+                    if (cmd_iter != m_mapCmd.end())
+                    {
+                        if (oMsgBody.trace_id().length() > 10)
+                        {
+                            cmd_iter->second->SetTraceId(oMsgBody.trace_id());
+                        }
+                        else
+                        {
+                            std::ostringstream oss;
+                            oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
+                            cmd_iter->second->SetTraceId(oss.str());
+                        }
+                        cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
+                    }
+                    else
+                    {
+                        snprintf(m_pErrBuff, gc_iErrBuffLen, "no handler to dispose cmd %u!", oMsgHead.cmd());
+                        LOG4_ERROR(m_pErrBuff);
+                        oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
+                        oOutMsgBody.mutable_rsp_result()->set_msg(m_pErrBuff);
+                        m_pLabor->GetDispatcher()->SendTo(pChannel, oMsgHead.cmd() + 1, oMsgHead.seq(), oOutMsgBody);
+                        return(false);
+                    }
+                }
+            }
         }
     }
     else    // 回调
@@ -1200,7 +1213,7 @@ void ActorBuilder::BootLoadCmd(CJsonObject& oCmdConf)
     for (int i = 0; i < oCmdConf["cmd"].GetArraySize(); ++i)
     {
         oCmdConf["cmd"][i].Get("cmd", iCmd);
-        auto pCmd = MakeSharedCmd(nullptr, oCmdConf["cmd"][i]("class"), iCmd);
+        auto pCmd = MakeSharedCmd(nullptr, oCmdConf["cmd"][i]("class"), (int32)iCmd);
         if (pCmd != nullptr)
         {
             LOG4_INFO("succeed in loading %s with cmd %d", oCmdConf["cmd"][i]("class").c_str(), iCmd);
@@ -1363,7 +1376,7 @@ void ActorBuilder::LoadDynamicSymbol(CJsonObject& oOneSoConf)
         std::unordered_set<int32> setCmd;
         m_mapLoadedCmd.insert(std::make_pair(oOneSoConf["cmd"][i]("class"), setCmd));
         oOneSoConf["cmd"][i].Get("cmd", iCmd);
-        MakeSharedCmd(nullptr, oOneSoConf["cmd"][i]("class"), iCmd);
+        MakeSharedCmd(nullptr, oOneSoConf["cmd"][i]("class"), (int32)iCmd);
     }
     for (int j = 0; j < oOneSoConf["module"].GetArraySize(); ++j)
     {

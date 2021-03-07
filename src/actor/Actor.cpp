@@ -260,8 +260,8 @@ bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSe
     }
     else
     {
-        LOG4_ERROR("MsgBody is not a request message.");
-        return(false);
+        LOG4_ERROR("the request message has no req_target.");
+        return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType));
     }
 }
 

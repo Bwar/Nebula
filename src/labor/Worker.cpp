@@ -245,8 +245,24 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf, const std::string& strLogN
         int32 iLogLevel = 0;
         int32 iNetLogLevel = 0;
         bool bAlwaysFlushLog = true;
-        std::string strLogname = m_stNodeInfo.strWorkPath + std::string("/") + oJsonConf("log_path")
-                        + std::string("/") + strLogNameBase + std::string(".log");
+        std::string strLogname;
+        std::string strLogPath;
+        if (oJsonConf.Get("log_path", strLogPath))
+        {
+            if (strLogPath[0] == '/')
+            {
+                strLogname = strLogPath + std::string("/") + strLogNameBase + std::string(".log");
+            }
+            else
+            {
+                strLogname = m_stNodeInfo.strWorkPath + std::string("/")
+                        + strLogPath + std::string("/") + strLogNameBase + std::string(".log");
+            }
+        }
+        else
+        {
+            strLogname = m_stNodeInfo.strWorkPath + std::string("/logs/") + strLogNameBase + std::string(".log");
+        }
         std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
         oJsonConf.Get("max_log_file_size", iMaxLogFileSize);
         oJsonConf.Get("max_log_file_num", iMaxLogFileNum);
@@ -322,9 +338,9 @@ bool Worker::CreateEvents()
     AddPeriodicTaskEvent();
 
     // 注册网络IO事件
-    m_pManagerDataChannel = m_pDispatcher->CreateSocketChannel(m_stWorkerInfo.iDataFd, CODEC_NEBULA);
+    m_pManagerDataChannel = m_pDispatcher->CreateSocketChannel(m_stWorkerInfo.iDataFd, CODEC_NEBULA_IN_NODE);
     m_pDispatcher->SetChannelStatus(m_pManagerDataChannel, CHANNEL_STATUS_ESTABLISHED);
-    m_pManagerControlChannel = m_pDispatcher->CreateSocketChannel(m_stWorkerInfo.iControlFd, CODEC_NEBULA);
+    m_pManagerControlChannel = m_pDispatcher->CreateSocketChannel(m_stWorkerInfo.iControlFd, CODEC_NEBULA_IN_NODE);
     m_pDispatcher->SetChannelStatus(m_pManagerControlChannel, CHANNEL_STATUS_ESTABLISHED);
     m_pDispatcher->AddIoReadEvent(m_pManagerDataChannel);
     m_pDispatcher->AddIoReadEvent(m_pManagerControlChannel);

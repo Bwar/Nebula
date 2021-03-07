@@ -26,7 +26,7 @@ CodecHttp2::CodecHttp2(std::shared_ptr<NetLogger> pLogger,
     try
     {
         m_pFrame = new Http2Frame(pLogger, eCodecType);
-        m_pStreamWeightRoot = new TreeNode<TagStreamWeight();
+        m_pStreamWeightRoot = new TreeNode<tagStreamWeight>();
         m_pStreamWeightRoot->pData = new tagStreamWeight();
         m_pStreamWeightRoot->pData->uiStreamId = 0;
     }
