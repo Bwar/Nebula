@@ -795,6 +795,14 @@ void ActorBuilder::LoadSysCmd()
         MakeSharedCmd(nullptr, "neb::CmdOnGetCustomConf", (int)CMD_REQ_GET_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdOnStartService", (int)CMD_REQ_START_SERVICE);
         MakeSharedCmd(nullptr, "neb::CmdDataReport", (int)CMD_REQ_DATA_REPORT);
+        std::string strModulePath = "/healthy";
+        MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
+        strModulePath = "/health";
+        MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
+        strModulePath = "/status";
+        MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
+        strModulePath = "http_upgrade";
+        MakeSharedModule(nullptr, "neb::ModuleHttpUpgrade", strModulePath);
     }
     else
     {

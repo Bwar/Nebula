@@ -141,7 +141,7 @@ bool Huffman::Decode(CBuffer* pBuff, int iBuffLength, std::string& strData)
     for (int i = 0; i < iBuffLength; ++i)
     {
         pBuff->ReadByte(c);
-        uiCurrent = (uiCurrent << 8) | c;
+        uiCurrent = (uiCurrent << 8) | (c & 0xFF);
         ucBits += 8;
         while (ucBits >= 8)
         {
@@ -173,7 +173,7 @@ bool Huffman::Decode(CBuffer* pBuff, int iBuffLength, std::string& strData)
         pNode = pNode->vecChildren[uiChild];
         if (pNode->vecChildren.size() > 0 || pNode->ucTerminalBits > ucBits)
         {
-            return(false);
+            break;
         }
         strData.append(1, pNode->ucSymbol);
         ucBits -= pNode->ucTerminalBits;
@@ -189,6 +189,9 @@ void Huffman::BuildTree()
     uint8_t ucLen = 0;
     for (int i = 0; i < 256; i++)
     {
+        ucSym = i;
+        uiCode = CODES[i];
+        ucLen = CODE_LENGTHS[i];
         Node* pTerminal = new Node(ucSym, ucLen);
 
         Node* pCurrent = m_pRoot;

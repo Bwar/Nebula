@@ -47,8 +47,8 @@ void Http2Frame::ReadMediumInt(CBuffer* pBuff, uint32& uiValue)
     pBuff->ReadByte(szData[0]);
     pBuff->ReadByte(szData[1]);
     pBuff->ReadByte(szData[2]);
-    uiValue = ((uint32)szData[0] << 16) & 0xFF;
-    uiValue |= ((uint32)szData[1] << 8) & 0xFF;
+    uiValue = (((uint32)szData[0] & 0xFF) << 16);
+    uiValue |= (((uint32)szData[1] & 0xFF) << 8);
     uiValue |= (uint32)szData[2] & 0xFF;
 }
 

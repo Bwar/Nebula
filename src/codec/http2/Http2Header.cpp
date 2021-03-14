@@ -252,6 +252,7 @@ bool Http2Header::DecodeStringLiteral(CBuffer* pBuff, std::string& strLiteral, b
         return(false);
     }
 
+    strLiteral.clear();
     if (B & 0x80)   // HUFFMAN
     {
         bWithHuffman = true;

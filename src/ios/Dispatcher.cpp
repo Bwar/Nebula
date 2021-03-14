@@ -266,6 +266,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
 
                 if (CODEC_STATUS_OK == eCodecStatus)
                 {
+                    /*
                     if (m_pLabor->GetNodeInfo().bIsAccess && !pChannel->m_pImpl->IsChannelVerify())
                     {
                         if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType()
@@ -277,6 +278,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                             return(false);
                         }
                     }
+                    */
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oMsgHead, oMsgBody);
                 }
                 else
@@ -398,6 +400,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                 eCodecStatus = pChannel->m_pImpl->Fetch(oMsgHead, oMsgBody);
                 if (CODEC_STATUS_OK == eCodecStatus)
                 {
+                    /*
                     if (m_pLabor->GetNodeInfo().bIsAccess && !pChannel->m_pImpl->IsChannelVerify())
                     {
                         if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType()
@@ -409,6 +412,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                             return(false);
                         }
                     }
+                    */
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oMsgHead, oMsgBody);
                 }
                 else

@@ -10,6 +10,7 @@
 
 #include "StepRedisCluster.hpp"
 #include <sstream>
+#include <algorithm>
 #include "util/StringCoder.hpp"
 #include "ios/Dispatcher.hpp"
 #include "util/StringCoder.hpp"
@@ -493,6 +494,7 @@ bool StepRedisCluster::ExtractCmd(const RedisMsg& oRedisMsg,
             return(false);
         }
         strCmd = oRedisMsg.element(0).str();
+        std::transform(strCmd.begin(), strCmd.end(), strCmd.begin(), [](unsigned char c)->unsigned char{return std::toupper(c);});
         if (s_setSupportExtractCmd.find(strCmd) == s_setSupportExtractCmd.end())
         {
             LOG4_ERROR("cmd %s not supported by StepRedisCluster", strCmd.c_str());

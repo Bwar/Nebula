@@ -240,7 +240,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             break;
     }
     E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
-    LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u, m_bEndHeaders = %d", m_eStreamState, stFrameHead.ucType, m_bEndHeaders);
+    LOG4_TRACE("m_eStreamState = %d, stFrameHead.ucType = %u, m_bEndHeaders = %d", m_eStreamState, stFrameHead.ucType, m_bEndHeaders);
     if (m_bEndHeaders)
     {
         eStatus = m_pFrame->Decode(pCodecH2, stFrameHead, pBuff, m_oHttpMsg, pReactBuff);
