@@ -82,7 +82,7 @@ Nebula can be used as a single high-performance TCP server, but building a clust
   build completed, you can start the server:
 ```
 ./configure.sh
-./startup.s
+./startup.sh
 ```
 
 The server should have started successfully now, startup.sh will print the server that had been started, If not, check logs for reason. Notice that the default configuration file of Nebula limits the number of connections per IP in a period. If you have a large amount of testing, you should check the configuration limit. If the server has been successfully started, testing with postman or curl.
