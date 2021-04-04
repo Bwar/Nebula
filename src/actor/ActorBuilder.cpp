@@ -405,7 +405,7 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
         {
             E_CMD_STATUS eResult;
             http_step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-            eResult = (std::dynamic_pointer_cast<HttpStep>(http_step_iter->second))->Callback(pChannel, oHttpMsg);
+            eResult = http_step_iter->second->Callback(pChannel, oHttpMsg);
             if (CMD_STATUS_RUNNING != eResult)
             {
                 uint32 uiChainId = http_step_iter->second->GetChainId();

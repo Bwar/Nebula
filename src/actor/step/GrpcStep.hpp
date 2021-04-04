@@ -10,12 +10,12 @@
 #ifndef SRC_ACTOR_STEP_GRPCSTEP_HPP_
 #define SRC_ACTOR_STEP_GRPCSTEP_HPP_
 
-#include "Step.hpp"
+#include "HttpStep.hpp"
 
 namespace neb
 {
 
-class GrpcStep: public Step
+class GrpcStep: public HttpStep
 {
 public:
     GrpcStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
@@ -25,7 +25,8 @@ public:
 
     virtual E_CMD_STATUS Callback(
                     std::shared_ptr<SocketChannel> pChannel,
-                    const HttpMsg& oHttpMsg);
+                    const HttpMsg& oHttpMsg,
+                    void* data = NULL);
 
     virtual E_CMD_STATUS Callback(
                     std::shared_ptr<SocketChannel> pChannel,

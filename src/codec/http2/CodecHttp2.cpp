@@ -29,6 +29,12 @@ CodecHttp2::CodecHttp2(std::shared_ptr<NetLogger> pLogger,
         m_pStreamWeightRoot = new TreeNode<tagStreamWeight>();
         m_pStreamWeightRoot->pData = new tagStreamWeight();
         m_pStreamWeightRoot->pData->uiStreamId = 0;
+
+        Http2Header oHeader("", "");
+        m_vecEncodingDynamicTable.assign(8, oHeader);
+        m_iNextEncodingDynamicTableHeaderIndex = m_vecEncodingDynamicTable.size() - 1;
+        m_vecDecodingDynamicTable.assign(8, oHeader);
+        m_iNextDecodingDynamicTableHeaderIndex = m_vecDecodingDynamicTable.size() - 1;
     }
     catch(std::bad_alloc& e)
     {
@@ -60,6 +66,8 @@ void CodecHttp2::ConnectionSetting(CBuffer* pBuff)
     tagSetting stSetting;
     if (m_bChannelIsClient)
     {
+        pBuff->Write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24);
+        m_bWantMagic = false;
         stSetting.unIdentifier = H2_SETTINGS_INITIAL_WINDOW_SIZE;
         stSetting.uiValue = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
         m_uiRecvWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
@@ -91,11 +99,8 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
 {
     if (m_bWantMagic && m_bChannelIsClient)
     {
-        if (pBuff->ReadableBytes() >= 24)
-        {
-            pBuff->Write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24);
-            m_bWantMagic = false;
-        }
+        pBuff->Write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24);
+        m_bWantMagic = false;
     }
     m_bChunkNotice = oHttpMsg.chunk_notice();
     for (int i = 0; i < oHttpMsg.adding_without_index_headers_size(); ++i)
@@ -135,7 +140,7 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         }
     }
     //const_cast<HttpMsg&>(oHttpMsg).set_with_huffman(true);
-    if (oHttpMsg.stream_id() != m_pCodingStream->GetStreamId())
+    if (m_pCodingStream == nullptr || oHttpMsg.stream_id() != m_pCodingStream->GetStreamId())
     {
         auto stream_iter = m_mapStream.find(oHttpMsg.stream_id());
         if (stream_iter == m_mapStream.end())
@@ -563,7 +568,6 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
 
     E_CODEC_STATUS eStatus;
     bool bWithHuffman = false;
-    int iDynamicTableIndex = -1;
     std::string strHeaderName;
     std::string strHeaderValue;
     while (pBuff->GetReadIndex() < uiHeaderBlockEndPos)
@@ -582,19 +586,18 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
         else if (H2_HPACK_CONDITION_LITERAL_HEADER_WITH_INDEXING & B)
         {
             eStatus = UnpackHeaderLiteralIndexing(pBuff, B,
-                    H2_HPACK_PREFIX_6_BITS, iDynamicTableIndex,
+                    H2_HPACK_PREFIX_6_BITS,
                     strHeaderName, strHeaderValue, bWithHuffman);
             if (eStatus != CODEC_STATUS_PART_OK)
             {
                 return(eStatus);
             }
             ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
-            UpdateDecodingDynamicTable(0, strHeaderName, strHeaderValue);
         }
         else if (H2_HPACK_CONDITION_LITERAL_HEADER_NEVER_INDEXED & B)
         {
             eStatus = UnpackHeaderLiteralIndexing(pBuff, B,
-                    H2_HPACK_PREFIX_4_BITS, iDynamicTableIndex,
+                    H2_HPACK_PREFIX_4_BITS,
                     strHeaderName, strHeaderValue, bWithHuffman);
             if (eStatus != CODEC_STATUS_PART_OK)
             {
@@ -620,7 +623,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
         else    // H2_HPACK_CONDITION_LITERAL_HEADER_WITHOUT_INDEXING
         {
             eStatus = UnpackHeaderLiteralIndexing(pBuff, B,
-                    H2_HPACK_PREFIX_4_BITS, iDynamicTableIndex,
+                    H2_HPACK_PREFIX_4_BITS,
                     strHeaderName, strHeaderValue, bWithHuffman);
             if (eStatus != CODEC_STATUS_PART_OK)
             {
@@ -679,35 +682,28 @@ void CodecHttp2::PackHeader(const HttpMsg& oHttpMsg, int iHeaderType, CBuffer* p
 
 void CodecHttp2::PackHeader(const std::string& strHeaderName, const std::string& strHeaderValue, bool bWithHuffman, CBuffer* pBuff)
 {
-    size_t uiTableIndex = 0;
-    uiTableIndex = Http2Header::GetStaticTableIndex(strHeaderName, strHeaderValue);
-    if (uiTableIndex == 0)
+    uint32 uiHeaderIndex = 0;
+    uint32 uiHeaderNameIndex = 0;
+    uiHeaderIndex = GetEncodingTableIndex(strHeaderName, strHeaderValue, uiHeaderNameIndex);
+    if (uiHeaderIndex > 0)
     {
-        uiTableIndex = GetEncodingTableIndex(strHeaderName, strHeaderValue);
-    }
-    if (uiTableIndex > 0)
-    {
-        PackHeaderIndexed(uiTableIndex, pBuff);
-        LOG4_TRACE("PackHeaderIndexed()    %s: %s | uiTableIndex = %u", strHeaderName.c_str(), strHeaderValue.c_str(), uiTableIndex);
+        PackHeaderIndexed(uiHeaderIndex, pBuff);
     }
     else
     {
         auto never_index_iter = m_setEncodingNeverIndexHeaders.find(strHeaderName);
         if (never_index_iter != m_setEncodingNeverIndexHeaders.end())
         {
-            PackHeaderNeverIndexing(strHeaderName, strHeaderValue, bWithHuffman, pBuff);
-            LOG4_TRACE("PackHeaderNeverIndexing()    %s: %s", strHeaderName.c_str(), strHeaderValue.c_str());
+            PackHeaderNeverIndexing(strHeaderName, strHeaderValue, uiHeaderNameIndex, bWithHuffman, pBuff);
             return;
         }
         auto without_index_iter = m_setEncodingWithoutIndexHeaders.find(strHeaderName);
         if (without_index_iter != m_setEncodingWithoutIndexHeaders.end())
         {
-            PackHeaderWithoutIndexing(strHeaderName, strHeaderValue, bWithHuffman, pBuff);
-            LOG4_TRACE("PackHeaderWithoutIndexing()    %s: %s", strHeaderName.c_str(), strHeaderValue.c_str());
+            PackHeaderWithoutIndexing(strHeaderName, strHeaderValue, uiHeaderNameIndex, bWithHuffman, pBuff);
             return;
         }
-        PackHeaderWithIndexing(strHeaderName, strHeaderValue, bWithHuffman, pBuff);
-        LOG4_TRACE("PackHeaderWithIndexing()    %s: %s", strHeaderName.c_str(), strHeaderValue.c_str());
+        PackHeaderWithIndexing(strHeaderName, strHeaderValue, uiHeaderNameIndex, bWithHuffman, pBuff);
     }
 }
 
@@ -879,31 +875,37 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderIndexed(CBuffer* pBuff, HttpMsg& oHttpMsg
         LOG4_ERROR("hpack index value of 0 is not used!");
         return(CODEC_STATUS_ERR);
     }
-    else if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex)
+    else if (uiTableIndex < Http2Header::sc_uiMaxStaticTableLength)
     {
         ClassifyHeader(Http2Header::sc_vecStaticTable[uiTableIndex].first,
                 Http2Header::sc_vecStaticTable[uiTableIndex].second, oHttpMsg);
         return(CODEC_STATUS_PART_OK);
     }
-    else if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex + m_vecDecodingDynamicTable.size())
-    {
-        uint32 uiDynamicTableIndex = uiTableIndex - Http2Header::sc_uiMaxStaticTableIndex - 1;
-        ClassifyHeader(m_vecDecodingDynamicTable[uiDynamicTableIndex].Name(),
-                m_vecDecodingDynamicTable[uiDynamicTableIndex].Value(), oHttpMsg);
-        return(CODEC_STATUS_PART_OK);
-    }
     else
     {
-        SetErrno(H2_ERR_COMPRESSION_ERROR);
-        LOG4_ERROR("hpack index value of %u was greater than the sum of "
-                "the lengths of both static table and dynamic tables!", uiTableIndex);
-        return(CODEC_STATUS_ERR);
+        uint32 uiDynamicTableIndex = DecodingDynamicTableIndex2VectorIndex(uiTableIndex - Http2Header::sc_uiMaxStaticTableLength);
+        if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex + m_vecDecodingDynamicTable.size())
+        {
+            ClassifyHeader(m_vecDecodingDynamicTable[uiDynamicTableIndex].Name(),
+                    m_vecDecodingDynamicTable[uiDynamicTableIndex].Value(), oHttpMsg);
+            return(CODEC_STATUS_PART_OK);
+        }
+        else
+        {
+            SetErrno(H2_ERR_COMPRESSION_ERROR);
+            LOG4_ERROR("hpack index value of %u was greater than the sum of "
+                    "the lengths of both static table and dynamic tables!", uiTableIndex);
+            return(CODEC_STATUS_ERR);
+        }
     }
 }
 
 E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucFirstByte, int32 iPrefixMask,
-        int& iDynamicTableIndex, std::string& strHeaderName, std::string& strHeaderValue, bool& bWithHuffman)
+        std::string& strHeaderName, std::string& strHeaderValue, bool& bWithHuffman)
 {
+    strHeaderName.clear();
+    strHeaderValue.clear();
+    bWithHuffman = false;
     // Literal Header Field with Incremental Indexing — Indexed Name
     if (iPrefixMask & ucFirstByte)
     {
@@ -914,7 +916,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
             LOG4_ERROR("hpack index value of 0 is not used!");
             return(CODEC_STATUS_ERR);
         }
-        else if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex)
+        else if (uiTableIndex < Http2Header::sc_uiMaxStaticTableLength)
         {
             if (!Http2Header::DecodeStringLiteral(pBuff, strHeaderValue, bWithHuffman))
             {
@@ -923,26 +925,37 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
                 return(CODEC_STATUS_ERR);
             }
             strHeaderName = Http2Header::sc_vecStaticTable[uiTableIndex].first;
-            return(CODEC_STATUS_PART_OK);
-        }
-        else if (uiTableIndex < Http2Header::sc_uiMaxStaticTableIndex + m_vecDecodingDynamicTable.size())
-        {
-            uint32 uiDynamicTableIndex = uiTableIndex - Http2Header::sc_uiMaxStaticTableIndex - 1;
-            if (!Http2Header::DecodeStringLiteral(pBuff, strHeaderValue, bWithHuffman))
+            if (H2_HPACK_CONDITION_LITERAL_HEADER_WITH_INDEXING & ucFirstByte)
             {
-                SetErrno(H2_ERR_COMPRESSION_ERROR);
-                LOG4_ERROR("DecodeStringLiteral failed!");
-                return(CODEC_STATUS_ERR);
+                UpdateDecodingDynamicTable(-1, strHeaderName, strHeaderValue);
             }
-            strHeaderName = m_vecDecodingDynamicTable[uiDynamicTableIndex].Name();
             return(CODEC_STATUS_PART_OK);
         }
         else
         {
-            SetErrno(H2_ERR_COMPRESSION_ERROR);
-            LOG4_ERROR("hpack index value of %d was greater than the sum of "
-                    "the lengths of both static table and dynamic tables!", uiTableIndex);
-            return(CODEC_STATUS_ERR);
+            uint32 uiDynamicTableIndex = DecodingDynamicTableIndex2VectorIndex(uiTableIndex - Http2Header::sc_uiMaxStaticTableLength);
+            if (uiDynamicTableIndex < m_vecDecodingDynamicTable.size())
+            {
+                if (!Http2Header::DecodeStringLiteral(pBuff, strHeaderValue, bWithHuffman))
+                {
+                    SetErrno(H2_ERR_COMPRESSION_ERROR);
+                    LOG4_ERROR("DecodeStringLiteral failed!");
+                    return(CODEC_STATUS_ERR);
+                }
+                strHeaderName = m_vecDecodingDynamicTable[uiDynamicTableIndex].Name();
+                if (H2_HPACK_CONDITION_LITERAL_HEADER_WITH_INDEXING & ucFirstByte)
+                {
+                    UpdateDecodingDynamicTable(uiDynamicTableIndex, strHeaderName, strHeaderValue);
+                }
+                return(CODEC_STATUS_PART_OK);
+            }
+            else
+            {
+                SetErrno(H2_ERR_COMPRESSION_ERROR);
+                LOG4_ERROR("hpack index value of %u was greater than the sum of "
+                        "the lengths of both static table and dynamic tables!", uiTableIndex);
+                return(CODEC_STATUS_ERR);
+            }
         }
     }
     else  // Literal Header Field with Incremental Indexing — New Name
@@ -951,6 +964,10 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
         if (Http2Header::DecodeStringLiteral(pBuff, strHeaderName, bWithHuffman)
             && Http2Header::DecodeStringLiteral(pBuff, strHeaderValue, bWithHuffman))
         {
+            if (H2_HPACK_CONDITION_LITERAL_HEADER_WITH_INDEXING & ucFirstByte)
+            {
+                UpdateDecodingDynamicTable(-1, strHeaderName, strHeaderValue);
+            }
             return(CODEC_STATUS_PART_OK);
         }
         SetErrno(H2_ERR_COMPRESSION_ERROR);
@@ -1025,18 +1042,12 @@ void CodecHttp2::PackHeaderIndexed(size_t uiTableIndex, CBuffer* pBuff)
 }
 
 void CodecHttp2::PackHeaderWithIndexing(const std::string& strHeaderName,
-        const std::string& strHeaderValue, bool bWithHuffman, CBuffer* pBuff)
+        const std::string& strHeaderValue, uint32 uiHeaderNameIndex,
+        bool bWithHuffman, CBuffer* pBuff)
 {
-    size_t uiTableIndex = 0;
-    uiTableIndex = Http2Header::GetStaticTableIndex(strHeaderName);
-    if (uiTableIndex == 0)
+    if (uiHeaderNameIndex > 0)   // Literal Header Field with Incremental Indexing - Indexed Name.
     {
-        uiTableIndex = GetEncodingTableIndex(strHeaderName);
-    }
-
-    if (uiTableIndex > 0)   // Literal Header Field with Incremental Indexing - Indexed Name.
-    {
-        Http2Header::EncodeInt(uiTableIndex, (size_t)H2_HPACK_PREFIX_6_BITS,
+        Http2Header::EncodeInt(uiHeaderNameIndex, (size_t)H2_HPACK_PREFIX_6_BITS,
                 (char)H2_HPACK_CONDITION_LITERAL_HEADER_WITH_INDEXING, pBuff);
         if (bWithHuffman)
         {
@@ -1046,6 +1057,7 @@ void CodecHttp2::PackHeaderWithIndexing(const std::string& strHeaderName,
         {
             Http2Header::EncodeStringLiteral(strHeaderValue, pBuff);
         }
+        UpdateEncodingDynamicTable(strHeaderName, strHeaderValue);
     }
     else    // Literal Header Field with Incremental Indexing - New Name.
     {
@@ -1058,29 +1070,20 @@ void CodecHttp2::PackHeaderWithIndexing(const std::string& strHeaderName,
         }
         else
         {
-            LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
             Http2Header::EncodeStringLiteral(strHeaderName, pBuff);
-            LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
             Http2Header::EncodeStringLiteral(strHeaderValue, pBuff);
-            LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
         }
-        UpdateEncodingDynamicTable(0, strHeaderName, strHeaderValue);
+        UpdateEncodingDynamicTable(strHeaderName, strHeaderValue);
     }
 }
 
 void CodecHttp2::PackHeaderWithoutIndexing(const std::string& strHeaderName,
-        const std::string& strHeaderValue, bool bWithHuffman, CBuffer* pBuff)
+        const std::string& strHeaderValue,uint32 uiHeaderNameIndex,
+        bool bWithHuffman, CBuffer* pBuff)
 {
-    size_t uiTableIndex = 0;
-    uiTableIndex = Http2Header::GetStaticTableIndex(strHeaderName);
-    if (uiTableIndex == 0)
+    if (uiHeaderNameIndex > 0)
     {
-        uiTableIndex = GetEncodingTableIndex(strHeaderName);
-    }
-
-    if (uiTableIndex > 0)
-    {
-        Http2Header::EncodeInt(uiTableIndex, (size_t)H2_HPACK_PREFIX_4_BITS,
+        Http2Header::EncodeInt(uiHeaderNameIndex, (size_t)H2_HPACK_PREFIX_4_BITS,
                 (char)H2_HPACK_CONDITION_LITERAL_HEADER_WITHOUT_INDEXING, pBuff);
         if (bWithHuffman)
         {
@@ -1109,18 +1112,12 @@ void CodecHttp2::PackHeaderWithoutIndexing(const std::string& strHeaderName,
 }
 
 void CodecHttp2::PackHeaderNeverIndexing(const std::string& strHeaderName,
-        const std::string& strHeaderValue, bool bWithHuffman, CBuffer* pBuff)
+        const std::string& strHeaderValue, uint32 uiHeaderNameIndex,
+        bool bWithHuffman, CBuffer* pBuff)
 {
-    size_t uiTableIndex = 0;
-    uiTableIndex = Http2Header::GetStaticTableIndex(strHeaderName);
-    if (uiTableIndex == 0)
+    if (uiHeaderNameIndex > 0)
     {
-        uiTableIndex = GetEncodingTableIndex(strHeaderName);
-    }
-
-    if (uiTableIndex > 0)
-    {
-        Http2Header::EncodeInt(uiTableIndex, (size_t)H2_HPACK_PREFIX_4_BITS,
+        Http2Header::EncodeInt(uiHeaderNameIndex, (size_t)H2_HPACK_PREFIX_4_BITS,
                 (char)H2_HPACK_CONDITION_LITERAL_HEADER_NEVER_INDEXED, pBuff);
         if (bWithHuffman)
         {
@@ -1154,178 +1151,228 @@ void CodecHttp2::PackHeaderDynamicTableSize(uint32 uiDynamicTableSize, CBuffer* 
             (char)H2_HPACK_CONDITION_DYNAMIC_TABLE_SIZE_UPDATE, pBuff);
 }
 
-size_t CodecHttp2::GetEncodingTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue)
+uint32 CodecHttp2::GetEncodingTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue, uint32& uiNameIndex)
 {
-    size_t uiTableIndex = 0;
-    if (strHeaderValue.size() == 0)
+    uiNameIndex = 0;
+    uint32 uiTableIndex = 0;
+    uiTableIndex = Http2Header::GetStaticTableIndex(strHeaderName, strHeaderValue, uiNameIndex);
+    if (uiTableIndex > 0)
     {
-        for (size_t i = 0; i < m_vecEncodingDynamicTable.size(); ++i)
+        return(uiTableIndex);
+    }
+    int iEncodingDynamicTableLength = (int)m_vecEncodingDynamicTable.size();
+    for (int i = m_iNextEncodingDynamicTableHeaderIndex + 1; i < iEncodingDynamicTableLength; ++i)
+    {
+        if (m_vecEncodingDynamicTable[i].Name() == strHeaderName)
         {
-            if (m_vecEncodingDynamicTable[i].Name() == strHeaderName)
+            if (m_vecEncodingDynamicTable[i].Value() == strHeaderValue)
             {
-                uiTableIndex = Http2Header::sc_uiMaxStaticTableIndex + i + 1;
+                uiTableIndex = 1 - m_iNextEncodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
                 break;
             }
-        }
-    }
-    else
-    {
-        for (size_t i = 0; i < m_vecEncodingDynamicTable.size(); ++i)
-        {
-            if (m_vecEncodingDynamicTable[i].Name() == strHeaderName
-                    && m_vecEncodingDynamicTable[i].Value() == strHeaderValue)
+            else if (uiNameIndex == 0)
             {
-                uiTableIndex = Http2Header::sc_uiMaxStaticTableIndex + i + 1;
-                break;
+                uiNameIndex = 1 - m_iNextEncodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
             }
         }
     }
     return(uiTableIndex);
 }
 
-//size_t CodecHttp2::GetDecodingTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue)
-//{
-//    size_t uiTableIndex = 0;
-//    if (strHeaderValue.size() == 0)
-//    {
-//        for (size_t i = 0; i < m_vecDecodingDynamicTable.size(); ++i)
-//        {
-//            if (m_vecDecodingDynamicTable[i].Name() == strHeaderName)
-//            {
-//                uiTableIndex = Http2Header::sc_uiMaxStaticTableIndex + i + 1;
-//                break;
-//            }
-//        }
-//    }
-//    else
-//    {
-//        for (size_t i = 0; i < m_vecDecodingDynamicTable.size(); ++i)
-//        {
-//            if (m_vecDecodingDynamicTable[i].Name() == strHeaderName
-//                    && m_vecDecodingDynamicTable[i].Value() == strHeaderValue)
-//            {
-//                uiTableIndex = Http2Header::sc_uiMaxStaticTableIndex + i + 1;
-//                break;
-//            }
-//        }
-//    }
-//    return(uiTableIndex);
-//}
+uint32 CodecHttp2::GetDecodingTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue, uint32& uiNameIndex)
+{
+    uiNameIndex = 0;
+    uint32 uiTableIndex = 0;
+    uiTableIndex = Http2Header::GetStaticTableIndex(strHeaderName, strHeaderValue, uiNameIndex);
+    if (uiTableIndex > 0)
+    {
+        return(uiTableIndex);
+    }
+    int iDecodingDynamicTableLength = (int)m_vecDecodingDynamicTable.size();
+    for (int i = m_iNextDecodingDynamicTableHeaderIndex + 1; i < iDecodingDynamicTableLength; ++i)
+    {
+        if (m_vecDecodingDynamicTable[i].Name() == strHeaderName)
+        {
+            if (m_vecDecodingDynamicTable[i].Value() == strHeaderValue)
+            {
+                uiTableIndex = 1 - m_iNextDecodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
+                break;
+            }
+            else if (uiNameIndex == 0)
+            {
+                uiNameIndex = 1 - m_iNextDecodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
+            }
+        }
+    }
+    return(uiTableIndex);
+}
 
-void CodecHttp2::UpdateEncodingDynamicTable(uint32 uiDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue)
+void CodecHttp2::UpdateEncodingDynamicTable(const std::string& strHeaderName, const std::string& strHeaderValue)
 {
     Http2Header oHeader(strHeaderName, strHeaderValue);
-    if (uiDynamicTableIndex <= 0 || uiDynamicTableIndex >= m_vecEncodingDynamicTable.size())   // new header
+    uint32 uiEntrySize = oHeader.HpackSize();
+    // if the new header is too big, drop all entries
+    if (uiEntrySize > m_uiSettingsHeaderTableSize)
     {
-        while (m_uiEncodingDynamicTableSize + oHeader.HpackSize() > m_uiSettingsHeaderTableSize
-                && m_uiEncodingDynamicTableSize > 0)
-        {
-            auto& rLastElement = m_vecEncodingDynamicTable.back();
-            m_uiEncodingDynamicTableSize -= rLastElement.HpackSize();
-            m_vecEncodingDynamicTable.pop_back();
-        }
-        if (oHeader.HpackSize() <= m_uiSettingsHeaderTableSize)
-        {
-            m_vecEncodingDynamicTable.insert(m_vecEncodingDynamicTable.begin(),
-                    std::move(oHeader));
-            m_uiEncodingDynamicTableSize += oHeader.HpackSize();
-        }
+        m_uiEncodingDynamicTableSize = 0;
+        m_uiEncodingDynamicTableHeaderCount = 0;
+        m_iNextEncodingDynamicTableHeaderIndex = m_vecEncodingDynamicTable.size() - 1;
+        return;
     }
-    else    // replace header ?
+
+    // evict headers to required length
+    int32 iNeedRecoverSize = (m_uiEncodingDynamicTableSize + uiEntrySize) - m_uiSettingsHeaderTableSize;
+    UpdateEncodingDynamicTable(iNeedRecoverSize);
+
+    if (m_uiEncodingDynamicTableHeaderCount + 1 > m_vecEncodingDynamicTable.size()) // need to grow the dynamic table.
     {
-        while ((m_uiEncodingDynamicTableSize + oHeader.HpackSize()
-                - m_vecEncodingDynamicTable[uiDynamicTableIndex].HpackSize())
-                > m_uiSettingsHeaderTableSize
-                && m_uiEncodingDynamicTableSize > 0)
+        Http2Header oHeader("", "");
+        std::vector<Http2Header> vecDynamicTable;
+        vecDynamicTable.assign(m_vecEncodingDynamicTable.size() * 2, oHeader);
+        for (uint32 i = 0; i < m_vecEncodingDynamicTable.size(); ++i)
         {
-            auto& rLastElement = m_vecEncodingDynamicTable.back();
-            m_uiEncodingDynamicTableSize -= rLastElement.HpackSize();
-            m_vecEncodingDynamicTable.pop_back();
+            vecDynamicTable[m_vecEncodingDynamicTable.size() + i] = std::move(m_vecEncodingDynamicTable[i]);
         }
-        if (oHeader.HpackSize() <= m_uiSettingsHeaderTableSize)
-        {
-            if (uiDynamicTableIndex < m_vecEncodingDynamicTable.size())  // replace header
-            {
-                m_vecEncodingDynamicTable[uiDynamicTableIndex] = std::move(oHeader);
-            }
-            else    // new header
-            {
-                m_vecEncodingDynamicTable.insert(m_vecEncodingDynamicTable.begin(),
-                        std::move(oHeader));
-            }
-            m_uiEncodingDynamicTableSize += oHeader.HpackSize();
-        }
+        m_iNextEncodingDynamicTableHeaderIndex = m_vecEncodingDynamicTable.size() - 1;
+        m_vecEncodingDynamicTable = std::move(vecDynamicTable);
     }
+    int iCurrent = m_iNextEncodingDynamicTableHeaderIndex--;
+    m_vecEncodingDynamicTable[iCurrent] = std::move(oHeader);
+    ++m_uiEncodingDynamicTableHeaderCount;
+    m_uiEncodingDynamicTableSize += uiEntrySize;
 }
 
-void CodecHttp2::UpdateEncodingDynamicTable(uint32 uiTableSize)
+uint32 CodecHttp2::UpdateEncodingDynamicTable(int32 iRecoverSize)
 {
-    m_uiSettingsHeaderTableSize = uiTableSize;
-    while (m_uiEncodingDynamicTableSize > m_uiSettingsHeaderTableSize
-            && m_uiEncodingDynamicTableSize > 0)
+    uint32 uiEvictHeaderNum = 0;
+    if (iRecoverSize > 0)
     {
-        auto& rLastElement = m_vecEncodingDynamicTable.back();
-        m_uiEncodingDynamicTableSize -= rLastElement.HpackSize();
-        m_vecEncodingDynamicTable.pop_back();
+        int32 iEvictHeaderSize = 0;
+        // determine how many headers need to be evicted.
+        for (int32 i = (int32)m_vecEncodingDynamicTable.size() - 1;
+                iEvictHeaderSize < iRecoverSize; --i)
+        {
+            if (i < 0 || i < m_iNextEncodingDynamicTableHeaderIndex)
+            {
+                break;
+            }
+            iEvictHeaderSize += m_vecEncodingDynamicTable[i].HpackSize();
+            m_uiSettingsHeaderTableSize -= m_vecEncodingDynamicTable[i].HpackSize();
+            --m_uiEncodingDynamicTableHeaderCount;
+            ++uiEvictHeaderNum;
+        }
+
+        // move headers in dynamic table
+        uint32 uiFrom = 0;
+        uint32 uiTo = 0;
+        for (uint32 j = 0; j < uiEvictHeaderNum; ++j)
+        {
+            uiTo = m_vecEncodingDynamicTable.size() - 1 - j;
+            uiFrom = m_vecEncodingDynamicTable.size() - 1 - j - uiEvictHeaderNum;
+            m_vecEncodingDynamicTable[uiTo] = std::move(m_vecEncodingDynamicTable[uiFrom]);
+        }
+        m_iNextEncodingDynamicTableHeaderIndex += uiEvictHeaderNum;
     }
+    return(uiEvictHeaderNum);
 }
 
-void CodecHttp2::UpdateDecodingDynamicTable(uint32 uiDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue)
+uint32 CodecHttp2::EncodingDynamicTableIndex2VectorIndex(uint32 uiIndex)
+{
+    return(m_iNextEncodingDynamicTableHeaderIndex + 1 + uiIndex);
+}
+
+void CodecHttp2::UpdateDecodingDynamicTable(int32 iDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue)
 {
     Http2Header oHeader(strHeaderName, strHeaderValue);
-    if (uiDynamicTableIndex <= 0 || uiDynamicTableIndex >= m_vecDecodingDynamicTable.size())   // new header
+    uint32 uiEntrySize = oHeader.HpackSize();
+
+    if (iDynamicTableIndex < 0 || iDynamicTableIndex >= (int32)m_vecDecodingDynamicTable.size())    // new header
     {
-        while (m_uiDecodingDynamicTableSize + oHeader.HpackSize() > m_uiSettingsHeaderTableSize
-                && m_uiDecodingDynamicTableSize > 0)
+        // if the new header is too big, drop all entries.
+        if (uiEntrySize > m_uiSettingsHeaderTableSize)
         {
-            auto& rLastElement = m_vecDecodingDynamicTable.back();
-            m_uiDecodingDynamicTableSize -= rLastElement.HpackSize();
-            m_vecDecodingDynamicTable.pop_back();
+            m_uiDecodingDynamicTableSize = 0;
+            m_uiDecodingDynamicTableHeaderCount = 0;
+            m_iNextDecodingDynamicTableHeaderIndex = m_vecDecodingDynamicTable.size() - 1;
+            return;
         }
-        if (oHeader.HpackSize() <= m_uiSettingsHeaderTableSize)
+        // evict headers to required length.
+        int32 uiNeedRecoverSize = (m_uiDecodingDynamicTableSize + uiEntrySize) - m_uiSettingsHeaderTableSize;
+        UpdateDecodingDynamicTable(uiNeedRecoverSize);
+        if (m_uiDecodingDynamicTableHeaderCount + 1 > m_vecDecodingDynamicTable.size()) // need to grow the dynamic table.
         {
-            m_vecDecodingDynamicTable.insert(m_vecDecodingDynamicTable.begin(),
-                    std::move(oHeader));
-            m_uiDecodingDynamicTableSize += oHeader.HpackSize();
+            Http2Header oHeader("", "");
+            std::vector<Http2Header> vecDynamicTable;
+            vecDynamicTable.assign(m_vecDecodingDynamicTable.size() * 2, oHeader);
+            for (uint32 i = 0; i < m_vecDecodingDynamicTable.size(); ++i)
+            {
+                vecDynamicTable[m_vecDecodingDynamicTable.size() + i] = std::move(m_vecDecodingDynamicTable[i]);
+            }
+            m_iNextDecodingDynamicTableHeaderIndex = m_vecDecodingDynamicTable.size() - 1;
+            m_vecDecodingDynamicTable = std::move(vecDynamicTable);
         }
+        int iCurrent = m_iNextDecodingDynamicTableHeaderIndex--;
+        m_vecDecodingDynamicTable[iCurrent] = std::move(oHeader);
+        ++m_uiDecodingDynamicTableHeaderCount;
+        m_uiDecodingDynamicTableSize += uiEntrySize;
     }
-    else    // replace header ?
+    else
     {
-        while ((m_uiDecodingDynamicTableSize + oHeader.HpackSize()
-                - m_vecDecodingDynamicTable[uiDynamicTableIndex].HpackSize())
-                > m_uiSettingsHeaderTableSize
-                && m_uiDecodingDynamicTableSize > 0)
+        int32 iAddSize = uiEntrySize - m_vecDecodingDynamicTable[DecodingDynamicTableIndex2VectorIndex(iDynamicTableIndex)].HpackSize();
+        // if the replacement header is too big, drop all entries.
+        if (iAddSize > (int32)m_uiSettingsHeaderTableSize)
         {
-            auto& rLastElement = m_vecDecodingDynamicTable.back();
-            m_uiDecodingDynamicTableSize -= rLastElement.HpackSize();
-            m_vecDecodingDynamicTable.pop_back();
+            m_uiDecodingDynamicTableSize = 0;
+            m_uiDecodingDynamicTableHeaderCount = 0;
+            m_iNextDecodingDynamicTableHeaderIndex = m_vecDecodingDynamicTable.size() - 1;
+            return;
         }
-        if (oHeader.HpackSize() <= m_uiSettingsHeaderTableSize)
-        {
-            if (uiDynamicTableIndex < m_vecDecodingDynamicTable.size())  // replace header
-            {
-                m_vecDecodingDynamicTable[uiDynamicTableIndex] = std::move(oHeader);
-            }
-            else    // new header
-            {
-                m_vecDecodingDynamicTable.insert(m_vecDecodingDynamicTable.begin(),
-                        std::move(oHeader));
-            }
-            m_uiDecodingDynamicTableSize += oHeader.HpackSize();
-        }
+        // evict headers to the required length.
+        int32 iNeedRecoverSize = (m_uiDecodingDynamicTableSize + iAddSize) - m_uiSettingsHeaderTableSize;
+        uint32 uiEvictedNum = UpdateDecodingDynamicTable(iNeedRecoverSize);
+        iDynamicTableIndex += DecodingDynamicTableIndex2VectorIndex(iDynamicTableIndex) + uiEvictedNum;
+        m_vecDecodingDynamicTable[iDynamicTableIndex] = std::move(oHeader);
+        m_uiDecodingDynamicTableSize += iAddSize;
     }
 }
 
-void CodecHttp2::UpdateDecodingDynamicTable(uint32 uiTableSize)
+uint32 CodecHttp2::UpdateDecodingDynamicTable(int32 iRecoverSize)
 {
-    m_uiSettingsHeaderTableSize = uiTableSize;
-    while (m_uiDecodingDynamicTableSize > m_uiSettingsHeaderTableSize
-            && m_uiDecodingDynamicTableSize > 0)
+    uint32 uiEvictHeaderNum = 0;
+    if (iRecoverSize > 0)
     {
-        auto& rLastElement = m_vecDecodingDynamicTable.back();
-        m_uiDecodingDynamicTableSize -= rLastElement.HpackSize();
-        m_vecDecodingDynamicTable.pop_back();
+        int32 iEvictHeaderSize = 0;
+        // determine how many headers need to be evicted.
+        for (int32 i = (int32)m_vecDecodingDynamicTable.size() - 1;
+                iEvictHeaderSize < iRecoverSize; --i)
+        {
+            if (i < 0 || i < m_iNextDecodingDynamicTableHeaderIndex)
+            {
+                break;
+            }
+            iEvictHeaderSize += m_vecDecodingDynamicTable[i].HpackSize();
+            m_uiDecodingDynamicTableSize -= m_vecDecodingDynamicTable[i].HpackSize();
+            --m_uiDecodingDynamicTableHeaderCount;
+            ++uiEvictHeaderNum;
+        }
+
+        // move headers in dynamic table
+        uint32 uiFrom = 0;
+        uint32 uiTo = 0;
+        for (uint32 j = 0; j < uiEvictHeaderNum; ++j)
+        {
+            uiTo = m_vecDecodingDynamicTable.size() - 1 - j;
+            uiFrom = m_vecDecodingDynamicTable.size() - 1 - j - uiEvictHeaderNum;
+            m_vecDecodingDynamicTable[uiTo] = std::move(m_vecDecodingDynamicTable[uiFrom]);
+        }
+        m_iNextDecodingDynamicTableHeaderIndex += uiEvictHeaderNum;
     }
+    return(uiEvictHeaderNum);
+}
+
+uint32 CodecHttp2::DecodingDynamicTableIndex2VectorIndex(uint32 uiIndex)
+{
+    return(m_iNextDecodingDynamicTableHeaderIndex + 1 + uiIndex);
 }
 
 void CodecHttp2::CloseStream(uint32 uiStreamId)

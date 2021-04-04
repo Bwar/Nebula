@@ -97,7 +97,7 @@ E_CODEC_STATUS CodecProto::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oM
         }
         else
         {
-            LOG4_WARNING("oMsgHead.ParseFromArray() error!");   // maybe port scan from operation and maintenance system.
+            LOG4_TRACE("oMsgHead.ParseFromArray() error!");   // maybe port scan from operation and maintenance system.
             return(CODEC_STATUS_ERR);
         }
     }

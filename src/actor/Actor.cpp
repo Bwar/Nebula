@@ -199,7 +199,14 @@ bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMs
     {
         bWithSsl = true;
     }
-    return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, CODEC_HTTP, bWithSsl, bPipeline, oHttpMsg, GetSequence()));
+    if (oHttpMsg.http_major() == 2)
+    {
+        return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, CODEC_HTTP2, bWithSsl, bPipeline, oHttpMsg, GetSequence()));
+    }
+    else
+    {
+        return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, CODEC_HTTP, bWithSsl, bPipeline, oHttpMsg, GetSequence()));
+    }
 }
 
 bool Actor::SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)

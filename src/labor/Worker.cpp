@@ -136,6 +136,7 @@ bool Worker::Init(CJsonObject& oJsonConf)
     oJsonConf.Get("port", m_stNodeInfo.iPortForServer);
     oJsonConf.Get("access_host", m_stNodeInfo.strHostForClient);
     oJsonConf.Get("access_port", m_stNodeInfo.iPortForClient);
+    oJsonConf.Get("need_channel_verify", m_stNodeInfo.bChannelVerify);
     oJsonConf.Get("gateway", m_stNodeInfo.strGateway);
     oJsonConf.Get("gateway_port", m_stNodeInfo.iGatewayPort);
     m_oNodeConf = oJsonConf;

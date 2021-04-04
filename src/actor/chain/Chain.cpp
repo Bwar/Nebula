@@ -83,8 +83,8 @@ E_CMD_STATUS Chain::Next()
     for (auto iter = vecTurnBlocks.begin(); iter != vecTurnBlocks.end(); ++iter)
     {
         LOG4_TRACE("(%s)", (*iter).c_str());
-        std::shared_ptr<Operator> pSharedModel = GetOperator(*iter);
-        if (pSharedModel == nullptr)
+        std::shared_ptr<Operator> pSharedOperator = GetOperator(*iter);
+        if (pSharedOperator == nullptr)
         {
             std::shared_ptr<Actor> pSharedActor = MakeSharedActor(*iter);
             if (pSharedActor == nullptr)
@@ -93,13 +93,13 @@ E_CMD_STATUS Chain::Next()
                         iter->c_str(), m_strChainFlag.c_str());
                 break;
             }
-            // pSharedModel->SetContext(GetContext()); it had been set in MakeSharedActor().
+            // pSharedOperator->SetContext(GetContext()); it had been set in MakeSharedActor().
             if (Actor::ACT_OPERATOR == pSharedActor->GetActorType())
             {
-                pSharedModel = std::dynamic_pointer_cast<Operator>(pSharedActor);
-                eResult = pSharedModel->Submit();
-                pSharedModel->SetContext(nullptr);
-                pSharedModel->SetTraceId("");
+                pSharedOperator = std::dynamic_pointer_cast<Operator>(pSharedActor);
+                eResult = pSharedOperator->Submit();
+                pSharedOperator->SetContext(nullptr);
+                pSharedOperator->SetTraceId("");
                 if (CMD_STATUS_FAULT == eResult)
                 {
                     return(CMD_STATUS_FAULT);
@@ -124,18 +124,18 @@ E_CMD_STATUS Chain::Next()
             }
             else
             {
-                LOG4_ERROR("\"%s\" is not a Model or Step, only Model and Step can be a Chain block.",
+                LOG4_ERROR("\"%s\" is not a Operator or Step, only Operator and Step can be a Chain block.",
                         pSharedActor->GetActorName().c_str());
                 return(CMD_STATUS_FAULT);
             }
         }
         else
         {
-            pSharedModel->SetContext(GetContext());
-            pSharedModel->SetTraceId(GetTraceId());
-            eResult = pSharedModel->Submit();
-            pSharedModel->SetContext(nullptr);
-            pSharedModel->SetTraceId("");
+            pSharedOperator->SetContext(GetContext());
+            pSharedOperator->SetTraceId(GetTraceId());
+            eResult = pSharedOperator->Submit();
+            pSharedOperator->SetContext(nullptr);
+            pSharedOperator->SetTraceId("");
             if (CMD_STATUS_FAULT == eResult)
             {
                 return(CMD_STATUS_FAULT);
@@ -148,7 +148,7 @@ E_CMD_STATUS Chain::Next()
     {
         return(CMD_STATUS_RUNNING);
     }
-    else   // 只有Model的链块（无IO回调），执行完当前链块后立即执行下一个链块
+    else   // 只有Operator的链块（无IO回调），执行完当前链块后立即执行下一个链块
     {
         return(Next());
     }

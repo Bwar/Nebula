@@ -13,7 +13,8 @@
 namespace neb
 {
 
-const size_t Http2Header::sc_uiMaxStaticTableIndex = 61;
+const uint32 Http2Header::sc_uiMaxStaticTableLength = 62;
+const uint32 Http2Header::sc_uiMaxStaticTableIndex = 61;
 const std::vector<std::pair<std::string, std::string>> Http2Header::sc_vecStaticTable = {
         {"unknow", "undefine"},
         {":authority", ""},                         ///< 1
@@ -79,7 +80,7 @@ const std::vector<std::pair<std::string, std::string>> Http2Header::sc_vecStatic
         {"www-authenticate", ""}                    ///< 61
 };
 
-const std::unordered_map<std::string, size_t> Http2Header::sc_mapStaticTable = {
+const std::unordered_map<std::string, uint32> Http2Header::sc_mapStaticTable = {
         {":authority", 1},
         {":method GET", 2},
         {":method POST", 3},
@@ -149,6 +150,13 @@ Http2Header::Http2Header(const std::string& strName, const std::string& strValue
     m_uiHpackSize = m_strName.size() + m_strValue.size() + 32;
 }
 
+Http2Header::Http2Header(const Http2Header& rHeader)
+    : m_strName(rHeader.m_strName),
+      m_strValue(rHeader.m_strValue),
+      m_uiHpackSize(rHeader.m_uiHpackSize)
+{
+}
+
 Http2Header::Http2Header(Http2Header&& rHeader)
     : m_strName(std::move(rHeader.m_strName)),
       m_strValue(std::move(rHeader.m_strValue)),
@@ -160,6 +168,14 @@ Http2Header::~Http2Header()
 {
 }
 
+Http2Header& Http2Header::operator=(const Http2Header& rHeader)
+{
+    m_strName = rHeader.m_strName;
+    m_strValue = rHeader.m_strValue;
+    m_uiHpackSize = rHeader.m_uiHpackSize;
+    return(*this);
+}
+
 Http2Header& Http2Header::operator=(Http2Header&& rHeader)
 {
     m_strName = std::move(rHeader.m_strName);
@@ -168,15 +184,15 @@ Http2Header& Http2Header::operator=(Http2Header&& rHeader)
     return(*this);
 }
 
-void Http2Header::EncodeInt(size_t uiValue, size_t uiPrefix, char cBits, CBuffer* pBuff)
+void Http2Header::EncodeInt(uint32 uiValue, uint32 uiPrefix, char cBits, CBuffer* pBuff)
 {
     if (uiValue < uiPrefix)
     {
-        pBuff->WriteByte(cBits | uiValue);
+        pBuff->WriteByte((cBits & 0xFF) | uiValue);
     }
     else
     {
-        pBuff->WriteByte(cBits | uiPrefix);
+        pBuff->WriteByte((cBits & 0xFF) | uiPrefix);
         int I = uiValue - uiPrefix;
         int B = 0;
         while (I >= 128)
@@ -217,7 +233,7 @@ int Http2Header::DecodeInt(int iPrefixMask, CBuffer* pBuff)
 
 void Http2Header::EncodeStringLiteral(const std::string& strLiteral, CBuffer* pBuff)
 {
-    Http2Header::EncodeInt(strLiteral.size(), (size_t)H2_HPACK_PREFIX_7_BITS,
+    Http2Header::EncodeInt(strLiteral.size(), (uint32)H2_HPACK_PREFIX_7_BITS,
             (char)0, pBuff);
     pBuff->Write(strLiteral.c_str(), strLiteral.size());
 }
@@ -228,13 +244,13 @@ void Http2Header::EncodeStringLiteralWithHuffman(const std::string& strLiteral, 
     Huffman::Instance()->Encode(strLiteral, &oBuff);
     if (oBuff.ReadableBytes() < strLiteral.size())
     {
-        Http2Header::EncodeInt(oBuff.ReadableBytes(), (size_t)H2_HPACK_PREFIX_7_BITS,
+        Http2Header::EncodeInt(oBuff.ReadableBytes(), (uint32)H2_HPACK_PREFIX_7_BITS,
                 (char)0x80, pBuff);
         pBuff->Write(oBuff.GetRawReadBuffer(), oBuff.ReadableBytes());
     }
     else
     {
-        Http2Header::EncodeInt(strLiteral.size(), (size_t)H2_HPACK_PREFIX_7_BITS,
+        Http2Header::EncodeInt(strLiteral.size(), (uint32)H2_HPACK_PREFIX_7_BITS,
                 (char)0, pBuff);
         pBuff->Write(strLiteral.c_str(), strLiteral.size());
     }
@@ -243,11 +259,11 @@ void Http2Header::EncodeStringLiteralWithHuffman(const std::string& strLiteral, 
 bool Http2Header::DecodeStringLiteral(CBuffer* pBuff, std::string& strLiteral, bool& bWithHuffman)
 {
     char B = 0;
-    size_t uiReadIndex = pBuff->GetReadIndex();
+    uint32 uiReadIndex = pBuff->GetReadIndex();
     pBuff->ReadByte(B);
     pBuff->SetReadIndex(uiReadIndex);
     int iStringLength = DecodeInt(H2_HPACK_PREFIX_7_BITS, pBuff);
-    if (pBuff->ReadableBytes() < (size_t)iStringLength)
+    if (pBuff->ReadableBytes() < (uint32)iStringLength)
     {
         return(false);
     }
@@ -266,26 +282,21 @@ bool Http2Header::DecodeStringLiteral(CBuffer* pBuff, std::string& strLiteral, b
     }
 }
 
-size_t Http2Header::GetStaticTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue)
+uint32 Http2Header::GetStaticTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue, uint32& uiNameIndex)
 {
-    if (strHeaderValue.size() == 0)
+    uiNameIndex = 0;
+    auto c_iter = sc_mapStaticTable.find(strHeaderName + " " + strHeaderValue);
+    if (c_iter == sc_mapStaticTable.end())
     {
         auto c_iter = sc_mapStaticTable.find(strHeaderName);
-        if (c_iter == sc_mapStaticTable.end())
+        if (c_iter != sc_mapStaticTable.end())
         {
-            return(0);
+            uiNameIndex = c_iter->second;
         }
-        return(c_iter->second);
+        return(0);
     }
-    else
-    {
-        auto c_iter = sc_mapStaticTable.find(strHeaderName + " " + strHeaderValue);
-        if (c_iter == sc_mapStaticTable.end())
-        {
-            return(0);
-        }
-        return(c_iter->second);
-    }
+    uiNameIndex = c_iter->second;
+    return(c_iter->second);
 }
 
 } /* namespace neb */

@@ -514,13 +514,9 @@ E_CODEC_STATUS Http2Frame::DecodeWindowUpdate(CodecHttp2* pCodecH2,
     uiIncrement = CodecUtil::N2H(stFrameHead.uiStreamIdentifier & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
     if (uiIncrement == 0)
     {
+        LOG4_TRACE("ignore an flow-control window increment of 0.");
         // TODO just to confirm: curl --http2 receive MAGIC SETTING SETTING_ACK WINDOW_UPDATE(with an flow-control window increment of 0)
-        if (pCodecH2->GetLastStreamId() == 0)
-        {
-            LOG4_TRACE("upgrade ignore an flow-control window increment of 0.");
-        }
-        else
-        {
+        /*
             if (stFrameHead.uiStreamIdentifier == 0)
             {
                 pCodecH2->SetErrno(H2_ERR_PROTOCOL_ERROR);
@@ -533,11 +529,12 @@ E_CODEC_STATUS Http2Frame::DecodeWindowUpdate(CodecHttp2* pCodecH2,
                 EncodeRstStream(pCodecH2, stFrameHead.uiStreamIdentifier, H2_ERR_PROTOCOL_ERROR, pReactBuff);
                 return(CODEC_STATUS_PART_ERR);
             }
-        }
+        */
     }
     else
     {
         pCodecH2->WindowUpdate(stFrameHead.uiStreamIdentifier, uiIncrement);
+        EncodeWindowUpdate(pCodecH2, stFrameHead.uiStreamIdentifier, 0, pReactBuff);
         if (stFrameHead.uiStreamIdentifier > 0)
         {
             SendWaittingFrameData(pCodecH2, pReactBuff);
@@ -592,16 +589,18 @@ E_CODEC_STATUS Http2Frame::EncodeData(CodecHttp2* pCodecH2,
     E_CODEC_STATUS eEncodeStatus = CODEC_STATUS_OK;
     const char* pBodyData = oHttpMsg.body().c_str();
     uint32 uiDataLen = oHttpMsg.body().size();
+    uint32 uiHadEncodeDataLen = 0;
     uint32 uiEncodedDataLen = 0;
-    while (uiEncodedDataLen < uiDataLen)
+    while (uiHadEncodeDataLen < uiDataLen)
     {
-        eEncodeStatus = EncodeData(pCodecH2, uiStreamId, pBodyData, uiDataLen, bEndStream, strPadding, uiEncodedDataLen, pBuff);
-        if (eEncodeStatus != CODEC_STATUS_OK)
+        eEncodeStatus = EncodeData(pCodecH2, uiStreamId, pBodyData,
+                uiDataLen - uiHadEncodeDataLen, bEndStream, strPadding, uiEncodedDataLen, pBuff);
+        if (eEncodeStatus != CODEC_STATUS_PART_OK && eEncodeStatus != CODEC_STATUS_OK)
         {
             return(eEncodeStatus);
         }
         pBodyData += uiEncodedDataLen;
-        uiDataLen -= uiEncodedDataLen;
+        uiHadEncodeDataLen += uiEncodedDataLen;
     }
     return(eEncodeStatus);
 }

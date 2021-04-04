@@ -14,7 +14,7 @@ namespace neb
 {
 
 GrpcStep::GrpcStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
-    : Step(ACT_HTTP_STEP, pNextStep, dTimeout)
+    : HttpStep(pNextStep, dTimeout)
 {
 }
 
@@ -23,18 +23,16 @@ GrpcStep::~GrpcStep()
 }
 
 E_CMD_STATUS GrpcStep::Callback(
-        std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
+        std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, void* data)
 {
-    char szLength[5] = {0};
     uint8 ucCompressedFlag = 0;
     uint32 uiMessageLength = 0;
     std::string strResponseData;
     ucCompressedFlag = oHttpMsg.body()[0];
-    szLength[0] = oHttpMsg.body()[4];
-    szLength[1] = oHttpMsg.body()[3];
-    szLength[2] = oHttpMsg.body()[2];
-    szLength[3] = oHttpMsg.body()[1];
-    uiMessageLength = StringConverter::RapidAtoi<uint32>(szLength);
+    uiMessageLength |= (oHttpMsg.body()[4] & 0xFF);
+    uiMessageLength |= ((oHttpMsg.body()[3] & 0xFF) << 8);
+    uiMessageLength |= ((oHttpMsg.body()[2] & 0xFF) << 16);
+    uiMessageLength |= ((oHttpMsg.body()[1] & 0xFF) << 24);
     if (ucCompressedFlag)
     {
         auto iter = oHttpMsg.headers().find("grpc-encoding");

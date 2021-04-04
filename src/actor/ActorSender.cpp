@@ -78,7 +78,14 @@ bool ActorSender::SendTo(Actor* pActor, const std::string& strHost, int iPort, c
     {
         bWithSsl = true;
     }
-    return(pActor->m_pLabor->GetDispatcher()->SendTo(strHost, iPort, CODEC_HTTP, bWithSsl, bPipeline, oHttpMsg, pActor->GetSequence()));
+    if (oHttpMsg.http_major() == 2)
+    {
+        return(pActor->m_pLabor->GetDispatcher()->SendTo(strHost, iPort, CODEC_HTTP2, bWithSsl, bPipeline, oHttpMsg, pActor->GetSequence()));
+    }
+    else
+    {
+        return(pActor->m_pLabor->GetDispatcher()->SendTo(strHost, iPort, CODEC_HTTP, bWithSsl, bPipeline, oHttpMsg, pActor->GetSequence()));
+    }
 }
 
 bool ActorSender::SendTo(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
@@ -155,8 +162,9 @@ bool ActorSender::SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel,
     oHttpMsg.set_status_code(200);
     oHttpMsg.set_stream_id(uiStreamId);
     oHttpMsg.mutable_headers()->insert({"content-type", "application/grpc"});
-    oHttpMsg.add_adding_never_index_headers(":status");
-    oHttpMsg.add_adding_never_index_headers("content-type");
+    oHttpMsg.add_adding_never_index_headers("grpc-status");
+    oHttpMsg.add_adding_never_index_headers("grpc-message");
+    oHttpMsg.add_adding_never_index_headers("x-trace-id");
     if (eStatus == GRPC_OK)
     {
         uint8 ucCompressedFlag = 0;
@@ -220,7 +228,7 @@ bool ActorSender::SendTo(Actor* pActor, const std::string& strUrl, const std::st
     oHttpMsg.set_method(HTTP_POST);
     oHttpMsg.set_url(strUrl);
     oHttpMsg.mutable_headers()->insert({"content-type", "application/grpc"});
-    oHttpMsg.add_adding_never_index_headers("content-type");
+    oHttpMsg.add_adding_never_index_headers("x-trace-id");
     if(0 == http_parser_parse_url(strUrl.c_str(), strUrl.length(), 0, &stUrl))
     {
         if(stUrl.field_set & (1 << UF_PORT))

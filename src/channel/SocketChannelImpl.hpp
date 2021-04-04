@@ -221,6 +221,7 @@ protected:
 
 private:
     uint8 m_ucChannelStatus;
+    E_CODEC_STATUS m_eLastCodecStatus;    ///< 连接关闭前的最后一个编解码状态（当且仅当连接的应用层读缓冲区有数据未处理完而对端关闭连接时使用）
     char m_szErrBuff[256];
     bool m_bIsClientConnection;
     uint16 m_unRemoteWorkerIdx;           ///< 对端Worker进程ID,若不涉及则无需关心

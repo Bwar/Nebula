@@ -30,9 +30,9 @@ bool GrpcModule::AnyMessage(
     std::string strMessage;
     ucCompressedFlag = oHttpMsg.body()[0];
     uiMessageLength |= (oHttpMsg.body()[4] & 0xFF);
-    uiMessageLength |= ((oHttpMsg.body()[3] << 8) & 0xFF);
-    uiMessageLength |= ((oHttpMsg.body()[2] << 16) & 0xFF);
-    uiMessageLength |= ((oHttpMsg.body()[1] << 24) & 0xFF);
+    uiMessageLength |= ((oHttpMsg.body()[3] & 0xFF) << 8);
+    uiMessageLength |= ((oHttpMsg.body()[2] & 0xFF) << 16);
+    uiMessageLength |= ((oHttpMsg.body()[1] & 0xFF) << 24);
     if (ucCompressedFlag)
     {
         auto iter = oHttpMsg.headers().find("grpc-encoding");

@@ -33,6 +33,7 @@ struct NodeInfo
     int32 iGatewayPort              = 0;            ///< 对Client服务的真实端口
     bool bThreadMode                = 0;            ///< 是否线程模型
     bool bIsAccess                  = false;        ///< 是否接入Server
+    bool bChannelVerify             = false;        ///< 是否需要连接验证
     ev_tstamp dIoTimeout            = 10.0;          ///< IO（连接）超时配置
     ev_tstamp dDataReportInterval   = 60.0;         ///< 统计数据上报时间间隔
     ev_tstamp dMsgStatInterval      = 60.0;          ///< 客户端连接发送数据包统计时间间隔

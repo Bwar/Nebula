@@ -343,7 +343,7 @@ bool Nodes::SplitAddAndGetNode(const std::string& strNodeType, std::string& strN
 {
     std::vector<std::string> vecAddress;
     Split(strNodeType, ",", vecAddress);
-    if (vecAddress.size() <= 1)
+    if (vecAddress.size() < 1)
     {
         return(false);
     }

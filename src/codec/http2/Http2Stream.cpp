@@ -247,13 +247,27 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
         LOG4_TRACE("eStatus = %d", eStatus);
         if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PART_OK == eStatus)
         {
-            if (oHttpMsg.stream_id() & 0x01)
+            if (pCodecH2->IsClient())
             {
-                oHttpMsg.set_type(HTTP_REQUEST);
+                if (oHttpMsg.stream_id() & 0x01)
+                {
+                    oHttpMsg.set_type(HTTP_RESPONSE);
+                }
+                else
+                {
+                    oHttpMsg.set_type(HTTP_REQUEST);
+                }
             }
             else
             {
-                oHttpMsg.set_type(HTTP_RESPONSE);
+                if (oHttpMsg.stream_id() & 0x01)
+                {
+                    oHttpMsg.set_type(HTTP_REQUEST);
+                }
+                else
+                {
+                    oHttpMsg.set_type(HTTP_RESPONSE);
+                }
             }
             if (pCodecH2->IsChunkNotice())
             {
@@ -356,7 +370,7 @@ void Http2Stream::EncodeSetState(const tagH2FrameHead& stFrameHead)
             if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
             {
                 LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_HALF_CLOSE_REMOTE);
-                m_eStreamState = H2_STREAM_HALF_CLOSE_REMOTE;
+                m_eStreamState = H2_STREAM_HALF_CLOSE_LOCAL;
             }
             break;
         case H2_STREAM_HALF_CLOSE_LOCAL:

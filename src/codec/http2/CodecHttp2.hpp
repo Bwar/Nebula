@@ -57,6 +57,10 @@ public:
     virtual void ConnectionSetting(CBuffer* pBuff);
 
 public:
+    bool IsClient() const
+    {
+        return(m_bChannelIsClient);
+    }
     bool IsChunkNotice() const
     {
         return(m_bChunkNotice);
@@ -100,23 +104,24 @@ protected:
 
     E_CODEC_STATUS UnpackHeaderIndexed(CBuffer* pBuff, HttpMsg& oHttpMsg);
     E_CODEC_STATUS UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucFirstByte, int32 iPrefixMask,
-            int& iDynamicTableIndex, std::string& strHeaderName, std::string& strHeaderValue,
-            bool& bWithHuffman);
+            std::string& strHeaderName, std::string& strHeaderValue, bool& bWithHuffman);
     void ClassifyHeader(const std::string& strHeaderName, const std::string& strHeaderValue, HttpMsg& oHttpMsg);
     void PackHeaderIndexed(size_t uiTableIndex, CBuffer* pBuff);
     void PackHeaderWithIndexing(const std::string& strHeaderName,
-            const std::string& strHeaderValue, bool bWithHuffman, CBuffer* pBuff);
+            const std::string& strHeaderValue, uint32 uiHeaderNameIndex, bool bWithHuffman, CBuffer* pBuff);
     void PackHeaderWithoutIndexing(const std::string& strHeaderName,
-            const std::string& strHeaderValue, bool bWithHuffman, CBuffer* pBuff);
+            const std::string& strHeaderValue, uint32 uiHeaderNameIndex, bool bWithHuffman, CBuffer* pBuff);
     void PackHeaderNeverIndexing(const std::string& strHeaderName,
-            const std::string& strHeaderValue, bool bWithHuffman, CBuffer* pBuff);
+            const std::string& strHeaderValue, uint32 uiHeaderNameIndex, bool bWithHuffman, CBuffer* pBuff);
     void PackHeaderDynamicTableSize(uint32 uiDynamicTableSize, CBuffer* pBuff);
-    size_t GetEncodingTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue = "");
-//    size_t GetDecodingTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue = "");
-    void UpdateEncodingDynamicTable(uint32 uiDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue);
-    void UpdateEncodingDynamicTable(uint32 uiTableSize);
-    void UpdateDecodingDynamicTable(uint32 uiDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue);
-    void UpdateDecodingDynamicTable(uint32 uiTableSize);
+    uint32 GetEncodingTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue, uint32& uiNameIndex);
+    uint32 GetDecodingTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue, uint32& uiNameIndex);
+    void UpdateEncodingDynamicTable(const std::string& strHeaderName, const std::string& strHeaderValue);
+    uint32 UpdateEncodingDynamicTable(int32 iRecoverSize);
+    uint32 EncodingDynamicTableIndex2VectorIndex(uint32 uiIndex);
+    void UpdateDecodingDynamicTable(int32 iDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue);
+    uint32 UpdateDecodingDynamicTable(int32 iRecoverSize);
+    uint32 DecodingDynamicTableIndex2VectorIndex(uint32 uiIndex);
     void CloseStream(uint32 uiStreamId);
 
 private:
@@ -140,10 +145,14 @@ private:
     std::unordered_map<uint32, Http2Stream*> m_mapStream;
     TreeNode<tagStreamWeight>* m_pStreamWeightRoot = nullptr;
 
-    uint32 m_uiEncodingDynamicTableSize = 0;
-    uint32 m_uiDecodingDynamicTableSize = 0;
     std::vector<Http2Header> m_vecEncodingDynamicTable;
+    uint32 m_uiEncodingDynamicTableSize = 0;
+    uint32 m_uiEncodingDynamicTableHeaderCount = 0;
+    int32 m_iNextEncodingDynamicTableHeaderIndex = 0;
     std::vector<Http2Header> m_vecDecodingDynamicTable;
+    uint32 m_uiDecodingDynamicTableSize = 0;
+    uint32 m_uiDecodingDynamicTableHeaderCount = 0;
+    int32 m_iNextDecodingDynamicTableHeaderIndex = 0;
     std::unordered_set<std::string> m_setEncodingWithoutIndexHeaders;
     std::unordered_set<std::string> m_setEncodingNeverIndexHeaders;
 };

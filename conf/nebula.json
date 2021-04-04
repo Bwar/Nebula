@@ -7,6 +7,8 @@
     "access_port": 9988,
     "//access_codec": "接入端编解码器，目前支持CODEC_PRIVATE(4),CODEC_HTTP(3),CODEC_PROTOBUF(2)",
     "access_codec": 4,
+    "//need_channel_verify":"是否需要连接验证，如设置为true，第一个消息必须是验证消息，未经验证的连接收到第二个消息会被立即关闭",
+    "need_channel_verify":false,
     "gateway": "113.102.157.188",
     "gateway_port": 9988,
     "//host": "系统内各Server之间通信绑定的IP（Server to Server）",

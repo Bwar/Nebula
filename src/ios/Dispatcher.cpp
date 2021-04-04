@@ -267,7 +267,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                 if (CODEC_STATUS_OK == eCodecStatus)
                 {
                     /*
-                    if (m_pLabor->GetNodeInfo().bIsAccess && !pChannel->m_pImpl->IsChannelVerify())
+                    if (m_pLabor->GetNodeInfo().bChannelVerify && !pChannel->m_pImpl->IsChannelVerify())
                     {
                         if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType()
                                 && CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()
@@ -401,7 +401,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                 if (CODEC_STATUS_OK == eCodecStatus)
                 {
                     /*
-                    if (m_pLabor->GetNodeInfo().bIsAccess && !pChannel->m_pImpl->IsChannelVerify())
+                    if (m_pLabor->GetNodeInfo().bChannelVerify && !pChannel->m_pImpl->IsChannelVerify())
                     {
                         if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType()
                                 && CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()
@@ -506,6 +506,7 @@ bool Dispatcher::FdTransfer(int iFd)
                 LOG4_WARNING("fail to set TCP_NODELAY");
             }
         }
+        x_sock_set_block(iAcceptFd, 0);
         std::shared_ptr<SocketChannel> pChannel = nullptr;
         LOG4_TRACE("fd[%d] transfer successfully.", iAcceptFd);
         if ((CODEC_NEBULA != iCodec) && (CODEC_NEBULA_IN_NODE != iCodec) && m_pLabor->WithSsl())
@@ -1225,6 +1226,7 @@ bool Dispatcher::Init()
     Codec::AddAutoSwitchCodecType(CODEC_HTTP);
     Codec::AddAutoSwitchCodecType(CODEC_PROTO);
     Codec::AddAutoSwitchCodecType(CODEC_RESP);
+    Codec::AddAutoSwitchCodecType(CODEC_HTTP2);
     Codec::AddAutoSwitchCodecType(CODEC_PRIVATE);
     return(true);
 }
@@ -1469,6 +1471,32 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
             LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
             return(false);
         }
+        int iKeepAlive = 1;
+        int iKeepIdle = 60;
+        int iKeepInterval = 5;
+        int iKeepCount = 3;
+        int iTcpNoDelay = 1;
+        if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPIDLE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPINTVL");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+        {
+            LOG4_WARNING("fail to set TCP_NODELAY");
+        }
+        x_sock_set_block(iAcceptFd, 0);
         inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
         LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }
@@ -1482,6 +1510,32 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
             LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
             return(false);
         }
+        int iKeepAlive = 1;
+        int iKeepIdle = 60;
+        int iKeepInterval = 5;
+        int iKeepCount = 3;
+        int iTcpNoDelay = 1;
+        if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPIDLE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPINTVL");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
+        {
+            LOG4_WARNING("fail to set SO_KEEPALIVE");
+        }
+        if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
+        {
+            LOG4_WARNING("fail to set TCP_NODELAY");
+        }
+        x_sock_set_block(iAcceptFd, 0);
         inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
         LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }

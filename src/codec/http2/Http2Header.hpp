@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include "Definition.hpp"
 #include "util/CBuffer.hpp"
 
 namespace neb
@@ -51,11 +52,11 @@ class Http2Header
 {
 public:
     Http2Header(const std::string& strName, const std::string& strValue);
-    Http2Header(const Http2Header& rHeader) = delete;
+    Http2Header(const Http2Header& rHeader);
     Http2Header(Http2Header&& rHeader);
     virtual ~Http2Header();
 
-    Http2Header& operator=(const Http2Header& rHeader) = delete;
+    Http2Header& operator=(const Http2Header& rHeader);
     Http2Header& operator=(Http2Header&& rHeader);
 
     inline const std::string& Name() const
@@ -68,7 +69,7 @@ public:
         return(m_strValue);
     }
 
-    inline size_t HpackSize() const
+    inline uint32 HpackSize() const
     {
         return(m_uiHpackSize);
     }
@@ -76,7 +77,7 @@ public:
 private:
     std::string m_strName;
     std::string m_strValue;
-    size_t m_uiHpackSize;
+    uint32 m_uiHpackSize;
 
 public:
     /**
@@ -86,7 +87,7 @@ public:
      * @param[in] cBits bits of the prefix byte.
      * @param[in,out] pBuff encode buffer.
      */
-    static void EncodeInt(size_t uiValue, size_t uiPrefix, char cBits, CBuffer* pBuff);
+    static void EncodeInt(uint32 uiValue, uint32 uiPrefix, char cBits, CBuffer* pBuff);
 
     /**
      * @brief Pseudocode to decode an integer I
@@ -117,12 +118,13 @@ public:
      */
     static bool DecodeStringLiteral(CBuffer* pBuff, std::string& strLiteral, bool& bWithHuffman);
 
-    static size_t GetStaticTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue = "");
+    static uint32 GetStaticTableIndex(const std::string& strHeaderName, const std::string& strHeaderValue, uint32& uiNameIndex);
 
 public:
-    static const size_t sc_uiMaxStaticTableIndex;
+    static const uint32 sc_uiMaxStaticTableLength;
+    static const uint32 sc_uiMaxStaticTableIndex;
     static const std::vector<std::pair<std::string, std::string>> sc_vecStaticTable;
-    static const std::unordered_map<std::string, size_t> sc_mapStaticTable;
+    static const std::unordered_map<std::string, uint32> sc_mapStaticTable;
 };
 
 } /* namespace neb */

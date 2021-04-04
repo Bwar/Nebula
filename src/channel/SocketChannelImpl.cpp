@@ -22,7 +22,7 @@ namespace neb
 {
 
 SocketChannelImpl::SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
-    : m_ucChannelStatus(CHANNEL_STATUS_INIT), m_bIsClientConnection(false),
+    : m_ucChannelStatus(CHANNEL_STATUS_INIT),m_eLastCodecStatus(CODEC_STATUS_OK), m_bIsClientConnection(false),
       m_unRemoteWorkerIdx(0), m_iFd(iFd), m_uiSeq(ulSeq), m_uiForeignSeq(0), m_bPipeline(true),
       m_uiUnitTimeMsgNum(0), m_uiMsgNum(0),
       m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
@@ -35,7 +35,7 @@ SocketChannelImpl::SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_
 
 SocketChannelImpl::~SocketChannelImpl()
 {
-    LOG4_DEBUG("SocketChannelImpl::~SocketChannelImpl() fd %d, seq %u", m_iFd, m_uiSeq);
+    LOG4_TRACE("SocketChannelImpl::~SocketChannelImpl() fd %d, seq %u", m_iFd, m_uiSeq);
     m_listPipelineStepSeq.clear();
     if (CHANNEL_STATUS_CLOSED != m_ucChannelStatus)
     {
@@ -170,7 +170,6 @@ E_CODEC_STATUS SocketChannelImpl::Send()
         return(CODEC_STATUS_ERR);
     }
     int iNeedWriteLen = 0;
-    int iWrittenLen = 0;
     iNeedWriteLen = m_pSendBuff->ReadableBytes();
     if (0 == iNeedWriteLen)
     {
@@ -190,9 +189,16 @@ E_CODEC_STATUS SocketChannelImpl::Send()
     }
 
     m_dActiveTime = m_pLabor->GetNowTime();
-    iWrittenLen = Write(m_pSendBuff, m_iErrno);
-    LOG4_TRACE("iNeedWriteLen = %d, iWrittenLen = %d", iNeedWriteLen, iWrittenLen);
-    if (iWrittenLen >= 0)
+    int iHadWrittenLen = 0;
+    int iWrittenLen = 0;
+    do
+    {
+        iWrittenLen = Write(m_pSendBuff, m_iErrno);
+        iHadWrittenLen += iWrittenLen;
+    }
+    while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
+    LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
+    if (iHadWrittenLen >= 0)
     {
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
@@ -200,7 +206,7 @@ E_CODEC_STATUS SocketChannelImpl::Send()
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
         }
         m_dActiveTime = m_pLabor->GetNowTime();
-        if (iNeedWriteLen == iWrittenLen && 0 == m_pWaitForSendBuff->ReadableBytes())
+        if (iNeedWriteLen == iHadWrittenLen && 0 == m_pWaitForSendBuff->ReadableBytes())
         {
             return(CODEC_STATUS_OK);
         }
@@ -300,9 +306,16 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
     }
 
     errno = 0;
-    int iWrittenLen = Write(m_pSendBuff, m_iErrno);
-    LOG4_TRACE("iNeedWriteLen = %d, iWrittenLen = %d", iNeedWriteLen, iWrittenLen);
-    if (iWrittenLen >= 0)
+    int iHadWrittenLen = 0;
+    int iWrittenLen = 0;
+    do
+    {
+        iWrittenLen = Write(m_pSendBuff, m_iErrno);
+        iHadWrittenLen += iWrittenLen;
+    }
+    while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
+    LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
+    if (iHadWrittenLen >= 0)
     {
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
@@ -310,7 +323,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
         }
         m_dActiveTime = m_pLabor->GetNowTime();
-        if (iNeedWriteLen == iWrittenLen)
+        if (iNeedWriteLen == iHadWrittenLen)
         {
             if (CMD_RSP_TELL_WORKER == iCmd)
             {
@@ -386,10 +399,16 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
         return(eCodecStatus);
     }
 
-    int iWrittenLen = Write(m_pSendBuff, m_iErrno);
-    LOG4_TRACE("fd[%d], channel_seq[%u] iWrittenLen = %d, m_iErrno = %d",
-            GetFd(), GetSequence(), iWrittenLen, m_iErrno);
-    if (iWrittenLen >= 0)
+    int iHadWrittenLen = 0;
+    int iWrittenLen = 0;
+    do
+    {
+        iWrittenLen = Write(m_pSendBuff, m_iErrno);
+        iHadWrittenLen += iWrittenLen;
+    }
+    while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
+    LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
+    if (iHadWrittenLen >= 0)
     {
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
@@ -401,7 +420,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
             m_listPipelineStepSeq.push_back(uiStepSeq);
         }
         m_dActiveTime = m_pLabor->GetNowTime();
-        if (iNeedWriteLen == iWrittenLen)
+        if (iNeedWriteLen == iHadWrittenLen)
         {
             return(eCodecStatus);
         }
@@ -470,10 +489,16 @@ E_CODEC_STATUS SocketChannelImpl::Send(const RedisMsg& oRedisMsg, uint32 uiStepS
         return(eCodecStatus);
     }
 
-    int iWrittenLen = Write(m_pSendBuff, m_iErrno);
-    LOG4_TRACE("fd[%d], channel_seq[%u] iWrittenLen = %d, m_iErrno = %d",
-            GetFd(), GetSequence(), iWrittenLen, m_iErrno);
-    if (iWrittenLen >= 0)
+    int iHadWrittenLen = 0;
+    int iWrittenLen = 0;
+    do
+    {
+        iWrittenLen = Write(m_pSendBuff, m_iErrno);
+        iHadWrittenLen += iWrittenLen;
+    }
+    while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
+    LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
+    if (iHadWrittenLen >= 0)
     {
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
@@ -485,7 +510,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const RedisMsg& oRedisMsg, uint32 uiStepS
             m_listPipelineStepSeq.push_back(uiStepSeq);
         }
         m_dActiveTime = m_pLabor->GetNowTime();
-        if (iNeedWriteLen == iWrittenLen)
+        if (iNeedWriteLen == iHadWrittenLen)
         {
             return(CODEC_STATUS_OK);
         }
@@ -545,10 +570,16 @@ E_CODEC_STATUS SocketChannelImpl::Send(const char* pRaw, uint32 uiRawSize, uint3
         return(eCodecStatus);
     }
 
-    int iWrittenLen = Write(m_pSendBuff, m_iErrno);
-    LOG4_TRACE("fd[%d], channel_seq[%u] iWrittenLen = %d, m_iErrno = %d",
-            GetFd(), GetSequence(), iWrittenLen, m_iErrno);
-    if (iWrittenLen >= 0)
+    int iHadWrittenLen = 0;
+    int iWrittenLen = 0;
+    do
+    {
+        iWrittenLen = Write(m_pSendBuff, m_iErrno);
+        iHadWrittenLen += iWrittenLen;
+    }
+    while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
+    LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
+    if (iHadWrittenLen >= 0)
     {
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
@@ -560,7 +591,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const char* pRaw, uint32 uiRawSize, uint3
             m_listPipelineStepSeq.push_back(uiStepSeq);
         }
         m_dActiveTime = m_pLabor->GetNowTime();
-        if (iNeedWriteLen == iWrittenLen)
+        if (iNeedWriteLen == iHadWrittenLen)
         {
             return(CODEC_STATUS_OK);
         }
@@ -592,9 +623,38 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
         return(CODEC_STATUS_ERR);
     }
     int iReadLen = 0;
-    iReadLen = Read(m_pRecvBuff, m_iErrno);
-    LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d", m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
-    if (iReadLen > 0)
+    int iHadReadLen = 0;
+    do
+    {
+        iReadLen = Read(m_pRecvBuff, m_iErrno);
+        iHadReadLen += iReadLen;
+        LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
+                m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
+    }
+    while(iReadLen > 0);
+    if (iReadLen == 0)
+    {
+        m_eLastCodecStatus = CODEC_STATUS_EOF;
+    }
+    else if (iReadLen < 0)
+    {
+        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+        {
+            m_dActiveTime = m_pLabor->GetNowTime();
+            m_eLastCodecStatus = CODEC_STATUS_PAUSE;
+            //return(CODEC_STATUS_PAUSE);
+        }
+        else
+        {
+            m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+            LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                    m_iFd, m_iErrno, m_strErrMsg.c_str());
+            m_eLastCodecStatus = CODEC_STATUS_INT;
+            //return(CODEC_STATUS_INT);
+        }
+    }
+    
+    if (iHadReadLen > 0)
     {
         if (m_pRecvBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pRecvBuff->ReadableBytes() < m_pRecvBuff->Capacity() / 2))
@@ -668,25 +728,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
         LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_uiSeq, oMsgHead.cmd(), oMsgHead.seq());
         return(eCodecStatus);
     }
-    else if (iReadLen == 0)
-    {
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_DEBUG("fd %d closed by peer, error %d %s!",
-                        m_iFd, m_iErrno, m_strErrMsg.c_str());
-        return(CODEC_STATUS_EOF);
-    }
-    else
-    {
-        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
-        {
-            m_dActiveTime = m_pLabor->GetNowTime();
-            return(CODEC_STATUS_PAUSE);
-        }
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, m_strErrMsg.c_str());
-        return(CODEC_STATUS_INT);
-    }
+    return(m_eLastCodecStatus);
 }
 
 E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
@@ -703,10 +745,39 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         return(CODEC_STATUS_ERR);
     }
     int iReadLen = 0;
-    iReadLen = Read(m_pRecvBuff, m_iErrno);
-    LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
-            m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
-    if (iReadLen > 0)
+    int iHadReadLen = 0;
+    do
+    {
+        iReadLen = Read(m_pRecvBuff, m_iErrno);
+        LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
+                m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
+        iHadReadLen += iReadLen;
+    }
+    while (iReadLen > 0);
+
+    if (iReadLen == 0)
+    {
+        m_eLastCodecStatus = CODEC_STATUS_EOF;
+    }
+    else if (iReadLen < 0)
+    {
+        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+        {
+            m_dActiveTime = m_pLabor->GetNowTime();
+            m_eLastCodecStatus = CODEC_STATUS_PAUSE;
+            //return(CODEC_STATUS_PAUSE);
+        }
+        else
+        {
+            m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+            LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                    m_iFd, m_iErrno, m_strErrMsg.c_str());
+            m_eLastCodecStatus = CODEC_STATUS_INT;
+            return(CODEC_STATUS_INT);
+        }
+    }
+
+    if (iHadReadLen > 0)
     {
         if (m_pRecvBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pRecvBuff->ReadableBytes() < m_pRecvBuff->Capacity() / 2))
@@ -771,33 +842,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         }
         return(eCodecStatus);
     }
-    else if (iReadLen == 0)
-    {
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_TRACE("fd %d closed by peer, error %d %s!",
-                        m_iFd, m_iErrno, m_strErrMsg.c_str());
-        if (m_pRecvBuff->ReadableBytes() > 0)
-        {
-            E_CODEC_STATUS eCodecStatus = ((CodecHttp*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg);
-            if (CODEC_STATUS_PAUSE == eCodecStatus || CODEC_STATUS_OK == eCodecStatus)
-            {
-                oHttpMsg.set_is_decoding(false);
-            }
-        }
-        return(CODEC_STATUS_EOF);
-    }
-    else
-    {
-        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
-        {
-            m_dActiveTime = m_pLabor->GetNowTime();
-            return(CODEC_STATUS_PAUSE);
-        }
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, m_strErrMsg.c_str());
-        return(CODEC_STATUS_INT);
-    }
+    return(m_eLastCodecStatus);
 }
 
 E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
@@ -814,10 +859,34 @@ E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
         return(CODEC_STATUS_ERR);
     }
     int iReadLen = 0;
-    iReadLen = Read(m_pRecvBuff, m_iErrno);
-    LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
-            m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
-    if (iReadLen > 0)
+    int iHadReadLen = 0;
+    do
+    {
+        iReadLen = Read(m_pRecvBuff, m_iErrno);
+        LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
+                m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
+        iHadReadLen += iReadLen;
+    }
+    while (iReadLen > 0);
+
+    if (iReadLen == 0)
+    {
+        m_eLastCodecStatus = CODEC_STATUS_EOF;
+    }
+    else if (iReadLen < 0)
+    {
+        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+        {
+            m_dActiveTime = m_pLabor->GetNowTime();
+            return(CODEC_STATUS_PAUSE);
+        }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
+        return(CODEC_STATUS_INT);
+    }
+
+    if (iHadReadLen > 0)
     {
         if (m_pRecvBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pRecvBuff->ReadableBytes() < m_pRecvBuff->Capacity() / 2))
@@ -845,29 +914,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
         }
         return(eCodecStatus);
     }
-    else if (iReadLen == 0)
-    {
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_TRACE("fd %d closed by peer, error %d %s!",
-                        m_iFd, m_iErrno, m_strErrMsg.c_str());
-        if (m_pRecvBuff->ReadableBytes() > 0)
-        {
-            ((CodecResp*)m_pCodec)->Decode(m_pRecvBuff, oRedisReply);
-        }
-        return(CODEC_STATUS_EOF);
-    }
-    else
-    {
-        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
-        {
-            m_dActiveTime = m_pLabor->GetNowTime();
-            return(CODEC_STATUS_PAUSE);
-        }
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, m_strErrMsg.c_str());
-        return(CODEC_STATUS_INT);
-    }
+    return(m_eLastCodecStatus);
 }
 
 E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
@@ -879,10 +926,34 @@ E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
         return(CODEC_STATUS_EOF);
     }
     int iReadLen = 0;
-    iReadLen = Read(m_pRecvBuff, m_iErrno);
-    LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
-            m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
-    if (iReadLen > 0)
+    int iHadReadLen = 0;
+    do
+    {
+        iReadLen = Read(m_pRecvBuff, m_iErrno);
+        LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
+                m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
+        iHadReadLen += iReadLen;
+    }
+    while (iReadLen > 0);
+
+    if (iReadLen == 0)
+    {
+        m_eLastCodecStatus = CODEC_STATUS_EOF;
+    }
+    else if (iReadLen < 0)
+    {
+        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
+        {
+            m_dActiveTime = m_pLabor->GetNowTime();
+            return(CODEC_STATUS_PAUSE);
+        }
+        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                m_iFd, m_iErrno, m_strErrMsg.c_str());
+        return(CODEC_STATUS_INT);
+    }
+
+    if (iHadReadLen > 0)
     {
         if (m_pRecvBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pRecvBuff->ReadableBytes() < m_pRecvBuff->Capacity() / 2))
@@ -903,29 +974,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
         }
         return(CODEC_STATUS_PAUSE);
     }
-    else if (iReadLen == 0)
-    {
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_TRACE("fd %d closed by peer, error %d %s!",
-                        m_iFd, m_iErrno, m_strErrMsg.c_str());
-        if (m_pRecvBuff->ReadableBytes() > 0)
-        {
-            oRawBuff.Write(m_pRecvBuff, m_pRecvBuff->ReadableBytes());
-        }
-        return(CODEC_STATUS_EOF);
-    }
-    else
-    {
-        if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
-        {
-            m_dActiveTime = m_pLabor->GetNowTime();
-            return(CODEC_STATUS_PAUSE);
-        }
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, m_strErrMsg.c_str());
-        return(CODEC_STATUS_INT);
-    }
+    return(m_eLastCodecStatus);
 }
 
 E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
@@ -950,6 +999,12 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
             m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
         }
         LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_uiSeq, oMsgHead.cmd(), oMsgHead.seq());
+    }
+    if ((CODEC_STATUS_PAUSE == eCodecStatus)
+            && (CODEC_STATUS_EOF == m_eLastCodecStatus
+                || CODEC_STATUS_INT == m_eLastCodecStatus))
+    {
+        return(m_eLastCodecStatus);
     }
     return(eCodecStatus);
 }
@@ -1007,6 +1062,12 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
             }
         }
     }
+    if ((CODEC_STATUS_PAUSE == eCodecStatus)
+            && (CODEC_STATUS_EOF == m_eLastCodecStatus
+                || CODEC_STATUS_INT == m_eLastCodecStatus))
+    {
+        return(m_eLastCodecStatus);
+    }
     return(eCodecStatus);
 }
 
@@ -1029,6 +1090,12 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(RedisReply& oRedisReply)
             m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
         }
     }
+    if ((CODEC_STATUS_PAUSE == eCodecStatus)
+            && (CODEC_STATUS_EOF == m_eLastCodecStatus
+                || CODEC_STATUS_INT == m_eLastCodecStatus))
+    {
+        return(m_eLastCodecStatus);
+    }
     return(eCodecStatus);
 }
 
@@ -1050,6 +1117,11 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(CBuffer& oRawBuff)
             m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
         }
         return(CODEC_STATUS_OK);
+    }
+    if (CODEC_STATUS_EOF == m_eLastCodecStatus
+                || CODEC_STATUS_INT == m_eLastCodecStatus)
+    {
+        return(m_eLastCodecStatus);
     }
     return(CODEC_STATUS_PAUSE);
 }
