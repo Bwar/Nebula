@@ -765,7 +765,6 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         {
             m_dActiveTime = m_pLabor->GetNowTime();
             m_eLastCodecStatus = CODEC_STATUS_PAUSE;
-            //return(CODEC_STATUS_PAUSE);
         }
         else
         {
@@ -773,7 +772,6 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
             LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                     m_iFd, m_iErrno, m_strErrMsg.c_str());
             m_eLastCodecStatus = CODEC_STATUS_INT;
-            return(CODEC_STATUS_INT);
         }
     }
 
@@ -878,12 +876,15 @@ E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
         if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
         {
             m_dActiveTime = m_pLabor->GetNowTime();
-            return(CODEC_STATUS_PAUSE);
+            m_eLastCodecStatus = CODEC_STATUS_PAUSE;
         }
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, m_strErrMsg.c_str());
-        return(CODEC_STATUS_INT);
+        else
+        {
+            m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+            LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                    m_iFd, m_iErrno, m_strErrMsg.c_str());
+           m_eLastCodecStatus = CODEC_STATUS_INT;
+        }
     }
 
     if (iHadReadLen > 0)
@@ -945,12 +946,15 @@ E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
         if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
         {
             m_dActiveTime = m_pLabor->GetNowTime();
-            return(CODEC_STATUS_PAUSE);
+            m_eLastCodecStatus = CODEC_STATUS_PAUSE;
         }
-        m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-        LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                m_iFd, m_iErrno, m_strErrMsg.c_str());
-        return(CODEC_STATUS_INT);
+        else
+        {
+            m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
+            LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
+                    m_iFd, m_iErrno, m_strErrMsg.c_str());
+            m_eLastCodecStatus = CODEC_STATUS_INT;
+        }
     }
 
     if (iHadReadLen > 0)
@@ -1266,13 +1270,13 @@ bool SocketChannelImpl::Close()
         }
         else
         {
-            LOG4_WARNING("failed to close channel(fd %d), errno %d, it will be close later.", m_iFd, errno);
+            LOG4_TRACE("failed to close channel(fd %d), errno %d, it will be close later.", m_iFd, errno);
             return(false);
         }
     }
     else
     {
-        LOG4_WARNING("channel(fd %d, seq %u) had been closed before.", m_iFd, GetSequence());
+        LOG4_TRACE("channel(fd %d, seq %u) had been closed before.", m_iFd, GetSequence());
         return(false);
     }
 }

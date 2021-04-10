@@ -90,7 +90,7 @@ public:
         return(m_bPipeline);
     }
 
-    bool bIsClient() const
+    bool IsClient() const
     {
         return(m_bIsClientConnection);
     }

@@ -57,7 +57,7 @@ int SocketChannel::GetFd() const
 
 bool SocketChannel::IsClient() const
 {
-    return(m_pImpl->GetFd());
+    return(m_pImpl->IsClient());
 }
 
 bool SocketChannel::IsPipeline() const

@@ -23,7 +23,7 @@ const uint16 StepRedisCluster::sc_unClusterSlots = 16384;
 
 const std::unordered_set<std::string> StepRedisCluster::s_setSupportExtractCmd =
 {
-    "PING",
+    "PING","ECHO","QUIT","SELECT",
     // strings
     "APPEND","BITCOUNT","BITFIELD","BITPOS","DECR","DECRBY","GET",
     "GETBIT","GETRANGE","GETSET","INCR","INCRBY","INCRBYFLOAT","MGET",
@@ -46,7 +46,10 @@ const std::unordered_set<std::string> StepRedisCluster::s_setSupportExtractCmd =
     // keys
     "DEL","DUMP","EXISTS","EXPIRE","EXPIREAT","MOVE","PERSIST","PEXPIRE",
     "PEXPIREAT","PTTL","RANDOMKEY","RESTORE","SORT","TOUCH","TTL","TYPE",
-    "UNLINK"
+    "UNLINK",
+    // servers
+    "ACL","COMMAND","CONFIG","DBSIZE","DEBUG","FLUSHALL","FLUSHDB","INFO",
+    "LOLWUT","LASTSAVE","MEMORY"
 };
 
 const std::unordered_set<std::string> StepRedisCluster::s_setReadCmd =
