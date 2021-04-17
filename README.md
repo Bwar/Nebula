@@ -128,9 +128,10 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
-#### v1.5
-   - add native http2
-   - add native grpc
+#### v1.5.0
+   - add native http2 server and client
+   - add native grpc server and client
+   - channel read and write optimization
    - add absolute log path
 #### v1.4
    - replace hiredis client with native CodecResp

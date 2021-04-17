@@ -328,7 +328,7 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
     return(true);
 }
 
-bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
+bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, E_CODEC_STATUS eCodecStatus)
 {
     if (HTTP_REQUEST == oHttpMsg.type())    // 新请求
     {
@@ -392,7 +392,7 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const Http
     }
     else
     {
-        auto http_step_iter = m_mapCallbackStep.find(pChannel->m_pImpl->PopStepSeq());
+        auto http_step_iter = m_mapCallbackStep.find(pChannel->m_pImpl->PopStepSeq(oHttpMsg.stream_id(), eCodecStatus));
         if (!pChannel->IsPipeline() && pChannel->m_pImpl->GetPipelineStepSeq().empty())
         {
             m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);

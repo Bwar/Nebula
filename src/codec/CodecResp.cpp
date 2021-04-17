@@ -103,9 +103,10 @@ E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply)
         default:
             oReply.set_type(REDIS_REPLY_ERROR);
             oReply.set_integer(REDIS_ERR_PROTOCOL);
+            pBuff->SetReadIndex(uiReadIndex);
             return(CODEC_STATUS_ERR);
     }
-    if (CODEC_STATUS_PAUSE == eStatus)
+    if (CODEC_STATUS_OK != eStatus)
     {
         pBuff->SetReadIndex(uiReadIndex);
     }

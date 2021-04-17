@@ -619,10 +619,11 @@ void Manager::CreateWorkerThread()
         }
         pWorker->SetLoaderActorBuilder(m_pLoaderActorBuilder);
         std::thread t(&Worker::Run, pWorker);
-        t.detach();
         std::ostringstream ossThreadId;
         ossThreadId << t.get_id();
-        m_pSessionManager->AddWorkerThreadId(strtoull(ossThreadId.str().c_str(), NULL, 10));
+        t.detach();
+        uint64 ullThreadId = strtoull(ossThreadId.str().c_str(), NULL, 10);
+        m_pSessionManager->AddWorkerThreadId(ullThreadId);
         m_pSessionManager->AddWorkerInfo(i, getpid(), iControlFds[0], iDataFds[0]);
         std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
         std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);

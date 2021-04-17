@@ -183,7 +183,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     {
                         if (oHttpMsg.stream_id() > 0)
                         {
-                            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+                            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg, eCodecStatus);
                         }
                     }
                     else
@@ -320,6 +320,13 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     m_pLabor->GetActorBuilder()->OnError(pChannel, *it,
                             pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
                 }
+                auto& mapUncompletedStep = pChannel->m_pImpl->GetStreamStepSeq();
+                for (auto it = mapUncompletedStep.begin();
+                    it != mapUncompletedStep.end(); ++it)
+                {
+                    m_pLabor->GetActorBuilder()->OnError(pChannel, it->second,
+                            pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
+                }
             }
             DiscardSocketChannel(pChannel);
             return(false);
@@ -344,7 +351,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     {
                         if (oHttpMsg.stream_id() > 0)
                         {
-                            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
+                            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg, eCodecStatus);
                         }
                     }
                     else
@@ -452,6 +459,13 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                         it != listUncompletedStep.end(); ++it)
                 {
                     m_pLabor->GetActorBuilder()->OnError(pChannel, *it,
+                            pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
+                }
+                auto& mapUncompletedStep = pChannel->m_pImpl->GetStreamStepSeq();
+                for (auto it = mapUncompletedStep.begin();
+                    it != mapUncompletedStep.end(); ++it)
+                {
+                    m_pLabor->GetActorBuilder()->OnError(pChannel, it->second,
                             pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
                 }
             }

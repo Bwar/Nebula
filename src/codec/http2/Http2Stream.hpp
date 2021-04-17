@@ -38,7 +38,7 @@ class CodecHttp2;
 class Http2Stream: public Codec
 {
 public:
-    Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, uint32 m_uiStreamId);
+    Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, uint32 uiStreamId);
     virtual ~Http2Stream();
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
@@ -85,7 +85,7 @@ public:
 
     void WindowInit(uint32 uiWindowSize);
     void WindowUpdate(int32 iIncrement);
-    void ShrinkRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
+    void UpdateRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
     E_CODEC_STATUS SendWaittingFrameData(CodecHttp2* pCodecH2, CBuffer* pBuff);
 
 private:

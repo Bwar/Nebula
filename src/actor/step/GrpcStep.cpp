@@ -46,10 +46,13 @@ E_CMD_STATUS GrpcStep::Callback(
         {
             if (iter->second == "gzip")
             {
-                if (!CodecUtil::Gunzip(oHttpMsg.body().substr(5, uiMessageLength), strResponseData))
+                if (uiMessageLength > 0)
                 {
-                    LOG4_ERROR("failed to gunzip message.");
-                    return(Callback(pChannel, strResponseData, GRPC_INVALID_ARGUMENT, "failed to gunzip message."));
+                    if (!CodecUtil::Gunzip(oHttpMsg.body().substr(5, uiMessageLength), strResponseData))
+                    {
+                        LOG4_ERROR("failed to gunzip message.");
+                        return(Callback(pChannel, strResponseData, GRPC_INVALID_ARGUMENT, "failed to gunzip message."));
+                    }
                 }
             }
             else
@@ -61,7 +64,10 @@ E_CMD_STATUS GrpcStep::Callback(
     }
     else
     {
-        strResponseData.assign(oHttpMsg.body(), 5, uiMessageLength);
+        if (uiMessageLength > 0)
+        {
+            strResponseData.assign(oHttpMsg.body(), 5, uiMessageLength);
+        }
     }
 
     int iStatus = 0;

@@ -58,15 +58,17 @@ void Http2Frame::DecodeFrameHeader(CBuffer* pBuff, tagH2FrameHead& stFrameHead)
     pBuff->Read(&stFrameHead.ucType, 1);
     pBuff->Read(&stFrameHead.ucFlag, 1);
     pBuff->Read(&stFrameHead.uiStreamIdentifier, 4);
+    stFrameHead.uiStreamIdentifier = CodecUtil::N2H(stFrameHead.uiStreamIdentifier);
     stFrameHead.cR = (stFrameHead.uiStreamIdentifier & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
-    stFrameHead.uiStreamIdentifier = CodecUtil::N2H(stFrameHead.uiStreamIdentifier & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
+    stFrameHead.uiStreamIdentifier &= H2_DATA_MASK_4_BYTE_LOW_31_BIT;
 }
 
 void Http2Frame::EncodeFrameHeader(const tagH2FrameHead& stFrameHead, CBuffer* pBuff)
 {
     uint32 uiIdentifier = stFrameHead.cR;
     uiIdentifier <<= 31;
-    uiIdentifier |= (CodecUtil::H2N(stFrameHead.uiStreamIdentifier));
+    uiIdentifier |= stFrameHead.uiStreamIdentifier;
+    uiIdentifier = CodecUtil::H2N(uiIdentifier);
     WriteMediumInt(stFrameHead.uiLength, pBuff);
     pBuff->Write(&stFrameHead.ucType, 1);
     pBuff->Write(&stFrameHead.ucFlag, 1);
@@ -106,7 +108,7 @@ E_CODEC_STATUS Http2Frame::Encode(CodecHttp2* pCodecH2,
 {
     bool bEndStream = false;
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
-    if (oHttpMsg.headers_size() > 0)
+    if (oHttpMsg.headers_size() > 0 || oHttpMsg.pseudo_header_size() > 0)
     {
         if (oHttpMsg.body().size() == 0)
         {
@@ -211,7 +213,7 @@ E_CODEC_STATUS Http2Frame::DecodeData(CodecHttp2* pCodecH2,
         oHttpMsg.mutable_body()->append(pBuff->GetRawReadBuffer(), stFrameHead.uiLength);
         pBuff->AdvanceReadIndex(stFrameHead.uiLength);
     }
-    pCodecH2->ShrinkRecvWindow(stFrameHead.uiStreamIdentifier, stFrameHead.uiLength, pReactBuff);
+    pCodecH2->UpdateRecvWindow(stFrameHead.uiStreamIdentifier, stFrameHead.uiLength, pReactBuff);
     return(CODEC_STATUS_PART_OK);
 }
 
@@ -249,8 +251,9 @@ E_CODEC_STATUS Http2Frame::DecodeHeaders(CodecHttp2* pCodecH2,
     {
         tagPriority stPriority;
         pBuff->Read(&stPriority.uiDependency, 4);
+        stPriority.uiDependency = CodecUtil::N2H(stPriority.uiDependency);
         stPriority.E = (stPriority.uiDependency & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
-        stPriority.uiDependency = CodecUtil::N2H(stPriority.uiDependency & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
+        stPriority.uiDependency &= H2_DATA_MASK_4_BYTE_LOW_31_BIT;
         pBuff->Read(&stPriority.ucWeight, 1);
         LOG4_TRACE("SetPriority(identifier = %u, E = %u, ucWeight = %u, uiDependency = %u)",
                 stFrameHead.uiStreamIdentifier, stPriority.E, stPriority.ucWeight, stPriority.uiDependency);
@@ -287,8 +290,9 @@ E_CODEC_STATUS Http2Frame::DecodePriority(CodecHttp2* pCodecH2,
     }
     tagPriority stPriority;
     pBuff->Read(&stPriority.uiDependency, 4);
+    stPriority.uiDependency = CodecUtil::N2H(stPriority.uiDependency);
     stPriority.E = (stPriority.uiDependency & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
-    stPriority.uiDependency = CodecUtil::N2H(stPriority.uiDependency & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
+    stPriority.uiDependency &= H2_DATA_MASK_4_BYTE_LOW_31_BIT;
     pBuff->Read(&stPriority.ucWeight, 1);
     if (stPriority.uiDependency == 0x0)
     {
@@ -326,7 +330,10 @@ E_CODEC_STATUS Http2Frame::DecodeRstStream(CodecHttp2* pCodecH2,
     pBuff->Read(&iErrCode, 4);    // the error code should be H2_ERR_CANCEL
     iErrCode = CodecUtil::N2H((uint32)iErrCode);
     pCodecH2->SetErrno(iErrCode);
-    pCodecH2->RstStream(stFrameHead.uiStreamIdentifier);
+    if (m_pStream != nullptr)
+    {
+        m_pStream->SetState(H2_STREAM_CLOSE);
+    }
     return(CODEC_STATUS_PART_ERR);
 }
 
@@ -377,7 +384,7 @@ E_CODEC_STATUS Http2Frame::DecodeSetting(CodecHttp2* pCodecH2,
             vecSetting.push_back(stSetting);
             LOG4_TRACE("stSetting.unIdentifier = %u, stSetting.uiValue = %u", stSetting.unIdentifier, stSetting.uiValue);
         }
-        E_H2_ERR_CODE eSettingResult = pCodecH2->Setting(vecSetting);
+        E_H2_ERR_CODE eSettingResult = pCodecH2->Setting(vecSetting, true);
         if (eSettingResult == H2_ERR_NO_ERROR)
         {
             EncodeSetting(pCodecH2, pReactBuff);
@@ -424,8 +431,9 @@ E_CODEC_STATUS Http2Frame::DecodePushPromise(CodecHttp2* pCodecH2,
     //unsigned char R;
     uint32 uiStreamId = 0;
     pBuff->Read(&uiStreamId, 4);
+    uiStreamId = CodecUtil::N2H(uiStreamId);
     //R = (uiStreamId & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
-    uiStreamId = CodecUtil::N2H(uiStreamId & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
+    uiStreamId &= H2_DATA_MASK_4_BYTE_LOW_31_BIT;
     E_CODEC_STATUS eCodecStatus = pCodecH2->PromiseStream(uiStreamId, pReactBuff);
     if (eCodecStatus == CODEC_STATUS_PART_OK)
     {
@@ -487,8 +495,9 @@ E_CODEC_STATUS Http2Frame::DecodeGoaway(CodecHttp2* pCodecH2,
     std::string strDebugData;
     pBuff->Read(&uiLastStreamId, 4);
     pBuff->Read(&iErrCode, 4);
+    uiLastStreamId = CodecUtil::N2H(uiLastStreamId);
     //R = (uiLastStreamId & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
-    uiLastStreamId = CodecUtil::N2H(uiLastStreamId & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
+    uiLastStreamId &= H2_DATA_MASK_4_BYTE_LOW_31_BIT;
     iErrCode = CodecUtil::N2H((uint32)iErrCode);
     strDebugData.assign(pBuff->GetRawReadBuffer(), stFrameHead.uiLength - 8);
     pBuff->AdvanceReadIndex(stFrameHead.uiLength - 8);
@@ -510,31 +519,27 @@ E_CODEC_STATUS Http2Frame::DecodeWindowUpdate(CodecHttp2* pCodecH2,
     //char cR = 0;
     uint32 uiIncrement = 0;
     pBuff->Read(&uiIncrement, 4);
+    uiIncrement = CodecUtil::N2H(uiIncrement);
     //cR = (uiIncrement & H2_DATA_MASK_4_BYTE_HIGHEST_BIT) >> 31;
-    uiIncrement = CodecUtil::N2H(stFrameHead.uiStreamIdentifier & H2_DATA_MASK_4_BYTE_LOW_31_BIT);
+    uiIncrement &= H2_DATA_MASK_4_BYTE_LOW_31_BIT;
     if (uiIncrement == 0)
     {
-        LOG4_TRACE("ignore an flow-control window increment of 0.");
-        // TODO just to confirm: curl --http2 receive MAGIC SETTING SETTING_ACK WINDOW_UPDATE(with an flow-control window increment of 0)
-        /*
-            if (stFrameHead.uiStreamIdentifier == 0)
-            {
-                pCodecH2->SetErrno(H2_ERR_PROTOCOL_ERROR);
-                EncodeGoaway(pCodecH2, H2_ERR_PROTOCOL_ERROR, "TYPE_WINDOW_UPDATE length == 0 on connection", pReactBuff);
-                return(CODEC_STATUS_ERR);
-            }
-            else
-            {
-                pCodecH2->SetErrno(H2_ERR_PROTOCOL_ERROR);
-                EncodeRstStream(pCodecH2, stFrameHead.uiStreamIdentifier, H2_ERR_PROTOCOL_ERROR, pReactBuff);
-                return(CODEC_STATUS_PART_ERR);
-            }
-        */
+        if (stFrameHead.uiStreamIdentifier == 0)
+        {
+            pCodecH2->SetErrno(H2_ERR_PROTOCOL_ERROR);
+            EncodeGoaway(pCodecH2, H2_ERR_PROTOCOL_ERROR, "TYPE_WINDOW_UPDATE length == 0 on connection", pReactBuff);
+            return(CODEC_STATUS_ERR);
+        }
+        else
+        {
+            pCodecH2->SetErrno(H2_ERR_PROTOCOL_ERROR);
+            EncodeRstStream(pCodecH2, stFrameHead.uiStreamIdentifier, H2_ERR_PROTOCOL_ERROR, pReactBuff);
+            return(CODEC_STATUS_PART_ERR);
+        }
     }
     else
     {
         pCodecH2->WindowUpdate(stFrameHead.uiStreamIdentifier, uiIncrement);
-        EncodeWindowUpdate(pCodecH2, stFrameHead.uiStreamIdentifier, 0, pReactBuff);
         if (stFrameHead.uiStreamIdentifier > 0)
         {
             SendWaittingFrameData(pCodecH2, pReactBuff);
@@ -641,7 +646,7 @@ E_CODEC_STATUS Http2Frame::EncodeHeaders(CodecHttp2* pCodecH2,
     {
         uint32 uiAddtionLength = 0;
         stFrameHead.ucFlag |= H2_FRAME_FLAG_PADDED;
-        if (stPriority.uiDependency > 0)
+        if (stPriority.ucWeight > 0)
         {
             stFrameHead.ucFlag |= H2_FRAME_FLAG_PRIORITY;
             // 6bytes = 48bits = 8 + 1 + 31 + 8
@@ -654,9 +659,9 @@ E_CODEC_STATUS Http2Frame::EncodeHeaders(CodecHttp2* pCodecH2,
             uiAddtionLength = 1 + strPadding.size();
         }
 
-        if (stFrameHead.uiLength > pCodecH2->GetMaxFrameSize())
+        if (stFrameHead.uiLength > pCodecH2->GetMaxEncodeFrameSize())
         {
-            stFrameHead.uiLength = pCodecH2->GetMaxFrameSize();
+            stFrameHead.uiLength = pCodecH2->GetMaxEncodeFrameSize();
             EncodeFrameHeader(stFrameHead, pBuff);
             uint16 unNetLength = CodecUtil::H2N(strPadding.size());
             pBuff->Write(&unNetLength, 1);
@@ -688,7 +693,7 @@ E_CODEC_STATUS Http2Frame::EncodeHeaders(CodecHttp2* pCodecH2,
     else
     {
         uint32 uiAddtionLength = 0;
-        if (stPriority.uiDependency > 0)
+        if (stPriority.ucWeight > 0)
         {
             stFrameHead.ucFlag |= H2_FRAME_FLAG_PRIORITY;
             // 5bytes = 40bits = 1 + 31 + 8
@@ -700,9 +705,9 @@ E_CODEC_STATUS Http2Frame::EncodeHeaders(CodecHttp2* pCodecH2,
             stFrameHead.uiLength = oBuffer.ReadableBytes();
         }
 
-        if (stFrameHead.uiLength > pCodecH2->GetMaxFrameSize())
+        if (stFrameHead.uiLength > pCodecH2->GetMaxEncodeFrameSize())
         {
-            stFrameHead.uiLength = pCodecH2->GetMaxFrameSize();
+            stFrameHead.uiLength = pCodecH2->GetMaxEncodeFrameSize();
             EncodeFrameHeader(stFrameHead, pBuff);
             EncodePriority(stPriority, pBuff);
             pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength - uiAddtionLength);
@@ -745,7 +750,8 @@ E_CODEC_STATUS Http2Frame::EncodePriority(CodecHttp2* pCodecH2,
     stFrameHead.uiLength = 5;
     uint32 uiPriority = stPriority.E;
     uiPriority <<= 31;
-    uiPriority |= (CodecUtil::H2N(stPriority.uiDependency));
+    uiPriority |= stPriority.uiDependency;
+    uiPriority = CodecUtil::H2N(uiPriority);
     EncodeFrameHeader(stFrameHead, pBuff);
     pBuff->Write(&uiPriority, 4);
     pBuff->Write(&stPriority.ucWeight, 1);
@@ -786,7 +792,7 @@ E_CODEC_STATUS Http2Frame::EncodeSetting(CodecHttp2* pCodecH2,
     }
     else
     {
-        pCodecH2->Setting(vecSetting);
+        pCodecH2->Setting(vecSetting, false);
     }
     EncodeFrameHeader(stFrameHead, pBuff);
     for (uint32 i = 0; i < vecSetting.size(); ++i)
@@ -845,9 +851,9 @@ E_CODEC_STATUS Http2Frame::EncodePushPromise(CodecHttp2* pCodecH2,
         stFrameHead.ucFlag |= H2_FRAME_FLAG_PADDED;
         stFrameHead.uiLength = 5 + oBuffer.ReadableBytes() + strPadding.size();
         uiAddtionLength = 5 + strPadding.size();
-        if (stFrameHead.uiLength > pCodecH2->GetMaxFrameSize())
+        if (stFrameHead.uiLength > pCodecH2->GetMaxEncodeFrameSize())
         {
-            stFrameHead.uiLength = pCodecH2->GetMaxFrameSize();
+            stFrameHead.uiLength = pCodecH2->GetMaxEncodeFrameSize();
             EncodeFrameHeader(stFrameHead, pBuff);
             uint16 unNetLength = CodecUtil::H2N(strPadding.size());
             pBuff->Write(&unNetLength, 1);
@@ -881,9 +887,9 @@ E_CODEC_STATUS Http2Frame::EncodePushPromise(CodecHttp2* pCodecH2,
     {
         stFrameHead.uiLength = 4 + oBuffer.ReadableBytes();
         uiAddtionLength = 4;
-        if (stFrameHead.uiLength > pCodecH2->GetMaxFrameSize())
+        if (stFrameHead.uiLength > pCodecH2->GetMaxEncodeFrameSize())
         {
-            stFrameHead.uiLength = pCodecH2->GetMaxFrameSize();
+            stFrameHead.uiLength = pCodecH2->GetMaxEncodeFrameSize();
             EncodeFrameHeader(stFrameHead, pBuff);
             // ignore R
             pBuff->Write(&uiPromiseStreamId, 4);
@@ -984,9 +990,9 @@ E_CODEC_STATUS Http2Frame::EncodeContinuation(CodecHttp2* pCodecH2,
     stFrameHead.uiStreamIdentifier = uiStreamId;
     while (pHpackBuff->ReadableBytes() > 0)
     {
-        if (pHpackBuff->ReadableBytes() > pCodecH2->GetMaxFrameSize())
+        if (pHpackBuff->ReadableBytes() > pCodecH2->GetMaxEncodeFrameSize())
         {
-            stFrameHead.uiLength = pCodecH2->GetMaxFrameSize();
+            stFrameHead.uiLength = pCodecH2->GetMaxEncodeFrameSize();
         }
         else
         {
@@ -1011,9 +1017,10 @@ void Http2Frame::EncodePriority(const tagPriority& stPriority, CBuffer* pBuff)
     {
         uint32 uiPriority = stPriority.E;
         uiPriority <<= 31;
-        uiPriority |= (CodecUtil::H2N(stPriority.uiDependency));
+        uiPriority |= stPriority.uiDependency;
+        uiPriority = CodecUtil::H2N(uiPriority);
         pBuff->Write(&uiPriority, 4);
-        pBuff->Write(&stPriority.ucWeight, 1);
+        pBuff->WriteByte(stPriority.ucWeight);
     }
 }
 
@@ -1038,9 +1045,9 @@ E_CODEC_STATUS Http2Frame::EncodeData(CodecHttp2* pCodecH2, uint32 uiStreamId,
     if (strPadding.size() > 0)
     {
         stFrameHead.uiLength = 1 + uiDataLen + strPadding.size();
-        if (stFrameHead.uiLength > pCodecH2->GetMaxFrameSize())
+        if (stFrameHead.uiLength > pCodecH2->GetMaxEncodeFrameSize())
         {
-            stFrameHead.uiLength = pCodecH2->GetMaxFrameSize();
+            stFrameHead.uiLength = pCodecH2->GetMaxEncodeFrameSize();
             uiEncodedDataLen = stFrameHead.uiLength - 1 - strPadding.size();
         }
         else
@@ -1061,7 +1068,7 @@ E_CODEC_STATUS Http2Frame::EncodeData(CodecHttp2* pCodecH2, uint32 uiStreamId,
             pBuff->Write(&unNetLength, 1);
             pBuff->Write(pData, uiEncodedDataLen);
             pBuff->Write(strPadding.c_str(), strPadding.size());
-            pCodecH2->ShrinkSendWindow(uiStreamId, uiEncodedDataLen);
+            pCodecH2->UpdateSendWindow(uiStreamId, uiEncodedDataLen);
             EncodeSetStreamState(stFrameHead);
         }
         else
@@ -1088,9 +1095,9 @@ E_CODEC_STATUS Http2Frame::EncodeData(CodecHttp2* pCodecH2, uint32 uiStreamId,
     }
     else
     {
-        if (uiDataLen > pCodecH2->GetMaxFrameSize())
+        if (uiDataLen > pCodecH2->GetMaxEncodeFrameSize())
         {
-            stFrameHead.uiLength = pCodecH2->GetMaxFrameSize();
+            stFrameHead.uiLength = pCodecH2->GetMaxEncodeFrameSize();
         }
         else
         {
@@ -1107,7 +1114,7 @@ E_CODEC_STATUS Http2Frame::EncodeData(CodecHttp2* pCodecH2, uint32 uiStreamId,
             uiEncodedDataLen = stFrameHead.uiLength;
             EncodeFrameHeader(stFrameHead, pBuff);
             pBuff->Write(pData, uiEncodedDataLen);
-            pCodecH2->ShrinkSendWindow(uiStreamId, uiEncodedDataLen);
+            pCodecH2->UpdateSendWindow(uiStreamId, uiEncodedDataLen);
             EncodeSetStreamState(stFrameHead);
         }
         else

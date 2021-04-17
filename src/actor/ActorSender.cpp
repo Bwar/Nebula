@@ -228,6 +228,7 @@ bool ActorSender::SendTo(Actor* pActor, const std::string& strUrl, const std::st
     oHttpMsg.set_method(HTTP_POST);
     oHttpMsg.set_url(strUrl);
     oHttpMsg.mutable_headers()->insert({"content-type", "application/grpc"});
+    oHttpMsg.mutable_headers()->insert({"te", "trailers"});
     oHttpMsg.add_adding_never_index_headers("x-trace-id");
     if(0 == http_parser_parse_url(strUrl.c_str(), strUrl.length(), 0, &stUrl))
     {

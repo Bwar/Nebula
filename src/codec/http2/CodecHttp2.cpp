@@ -69,29 +69,38 @@ void CodecHttp2::ConnectionSetting(CBuffer* pBuff)
         pBuff->Write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24);
         m_bWantMagic = false;
         stSetting.unIdentifier = H2_SETTINGS_INITIAL_WINDOW_SIZE;
-        stSetting.uiValue = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
-        m_uiRecvWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+        stSetting.uiValue = 1048576;
+        m_uiRecvWindowSize = 1048576;
+        m_uiSendWindowSize = 1048576;
         vecSetting.push_back(stSetting);
         stSetting.unIdentifier = H2_SETTINGS_MAX_FRAME_SIZE;
-        stSetting.uiValue = DEFAULT_SETTINGS_MAX_FRAME_SIZE;
+        stSetting.uiValue = 4194304;
+        m_uiSettingsMaxDecodeFrameSize = 4194304;
         vecSetting.push_back(stSetting);
         m_pFrame->EncodeSetting(this, vecSetting, pBuff);
+        m_pFrame->EncodeWindowUpdate(this, 0, 4128769, pBuff);
+        // In HTTP/2, 1 on client is reserved for Upgrade.
+        m_uiStreamIdGenerate = 1;
     }
     else
     {
         stSetting.unIdentifier = H2_SETTINGS_INITIAL_WINDOW_SIZE;
         stSetting.uiValue = 4194304;
         m_uiRecvWindowSize = 4194304;
+        m_uiSendWindowSize = 1048576;
         vecSetting.push_back(stSetting);
         stSetting.unIdentifier = H2_SETTINGS_MAX_FRAME_SIZE;
         stSetting.uiValue = 4194304;
+        m_uiSettingsMaxDecodeFrameSize = 4194304;
         vecSetting.push_back(stSetting);
         stSetting.unIdentifier = H2_SETTINGS_MAX_HEADER_LIST_SIZE;
         stSetting.uiValue = 8192;
+        m_uiSettingsMaxHeaderListSize = 8192;
         vecSetting.push_back(stSetting);
         m_pFrame->EncodeSetting(this, vecSetting, pBuff);
         m_pFrame->EncodeWindowUpdate(this, 0, 4128769, pBuff);
         m_pFrame->EncodePing(this, false, 0, 0, pBuff);
+        m_uiStreamIdGenerate = 2;
     }
 }
 
@@ -166,11 +175,11 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     if (CODEC_STATUS_PART_ERR == eCodecStatus
             || CODEC_STATUS_OK == eCodecStatus)
     {
-        LOG4_TRACE("m_bChannelIsClient = %d, m_stFrameHead.uiStreamIdentifier = %u",
-                m_bChannelIsClient, m_stFrameHead.uiStreamIdentifier);
+        LOG4_TRACE("m_bChannelIsClient = %d, m_pCodingStream->GetStreamId() = %u",
+                m_bChannelIsClient, m_pCodingStream->GetStreamId());
         if (m_pCodingStream->GetStreamState() == H2_STREAM_CLOSE)
         {
-            CloseStream(m_stFrameHead.uiStreamIdentifier);
+            CloseStream(m_stDecodeFrameHead.uiStreamIdentifier);
         }
     }
     return(eCodecStatus);
@@ -227,40 +236,40 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
     }
 
     size_t uiReadIdx = pBuff->GetReadIndex();
-    Http2Frame::DecodeFrameHeader(pBuff, m_stFrameHead);
-    LOG4_TRACE("m_stFrameHead.uiLength = %u, m_stFrameHead.ucType = %u, m_stFrameHead.ucFlag = %u, m_stFrameHead.uiStreamIdentifier = %u",
-            m_stFrameHead.uiLength, m_stFrameHead.ucType, m_stFrameHead.ucFlag, m_stFrameHead.uiStreamIdentifier);
-    if (m_stFrameHead.uiLength > m_uiSettingsMaxFrameSize)
+    Http2Frame::DecodeFrameHeader(pBuff, m_stDecodeFrameHead);
+    LOG4_TRACE("m_stDecodeFrameHead.uiLength = %u, m_stDecodeFrameHead.ucType = %u, m_stDecodeFrameHead.ucFlag = %u, m_stDecodeFrameHead.uiStreamIdentifier = %u",
+            m_stDecodeFrameHead.uiLength, m_stDecodeFrameHead.ucType, m_stDecodeFrameHead.ucFlag, m_stDecodeFrameHead.uiStreamIdentifier);
+    if (m_stDecodeFrameHead.uiLength > m_uiSettingsMaxDecodeFrameSize)
     {
-        LOG4_TRACE("m_uiSettingsMaxFrameSize = %u, m_stFrameHead.uiLength = %u",
-                m_uiSettingsMaxFrameSize, m_stFrameHead.uiLength);
+        LOG4_TRACE("m_uiSettingsMaxDecodeFrameSize = %u, m_stDecodeFrameHead.uiLength = %u",
+                m_uiSettingsMaxDecodeFrameSize, m_stDecodeFrameHead.uiLength);
         SetErrno(H2_ERR_FRAME_SIZE_ERROR);
-        pBuff->SetReadIndex(uiReadIdx);
+        m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "frame size is larger than max frame size.", pReactBuff);
         return(CODEC_STATUS_PART_ERR);
     }
-    if (pBuff->ReadableBytes() < m_stFrameHead.uiLength)
+    if (pBuff->ReadableBytes() < m_stDecodeFrameHead.uiLength)
     {
-        LOG4_TRACE("pBuff->ReadableBytes() = %u, m_stFrameHead.uiLength = %u", pBuff->ReadableBytes(), m_stFrameHead.uiLength);
+        LOG4_TRACE("pBuff->ReadableBytes() = %u, m_stDecodeFrameHead.uiLength = %u", pBuff->ReadableBytes(), m_stDecodeFrameHead.uiLength);
         pBuff->SetReadIndex(uiReadIdx);
         return(CODEC_STATUS_PAUSE);
     }
 
-    if (m_uiGoawayLastStreamId > 0 && m_stFrameHead.uiStreamIdentifier > m_uiGoawayLastStreamId)
+    if (m_uiGoawayLastStreamId > 0 && m_stDecodeFrameHead.uiStreamIdentifier > m_uiGoawayLastStreamId)
     {
-        LOG4_TRACE("m_uiGoawayLastStreamId = %u, m_stFrameHead.uiStreamIdentifier = %u", m_uiGoawayLastStreamId, m_stFrameHead.uiStreamIdentifier);
+        LOG4_TRACE("m_uiGoawayLastStreamId = %u, m_stDecodeFrameHead.uiStreamIdentifier = %u", m_uiGoawayLastStreamId, m_stDecodeFrameHead.uiStreamIdentifier);
         SetErrno(H2_ERR_CANCEL);
         pBuff->SetReadIndex(uiReadIdx);
         return(CODEC_STATUS_PART_ERR);
     }
 
-    LOG4_TRACE("m_stFrameHead.uiStreamIdentifier = %u", m_stFrameHead.uiStreamIdentifier);
-    if (m_stFrameHead.uiStreamIdentifier > 0)
+    LOG4_TRACE("m_stDecodeFrameHead.uiStreamIdentifier = %u", m_stDecodeFrameHead.uiStreamIdentifier);
+    if (m_stDecodeFrameHead.uiStreamIdentifier > 0)
     {
         if (m_pCodingStream != nullptr)
         {
-            if (m_stFrameHead.uiStreamIdentifier == m_pCodingStream->GetStreamId())
+            if (m_stDecodeFrameHead.uiStreamIdentifier == m_pCodingStream->GetStreamId())
             {
-                E_CODEC_STATUS eCodecStatus = m_pCodingStream->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff);
+                E_CODEC_STATUS eCodecStatus = m_pCodingStream->Decode(this, m_stDecodeFrameHead, pBuff, oHttpMsg, pReactBuff);
                 LOG4_TRACE("eCodecStatus = %d", eCodecStatus);
                 if (CODEC_STATUS_PAUSE == eCodecStatus
                         || CODEC_STATUS_ERR == eCodecStatus)
@@ -272,7 +281,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
                 {
                     if (m_pCodingStream->GetStreamState() == H2_STREAM_CLOSE)
                     {
-                        CloseStream(m_stFrameHead.uiStreamIdentifier);
+                        CloseStream(m_stDecodeFrameHead.uiStreamIdentifier);
                     }
                 }
                 oHttpMsg.set_http_major(2);
@@ -280,7 +289,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
                 return(eCodecStatus);
             }
         }
-        if (H2_FRAME_CONTINUATION == m_stFrameHead.ucType)
+        if (H2_FRAME_CONTINUATION == m_stDecodeFrameHead.ucType)
         {
             SetErrno(H2_ERR_PROTOCOL_ERROR);
             m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "A CONTINUATION "
@@ -290,8 +299,8 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
                     "use when a more specific error code is not available.");
             return(CODEC_STATUS_ERR);
         }
-        LOG4_TRACE("m_stFrameHead.ucType = %u", m_stFrameHead.ucType);
-        auto stream_iter = m_mapStream.find(m_stFrameHead.uiStreamIdentifier);
+        LOG4_TRACE("m_stDecodeFrameHead.ucType = %u", m_stDecodeFrameHead.ucType);
+        auto stream_iter = m_mapStream.find(m_stDecodeFrameHead.uiStreamIdentifier);
         if (stream_iter == m_mapStream.end())
         {
             /** The identifier of a newly established stream MUST be numerically
@@ -301,17 +310,32 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
              *  that receives an unexpected stream identifier MUST respond with
              *  a connection error (Section 5.4.1) of type PROTOCOL_ERROR.
              */
-            if (m_stFrameHead.uiStreamIdentifier <= m_uiStreamIdGenerate)
+            if (m_stDecodeFrameHead.uiStreamIdentifier <= m_uiStreamIdGenerate)
             {
-                SetErrno(H2_ERR_PROTOCOL_ERROR);
-                m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "The "
-                        "identifier of a newly established stream MUST be "
-                        "numerically greater than all streams that the "
-                        "initiating endpoint has opened or reserved.", pReactBuff);
-                return(CODEC_STATUS_ERR);
+                if (H2_FRAME_WINDOW_UPDATE == m_stDecodeFrameHead.ucType)
+                {
+                    E_CODEC_STATUS eCodecStatus = m_pFrame->Decode(this, m_stDecodeFrameHead, pBuff, oHttpMsg, pReactBuff);
+                    if (CODEC_STATUS_PAUSE == eCodecStatus
+                            || CODEC_STATUS_ERR == eCodecStatus)
+                    {
+                        pBuff->SetReadIndex(uiReadIdx);
+                    }
+                    oHttpMsg.set_http_major(2);
+                    oHttpMsg.set_http_minor(0);
+                    return(eCodecStatus);
+                }
+                else
+                {
+                    SetErrno(H2_ERR_PROTOCOL_ERROR);
+                    m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "The "
+                            "identifier of a newly established stream MUST be "
+                            "numerically greater than all streams that the "
+                            "initiating endpoint has opened or reserved.", pReactBuff);
+                    return(CODEC_STATUS_ERR);
+                }
             }
-            m_uiStreamIdGenerate = m_stFrameHead.uiStreamIdentifier;
-            if (NewCodingStream(m_stFrameHead.uiStreamIdentifier) == nullptr)
+            m_uiStreamIdGenerate = m_stDecodeFrameHead.uiStreamIdentifier;
+            if (NewCodingStream(m_stDecodeFrameHead.uiStreamIdentifier) == nullptr)
             {
                 return(CODEC_STATUS_ERR);
             }
@@ -320,7 +344,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
         {
             m_pCodingStream = stream_iter->second;
         }
-        E_CODEC_STATUS eCodecStatus = m_pCodingStream->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff);
+        E_CODEC_STATUS eCodecStatus = m_pCodingStream->Decode(this, m_stDecodeFrameHead, pBuff, oHttpMsg, pReactBuff);
         if (CODEC_STATUS_PAUSE == eCodecStatus
                 || CODEC_STATUS_ERR == eCodecStatus)
         {
@@ -331,7 +355,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
         {
             if (m_pCodingStream->GetStreamState() == H2_STREAM_CLOSE)
             {
-                CloseStream(m_stFrameHead.uiStreamIdentifier);
+                CloseStream(m_stDecodeFrameHead.uiStreamIdentifier);
             }
         }
         oHttpMsg.set_http_major(2);
@@ -340,7 +364,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
     }
     else
     {
-        E_CODEC_STATUS eCodecStatus = m_pFrame->Decode(this, m_stFrameHead, pBuff, oHttpMsg, pReactBuff);
+        E_CODEC_STATUS eCodecStatus = m_pFrame->Decode(this, m_stDecodeFrameHead, pBuff, oHttpMsg, pReactBuff);
         if (CODEC_STATUS_PAUSE == eCodecStatus
                 || CODEC_STATUS_ERR == eCodecStatus)
         {
@@ -456,7 +480,7 @@ void CodecHttp2::RstStream(uint32 uiStreamId)
     }
 }
 
-E_H2_ERR_CODE CodecHttp2::Setting(const std::vector<tagSetting>& vecSetting)
+E_H2_ERR_CODE CodecHttp2::Setting(const std::vector<tagSetting>& vecSetting, bool bRecvSetting)
 {
     for (size_t i = 0; i < vecSetting.size(); ++i)
     {
@@ -498,8 +522,15 @@ E_H2_ERR_CODE CodecHttp2::Setting(const std::vector<tagSetting>& vecSetting)
             case H2_SETTINGS_MAX_FRAME_SIZE:
                 if (vecSetting[i].uiValue <= SETTINGS_MAX_FRAME_SIZE)
                 {
-                    m_uiSettingsMaxFrameSize = vecSetting[i].uiValue;
-                    LOG4_TRACE("set max frame size to %u", m_uiSettingsMaxFrameSize);
+                    if (bRecvSetting)
+                    {
+                        m_uiSettingsMaxEncodeFrameSize = vecSetting[i].uiValue;
+                        LOG4_TRACE("set max frame size to %u", m_uiSettingsMaxEncodeFrameSize);
+                    }
+                    else
+                    {
+                        m_uiSettingsMaxDecodeFrameSize = vecSetting[i].uiValue;
+                    }
                 }
                 else
                 {
@@ -529,7 +560,7 @@ void CodecHttp2::WindowUpdate(uint32 uiStreamId, uint32 uiIncrement)
     }
 }
 
-void CodecHttp2::ShrinkSendWindow(uint32 uiStreamId, uint32 uiSendLength)
+void CodecHttp2::UpdateSendWindow(uint32 uiStreamId, uint32 uiSendLength)
 {
     m_uiSendWindowSize -= uiSendLength;
     if (uiStreamId > 0)
@@ -542,21 +573,16 @@ void CodecHttp2::ShrinkSendWindow(uint32 uiStreamId, uint32 uiSendLength)
     }
 }
 
-void CodecHttp2::ShrinkRecvWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
+void CodecHttp2::UpdateRecvWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
 {
-    m_uiRecvWindowSize -= uiRecvLength;
-    if (m_uiRecvWindowSize < DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE / 4)
-    {
-        m_pFrame->EncodeWindowUpdate(this, 0,
-                SETTINGS_MAX_INITIAL_WINDOW_SIZE - m_uiRecvWindowSize, pBuff);
-    }
+    m_pFrame->EncodeWindowUpdate(this, 0, uiRecvLength, pBuff);
     m_uiRecvWindowSize = SETTINGS_MAX_INITIAL_WINDOW_SIZE;
     if (uiStreamId > 0)
     {
         auto iter = m_mapStream.find(uiStreamId);
         if (iter != m_mapStream.end())
         {
-            iter->second->ShrinkRecvWindow(this, uiStreamId, uiRecvLength, pBuff);
+            iter->second->UpdateRecvWindow(this, uiStreamId, uiRecvLength, pBuff);
         }
     }
 }
@@ -884,7 +910,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderIndexed(CBuffer* pBuff, HttpMsg& oHttpMsg
     else
     {
         uint32 uiDynamicTableIndex = DecodingDynamicTableIndex2VectorIndex(uiTableIndex - Http2Header::sc_uiMaxStaticTableLength);
-        if (uiTableIndex <= Http2Header::sc_uiMaxStaticTableIndex + m_vecDecodingDynamicTable.size())
+        if (uiDynamicTableIndex < m_vecDecodingDynamicTable.size())
         {
             ClassifyHeader(m_vecDecodingDynamicTable[uiDynamicTableIndex].Name(),
                     m_vecDecodingDynamicTable[uiDynamicTableIndex].Value(), oHttpMsg);
@@ -1167,12 +1193,12 @@ uint32 CodecHttp2::GetEncodingTableIndex(const std::string& strHeaderName, const
         {
             if (m_vecEncodingDynamicTable[i].Value() == strHeaderValue)
             {
-                uiTableIndex = 1 - m_iNextEncodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
+                uiTableIndex = i - m_iNextEncodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
                 break;
             }
             else if (uiNameIndex == 0)
             {
-                uiNameIndex = 1 - m_iNextEncodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
+                uiNameIndex = i - m_iNextEncodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
             }
         }
     }
@@ -1195,12 +1221,12 @@ uint32 CodecHttp2::GetDecodingTableIndex(const std::string& strHeaderName, const
         {
             if (m_vecDecodingDynamicTable[i].Value() == strHeaderValue)
             {
-                uiTableIndex = 1 - m_iNextDecodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
+                uiTableIndex = i - m_iNextDecodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
                 break;
             }
             else if (uiNameIndex == 0)
             {
-                uiNameIndex = 1 - m_iNextDecodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
+                uiNameIndex = i - m_iNextDecodingDynamicTableHeaderIndex + Http2Header::sc_uiMaxStaticTableIndex;
             }
         }
     }

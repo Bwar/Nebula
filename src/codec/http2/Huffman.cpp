@@ -7,7 +7,7 @@
  * @note     
  * Modify history:
  ******************************************************************************/
-#include <codec/http2/Huffman.hpp>
+#include "Huffman.hpp"
 
 namespace neb
 {

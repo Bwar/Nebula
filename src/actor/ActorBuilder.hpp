@@ -40,6 +40,7 @@
 #include "util/CBuffer.hpp"
 #include "ActorFactory.hpp"
 #include "logger/NetLogger.hpp"
+#include "codec/Codec.hpp"
 
 namespace neb
 {
@@ -94,7 +95,7 @@ public:
     bool OnSessionTimeout(std::shared_ptr<Session> pSession);
     bool OnChainTimeout(std::shared_ptr<Chain> pChain);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
-    bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
+    bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg, uint32 uiFinalStepSeq = 0);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer);
     bool OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, int iErrno, const std::string& strErrMsg);

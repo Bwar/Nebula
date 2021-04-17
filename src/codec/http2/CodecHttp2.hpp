@@ -67,17 +67,17 @@ public:
     }
     void SetPriority(uint32 uiStreamId, const tagPriority& stPriority);
     void RstStream(uint32 uiStreamId);
-    E_H2_ERR_CODE Setting(const std::vector<tagSetting>& vecSetting);
+    E_H2_ERR_CODE Setting(const std::vector<tagSetting>& vecSetting, bool bRecvSetting = false);
     void WindowUpdate(uint32 uiStreamId, uint32 uiIncrement);
-    void ShrinkSendWindow(uint32 uiStreamId, uint32 uiSendLength);
-    void ShrinkRecvWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
+    void UpdateSendWindow(uint32 uiStreamId, uint32 uiSendLength);
+    void UpdateRecvWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
     uint32 GetSendWindowSize()
     {
         return(m_uiSendWindowSize);
     }
-    uint32 GetMaxFrameSize()
+    uint32 GetMaxEncodeFrameSize()
     {
-        return(m_uiSettingsMaxFrameSize);
+        return(m_uiSettingsMaxEncodeFrameSize);
     }
     E_CODEC_STATUS UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBuff, HttpMsg& oHttpMsg);
     void PackHeader(const HttpMsg& oHttpMsg, int iHeaderType, CBuffer* pBuff);
@@ -134,11 +134,12 @@ private:
     uint32 m_uiSettingsHeaderTableSize = 4096;
     uint32 m_uiSettingsMaxConcurrentStreams = 100;
     uint32 m_uiSettingsMaxWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
-    uint32 m_uiSettingsMaxFrameSize = DEFAULT_SETTINGS_MAX_FRAME_SIZE;
-    uint32 m_uiSettingsMaxHeaderListSize = 50;  // TODO SettingsMaxHeaderListSize
+    uint32 m_uiSettingsMaxEncodeFrameSize = DEFAULT_SETTINGS_MAX_FRAME_SIZE;
+    uint32 m_uiSettingsMaxDecodeFrameSize = DEFAULT_SETTINGS_MAX_FRAME_SIZE;
+    uint32 m_uiSettingsMaxHeaderListSize = 8192;  // TODO SettingsMaxHeaderListSize
     uint32 m_uiSendWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
     uint32 m_uiRecvWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
-    tagH2FrameHead m_stFrameHead;
+    tagH2FrameHead m_stDecodeFrameHead;
     HttpMsg* m_pHoldingHttpMsg = nullptr;       // upgrade未完成时暂存请求
     Http2Frame* m_pFrame = nullptr;
     Http2Stream* m_pCodingStream = nullptr;

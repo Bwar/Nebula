@@ -37,12 +37,14 @@ E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
     std::string strPadding;
     if (HTTP_REQUEST == oHttpMsg.type())
     {
-        std::string strSchema = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(':'));
-        if (strSchema.size() > 0)
+        stPriority.uiDependency = 0;
+        stPriority.ucWeight = 15;
+        std::string strScheme = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(':'));
+        if (strScheme.size() > 0)
         {
             auto pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
             pHeader->set_name(":scheme");
-            pHeader->set_value(strSchema);
+            pHeader->set_value(strScheme);
         }
         else
         {
@@ -244,29 +246,28 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
     if (m_bEndHeaders)
     {
         eStatus = m_pFrame->Decode(pCodecH2, stFrameHead, pBuff, m_oHttpMsg, pReactBuff);
-        LOG4_TRACE("eStatus = %d", eStatus);
         if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PART_OK == eStatus)
         {
             if (pCodecH2->IsClient())
             {
-                if (oHttpMsg.stream_id() & 0x01)
+                if (m_oHttpMsg.stream_id() & 0x01)
                 {
-                    oHttpMsg.set_type(HTTP_RESPONSE);
+                    m_oHttpMsg.set_type(HTTP_RESPONSE);
                 }
                 else
                 {
-                    oHttpMsg.set_type(HTTP_REQUEST);
+                    m_oHttpMsg.set_type(HTTP_REQUEST);
                 }
             }
             else
             {
-                if (oHttpMsg.stream_id() & 0x01)
+                if (m_oHttpMsg.stream_id() & 0x01)
                 {
-                    oHttpMsg.set_type(HTTP_REQUEST);
+                    m_oHttpMsg.set_type(HTTP_REQUEST);
                 }
                 else
                 {
-                    oHttpMsg.set_type(HTTP_RESPONSE);
+                    m_oHttpMsg.set_type(HTTP_RESPONSE);
                 }
             }
             if (pCodecH2->IsChunkNotice())
@@ -298,7 +299,6 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             return(CODEC_STATUS_ERR);
         }
         eStatus = m_pFrame->Decode(pCodecH2, stFrameHead, pBuff, m_oHttpMsg, pReactBuff);
-        LOG4_TRACE("eStatus = %d", eStatus);
     }
     return(eStatus);
 }
@@ -422,15 +422,9 @@ void Http2Stream::WindowUpdate(int32 iIncrement)
     m_iSendWindowSize += iIncrement;
 }
 
-void Http2Stream::ShrinkRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
+void Http2Stream::UpdateRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
 {
-    m_uiRecvWindowSize -= uiRecvLength;
-    if (m_uiRecvWindowSize < DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE / 4)
-    {
-        m_pFrame->EncodeWindowUpdate(pCodecH2, uiStreamId,
-                SETTINGS_MAX_INITIAL_WINDOW_SIZE - m_uiRecvWindowSize, pBuff);
-    }
-    m_uiRecvWindowSize = SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    m_pFrame->EncodeWindowUpdate(pCodecH2, uiStreamId, uiRecvLength, pBuff);
 }
 
 E_CODEC_STATUS Http2Stream::SendWaittingFrameData(CodecHttp2* pCodecH2, CBuffer* pBuff)

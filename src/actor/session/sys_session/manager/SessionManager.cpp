@@ -272,7 +272,7 @@ const std::vector<uint64>& SessionManager::GetWorkerThreadId() const
 void SessionManager::AddWorkerThreadId(uint64 ullThreadId)
 {
     if (std::find(m_vecWorkerThreadId.begin(), m_vecWorkerThreadId.end(), ullThreadId)
-        != m_vecWorkerThreadId.end())
+        == m_vecWorkerThreadId.end())
     {
         m_vecWorkerThreadId.push_back(ullThreadId);
     }

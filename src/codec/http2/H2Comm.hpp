@@ -14,10 +14,10 @@ namespace neb
 {
 
 const uint32 H2_FRAME_HEAD_SIZE = 9;
-const uint32 SETTINGS_MAX_FRAME_SIZE = 16777215;                // (2^24) - 1;
-const uint32 DEFAULT_SETTINGS_MAX_FRAME_SIZE = 16384;           // (2^14);
-const uint32 SETTINGS_MAX_INITIAL_WINDOW_SIZE = 2147483647;     // (2^31) - 1;
-const uint32 DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE = 65535;  // (2^16) - 1;
+const uint32 SETTINGS_MAX_FRAME_SIZE = 16777215;                // (2^24) - 1
+const uint32 DEFAULT_SETTINGS_MAX_FRAME_SIZE = 16384;           // (2^14)
+const uint32 SETTINGS_MAX_INITIAL_WINDOW_SIZE = 2147483647;     // (2^31) - 1
+const uint32 DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE = 65535;  // (2^16) - 1
 
 /*
  * @see https://httpwg.org/specs/rfc7540.html#FRAME_SIZE_ERROR
@@ -65,7 +65,7 @@ struct tagH2FrameHead
     uint8 ucFlag                    = 0; ///< 为帧类型专用的布尔标志保留的8位字段。标志被分配特定于指定帧类型的语义。没有为特定帧类型定义语义的标志务必被忽略，并且在发送时务必保持未设置（0x0）。                        ///< 保留的1位字段。该位的语义是未定义的，并且该位必须在发送时保持未设置（0x0），并且在接收时必须忽略。
     uint32 uiLength                 = 0; ///< 帧有效载荷的长度，表示为无符号的24位整数。除非接收方为SETTINGS_MAX_FRAME_SIZE设置了较大的值，否则不得发送大于2 ^ 14（16,384）的值。帧头的9个八位字节不包含在该值中。
     uint32 uiStreamIdentifier       = 0; ///< 流标识符，表示为一个无符号的31位整数。值0x0保留给与整个连接相关联的帧，而不是单个流。
-    tagH2FrameHead& operator=(const tagH2FrameHead stFrameHead)
+    tagH2FrameHead& operator=(const tagH2FrameHead& stFrameHead)
     {
         cR = stFrameHead.cR;
         ucType = stFrameHead.ucType;

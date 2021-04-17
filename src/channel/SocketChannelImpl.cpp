@@ -118,15 +118,31 @@ E_CODEC_TYPE SocketChannelImpl::GetCodecType() const
     return(m_pCodec->GetCodecType());
 }
 
-uint32 SocketChannelImpl::PopStepSeq()
+uint32 SocketChannelImpl::PopStepSeq(uint32 uiStreamId, E_CODEC_STATUS eCodecStatus)
 {
     if (m_listPipelineStepSeq.empty())
     {
+        auto iter = m_mapStreamStepSeq.find(uiStreamId);
+        if (iter != m_mapStreamStepSeq.end())
+        {
+            uint32 uiStepSeq = iter->second;
+            if (CODEC_STATUS_OK == eCodecStatus)
+            {
+                m_mapStreamStepSeq.erase(iter);
+            }
+            return(uiStepSeq);
+        }
         return(0);
     }
-    uint32 uiStepSeq = m_listPipelineStepSeq.front();
-    m_listPipelineStepSeq.pop_front();
-    return(uiStepSeq);
+    else
+    {
+        uint32 uiStepSeq = m_listPipelineStepSeq.front();
+        if (CODEC_STATUS_OK == eCodecStatus)
+        {
+            m_listPipelineStepSeq.pop_front();
+        }
+        return(uiStepSeq);
+    }
 }
 
 ev_tstamp SocketChannelImpl::GetKeepAlive()
@@ -365,7 +381,25 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
     switch (m_ucChannelStatus)
     {
         case CHANNEL_STATUS_ESTABLISHED:
-            eCodecStatus = ((CodecHttp*)m_pCodec)->Encode(oHttpMsg, m_pSendBuff);
+            if (CODEC_HTTP == m_pCodec->GetCodecType())
+            {
+                eCodecStatus = ((CodecHttp*)m_pCodec)->Encode(oHttpMsg, m_pSendBuff);
+            }
+            else
+            {
+                eCodecStatus = ((CodecHttp2*)m_pCodec)->Encode(oHttpMsg, m_pSendBuff);
+            }
+            if (CODEC_STATUS_OK == eCodecStatus && uiStepSeq > 0)
+            {
+                if (CODEC_HTTP == m_pCodec->GetCodecType())
+                {
+                    m_listPipelineStepSeq.push_back(uiStepSeq);
+                }
+                else
+                {
+                    m_mapStreamStepSeq.insert(std::make_pair(((CodecHttp2*)m_pCodec)->GetLastStreamId(), uiStepSeq));
+                }
+            }
             break;
         case CHANNEL_STATUS_CLOSED:
             LOG4_WARNING("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, m_ucChannelStatus);
@@ -376,11 +410,25 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
         case CHANNEL_STATUS_CONNECTED:
         case CHANNEL_STATUS_TRY_CONNECT:
         case CHANNEL_STATUS_INIT:
-            eCodecStatus = ((CodecHttp*)m_pCodec)->Encode(oHttpMsg, m_pWaitForSendBuff);
+            if (CODEC_HTTP == m_pCodec->GetCodecType())
+            {
+                eCodecStatus = ((CodecHttp*)m_pCodec)->Encode(oHttpMsg, m_pWaitForSendBuff);
+            }
+            else
+            {
+                eCodecStatus = ((CodecHttp2*)m_pCodec)->Encode(oHttpMsg, m_pWaitForSendBuff);
+            }
             if (CODEC_STATUS_OK == eCodecStatus && uiStepSeq > 0)
             {
                 eCodecStatus = CODEC_STATUS_PAUSE;
-                m_listPipelineStepSeq.push_back(uiStepSeq);
+                if (CODEC_HTTP == m_pCodec->GetCodecType())
+                {
+                    m_listPipelineStepSeq.push_back(uiStepSeq);
+                }
+                else
+                {
+                    m_mapStreamStepSeq.insert(std::make_pair(((CodecHttp2*)m_pCodec)->GetLastStreamId(), uiStepSeq));
+                }
             }
             break;
         default:
@@ -414,10 +462,6 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
-        }
-        if (uiStepSeq > 0)
-        {
-            m_listPipelineStepSeq.push_back(uiStepSeq);
         }
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iHadWrittenLen)

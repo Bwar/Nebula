@@ -195,7 +195,7 @@ bool ModuleHttpUpgrade::UpgradeToHttp2(std::shared_ptr<SocketChannel> pChannel, 
     {
         return(false);
     }
-    ((CodecHttp2*)pCodec)->Setting(vecSetting);
+    ((CodecHttp2*)pCodec)->Setting(vecSetting, false);
     return(true);
 }
 

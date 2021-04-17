@@ -78,7 +78,7 @@ public:
         return(m_uiSeq);
     }
 
-    uint32 PopStepSeq();
+    uint32 PopStepSeq(uint32 uiStreamId = 0, E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK);
 
     ev_tstamp GetActiveTime() const
     {
@@ -142,6 +142,11 @@ public:
     const std::list<uint32>& GetPipelineStepSeq() const
     {
         return(m_listPipelineStepSeq);
+    }
+
+    const std::unordered_map<uint32, uint32>& GetStreamStepSeq() const
+    {
+        return(m_mapStreamStepSeq);
     }
 
     Labor* GetLabor()
@@ -247,6 +252,7 @@ private:
     std::string m_strIdentify;            ///< 连接标识（可以为空，不为空时用于标识业务层与连接的关系）
     std::string m_strRemoteAddr;          ///< 对端IP地址（不是客户端地址，但可能跟客户端地址相同）
     std::list<uint32> m_listPipelineStepSeq;  ///< 等待回调的Step seq
+    std::unordered_map<uint32, uint32> m_mapStreamStepSeq;      ///< 等待回调的http2 step seq
     std::set<E_CODEC_TYPE> m_setSkipCodecType;  ///< Codec转换需跳过的CodecType
     Labor* m_pLabor;
     SocketChannel* m_pSocketChannel;

@@ -112,9 +112,10 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="ChangeLog"></a>
 ## 版本历史
-#### v1.5
+#### v1.5.0
    - 增加原生http2服务端和客户端支持  
    - 增加原生grpc服务端和客户端支持
+   - 优化channel读写 
    - 增加绝对路径程序日志
 #### v1.4
    - 以原生的CodecResp替代hiredis客户端
