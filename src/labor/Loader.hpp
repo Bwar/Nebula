@@ -20,14 +20,10 @@ class Loader: public Worker
 {
 public:
     Loader(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex);
-    Loader(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex, const std::vector<uint64>& vecWorkerThreadId);
     virtual ~Loader();
 
 protected:
     virtual bool InitActorBuilder();
-
-private:
-    std::vector<uint64> m_vecWorkerThreadId;    ///< worker线程ID（线程模式下）
 };
 
 } /* namespace neb */

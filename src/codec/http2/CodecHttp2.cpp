@@ -100,7 +100,6 @@ void CodecHttp2::ConnectionSetting(CBuffer* pBuff)
         m_pFrame->EncodeSetting(this, vecSetting, pBuff);
         m_pFrame->EncodeWindowUpdate(this, 0, 4128769, pBuff);
         m_pFrame->EncodePing(this, false, 0, 0, pBuff);
-        m_uiStreamIdGenerate = 2;
     }
 }
 
@@ -312,7 +311,9 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
              */
             if (m_stDecodeFrameHead.uiStreamIdentifier <= m_uiStreamIdGenerate)
             {
-                if (H2_FRAME_WINDOW_UPDATE == m_stDecodeFrameHead.ucType)
+                if (H2_FRAME_WINDOW_UPDATE == m_stDecodeFrameHead.ucType
+                        || H2_FRAME_RST_STREAM == m_stDecodeFrameHead.ucType
+                        || H2_FRAME_PRIORITY == m_stDecodeFrameHead.ucType)
                 {
                     E_CODEC_STATUS eCodecStatus = m_pFrame->Decode(this, m_stDecodeFrameHead, pBuff, oHttpMsg, pReactBuff);
                     if (CODEC_STATUS_PAUSE == eCodecStatus
@@ -772,11 +773,11 @@ E_CODEC_STATUS CodecHttp2::PromiseStream(uint32 uiStreamId, CBuffer* pReactBuff)
 
 E_CODEC_STATUS CodecHttp2::SendWaittingFrameData(CBuffer* pBuff)
 {
-    if (m_pStreamWeightRoot != nullptr)
+    if (m_bHasWaittingFrame && m_pStreamWeightRoot != nullptr)
     {
         E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
         uint32 uiStreamId = 0;
-        std::vector<uint32> vecCompleteStream;
+        std::vector<uint32> vecCompletedStream;
         auto pCurrent = m_pStreamWeightRoot->pFirstChild;
         while (pCurrent)
         {
@@ -785,22 +786,33 @@ E_CODEC_STATUS CodecHttp2::SendWaittingFrameData(CBuffer* pBuff)
             if (iter != m_mapStream.end())
             {
                 eStatus = iter->second->SendWaittingFrameData(this, pBuff);
-                if (eStatus == CODEC_STATUS_OK)
+                if (iter->second->GetStreamState() == H2_STREAM_CLOSE)
                 {
-                    vecCompleteStream.push_back(uiStreamId);
-                }
-                else
-                {
-                    break;
+                    vecCompletedStream.push_back(uiStreamId);
                 }
             }
+            if (pCurrent->pFirstChild != nullptr)
+            {
+                pCurrent = pCurrent->pFirstChild;
+            }
+            else
+            {
+                pCurrent = pCurrent->pRightBrother;
+            }
         }
-        for (auto id : vecCompleteStream)
+        for (auto id : vecCompletedStream)
         {
             CloseStream(id);
         }
         return(eStatus);
     }
+    return(CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecHttp2::SendWaittingFrameData(
+        TreeNode<tagStreamWeight>* pStreamWeight,
+        std::vector<uint32>& vecCompletedStream, CBuffer* pBuff)
+{
     return(CODEC_STATUS_OK);
 }
 

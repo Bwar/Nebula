@@ -103,6 +103,8 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
 {
     LOG4_TRACE("m_eStreamState = %d, stFrameHead.ucType = %u", m_eStreamState, stFrameHead.ucType);
     m_oHttpMsg.set_stream_id(m_uiStreamId);
+    E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
+    eStatus = m_pFrame->Decode(pCodecH2, stFrameHead, pBuff, m_oHttpMsg, pReactBuff);
     switch (m_eStreamState)
     {
         case H2_STREAM_IDLE:
@@ -241,11 +243,9 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
         default:
             break;
     }
-    E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
     LOG4_TRACE("m_eStreamState = %d, stFrameHead.ucType = %u, m_bEndHeaders = %d", m_eStreamState, stFrameHead.ucType, m_bEndHeaders);
     if (m_bEndHeaders)
     {
-        eStatus = m_pFrame->Decode(pCodecH2, stFrameHead, pBuff, m_oHttpMsg, pReactBuff);
         if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PART_OK == eStatus)
         {
             if (pCodecH2->IsClient())
@@ -298,7 +298,6 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u, m_bEndHeaders = %d", m_eStreamState, stFrameHead.ucType, m_bEndHeaders);
             return(CODEC_STATUS_ERR);
         }
-        eStatus = m_pFrame->Decode(pCodecH2, stFrameHead, pBuff, m_oHttpMsg, pReactBuff);
     }
     return(eStatus);
 }
@@ -424,7 +423,13 @@ void Http2Stream::WindowUpdate(int32 iIncrement)
 
 void Http2Stream::UpdateRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
 {
-    m_pFrame->EncodeWindowUpdate(pCodecH2, uiStreamId, uiRecvLength, pBuff);
+    if (m_eStreamState == H2_STREAM_OPEN
+            || m_eStreamState == H2_STREAM_IDLE
+            || m_eStreamState == H2_STREAM_RESERVED_LOCAL
+            || m_eStreamState == H2_STREAM_RESERVED_REMOTE)
+    {
+        m_pFrame->EncodeWindowUpdate(pCodecH2, uiStreamId, uiRecvLength, pBuff);
+    }
 }
 
 E_CODEC_STATUS Http2Stream::SendWaittingFrameData(CodecHttp2* pCodecH2, CBuffer* pBuff)

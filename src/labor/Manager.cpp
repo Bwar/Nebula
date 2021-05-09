@@ -59,6 +59,7 @@ Manager::Manager(const std::string& strConfFile)
     if (m_stNodeInfo.bThreadMode)
     {
         CreateWorkerThread();   // Loader可能需要用到Worker线程ID，故先创建Worker
+        usleep(1000);
         CreateLoaderThread();
     }
     else
@@ -619,11 +620,7 @@ void Manager::CreateWorkerThread()
         }
         pWorker->SetLoaderActorBuilder(m_pLoaderActorBuilder);
         std::thread t(&Worker::Run, pWorker);
-        std::ostringstream ossThreadId;
-        ossThreadId << t.get_id();
         t.detach();
-        uint64 ullThreadId = strtoull(ossThreadId.str().c_str(), NULL, 10);
-        m_pSessionManager->AddWorkerThreadId(ullThreadId);
         m_pSessionManager->AddWorkerInfo(i, getpid(), iControlFds[0], iDataFds[0]);
         std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
         std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);

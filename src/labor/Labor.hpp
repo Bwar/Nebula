@@ -12,6 +12,8 @@
 
 #include <ctime>
 #include <string>
+#include <unistd.h>
+#include <sys/syscall.h>
 #include "ev.h"
 #include "pb/msg.pb.h"
 #include "Definition.hpp"
@@ -38,7 +40,7 @@ public:
     };
 public:
     Labor(LABOR_TYPE eLaborType)
-        : m_eLaborType(eLaborType)
+        : m_eLaborType(eLaborType), m_iPid(0)
     {
     }
     Labor(const Labor&) = delete;
@@ -71,9 +73,18 @@ public:
     {
         return(false);
     }
+    pid_t gettid()
+    {
+        if (m_iPid == 0)
+        {
+            m_iPid = static_cast<pid_t>(::syscall(SYS_gettid));
+        }
+        return(m_iPid);
+    }
 
 private:
     LABOR_TYPE m_eLaborType;
+    int32 m_iPid;
 };
 
 } /* namespace neb */

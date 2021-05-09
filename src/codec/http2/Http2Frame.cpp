@@ -333,6 +333,7 @@ E_CODEC_STATUS Http2Frame::DecodeRstStream(CodecHttp2* pCodecH2,
     if (m_pStream != nullptr)
     {
         m_pStream->SetState(H2_STREAM_CLOSE);
+        pCodecH2->RstStream(stFrameHead.uiStreamIdentifier);
     }
     return(CODEC_STATUS_PART_ERR);
 }
@@ -540,7 +541,7 @@ E_CODEC_STATUS Http2Frame::DecodeWindowUpdate(CodecHttp2* pCodecH2,
     else
     {
         pCodecH2->WindowUpdate(stFrameHead.uiStreamIdentifier, uiIncrement);
-        if (stFrameHead.uiStreamIdentifier > 0)
+        if (m_pStream != nullptr && stFrameHead.uiStreamIdentifier == m_pStream->GetStreamId())
         {
             SendWaittingFrameData(pCodecH2, pReactBuff);
         }
@@ -1084,6 +1085,7 @@ E_CODEC_STATUS Http2Frame::EncodeData(CodecHttp2* pCodecH2, uint32 uiStreamId,
                 return(CODEC_STATUS_PART_ERR);
             }
             m_listWaittingFrameData.push_back(pWaittingBuff);
+            pCodecH2->SetWaittingFrame(true);
             EncodeFrameHeader(stFrameHead, pWaittingBuff);
             uint16 unNetLength = CodecUtil::H2N(strPadding.size());
             pWaittingBuff->Write(&unNetLength, 1);
@@ -1130,6 +1132,7 @@ E_CODEC_STATUS Http2Frame::EncodeData(CodecHttp2* pCodecH2, uint32 uiStreamId,
                 return(CODEC_STATUS_PART_ERR);
             }
             m_listWaittingFrameData.push_back(pWaittingBuff);
+            pCodecH2->SetWaittingFrame(true);
             uiEncodedDataLen = stFrameHead.uiLength;
             EncodeFrameHeader(stFrameHead, pWaittingBuff);
             pWaittingBuff->Write(pData, uiEncodedDataLen);

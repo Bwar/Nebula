@@ -14,6 +14,7 @@
 #include <vector>
 #include "actor/Actor.hpp"
 #include "actor/DynamicCreator.hpp"
+#include "actor/ActorSys.hpp"
 
 namespace neb
 {
@@ -21,7 +22,7 @@ namespace neb
 class ActorBuilder;
 class CJsonObject;
 
-class Chain final: public Actor,
+class Chain final: public Actor, public ActorSys,
     public neb::DynamicCreator<Chain, std::string&, ev_tstamp>
 {
 public:

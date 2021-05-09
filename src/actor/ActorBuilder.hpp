@@ -149,6 +149,7 @@ public:
     int32 GetStepNum();
     bool ReloadCmdConf();
     bool AddNetLogMsg(const MsgBody& oMsgBody);
+    void AddChainConf(const std::string& strChainKey, std::queue<std::vector<std::string> >&& queChainBlocks);
 
 protected:
     void AddAssemblyLine(std::shared_ptr<Session> pSession);
@@ -159,7 +160,6 @@ protected:
     void ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
     void ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg);
 
-    void AddChainConf(const std::string& strChainKey, std::queue<std::vector<std::string> >&& queChainBlocks);
     void LoadSysCmd();
     void BootLoadCmd(CJsonObject& oCmdConf);
     void DynamicLoad(CJsonObject& oSoConf);
@@ -199,6 +199,7 @@ private:
     friend class Worker;
     friend class Actor;
     friend class Dispatcher;
+    friend class Chain;
 };
 
 template <typename ...Targs>

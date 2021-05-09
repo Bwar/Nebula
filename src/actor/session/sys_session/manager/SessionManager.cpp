@@ -24,6 +24,9 @@
 namespace neb
 {
 
+std::mutex SessionManager::s_mutexWorker;
+std::vector<uint64> SessionManager::s_vecWorkerThreadId;
+
 SessionManager::SessionManager(bool bDirectToLoader)
     : Session("neb::SessionManager", gc_dNoTimeout), m_bDirectToLoader(bDirectToLoader)
 {
@@ -128,6 +131,7 @@ void SessionManager::AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, i
         return;
     }
     pWorkerAttr->iWorkerIndex = iWorkerIndex;
+    pWorkerAttr->iWorkerPid = iPid;
     pWorkerAttr->iControlFd = iControlFd;
     pWorkerAttr->iDataFd = iDataFd;
     pWorkerAttr->dBeatTime = GetNowTime();
@@ -194,7 +198,7 @@ Loader* SessionManager::MutableLoader(int iWorkerIndex, const std::string& strWo
         Loader* pLoader = nullptr;
         try
         {
-            pLoader = new Loader(strWorkPath, iControlFd, iDataFd, iWorkerIndex, m_vecWorkerThreadId);
+            pLoader = new Loader(strWorkPath, iControlFd, iDataFd, iWorkerIndex);
         }
         catch(std::bad_alloc& e)
         {
@@ -261,20 +265,6 @@ void SessionManager::SetLoaderActorBuilder(ActorBuilder* pActorBuilder)
     for (auto it = m_mapWorker.begin(); it != m_mapWorker.end(); ++it)
     {
         it->second->SetLoaderActorBuilder(pActorBuilder);
-    }
-}
-
-const std::vector<uint64>& SessionManager::GetWorkerThreadId() const
-{
-    return(m_vecWorkerThreadId);
-}
-
-void SessionManager::AddWorkerThreadId(uint64 ullThreadId)
-{
-    if (std::find(m_vecWorkerThreadId.begin(), m_vecWorkerThreadId.end(), ullThreadId)
-        == m_vecWorkerThreadId.end())
-    {
-        m_vecWorkerThreadId.push_back(ullThreadId);
     }
 }
 
@@ -580,6 +570,16 @@ bool SessionManager::NewSocketWhenLoaderCreated()
         GetLabor(this)->GetDispatcher()->SendFd(iter->second->iDataFd, iFds[1], PF_UNIX, CODEC_NEBULA_IN_NODE);
     }
     return(true);
+}
+
+void SessionManager::AddWorkerThreadId(uint64 ullThreadId)
+{
+    std::lock_guard<std::mutex> guard(s_mutexWorker);
+    if (std::find(s_vecWorkerThreadId.begin(), s_vecWorkerThreadId.end(), ullThreadId)
+            == s_vecWorkerThreadId.end())
+    {
+        s_vecWorkerThreadId.push_back(ullThreadId);
+    }
 }
 
 } /* namespace neb */

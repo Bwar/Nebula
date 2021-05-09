@@ -12,6 +12,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include <pthread.h>
 #include "util/process_helper.h"
 #include "util/proctitle_helper.h"
 #ifdef __cplusplus
@@ -20,6 +21,7 @@ extern "C" {
 #include "Worker.hpp"
 #include "ios/Dispatcher.hpp"
 #include "actor/ActorBuilder.hpp"
+#include "actor/session/sys_session/manager/SessionManager.hpp"
 
 namespace neb
 {
@@ -43,7 +45,14 @@ Worker::~Worker()
 
 void Worker::Run()
 {
-    LOG4_DEBUG("%s:%d", __FILE__, __LINE__);
+    LOG4_TRACE("%s:%d", __FILE__, __LINE__);
+    if (m_stNodeInfo.bThreadMode)
+    {
+        char szThreadName[64] = {0};
+        snprintf(szThreadName, sizeof(szThreadName), "%s_W%d", m_oNodeConf("server_name").c_str(), m_stWorkerInfo.iWorkerIndex);
+        pthread_setname_np(pthread_self(), szThreadName);
+        SessionManager::AddWorkerThreadId(gettid());
+    }
 
     if (!CreateEvents())
     {

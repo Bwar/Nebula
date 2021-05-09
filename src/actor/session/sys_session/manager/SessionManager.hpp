@@ -11,6 +11,8 @@
 #ifndef SRC_ACTOR_SESSION_SYS_SESSION_MANAGER_SESSIONMANAGER_HPP_
 #define SRC_ACTOR_SESSION_SYS_SESSION_MANAGER_SESSIONMANAGER_HPP_
 
+#include <thread>
+#include <mutex>
 #include "actor/ActorSys.hpp"
 #include "labor/NodeInfo.hpp"
 #include "actor/session/Session.hpp"
@@ -41,8 +43,6 @@ public:
     const WorkerInfo* GetWorkerInfo(int32 iWorkerIndex) const;
     bool SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad);
     void SetLoaderActorBuilder(ActorBuilder* pActorBuilder);
-    const std::vector<uint64>& GetWorkerThreadId() const;
-    void AddWorkerThreadId(uint64 ullThreadId);
     int GetNextWorkerDataFd();
     std::pair<int, int> GetMinLoadWorkerDataFd();
     bool CheckWorker();
@@ -53,6 +53,12 @@ public:
     bool NewSocketWhenWorkerCreated(int iWorkerDataFd);
     bool NewSocketWhenLoaderCreated();
 
+    static const std::vector<uint64>& GetWorkerThreadId()
+    {
+        return(s_vecWorkerThreadId);
+    }
+    static void AddWorkerThreadId(uint64 ullThreadId);
+
 private:
     bool m_bDirectToLoader = false;
     int m_iLoaderDataFd = -1;
@@ -61,8 +67,10 @@ private:
     std::unordered_map<int, WorkerInfo*>::iterator m_iterWorkerInfo;
     std::unordered_map<int, int> m_mapWorkerStartNum;       ///< 进程被启动次数，key为WorkerIdx
     std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
-    std::vector<uint64> m_vecWorkerThreadId;                    ///< Worker线程ID（线程模式下）
     std::unordered_map<std::string, std::string> m_mapOnlineNodes;     ///< 订阅的节点在线信息
+
+    static std::mutex s_mutexWorker;
+    static std::vector<uint64> s_vecWorkerThreadId;
 };
 
 } /* namespace neb */

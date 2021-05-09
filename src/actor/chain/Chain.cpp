@@ -75,9 +75,9 @@ E_CMD_STATUS Chain::Next()
     if (m_queChainBlock.empty())
     {
         GetContext()->Done();
+        SetContext(nullptr);
         return(CMD_STATUS_COMPLETED);
     }
-    bool bStepInBlock = false;     ///< 当前链块存在Step
     E_CMD_STATUS eResult = CMD_STATUS_START;
     std::vector<std::string>& vecTurnBlocks = m_queChainBlock.front();
     for (auto iter = vecTurnBlocks.begin(); iter != vecTurnBlocks.end(); ++iter)
@@ -109,17 +109,20 @@ E_CMD_STATUS Chain::Next()
                     || Actor::ACT_HTTP_STEP == pSharedActor->GetActorType()
                     || Actor::ACT_REDIS_STEP == pSharedActor->GetActorType())
             {
-                bStepInBlock = true;
                 std::shared_ptr<Step> pSharedStep = std::dynamic_pointer_cast<Step>(pSharedActor);
                 pSharedStep->SetChainId(GetSequence());
                 eResult = pSharedStep->Emit();
-                if (CMD_STATUS_FAULT == eResult)
-                {
-                    return(CMD_STATUS_FAULT);
-                }
-                else if (CMD_STATUS_RUNNING == eResult)
+                if (CMD_STATUS_RUNNING == eResult)
                 {
                     ++m_uiWaitingStep;
+                }
+                else
+                {
+                    GetLabor(this)->GetActorBuilder()->RemoveStep(pSharedStep);
+                    if (CMD_STATUS_FAULT == eResult)
+                    {
+                        return(CMD_STATUS_FAULT);
+                    }
                 }
             }
             else
@@ -144,7 +147,7 @@ E_CMD_STATUS Chain::Next()
     }
 
     m_queChainBlock.pop();
-    if (bStepInBlock)
+    if (m_uiWaitingStep > 0)
     {
         return(CMD_STATUS_RUNNING);
     }
