@@ -125,7 +125,7 @@ protected:
     void UpdateEncodingDynamicTable(const std::string& strHeaderName, const std::string& strHeaderValue);
     uint32 UpdateEncodingDynamicTable(int32 iRecoverSize);
     uint32 EncodingDynamicTableIndex2VectorIndex(uint32 uiIndex);
-    void UpdateDecodingDynamicTable(int32 iDynamicTableIndex, const std::string& strHeaderName, const std::string& strHeaderValue);
+    void UpdateDecodingDynamicTable(int32 iVectorIndex, const std::string& strHeaderName, const std::string& strHeaderValue);
     uint32 UpdateDecodingDynamicTable(int32 iRecoverSize);
     uint32 DecodingDynamicTableIndex2VectorIndex(uint32 uiIndex);
     void CloseStream(uint32 uiStreamId);

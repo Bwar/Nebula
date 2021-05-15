@@ -993,6 +993,11 @@ bool ActorBuilder::TransformToSharedCmd(Actor* pCreator, std::shared_ptr<Actor> 
             }
             return(true);
         }
+        else
+        {
+            LOG4_ERROR("%s(%d) Init failed.", pSharedCmd->GetActorName().c_str(), pSharedCmd->GetCmd());
+            m_mapCmd.erase(ret.first);
+        }
     }
     else
     {
@@ -1021,6 +1026,11 @@ bool ActorBuilder::TransformToSharedModule(Actor* pCreator, std::shared_ptr<Acto
             }
             return(true);
         }
+        else
+        {
+            LOG4_ERROR("%s(%s) Init failed.", pSharedModule->GetActorName().c_str(), pSharedModule->GetModulePath().c_str());
+            m_mapModule.erase(ret.first);
+        }
     }
     else
     {
@@ -1038,6 +1048,11 @@ bool ActorBuilder::TransformToSharedOperator(Actor* pCreator, std::shared_ptr<Ac
         if (pSharedOperator->Init())
         {
             return(true);
+        }
+        else
+        {
+            LOG4_ERROR("%s Init failed.", pSharedOperator->GetActorName().c_str());
+            m_mapOperator.erase(ret.first);
         }
     }
     else

@@ -607,20 +607,34 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
     if (CODEC_NEBULA == pChannel->m_pImpl->GetCodecType())  // 系统内部Server间通信
     {
-        if (CHANNEL_STATUS_TRY_CONNECT == pChannel->m_pImpl->GetChannelStatus())  // connect之后的第一个写事件
+        if (pChannel->m_pImpl->GetRemoteWorkerIndex() < 0) // connect to Manager
         {
-            std::shared_ptr<Step> pStepConnectWorker = m_pLabor->GetActorBuilder()->MakeSharedStep(
-                    nullptr, "neb::StepConnectWorker", pChannel, pChannel->m_pImpl->GetRemoteWorkerIndex());
-            if (nullptr == pStepConnectWorker)
+            std::shared_ptr<Step> pStepTellWorker
+                = m_pLabor->GetActorBuilder()->MakeSharedStep(nullptr, "neb::StepTellWorker", pChannel);
+            if (nullptr == pStepTellWorker)
             {
-                LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
                 return(false);
             }
-            if (CMD_STATUS_RUNNING != pStepConnectWorker->Emit(ERR_OK))
+            pStepTellWorker->Emit(ERR_OK);
+            pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+        }
+        else
+        {
+            if (CHANNEL_STATUS_TRY_CONNECT == pChannel->m_pImpl->GetChannelStatus())  // connect之后的第一个写事件
             {
-                m_pLabor->GetActorBuilder()->RemoveStep(pStepConnectWorker);
+                std::shared_ptr<Step> pStepConnectWorker = m_pLabor->GetActorBuilder()->MakeSharedStep(
+                        nullptr, "neb::StepConnectWorker", pChannel, pChannel->m_pImpl->GetRemoteWorkerIndex());
+                if (nullptr == pStepConnectWorker)
+                {
+                    LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
+                    return(false);
+                }
+                if (CMD_STATUS_RUNNING != pStepConnectWorker->Emit(ERR_OK))
+                {
+                    m_pLabor->GetActorBuilder()->RemoveStep(pStepConnectWorker);
+                }
+                return(true);
             }
-            return(true);
         }
     }
     else

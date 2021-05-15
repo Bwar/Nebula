@@ -271,11 +271,14 @@ bool Dispatcher::SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType,
                 return(false);
             }
             std::string strWorkerIndex = strIdentify.substr(iPosPortWorkerIndexSeparator + 1, std::string::npos);
-            iWorkerIndex = atoi(strWorkerIndex.c_str());
-            if (iWorkerIndex > 200)
+            if (strWorkerIndex.size() > 0)
             {
-                strError = "worker index must smaller than 200";
-                return(false);
+                iWorkerIndex = atoi(strWorkerIndex.c_str());
+                if (iWorkerIndex > 200)
+                {
+                    strError = "worker index must smaller than 200";
+                    return(false);
+                }
             }
         }
         else
@@ -297,7 +300,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType,
         std::string strError;
         std::string strHost;
         int iPort = 0;
-        int iWorkerIndex = 0;
+        int iWorkerIndex = -1;
         if (!split(strIdentify, strHost, iPort, iWorkerIndex, strError))
         {
             LOG4_ERROR("%s", strError.c_str());
@@ -312,7 +315,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType,
             std::string strError;
             std::string strHost;
             int iPort = 0;
-            int iWorkerIndex = 0;
+            int iWorkerIndex = -1;
             if (!split(strIdentify, strHost, iPort, iWorkerIndex, strError))
             {
                 LOG4_ERROR("%s", strError.c_str());

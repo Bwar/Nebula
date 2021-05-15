@@ -23,7 +23,7 @@ namespace neb
 
 SocketChannelImpl::SocketChannelImpl(SocketChannel* pSocketChannel, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
     : m_ucChannelStatus(CHANNEL_STATUS_INIT),m_eLastCodecStatus(CODEC_STATUS_OK), m_bIsClientConnection(false),
-      m_unRemoteWorkerIdx(0), m_iFd(iFd), m_uiSeq(ulSeq), m_uiForeignSeq(0), m_bPipeline(true),
+      m_iRemoteWorkerIdx(-1), m_iFd(iFd), m_uiSeq(ulSeq), m_uiForeignSeq(0), m_bPipeline(true),
       m_uiUnitTimeMsgNum(0), m_uiMsgNum(0),
       m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
       m_pIoWatcher(NULL), m_pTimerWatcher(NULL),
@@ -1180,9 +1180,9 @@ void SocketChannelImpl::SetSecretKey(const std::string& strKey)
     m_pCodec->SetKey(m_strKey);
 }
 
-void SocketChannelImpl::SetRemoteWorkerIndex(uint16 unRemoteWorkerIndex)
+void SocketChannelImpl::SetRemoteWorkerIndex(int16 iRemoteWorkerIndex)
 {
-    m_unRemoteWorkerIdx = unRemoteWorkerIndex;
+    m_iRemoteWorkerIdx = iRemoteWorkerIndex;
 }
 
 Codec* SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive, bool bIsUpgrade)

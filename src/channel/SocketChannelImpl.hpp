@@ -112,9 +112,9 @@ public:
         return(m_strRemoteAddr);
     }
 
-    uint16 GetRemoteWorkerIndex() const
+    int16 GetRemoteWorkerIndex() const
     {
-        return(m_unRemoteWorkerIdx);
+        return(m_iRemoteWorkerIdx);
     }
 
     const std::string& GetClientData() const
@@ -209,7 +209,7 @@ public:
 
     void SetSecretKey(const std::string& strKey);
 
-    void SetRemoteWorkerIndex(uint16 unRemoteWorkerIndex);
+    void SetRemoteWorkerIndex(int16 iRemoteWorkerIndex);
 
     Codec* SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive, bool bIsUpgrade = false);
     bool AutoSwitchCodec();
@@ -229,7 +229,7 @@ private:
     E_CODEC_STATUS m_eLastCodecStatus;    ///< 连接关闭前的最后一个编解码状态（当且仅当连接的应用层读缓冲区有数据未处理完而对端关闭连接时使用）
     char m_szErrBuff[256];
     bool m_bIsClientConnection;
-    uint16 m_unRemoteWorkerIdx;           ///< 对端Worker进程ID,若不涉及则无需关心
+    int16 m_iRemoteWorkerIdx;           ///< 对端Worker进程ID,若不涉及则无需关心
     int32 m_iFd;                          ///< 文件描述符
     uint32 m_uiSeq;                       ///< 文件描述符创建时对应的序列号
     uint32 m_uiForeignSeq;                ///< 外来的seq，每个连接的包都是有序的，用作接入Server数据包检查，防止篡包

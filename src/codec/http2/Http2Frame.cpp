@@ -113,12 +113,17 @@ E_CODEC_STATUS Http2Frame::Encode(CodecHttp2* pCodecH2,
         if (oHttpMsg.body().size() == 0)
         {
             bEndStream = true;
-        }
-        eCodecStatus = EncodeHeaders(pCodecH2, oHttpMsg.stream_id(), oHttpMsg, stPriority, strPadding, bEndStream, pBuff);
-        if (CODEC_STATUS_PART_ERR == eCodecStatus
-                || CODEC_STATUS_ERR == eCodecStatus)
-        {
+            eCodecStatus = EncodeHeaders(pCodecH2, oHttpMsg.stream_id(), oHttpMsg, stPriority, strPadding, bEndStream, pBuff);
             return(eCodecStatus);
+        }
+        else
+        {
+            eCodecStatus = EncodeHeaders(pCodecH2, oHttpMsg.stream_id(), oHttpMsg, stPriority, strPadding, bEndStream, pBuff);
+            if (CODEC_STATUS_PART_ERR == eCodecStatus
+                    || CODEC_STATUS_ERR == eCodecStatus)
+            {
+                return(eCodecStatus);
+            }
         }
     }
     if (oHttpMsg.body().size() > 0)
