@@ -12,6 +12,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <algorithm>
+#include "pb/report.pb.h"
 #include "util/process_helper.h"
 #include "util/json/CJsonObject.hpp"
 #include "labor/NodeInfo.hpp"
@@ -20,6 +21,7 @@
 #include "labor/Loader.hpp"
 #include "ios/Dispatcher.hpp"
 #include "actor/cmd/CW.hpp"
+#include "actor/session/sys_session/SessionDataReport.hpp"
 
 namespace neb
 {
@@ -28,7 +30,7 @@ std::mutex SessionManager::s_mutexWorker;
 std::vector<uint64> SessionManager::s_vecWorkerThreadId;
 
 SessionManager::SessionManager(bool bDirectToLoader)
-    : Session("neb::SessionManager", gc_dNoTimeout), m_bDirectToLoader(bDirectToLoader)
+    : Session("neb::SessionManager", gc_dDefaultTimeout), m_bDirectToLoader(bDirectToLoader)
 {
     m_iterWorkerInfo = m_mapWorkerInfo.begin();
 }
@@ -55,6 +57,46 @@ SessionManager::~SessionManager()
 
 E_CMD_STATUS SessionManager::Timeout()
 {
+    std::shared_ptr<Report> pReport = std::make_shared<Report>();
+    if (pReport == nullptr)
+    {
+        LOG4_ERROR("failed to new Report!");
+        return(CMD_STATUS_FAULT);
+    }
+    neb::ReportRecord* pRecord = nullptr;
+    uint32 uiLoad = 0;
+    uint32 uiConnect = 0;
+    uint32 uiClient = 0;
+    for (auto iter = m_mapWorkerInfo.begin(); iter != m_mapWorkerInfo.end(); ++iter)
+    {
+        uiLoad += iter->second->uiLoad;
+        uiConnect += iter->second->uiConnect;
+        uiClient += iter->second->uiClientNum;
+    }
+    pRecord = pReport->add_records();
+    pRecord->set_key("load");
+    pRecord->set_item("nebula");
+    pRecord->add_value(uiLoad);
+    pRecord->set_value_type(ReportRecord::VALUE_FIXED);
+    pRecord = pReport->add_records();
+    pRecord->set_key("connect");
+    pRecord->set_item("nebula");
+    pRecord->add_value(uiConnect);
+    pRecord->set_value_type(ReportRecord::VALUE_FIXED);
+    pRecord = pReport->add_records();
+    pRecord->set_key("client");
+    pRecord->set_item("nebula");
+    pRecord->add_value(uiClient);
+    pRecord->set_value_type(ReportRecord::VALUE_FIXED);
+    std::string strSessionId = "neb::SessionDataReport";
+    auto pSharedSession = GetSession(strSessionId);
+    if (pSharedSession == nullptr)
+    {
+        LOG4_ERROR("no session named \"neb::SessionDataReport\"!");
+        return(CMD_STATUS_RUNNING);
+    }
+    auto pReportSession = std::dynamic_pointer_cast<SessionDataReport>(pSharedSession);
+    pReportSession->AddReport(pReport);
     return(CMD_STATUS_RUNNING);
 }
 
@@ -236,13 +278,13 @@ bool SessionManager::SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad)
         auto it = m_mapWorkerInfo.find(iPid);
         if (it != m_mapWorkerInfo.end())
         {
-            oJsonLoad.Get("load", it->second->iLoad);
-            oJsonLoad.Get("connect", it->second->iConnect);
-            oJsonLoad.Get("recv_num", it->second->iRecvNum);
-            oJsonLoad.Get("recv_byte", it->second->iRecvByte);
-            oJsonLoad.Get("send_num", it->second->iSendNum);
-            oJsonLoad.Get("send_byte", it->second->iSendByte);
-            oJsonLoad.Get("client", it->second->iClientNum);
+            oJsonLoad.Get("load", it->second->uiLoad);
+            oJsonLoad.Get("connect", it->second->uiConnect);
+            oJsonLoad.Get("recv_num", it->second->uiRecvNum);
+            oJsonLoad.Get("recv_byte", it->second->uiRecvByte);
+            oJsonLoad.Get("send_num", it->second->uiSendNum);
+            oJsonLoad.Get("send_byte", it->second->uiSendByte);
+            oJsonLoad.Get("client", it->second->uiClientNum);
             it->second->dBeatTime = GetNowTime();
             it->second->bStartBeatCheck = true;
             return(true);
@@ -326,13 +368,13 @@ std::pair<int, int> SessionManager::GetMinLoadWorkerDataFd()
             if (iMinLoad == -1 && iter->second->iDataFd != m_iLoaderDataFd)
             {
                iMinLoadWorkerFd = iter->second->iDataFd;
-               iMinLoad = iter->second->iLoad;
+               iMinLoad = iter->second->uiLoad;
                worker_pid_fd = std::pair<int, int>(iter->first, iMinLoadWorkerFd);
             }
-            else if (iter->second->iLoad < iMinLoad && iter->second->iDataFd != m_iLoaderDataFd)
+            else if ((int)iter->second->uiLoad < iMinLoad && iter->second->iDataFd != m_iLoaderDataFd)
             {
                iMinLoadWorkerFd = iter->second->iDataFd;
-               iMinLoad = iter->second->iLoad;
+               iMinLoad = iter->second->uiLoad;
                worker_pid_fd = std::pair<int, int>(iter->first, iMinLoadWorkerFd);
             }
         }
@@ -493,21 +535,21 @@ void SessionManager::MakeReportData(CJsonObject& oReportData)
         {
             continue;
         }
-        iLoad += worker_iter->second->iLoad;
-        iConnect += worker_iter->second->iConnect;
-        iRecvNum += worker_iter->second->iRecvNum;
-        iRecvByte += worker_iter->second->iRecvByte;
-        iSendNum += worker_iter->second->iSendNum;
-        iSendByte += worker_iter->second->iSendByte;
-        iClientNum += worker_iter->second->iClientNum;
+        iLoad += worker_iter->second->uiLoad;
+        iConnect += worker_iter->second->uiConnect;
+        iRecvNum += worker_iter->second->uiRecvNum;
+        iRecvByte += worker_iter->second->uiRecvByte;
+        iSendNum += worker_iter->second->uiSendNum;
+        iSendByte += worker_iter->second->uiSendByte;
+        iClientNum += worker_iter->second->uiClientNum;
         oMember.Clear();
-        oMember.Add("load", worker_iter->second->iLoad);
-        oMember.Add("connect", worker_iter->second->iConnect);
-        oMember.Add("recv_num", worker_iter->second->iRecvNum);
-        oMember.Add("recv_byte", worker_iter->second->iRecvByte);
-        oMember.Add("send_num", worker_iter->second->iSendNum);
-        oMember.Add("send_byte", worker_iter->second->iSendByte);
-        oMember.Add("client", worker_iter->second->iClientNum);
+        oMember.Add("load", worker_iter->second->uiLoad);
+        oMember.Add("connect", worker_iter->second->uiConnect);
+        oMember.Add("recv_num", worker_iter->second->uiRecvNum);
+        oMember.Add("recv_byte", worker_iter->second->uiRecvByte);
+        oMember.Add("send_num", worker_iter->second->uiSendNum);
+        oMember.Add("send_byte", worker_iter->second->uiSendByte);
+        oMember.Add("client", worker_iter->second->uiClientNum);
         oReportData["worker"].Add(oMember);
     }
     oReportData["node"].Add("load", iLoad);

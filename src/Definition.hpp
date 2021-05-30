@@ -166,7 +166,8 @@ const uint32 gc_uiMsgHeadSize = 15;
 const uint32 gc_uiClientMsgHeadSize = 14;
 
 const ev_tstamp gc_dNoTimeout = -1;
-const ev_tstamp gc_dDefaultTimeout = 0;
+const ev_tstamp gc_dConfigTimeout = 0;
+const ev_tstamp gc_dDefaultTimeout = 30.0;
 
 /**
  * @brief 命令执行状态

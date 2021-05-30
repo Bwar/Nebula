@@ -210,12 +210,16 @@ E_CODEC_STATUS SocketChannelImpl::Send()
     do
     {
         iWrittenLen = Write(m_pSendBuff, m_iErrno);
-        iHadWrittenLen += iWrittenLen;
+        if (iWrittenLen > 0)
+        {
+            iHadWrittenLen += iWrittenLen;
+        }
     }
     while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
+        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -327,12 +331,16 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
     do
     {
         iWrittenLen = Write(m_pSendBuff, m_iErrno);
-        iHadWrittenLen += iWrittenLen;
+        if (iWrittenLen > 0)
+        {
+            iHadWrittenLen += iWrittenLen;
+        }
     }
     while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
+        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -375,6 +383,12 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
     if (m_pCodec == nullptr)
     {
         LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
+        return(CODEC_STATUS_ERR);
+    }
+    if ((oHttpMsg.http_major() == 2 && m_pCodec->GetCodecType() != CODEC_HTTP2)
+        || (oHttpMsg.http_major() < 2 && m_pCodec->GetCodecType() != CODEC_HTTP && m_pCodec->GetCodecType() != CODEC_HTTP_CUSTOM))
+    {
+        LOG4_ERROR("codec type not match!");
         return(CODEC_STATUS_ERR);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
@@ -452,12 +466,16 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
     do
     {
         iWrittenLen = Write(m_pSendBuff, m_iErrno);
-        iHadWrittenLen += iWrittenLen;
+        if (iWrittenLen > 0)
+        {
+            iHadWrittenLen += iWrittenLen;
+        }
     }
     while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
+        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -493,6 +511,11 @@ E_CODEC_STATUS SocketChannelImpl::Send(const RedisMsg& oRedisMsg, uint32 uiStepS
     if (m_pCodec == nullptr)
     {
         LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
+        return(CODEC_STATUS_ERR);
+    }
+    if (m_pCodec->GetCodecType() != CODEC_RESP)
+    {
+        LOG4_ERROR("codec type not match!");
         return(CODEC_STATUS_ERR);
     }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
@@ -538,12 +561,16 @@ E_CODEC_STATUS SocketChannelImpl::Send(const RedisMsg& oRedisMsg, uint32 uiStepS
     do
     {
         iWrittenLen = Write(m_pSendBuff, m_iErrno);
-        iHadWrittenLen += iWrittenLen;
+        if (iWrittenLen > 0)
+        {
+            iHadWrittenLen += iWrittenLen;
+        }
     }
     while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
+        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -619,12 +646,16 @@ E_CODEC_STATUS SocketChannelImpl::Send(const char* pRaw, uint32 uiRawSize, uint3
     do
     {
         iWrittenLen = Write(m_pSendBuff, m_iErrno);
-        iHadWrittenLen += iWrittenLen;
+        if (iWrittenLen > 0)
+        {
+            iHadWrittenLen += iWrittenLen;
+        }
     }
     while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
+        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -671,11 +702,15 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
     do
     {
         iReadLen = Read(m_pRecvBuff, m_iErrno);
-        iHadReadLen += iReadLen;
+        if (iReadLen > 0)
+        {
+            iHadReadLen += iReadLen;
+        }
         LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
                 m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
     }
     while(iReadLen > 0);
+    m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen);
     if (iReadLen == 0)
     {
         m_eLastCodecStatus = CODEC_STATUS_EOF;
@@ -691,8 +726,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
         else
         {
             m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-            LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                    m_iFd, m_iErrno, m_strErrMsg.c_str());
+            LOG4_ERROR("recv from %s[fd %d] remote %s error %d: %s",
+                    m_strIdentify.c_str(), m_iFd, m_strRemoteAddr.c_str(),
+                    m_iErrno, m_strErrMsg.c_str());
             m_eLastCodecStatus = CODEC_STATUS_INT;
             //return(CODEC_STATUS_INT);
         }
@@ -795,9 +831,13 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         iReadLen = Read(m_pRecvBuff, m_iErrno);
         LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
                 m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
-        iHadReadLen += iReadLen;
+        if (iReadLen > 0)
+        {
+            iHadReadLen += iReadLen;
+        }
     }
     while (iReadLen > 0);
+    m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen);
 
     if (iReadLen == 0)
     {
@@ -813,8 +853,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         else
         {
             m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-            LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                    m_iFd, m_iErrno, m_strErrMsg.c_str());
+            LOG4_ERROR("recv from %s[fd %d] remote %s error %d: %s",
+                    m_strIdentify.c_str(), m_iFd, m_strRemoteAddr.c_str(),
+                    m_iErrno, m_strErrMsg.c_str());
             m_eLastCodecStatus = CODEC_STATUS_INT;
         }
     }
@@ -907,9 +948,13 @@ E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
         iReadLen = Read(m_pRecvBuff, m_iErrno);
         LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
                 m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
-        iHadReadLen += iReadLen;
+        if (iReadLen > 0)
+        {
+            iHadReadLen += iReadLen;
+        }
     }
     while (iReadLen > 0);
+    m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen);
 
     if (iReadLen == 0)
     {
@@ -925,8 +970,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
         else
         {
             m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-            LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                    m_iFd, m_iErrno, m_strErrMsg.c_str());
+            LOG4_ERROR("recv from %s[fd %d] remote %s error %d: %s",
+                    m_strIdentify.c_str(), m_iFd, m_strRemoteAddr.c_str(),
+                    m_iErrno, m_strErrMsg.c_str());
            m_eLastCodecStatus = CODEC_STATUS_INT;
         }
     }
@@ -977,9 +1023,13 @@ E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
         iReadLen = Read(m_pRecvBuff, m_iErrno);
         LOG4_TRACE("recv from fd %d data len %d. and m_pRecvBuff->ReadableBytes() = %d",
                 m_iFd, iReadLen, m_pRecvBuff->ReadableBytes());
-        iHadReadLen += iReadLen;
+        if (iReadLen > 0)
+        {
+            iHadReadLen += iReadLen;
+        }
     }
     while (iReadLen > 0);
+    m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen);
 
     if (iReadLen == 0)
     {
@@ -995,8 +1045,9 @@ E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
         else
         {
             m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
-            LOG4_ERROR("recv from %s[fd %d] error %d: %s", m_strIdentify.c_str(),
-                    m_iFd, m_iErrno, m_strErrMsg.c_str());
+            LOG4_ERROR("recv from %s[fd %d] remote %s error %d: %s",
+                    m_strIdentify.c_str(), m_iFd, m_strRemoteAddr.c_str(),
+                    m_iErrno, m_strErrMsg.c_str());
             m_eLastCodecStatus = CODEC_STATUS_INT;
         }
     }

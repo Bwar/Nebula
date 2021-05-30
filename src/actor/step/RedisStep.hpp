@@ -26,7 +26,7 @@ typedef RedisReply RedisRequest;
 class RedisStep: public Step
 {
 public:
-    RedisStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    RedisStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dConfigTimeout);
     RedisStep(const RedisStep&) = delete;
     RedisStep& operator=(const RedisStep&) = delete;
     virtual ~RedisStep();

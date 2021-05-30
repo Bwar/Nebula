@@ -73,6 +73,10 @@ public:
     {
         return(false);
     }
+    virtual void IoStatAddRecvNum(int iFd){}
+    virtual void IoStatAddRecvBytes(int iFd, uint32 uiBytes){}
+    virtual void IoStatAddSendNum(int iFd){}
+    virtual void IoStatAddSendBytes(int iFd, uint32 uiBytes){}
     pid_t gettid()
     {
         if (m_iPid == 0)

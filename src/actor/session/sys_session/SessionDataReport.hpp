@@ -24,7 +24,7 @@ class SessionDataReport: public Timer,
     public ActorSys
 {
 public:
-    SessionDataReport(const std::string& strSessionId, ev_tstamp dStatInterval = 60.0);
+    SessionDataReport(const std::string& strSessionId, ev_tstamp dStatInterval = gc_dDefaultTimeout);
     virtual ~SessionDataReport();
 
     virtual E_CMD_STATUS Timeout();

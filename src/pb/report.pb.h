@@ -26,6 +26,7 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>
 #include <google/protobuf/extension_set.h>
+#include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 
@@ -39,6 +40,27 @@ void protobuf_ShutdownFile_report_2eproto();
 class Report;
 class ReportRecord;
 
+enum ReportRecord_VALUE_TYPE {
+  ReportRecord_VALUE_TYPE_VALUE_ACC = 0,
+  ReportRecord_VALUE_TYPE_VALUE_FIXED = 1,
+  ReportRecord_VALUE_TYPE_ReportRecord_VALUE_TYPE_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
+  ReportRecord_VALUE_TYPE_ReportRecord_VALUE_TYPE_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
+};
+bool ReportRecord_VALUE_TYPE_IsValid(int value);
+const ReportRecord_VALUE_TYPE ReportRecord_VALUE_TYPE_VALUE_TYPE_MIN = ReportRecord_VALUE_TYPE_VALUE_ACC;
+const ReportRecord_VALUE_TYPE ReportRecord_VALUE_TYPE_VALUE_TYPE_MAX = ReportRecord_VALUE_TYPE_VALUE_FIXED;
+const int ReportRecord_VALUE_TYPE_VALUE_TYPE_ARRAYSIZE = ReportRecord_VALUE_TYPE_VALUE_TYPE_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* ReportRecord_VALUE_TYPE_descriptor();
+inline const ::std::string& ReportRecord_VALUE_TYPE_Name(ReportRecord_VALUE_TYPE value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    ReportRecord_VALUE_TYPE_descriptor(), value);
+}
+inline bool ReportRecord_VALUE_TYPE_Parse(
+    const ::std::string& name, ReportRecord_VALUE_TYPE* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<ReportRecord_VALUE_TYPE>(
+    ReportRecord_VALUE_TYPE_descriptor(), name, value);
+}
 // ===================================================================
 
 class ReportRecord : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:neb.ReportRecord) */ {
@@ -99,6 +121,32 @@ class ReportRecord : public ::google::protobuf::Message /* @@protoc_insertion_po
 
   // nested types ----------------------------------------------------
 
+  typedef ReportRecord_VALUE_TYPE VALUE_TYPE;
+  static const VALUE_TYPE VALUE_ACC =
+    ReportRecord_VALUE_TYPE_VALUE_ACC;
+  static const VALUE_TYPE VALUE_FIXED =
+    ReportRecord_VALUE_TYPE_VALUE_FIXED;
+  static inline bool VALUE_TYPE_IsValid(int value) {
+    return ReportRecord_VALUE_TYPE_IsValid(value);
+  }
+  static const VALUE_TYPE VALUE_TYPE_MIN =
+    ReportRecord_VALUE_TYPE_VALUE_TYPE_MIN;
+  static const VALUE_TYPE VALUE_TYPE_MAX =
+    ReportRecord_VALUE_TYPE_VALUE_TYPE_MAX;
+  static const int VALUE_TYPE_ARRAYSIZE =
+    ReportRecord_VALUE_TYPE_VALUE_TYPE_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  VALUE_TYPE_descriptor() {
+    return ReportRecord_VALUE_TYPE_descriptor();
+  }
+  static inline const ::std::string& VALUE_TYPE_Name(VALUE_TYPE value) {
+    return ReportRecord_VALUE_TYPE_Name(value);
+  }
+  static inline bool VALUE_TYPE_Parse(const ::std::string& name,
+      VALUE_TYPE* value) {
+    return ReportRecord_VALUE_TYPE_Parse(name, value);
+  }
+
   // accessors -------------------------------------------------------
 
   // optional bytes key = 1;
@@ -124,6 +172,23 @@ class ReportRecord : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
       mutable_value();
 
+  // optional string item = 3;
+  void clear_item();
+  static const int kItemFieldNumber = 3;
+  const ::std::string& item() const;
+  void set_item(const ::std::string& value);
+  void set_item(const char* value);
+  void set_item(const char* value, size_t size);
+  ::std::string* mutable_item();
+  ::std::string* release_item();
+  void set_allocated_item(::std::string* item);
+
+  // optional .neb.ReportRecord.VALUE_TYPE value_type = 4;
+  void clear_value_type();
+  static const int kValueTypeFieldNumber = 4;
+  ::neb::ReportRecord_VALUE_TYPE value_type() const;
+  void set_value_type(::neb::ReportRecord_VALUE_TYPE value);
+
   // @@protoc_insertion_point(class_scope:neb.ReportRecord)
  private:
 
@@ -132,6 +197,8 @@ class ReportRecord : public ::google::protobuf::Message /* @@protoc_insertion_po
   ::google::protobuf::internal::ArenaStringPtr key_;
   ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > value_;
   mutable int _value_cached_byte_size_;
+  ::google::protobuf::internal::ArenaStringPtr item_;
+  int value_type_;
   mutable int _cached_size_;
   friend void  protobuf_AddDesc_report_2eproto();
   friend void protobuf_AssignDesc_report_2eproto();
@@ -310,6 +377,64 @@ ReportRecord::mutable_value() {
   return &value_;
 }
 
+// optional string item = 3;
+inline void ReportRecord::clear_item() {
+  item_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& ReportRecord::item() const {
+  // @@protoc_insertion_point(field_get:neb.ReportRecord.item)
+  return item_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ReportRecord::set_item(const ::std::string& value) {
+  
+  item_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.ReportRecord.item)
+}
+inline void ReportRecord::set_item(const char* value) {
+  
+  item_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.ReportRecord.item)
+}
+inline void ReportRecord::set_item(const char* value, size_t size) {
+  
+  item_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.ReportRecord.item)
+}
+inline ::std::string* ReportRecord::mutable_item() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.ReportRecord.item)
+  return item_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* ReportRecord::release_item() {
+  // @@protoc_insertion_point(field_release:neb.ReportRecord.item)
+  
+  return item_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void ReportRecord::set_allocated_item(::std::string* item) {
+  if (item != NULL) {
+    
+  } else {
+    
+  }
+  item_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), item);
+  // @@protoc_insertion_point(field_set_allocated:neb.ReportRecord.item)
+}
+
+// optional .neb.ReportRecord.VALUE_TYPE value_type = 4;
+inline void ReportRecord::clear_value_type() {
+  value_type_ = 0;
+}
+inline ::neb::ReportRecord_VALUE_TYPE ReportRecord::value_type() const {
+  // @@protoc_insertion_point(field_get:neb.ReportRecord.value_type)
+  return static_cast< ::neb::ReportRecord_VALUE_TYPE >(value_type_);
+}
+inline void ReportRecord::set_value_type(::neb::ReportRecord_VALUE_TYPE value) {
+  
+  value_type_ = value;
+  // @@protoc_insertion_point(field_set:neb.ReportRecord.value_type)
+}
+
 // -------------------------------------------------------------------
 
 // Report
@@ -351,6 +476,20 @@ Report::records() const {
 // @@protoc_insertion_point(namespace_scope)
 
 }  // namespace neb
+
+#ifndef SWIG
+namespace google {
+namespace protobuf {
+
+template <> struct is_proto_enum< ::neb::ReportRecord_VALUE_TYPE> : ::google::protobuf::internal::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::neb::ReportRecord_VALUE_TYPE>() {
+  return ::neb::ReportRecord_VALUE_TYPE_descriptor();
+}
+
+}  // namespace protobuf
+}  // namespace google
+#endif  // SWIG
 
 // @@protoc_insertion_point(global_scope)
 

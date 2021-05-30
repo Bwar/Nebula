@@ -47,6 +47,7 @@ extern "C" {
 
 #include "util/process_helper.h"
 #include "pb/msg.pb.h"
+#include "labor/Labor.hpp"
 #include "channel/SocketChannel.hpp"
 #include "logger/NetLogger.hpp"
 #include "Nodes.hpp"
@@ -225,6 +226,7 @@ template <typename ...Targs>
 bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args)
 {
     E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(std::forward<Targs>(args)...);
+    m_pLabor->IoStatAddSendNum(pChannel->GetFd());
     m_pLastActivityChannel = pChannel;
     switch (eStatus)
     {
@@ -433,6 +435,7 @@ bool Dispatcher::AutoSend(
         pChannel->m_pImpl->SetRemoteAddr(strHost);
         pChannel->m_pImpl->SetPipeline(bPipeline);
         E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(std::forward<Targs>(args)...);
+        m_pLabor->IoStatAddSendNum(pChannel->GetFd());
         m_pLastActivityChannel = pChannel;
         if (CODEC_STATUS_OK != eCodecStatus
                 && CODEC_STATUS_PAUSE != eCodecStatus

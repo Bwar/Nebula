@@ -127,6 +127,7 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         {
             stSetting.unIdentifier = it->first;
             stSetting.uiValue = it->second;
+            vecSetting.push_back(stSetting);
         }
         m_pFrame->EncodeSetting(this, vecSetting, pBuff);
     }

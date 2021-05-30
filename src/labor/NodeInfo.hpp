@@ -57,13 +57,13 @@ struct WorkerInfo
     int iWorkerIndex        = 0;                    ///< 工作进程序号
     int iControlFd          = -1;                   ///< 与Manager进程通信的文件描述符（控制流）
     int iDataFd             = -1;                   ///< 与Manager进程通信的文件描述符（数据流）
-    int32 iLoad             = 0;                    ///< 负载
-    int32 iConnect          = 0;                    ///< 连接数量
-    int32 iRecvNum          = 0;                    ///< 接收数据包数量
-    int32 iRecvByte         = 0;                    ///< 接收字节数
-    int32 iSendNum          = 0;                    ///< 发送数据包数量
-    int32 iSendByte         = 0;                    ///< 发送字节数
-    int32 iClientNum        = 0;                    ///< 客户端数量
+    uint32 uiLoad             = 0;                    ///< 负载
+    uint32 uiConnect          = 0;                    ///< 连接数量
+    uint32 uiRecvNum          = 0;                    ///< 接收数据包数量
+    uint32 uiRecvByte         = 0;                    ///< 接收字节数
+    uint32 uiSendNum          = 0;                    ///< 发送数据包数量
+    uint32 uiSendByte         = 0;                    ///< 发送字节数
+    uint32 uiClientNum        = 0;                    ///< 客户端数量
     ev_tstamp dBeatTime     = 0.0;                  ///< 心跳时间
     bool bStartBeatCheck    = 0.0;                  ///< 是否需要心跳检查，worker或loader进程启动时可能需要加载数据而处于繁忙状态无法响应Manager的心跳，需等待其就绪之后才开始心跳检查。
 

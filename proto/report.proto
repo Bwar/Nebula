@@ -3,8 +3,15 @@ package neb;
 
 message ReportRecord
 {
+    enum VALUE_TYPE
+    {
+        VALUE_ACC               = 0;
+        VALUE_FIXED             = 1;
+    }
     bytes key                   = 1;
     repeated uint64 value       = 2;
+    string item                 = 3;
+    VALUE_TYPE value_type       = 4;
 }
 
 message Report

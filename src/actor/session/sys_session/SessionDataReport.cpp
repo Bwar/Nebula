@@ -100,6 +100,7 @@ void SessionDataReport::AddReport(const std::shared_ptr<Report> pReport)
                 return;
             }
             pRecord->set_key(pReport->records(i).key());
+            pRecord->set_item(pReport->records(i).item());
             for (int j = 0; j < pReport->records(i).value_size(); ++j)
             {
                 pRecord->add_value(pReport->records(i).value(j));
@@ -112,7 +113,14 @@ void SessionDataReport::AddReport(const std::shared_ptr<Report> pReport)
             {
                 if (j < iter->second->value_size())
                 {
-                    iter->second->set_value(j, iter->second->value(j) + pReport->records(i).value(j));
+                    if (pReport->records(i).value_type() == ReportRecord::VALUE_ACC)
+                    {
+                        iter->second->set_value(j, iter->second->value(j) + pReport->records(i).value(j));
+                    }
+                    else
+                    {
+                        iter->second->set_value(j, pReport->records(i).value(j));
+                    }
                 }
                 else
                 {

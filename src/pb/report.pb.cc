@@ -24,6 +24,7 @@ namespace {
 const ::google::protobuf::Descriptor* ReportRecord_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   ReportRecord_reflection_ = NULL;
+const ::google::protobuf::EnumDescriptor* ReportRecord_VALUE_TYPE_descriptor_ = NULL;
 const ::google::protobuf::Descriptor* Report_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   Report_reflection_ = NULL;
@@ -39,9 +40,11 @@ void protobuf_AssignDesc_report_2eproto() {
       "report.proto");
   GOOGLE_CHECK(file != NULL);
   ReportRecord_descriptor_ = file->message_type(0);
-  static const int ReportRecord_offsets_[2] = {
+  static const int ReportRecord_offsets_[4] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReportRecord, key_),
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReportRecord, value_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReportRecord, item_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReportRecord, value_type_),
   };
   ReportRecord_reflection_ =
     ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
@@ -54,6 +57,7 @@ void protobuf_AssignDesc_report_2eproto() {
       sizeof(ReportRecord),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReportRecord, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(ReportRecord, _is_default_instance_));
+  ReportRecord_VALUE_TYPE_descriptor_ = ReportRecord_descriptor_->enum_type(0);
   Report_descriptor_ = file->message_type(1);
   static const int Report_offsets_[1] = {
     GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Report, records_),
@@ -105,9 +109,12 @@ void protobuf_AddDesc_report_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-    "\n\014report.proto\022\003neb\"*\n\014ReportRecord\022\013\n\003k"
-    "ey\030\001 \001(\014\022\r\n\005value\030\002 \003(\004\",\n\006Report\022\"\n\007rec"
-    "ords\030\001 \003(\0132\021.neb.ReportRecordb\006proto3", 117);
+    "\n\014report.proto\022\003neb\"\230\001\n\014ReportRecord\022\013\n\003"
+    "key\030\001 \001(\014\022\r\n\005value\030\002 \003(\004\022\014\n\004item\030\003 \001(\t\0220"
+    "\n\nvalue_type\030\004 \001(\0162\034.neb.ReportRecord.VA"
+    "LUE_TYPE\",\n\nVALUE_TYPE\022\r\n\tVALUE_ACC\020\000\022\017\n"
+    "\013VALUE_FIXED\020\001\",\n\006Report\022\"\n\007records\030\001 \003("
+    "\0132\021.neb.ReportRecordb\006proto3", 228);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "report.proto", &protobuf_RegisterTypes);
   ReportRecord::default_instance_ = new ReportRecord();
@@ -126,9 +133,32 @@ struct StaticDescriptorInitializer_report_2eproto {
 
 // ===================================================================
 
+const ::google::protobuf::EnumDescriptor* ReportRecord_VALUE_TYPE_descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return ReportRecord_VALUE_TYPE_descriptor_;
+}
+bool ReportRecord_VALUE_TYPE_IsValid(int value) {
+  switch(value) {
+    case 0:
+    case 1:
+      return true;
+    default:
+      return false;
+  }
+}
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const ReportRecord_VALUE_TYPE ReportRecord::VALUE_ACC;
+const ReportRecord_VALUE_TYPE ReportRecord::VALUE_FIXED;
+const ReportRecord_VALUE_TYPE ReportRecord::VALUE_TYPE_MIN;
+const ReportRecord_VALUE_TYPE ReportRecord::VALUE_TYPE_MAX;
+const int ReportRecord::VALUE_TYPE_ARRAYSIZE;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 #if !defined(_MSC_VER) || _MSC_VER >= 1900
 const int ReportRecord::kKeyFieldNumber;
 const int ReportRecord::kValueFieldNumber;
+const int ReportRecord::kItemFieldNumber;
+const int ReportRecord::kValueTypeFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 ReportRecord::ReportRecord()
@@ -154,6 +184,8 @@ void ReportRecord::SharedCtor() {
   ::google::protobuf::internal::GetEmptyString();
   _cached_size_ = 0;
   key_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  item_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  value_type_ = 0;
 }
 
 ReportRecord::~ReportRecord() {
@@ -163,6 +195,7 @@ ReportRecord::~ReportRecord() {
 
 void ReportRecord::SharedDtor() {
   key_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  item_.DestroyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (this != default_instance_) {
   }
 }
@@ -195,6 +228,8 @@ ReportRecord* ReportRecord::New(::google::protobuf::Arena* arena) const {
 void ReportRecord::Clear() {
 // @@protoc_insertion_point(message_clear_start:neb.ReportRecord)
   key_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  item_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+  value_type_ = 0;
   value_.Clear();
 }
 
@@ -231,6 +266,39 @@ bool ReportRecord::MergePartialFromCodedStream(
           DO_((::google::protobuf::internal::WireFormatLite::ReadRepeatedPrimitiveNoInline<
                    ::google::protobuf::uint64, ::google::protobuf::internal::WireFormatLite::TYPE_UINT64>(
                  1, 18, input, this->mutable_value())));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(26)) goto parse_item;
+        break;
+      }
+
+      // optional string item = 3;
+      case 3: {
+        if (tag == 26) {
+         parse_item:
+          DO_(::google::protobuf::internal::WireFormatLite::ReadString(
+                input, this->mutable_item()));
+          DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+            this->item().data(), this->item().length(),
+            ::google::protobuf::internal::WireFormatLite::PARSE,
+            "neb.ReportRecord.item"));
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(32)) goto parse_value_type;
+        break;
+      }
+
+      // optional .neb.ReportRecord.VALUE_TYPE value_type = 4;
+      case 4: {
+        if (tag == 32) {
+         parse_value_type:
+          int value;
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   int, ::google::protobuf::internal::WireFormatLite::TYPE_ENUM>(
+                 input, &value)));
+          set_value_type(static_cast< ::neb::ReportRecord_VALUE_TYPE >(value));
         } else {
           goto handle_unusual;
         }
@@ -278,6 +346,22 @@ void ReportRecord::SerializeWithCachedSizes(
       this->value(i), output);
   }
 
+  // optional string item = 3;
+  if (this->item().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->item().data(), this->item().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.ReportRecord.item");
+    ::google::protobuf::internal::WireFormatLite::WriteStringMaybeAliased(
+      3, this->item(), output);
+  }
+
+  // optional .neb.ReportRecord.VALUE_TYPE value_type = 4;
+  if (this->value_type() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteEnum(
+      4, this->value_type(), output);
+  }
+
   // @@protoc_insertion_point(serialize_end:neb.ReportRecord)
 }
 
@@ -305,6 +389,23 @@ void ReportRecord::SerializeWithCachedSizes(
       WriteUInt64NoTagToArray(this->value(i), target);
   }
 
+  // optional string item = 3;
+  if (this->item().size() > 0) {
+    ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+      this->item().data(), this->item().length(),
+      ::google::protobuf::internal::WireFormatLite::SERIALIZE,
+      "neb.ReportRecord.item");
+    target =
+      ::google::protobuf::internal::WireFormatLite::WriteStringToArray(
+        3, this->item(), target);
+  }
+
+  // optional .neb.ReportRecord.VALUE_TYPE value_type = 4;
+  if (this->value_type() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
+      4, this->value_type(), target);
+  }
+
   // @@protoc_insertion_point(serialize_to_array_end:neb.ReportRecord)
   return target;
 }
@@ -318,6 +419,19 @@ int ReportRecord::ByteSize() const {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::BytesSize(
         this->key());
+  }
+
+  // optional string item = 3;
+  if (this->item().size() > 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::StringSize(
+        this->item());
+  }
+
+  // optional .neb.ReportRecord.VALUE_TYPE value_type = 4;
+  if (this->value_type() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::EnumSize(this->value_type());
   }
 
   // repeated uint64 value = 2;
@@ -370,6 +484,13 @@ void ReportRecord::MergeFrom(const ReportRecord& from) {
 
     key_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.key_);
   }
+  if (from.item().size() > 0) {
+
+    item_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.item_);
+  }
+  if (from.value_type() != 0) {
+    set_value_type(from.value_type());
+  }
 }
 
 void ReportRecord::CopyFrom(const ::google::protobuf::Message& from) {
@@ -398,6 +519,8 @@ void ReportRecord::Swap(ReportRecord* other) {
 void ReportRecord::InternalSwap(ReportRecord* other) {
   key_.Swap(&other->key_);
   value_.UnsafeArenaSwap(&other->value_);
+  item_.Swap(&other->item_);
+  std::swap(value_type_, other->value_type_);
   _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
@@ -485,6 +608,64 @@ ReportRecord::value() const {
 ReportRecord::mutable_value() {
   // @@protoc_insertion_point(field_mutable_list:neb.ReportRecord.value)
   return &value_;
+}
+
+// optional string item = 3;
+void ReportRecord::clear_item() {
+  item_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ const ::std::string& ReportRecord::item() const {
+  // @@protoc_insertion_point(field_get:neb.ReportRecord.item)
+  return item_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void ReportRecord::set_item(const ::std::string& value) {
+  
+  item_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.ReportRecord.item)
+}
+ void ReportRecord::set_item(const char* value) {
+  
+  item_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.ReportRecord.item)
+}
+ void ReportRecord::set_item(const char* value, size_t size) {
+  
+  item_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.ReportRecord.item)
+}
+ ::std::string* ReportRecord::mutable_item() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.ReportRecord.item)
+  return item_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ ::std::string* ReportRecord::release_item() {
+  // @@protoc_insertion_point(field_release:neb.ReportRecord.item)
+  
+  return item_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+ void ReportRecord::set_allocated_item(::std::string* item) {
+  if (item != NULL) {
+    
+  } else {
+    
+  }
+  item_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), item);
+  // @@protoc_insertion_point(field_set_allocated:neb.ReportRecord.item)
+}
+
+// optional .neb.ReportRecord.VALUE_TYPE value_type = 4;
+void ReportRecord::clear_value_type() {
+  value_type_ = 0;
+}
+ ::neb::ReportRecord_VALUE_TYPE ReportRecord::value_type() const {
+  // @@protoc_insertion_point(field_get:neb.ReportRecord.value_type)
+  return static_cast< ::neb::ReportRecord_VALUE_TYPE >(value_type_);
+}
+ void ReportRecord::set_value_type(::neb::ReportRecord_VALUE_TYPE value) {
+  
+  value_type_ = value;
+  // @@protoc_insertion_point(field_set:neb.ReportRecord.value_type)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

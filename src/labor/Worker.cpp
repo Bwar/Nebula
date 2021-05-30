@@ -22,6 +22,7 @@ extern "C" {
 #include "ios/Dispatcher.hpp"
 #include "actor/ActorBuilder.hpp"
 #include "actor/session/sys_session/manager/SessionManager.hpp"
+#include "pb/report.pb.h"
 
 namespace neb
 {
@@ -103,24 +104,45 @@ bool Worker::CheckParent()
             exit(0);
         }
     }
+    m_stWorkerInfo.uiConnect = m_pDispatcher->GetConnectionNum();
+    m_stWorkerInfo.uiClientNum = m_pDispatcher->GetClientNum();
     MsgBody oMsgBody;
     CJsonObject oJsonLoad;
-    m_stWorkerInfo.iConnect = m_pDispatcher->GetConnectionNum();
-    m_stWorkerInfo.iClientNum = m_pDispatcher->GetClientNum();
-    oJsonLoad.Add("load", int32(m_stWorkerInfo.iConnect + m_pActorBuilder->GetStepNum()));
-    oJsonLoad.Add("connect", m_stWorkerInfo.iConnect);
-    oJsonLoad.Add("recv_num", m_stWorkerInfo.iRecvNum);
-    oJsonLoad.Add("recv_byte", m_stWorkerInfo.iRecvByte);
-    oJsonLoad.Add("send_num", m_stWorkerInfo.iSendNum);
-    oJsonLoad.Add("send_byte", m_stWorkerInfo.iSendByte);
-    oJsonLoad.Add("client", m_stWorkerInfo.iClientNum);
+    neb::Report oReport;
+    auto pRecord = oReport.add_records();
+    pRecord->set_key("recv_num");
+    pRecord->set_item("nebula");
+    pRecord->add_value(m_stWorkerInfo.uiRecvNum);
+    pRecord = oReport.add_records();
+    pRecord->set_key("recv_byte");
+    pRecord->set_item("nebula");
+    pRecord->add_value(m_stWorkerInfo.uiRecvByte);
+    pRecord = oReport.add_records();
+    pRecord->set_key("send_num");
+    pRecord->set_item("nebula");
+    pRecord->add_value(m_stWorkerInfo.uiSendNum);
+    pRecord = oReport.add_records();
+    pRecord->set_key("send_byte");
+    pRecord->set_item("nebula");
+    pRecord->add_value(m_stWorkerInfo.uiSendByte);
+    oJsonLoad.Add("load", int32(m_stWorkerInfo.uiConnect + m_pActorBuilder->GetStepNum()));
+    oJsonLoad.Add("connect", m_stWorkerInfo.uiConnect);
+    oJsonLoad.Add("recv_num", m_stWorkerInfo.uiRecvNum);
+    oJsonLoad.Add("recv_byte", m_stWorkerInfo.uiRecvByte);
+    oJsonLoad.Add("send_num", m_stWorkerInfo.uiSendNum);
+    oJsonLoad.Add("send_byte", m_stWorkerInfo.uiSendByte);
+    oJsonLoad.Add("client", m_stWorkerInfo.uiClientNum);
     oMsgBody.set_data(oJsonLoad.ToString());
     LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
     m_pDispatcher->SendTo(m_pManagerControlChannel, CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
-    m_stWorkerInfo.iRecvNum = 0;
-    m_stWorkerInfo.iRecvByte = 0;
-    m_stWorkerInfo.iSendNum = 0;
-    m_stWorkerInfo.iSendByte = 0;
+    std::string strReport;
+    oReport.SerializeToString(&strReport);
+    oMsgBody.set_data(strReport);
+    m_pDispatcher->SendDataReport(CMD_REQ_DATA_REPORT, GetSequence(), oMsgBody);
+    m_stWorkerInfo.uiRecvNum = 0;
+    m_stWorkerInfo.uiRecvByte = 0;
+    m_stWorkerInfo.uiSendNum = 0;
+    m_stWorkerInfo.uiSendByte = 0;
     return(true);
 }
 

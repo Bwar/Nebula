@@ -99,6 +99,42 @@ public:     // about worker
     const WorkerInfo& GetWorkerInfo() const;
     std::shared_ptr<SocketChannel> GetManagerControlChannel();
     bool SetCustomConf(const CJsonObject& oJsonConf);
+    virtual void IoStatAddRecvNum(int iFd)
+    {
+        if (iFd == m_pManagerControlChannel->GetFd()
+                || iFd == m_pManagerDataChannel->GetFd())
+        {
+            return;
+        }
+        ++m_stWorkerInfo.uiRecvNum;
+    }
+    virtual void IoStatAddRecvBytes(int iFd, uint32 uiBytes)
+    {
+        if (iFd == m_pManagerControlChannel->GetFd()
+                || iFd == m_pManagerDataChannel->GetFd())
+        {
+            return;
+        }
+        m_stWorkerInfo.uiRecvByte += uiBytes;
+    }
+    virtual void IoStatAddSendNum(int iFd)
+    {
+        if (iFd == m_pManagerControlChannel->GetFd()
+                || iFd == m_pManagerDataChannel->GetFd())
+        {
+            return;
+        }
+        ++m_stWorkerInfo.uiSendNum;
+    }
+    virtual void IoStatAddSendBytes(int iFd, uint32 uiBytes)
+    {
+        if (iFd == m_pManagerControlChannel->GetFd()
+                || iFd == m_pManagerDataChannel->GetFd())
+        {
+            return;
+        }
+        m_stWorkerInfo.uiSendByte += uiBytes;
+    }
 
     template <typename ...Targs>
         void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);

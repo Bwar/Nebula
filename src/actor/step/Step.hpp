@@ -22,7 +22,7 @@ class Chain;
 class Step: public Actor
 {
 public:
-    Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dDefaultTimeout);
+    Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dConfigTimeout);
     Step(const Step&) = delete;
     Step& operator=(const Step&) = delete;
     virtual ~Step();

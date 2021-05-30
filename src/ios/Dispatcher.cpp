@@ -11,7 +11,6 @@
 #include "Dispatcher.hpp"
 #include <algorithm>
 #include "Definition.hpp"
-#include "labor/Labor.hpp"
 #include "labor/Manager.hpp"
 #include "labor/Worker.hpp"
 #include "actor/Actor.hpp"
@@ -183,16 +182,19 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     {
                         if (oHttpMsg.stream_id() > 0)
                         {
+                            m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                             m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg, eCodecStatus);
                         }
                     }
                     else
                     {
+                        m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                         m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
                     }
                 }
                 else if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10) // http1.0 client close
                 {
+                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
                 }
                 else
@@ -216,6 +218,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
 
                 if (CODEC_STATUS_OK == eCodecStatus)
                 {
+                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oRedisMsg);
                 }
                 else
@@ -241,6 +244,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
 
                 if (CODEC_STATUS_OK == eCodecStatus)
                 {
+                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oBuff);
                 }
                 else
@@ -273,12 +277,13 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                                 && CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()
                                 && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
                         {
-                            LOG4_DEBUG("invalid request, please login first!");
+                            LOG4_TRACE("invalid request, please login first!");
                             DiscardSocketChannel(pChannel);
                             return(false);
                         }
                     }
                     */
+                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oMsgHead, oMsgBody);
                 }
                 else
@@ -351,17 +356,20 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     {
                         if (oHttpMsg.stream_id() > 0)
                         {
+                            m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                             m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg, eCodecStatus);
                         }
                     }
                     else
                     {
+                        m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                         m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
                     }
                     eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
                 }
                 if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10) // http1.0 client close
                 {
+                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
                 }
             }
@@ -373,6 +381,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                 eCodecStatus = pChannel->m_pImpl->Fetch(oRedisMsg);
                 if (CODEC_STATUS_OK == eCodecStatus)
                 {
+                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oRedisMsg);
                 }
                 else
@@ -390,6 +399,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                 eCodecStatus = pChannel->m_pImpl->Fetch(oBuff);
                 if (CODEC_STATUS_OK == eCodecStatus)
                 {
+                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oBuff);
                 }
                 else
@@ -414,12 +424,13 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                                 && CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()
                                 && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
                         {
-                            LOG4_DEBUG("invalid request, please login first!");
+                            LOG4_TRACE("invalid request, please login first!");
                             DiscardSocketChannel(pChannel);
                             return(false);
                         }
                     }
                     */
+                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
                     m_pLabor->GetActorBuilder()->OnMessage(pChannel, oMsgHead, oMsgBody);
                 }
                 else
@@ -785,6 +796,7 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
             return(false);
         }
         E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
+        m_pLabor->IoStatAddSendNum(pChannel->GetFd());
         if (CODEC_STATUS_OK == eStatus)
         {
             RemoveIoWriteEvent(pChannel);
@@ -880,6 +892,7 @@ std::shared_ptr<SocketChannel> Dispatcher::StressSend(const std::string& strIden
         AddIoWriteEvent(pChannel);
         pChannel->m_pImpl->SetRemoteAddr(strHost);
         E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
+        m_pLabor->IoStatAddSendNum(pChannel->GetFd());
         if (CODEC_STATUS_OK != eCodecStatus
                 && CODEC_STATUS_PAUSE != eCodecStatus
                 && CODEC_STATUS_WANT_WRITE != eCodecStatus
@@ -915,6 +928,7 @@ bool Dispatcher::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
         }
     }
     E_CODEC_STATUS eStatus = m_iterLoaderAndWorkerChannel->second->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
+    //m_pLabor->IoStatAddSendNum(pChannel->GetFd());
     m_pLastActivityChannel = m_iterLoaderAndWorkerChannel->second;
     if (CODEC_STATUS_OK == eStatus)
     {
@@ -981,7 +995,7 @@ bool Dispatcher::DiscardNamedChannel(const std::string& strIdentify)
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
     {
-        LOG4_DEBUG("no channel match %s.", strIdentify.c_str());
+        LOG4_TRACE("no channel match %s.", strIdentify.c_str());
         return(false);
     }
     else
@@ -1278,7 +1292,7 @@ void Dispatcher::Destroy()
 
 std::shared_ptr<SocketChannel> Dispatcher::CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsClient, bool bWithSsl)
 {
-    LOG4_DEBUG("iFd %d, codec_type %d, with_ssl = %d", iFd, eCodecType, bWithSsl);
+    LOG4_TRACE("iFd %d, codec_type %d, with_ssl = %d", iFd, eCodecType, bWithSsl);
 
     auto iter = m_mapSocketChannel.find(iFd);
     if (iter == m_mapSocketChannel.end())
@@ -1320,7 +1334,7 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
 {
     if (pChannel == nullptr)
     {
-        LOG4_DEBUG("pChannel not exist!");
+        LOG4_TRACE("pChannel not exist!");
         return(false);
     }
 
@@ -1346,7 +1360,7 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     bool bCloseResult = pChannel->m_pImpl->Close();
     if (bCloseResult)
     {
-        LOG4_DEBUG("%s disconnect, fd %d, channel_seq %u, identify %s",
+        LOG4_TRACE("%s disconnect, fd %d, channel_seq %u, identify %s",
                 pChannel->m_pImpl->GetRemoteAddr().c_str(),
                 pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence(),
                 pChannel->m_pImpl->GetIdentify().c_str());
@@ -1592,7 +1606,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
     iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd();
     if (iWorkerDataFd > 0)
     {
-        LOG4_DEBUG("send new fd %d to worker communication fd %d",
+        LOG4_TRACE("send new fd %d to worker communication fd %d",
                         iAcceptFd, iWorkerDataFd);
         int iCodec = m_pLabor->GetNodeInfo().eCodec;
         int iErrno = SocketChannel::SendChannelFd(iWorkerDataFd, iAcceptFd, iFamily, iCodec, m_pLogger);

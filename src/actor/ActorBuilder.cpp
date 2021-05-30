@@ -800,7 +800,7 @@ void ActorBuilder::LoadSysCmd()
         strModulePath = "/health";
         MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
         strModulePath = "/status";
-        MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
+        MakeSharedModule(nullptr, "neb::ModuleMetrics", strModulePath);
         strModulePath = "http_upgrade";
         MakeSharedModule(nullptr, "neb::ModuleHttpUpgrade", strModulePath);
     }
@@ -888,7 +888,7 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
 
 bool ActorBuilder::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
 {
-    pSharedActor->m_dTimeout = (gc_dDefaultTimeout == pSharedActor->m_dTimeout)
+    pSharedActor->m_dTimeout = (gc_dConfigTimeout == pSharedActor->m_dTimeout)
             ? m_pLabor->GetNodeInfo().dStepTimeout : pSharedActor->m_dTimeout;
     ev_timer* timer_watcher = pSharedActor->MutableTimerWatcher();
     if (NULL == timer_watcher)
