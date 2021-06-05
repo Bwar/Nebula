@@ -101,6 +101,10 @@ public:     // about worker
     bool SetCustomConf(const CJsonObject& oJsonConf);
     virtual void IoStatAddRecvNum(int iFd)
     {
+        if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
+        {
+            return;
+        }
         if (iFd == m_pManagerControlChannel->GetFd()
                 || iFd == m_pManagerDataChannel->GetFd())
         {
@@ -110,6 +114,10 @@ public:     // about worker
     }
     virtual void IoStatAddRecvBytes(int iFd, uint32 uiBytes)
     {
+        if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
+        {
+            return;
+        }
         if (iFd == m_pManagerControlChannel->GetFd()
                 || iFd == m_pManagerDataChannel->GetFd())
         {
@@ -119,6 +127,10 @@ public:     // about worker
     }
     virtual void IoStatAddSendNum(int iFd)
     {
+        if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
+        {
+            return;
+        }
         if (iFd == m_pManagerControlChannel->GetFd()
                 || iFd == m_pManagerDataChannel->GetFd())
         {
@@ -128,6 +140,10 @@ public:     // about worker
     }
     virtual void IoStatAddSendBytes(int iFd, uint32 uiBytes)
     {
+        if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
+        {
+            return;
+        }
         if (iFd == m_pManagerControlChannel->GetFd()
                 || iFd == m_pManagerDataChannel->GetFd())
         {

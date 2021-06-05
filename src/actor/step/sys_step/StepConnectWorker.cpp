@@ -13,8 +13,8 @@
 namespace neb
 {
 
-StepConnectWorker::StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, uint16 unRemoteWorkerIndex)
-    : m_pChannel(pChannel), m_unRemoteWorkerIndex(unRemoteWorkerIndex)
+StepConnectWorker::StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, int16 iRemoteWorkerIndex)
+    : m_pChannel(pChannel), m_iRemoteWorkerIndex(iRemoteWorkerIndex)
 {
 }
 
@@ -29,7 +29,7 @@ E_CMD_STATUS StepConnectWorker::Emit(
 {
     MsgHead oMsgHead;
     MsgBody oMsgBody;
-    oMsgBody.set_data(std::to_string((int)m_unRemoteWorkerIndex));
+    oMsgBody.set_data(std::to_string((int)m_iRemoteWorkerIndex));
     SendTo(m_pChannel, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
     return(CMD_STATUS_COMPLETED);
 }

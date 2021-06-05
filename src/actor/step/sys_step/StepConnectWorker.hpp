@@ -16,10 +16,10 @@
 namespace neb
 {
 
-class StepConnectWorker: public PbStep, public DynamicCreator<StepConnectWorker, std::shared_ptr<SocketChannel>, uint16>
+class StepConnectWorker: public PbStep, public DynamicCreator<StepConnectWorker, std::shared_ptr<SocketChannel>, int16>
 {
 public:
-    StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, uint16 unRemoteWorkerIndex);
+    StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, int16 iRemoteWorkerIndex);
     virtual ~StepConnectWorker();
 
     virtual E_CMD_STATUS Emit(
@@ -37,7 +37,7 @@ public:
 
 private:
     std::shared_ptr<SocketChannel> m_pChannel;
-    uint16 m_unRemoteWorkerIndex;
+    int16 m_iRemoteWorkerIndex;
 };
 
 } /* namespace neb */
