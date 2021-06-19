@@ -113,7 +113,7 @@ protected:
             uint32 uiStreamId, const HttpMsg& oHttpMsg, bool bEndStream,
             const std::string& strPadding, CBuffer* pBuff);
     E_CODEC_STATUS EncodeHeaders(CodecHttp2* pCodecH2,
-            uint32 uiStreamId, const HttpMsg& oHttpMsg,
+            uint32 uiStreamId, const HttpMsg& oHttpMsg, int iHeaderType,
             const tagPriority& stPriority, const std::string& strPadding,
             bool bEndStream, CBuffer* pBuff);
     E_CODEC_STATUS EncodePriority(CodecHttp2* pCodecH2,

@@ -45,6 +45,7 @@ enum E_CODEC_TYPE
     CODEC_NEBULA_IN_NODE    = 8,        ///< 节点各进程间通信协议，与CODEC_NEBULA协议相同，使用的编解码类也相同，只为区别节点内部连接与外部连接
     CODEC_RESP              = 9,        ///< redis数据传输协议resp
     CODEC_HTTP2             = 10,       ///< http2编解码
+    CODEC_DIRECT            = 11,       ///< 虚拟编解码类型，用于SelfChannel，以参数方式直接传递数据包
 };
 
 /**

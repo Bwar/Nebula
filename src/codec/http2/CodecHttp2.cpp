@@ -77,10 +77,13 @@ void CodecHttp2::ConnectionSetting(CBuffer* pBuff)
         stSetting.uiValue = 4194304;
         m_uiSettingsMaxDecodeFrameSize = 4194304;
         vecSetting.push_back(stSetting);
+        stSetting.unIdentifier = H2_SETTINGS_MAX_CONCURRENT_STREAMS;
+        stSetting.uiValue = 100;
+        vecSetting.push_back(stSetting);
         m_pFrame->EncodeSetting(this, vecSetting, pBuff);
         m_pFrame->EncodeWindowUpdate(this, 0, 4128769, pBuff);
         // In HTTP/2, 1 on client is reserved for Upgrade.
-        m_uiStreamIdGenerate = 1;
+        //m_uiStreamIdGenerate = 1;
     }
     else
     {
@@ -193,6 +196,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
     {
         if (pBuff->ReadableBytes() >= 24)
         {
+            LOG4_TRACE("%s", pBuff->GetRawReadBuffer());
             std::string strMagic;
             strMagic.assign(pBuff->GetRawReadBuffer(), 24);
             if (strMagic == "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n")
@@ -238,7 +242,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
     size_t uiReadIdx = pBuff->GetReadIndex();
     Http2Frame::DecodeFrameHeader(pBuff, m_stDecodeFrameHead);
     LOG4_TRACE("m_stDecodeFrameHead.uiLength = %u, m_stDecodeFrameHead.ucType = %u, m_stDecodeFrameHead.ucFlag = %u, m_stDecodeFrameHead.uiStreamIdentifier = %u",
-            m_stDecodeFrameHead.uiLength, m_stDecodeFrameHead.ucType, m_stDecodeFrameHead.ucFlag, m_stDecodeFrameHead.uiStreamIdentifier);
+            m_stDecodeFrameHead.uiLength, (uint32)m_stDecodeFrameHead.ucType, (uint32)m_stDecodeFrameHead.ucFlag, m_stDecodeFrameHead.uiStreamIdentifier);
     if (m_stDecodeFrameHead.uiLength > m_uiSettingsMaxDecodeFrameSize)
     {
         LOG4_TRACE("m_uiSettingsMaxDecodeFrameSize = %u, m_stDecodeFrameHead.uiLength = %u",
@@ -299,7 +303,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
                     "use when a more specific error code is not available.");
             return(CODEC_STATUS_ERR);
         }
-        LOG4_TRACE("m_stDecodeFrameHead.ucType = %u", m_stDecodeFrameHead.ucType);
+        LOG4_TRACE("m_stDecodeFrameHead.ucType = %u", (uint32)m_stDecodeFrameHead.ucType);
         auto stream_iter = m_mapStream.find(m_stDecodeFrameHead.uiStreamIdentifier);
         if (stream_iter == m_mapStream.end())
         {
@@ -603,6 +607,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
         uiReadIndex = pBuff->GetReadIndex();
         pBuff->ReadByte(B);
         pBuff->SetReadIndex(uiReadIndex);
+        LOG4_TRACE("B = 0x%X", (uint32)B);
         if (H2_HPACK_CONDITION_INDEXED_HEADER & B)
         {
             eStatus = UnpackHeaderIndexed(pBuff, oHttpMsg);
@@ -616,27 +621,28 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
             eStatus = UnpackHeaderLiteralIndexing(pBuff, B,
                     H2_HPACK_PREFIX_6_BITS,
                     strHeaderName, strHeaderValue, bWithHuffman);
+            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
             if (eStatus != CODEC_STATUS_PART_OK)
             {
                 return(eStatus);
             }
-            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
         }
         else if (H2_HPACK_CONDITION_LITERAL_HEADER_NEVER_INDEXED & B)
         {
             eStatus = UnpackHeaderLiteralIndexing(pBuff, B,
                     H2_HPACK_PREFIX_4_BITS,
                     strHeaderName, strHeaderValue, bWithHuffman);
+            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
             if (eStatus != CODEC_STATUS_PART_OK)
             {
                 return(eStatus);
             }
-            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
             oHttpMsg.add_adding_never_index_headers(strHeaderName);
         }
         else if (H2_HPACK_CONDITION_DYNAMIC_TABLE_SIZE_UPDATE & B)
         {
             uint32 uiTableSize = (uint32)Http2Header::DecodeInt(H2_HPACK_PREFIX_5_BITS, pBuff);
+            LOG4_TRACE("uiTableSize = %u", uiTableSize);
             if (uiTableSize > m_uiSettingsHeaderTableSize)
             {
                 SetErrno(H2_ERR_COMPRESSION_ERROR);
@@ -645,7 +651,6 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
                         " protocol using HPACK!");
                 return(CODEC_STATUS_ERR);
             }
-            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
             UpdateDecodingDynamicTable(uiTableSize);
         }
         else    // H2_HPACK_CONDITION_LITERAL_HEADER_WITHOUT_INDEXING
@@ -653,11 +658,11 @@ E_CODEC_STATUS CodecHttp2::UnpackHeader(uint32 uiHeaderBlockEndPos, CBuffer* pBu
             eStatus = UnpackHeaderLiteralIndexing(pBuff, B,
                     H2_HPACK_PREFIX_4_BITS,
                     strHeaderName, strHeaderValue, bWithHuffman);
+            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
             if (eStatus != CODEC_STATUS_PART_OK)
             {
                 return(eStatus);
             }
-            ClassifyHeader(strHeaderName, strHeaderValue, oHttpMsg);
             oHttpMsg.add_adding_without_index_headers(strHeaderName);
         }
     }
@@ -908,6 +913,7 @@ void CodecHttp2::ReleaseStreamWeight(TreeNode<tagStreamWeight>* pNode)
 E_CODEC_STATUS CodecHttp2::UnpackHeaderIndexed(CBuffer* pBuff, HttpMsg& oHttpMsg)
 {
     uint32 uiTableIndex = (uint32)Http2Header::DecodeInt(H2_HPACK_PREFIX_7_BITS, pBuff);
+    LOG4_TRACE("uiTableIndex = %u", uiTableIndex);
     if (uiTableIndex == 0)
     {
         SetErrno(H2_ERR_COMPRESSION_ERROR);
@@ -949,6 +955,8 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
     if (iPrefixMask & ucFirstByte)
     {
         uint32 uiTableIndex = (uint32)Http2Header::DecodeInt(iPrefixMask, pBuff);
+        LOG4_TRACE("uiTableIndex = %u", uiTableIndex);
+        LOG4_TRACE("Literal Header Field with Incremental Indexing — Indexed Name");
         if (uiTableIndex == 0)
         {
             SetErrno(H2_ERR_COMPRESSION_ERROR);
@@ -957,6 +965,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
         }
         else if (uiTableIndex < Http2Header::sc_uiMaxStaticTableLength)
         {
+            LOG4_TRACE("uiTableIndex < Http2Header::sc_uiMaxStaticTableLength");
             if (!Http2Header::DecodeStringLiteral(pBuff, strHeaderValue, bWithHuffman))
             {
                 SetErrno(H2_ERR_COMPRESSION_ERROR);
@@ -999,6 +1008,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
     }
     else  // Literal Header Field with Incremental Indexing — New Name
     {
+        LOG4_TRACE("Literal Header Field with Incremental Indexing — New Name");
         pBuff->SkipBytes(1);
         if (Http2Header::DecodeStringLiteral(pBuff, strHeaderName, bWithHuffman)
             && Http2Header::DecodeStringLiteral(pBuff, strHeaderValue, bWithHuffman))
@@ -1017,58 +1027,120 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
 
 void CodecHttp2::ClassifyHeader(const std::string& strHeaderName, const std::string& strHeaderValue, HttpMsg& oHttpMsg)
 {
-    if (oHttpMsg.stream_id() & 0x01)
+    LOG4_TRACE("strHeaderName = %s, strHeaderValue = %s", strHeaderName.c_str(), strHeaderValue.c_str());
+    if (IsClient())
     {
-        if (oHttpMsg.body().size() > 0)
+        if (oHttpMsg.stream_id() & 0x01)
         {
-            auto pHeader = oHttpMsg.add_trailer_header();
-            pHeader->set_name(strHeaderName);
-            pHeader->set_value(strHeaderValue);
-        }
-        else
-        {
-            if (strHeaderName == ":method")
+            if (oHttpMsg.body().size() > 0)
             {
-                if (strHeaderValue == "POST")
-                {
-                    oHttpMsg.set_method(HTTP_POST);
-                }
-                else if (strHeaderValue == "GET")
-                {
-                    oHttpMsg.set_method(HTTP_GET);
-                }
-                else
-                {
-                    ;// TODO other http method
-                }
-            }
-            else if (strHeaderName == ":path")
-            {
-                oHttpMsg.set_path(strHeaderValue);
+                auto pHeader = oHttpMsg.add_trailer_header();
+                pHeader->set_name(strHeaderName);
+                pHeader->set_value(strHeaderValue);
             }
             else
             {
-                oHttpMsg.mutable_headers()->insert({strHeaderName, strHeaderValue});
+                if (strHeaderName == ":status")
+                {
+                    oHttpMsg.set_status_code(StringConverter::RapidAtoi<int32>(strHeaderValue.c_str()));
+                }
+                else
+                {
+                    oHttpMsg.mutable_headers()->insert({strHeaderName, strHeaderValue});
+                }
+            }
+        }
+        else
+        {
+            if (oHttpMsg.body().size() > 0)
+            {
+                auto pHeader = oHttpMsg.add_trailer_header();
+                pHeader->set_name(strHeaderName);
+                pHeader->set_value(strHeaderValue);
+            }
+            else
+            {
+                if (strHeaderName == ":method")
+                {
+                    if (strHeaderValue == "POST")
+                    {
+                        oHttpMsg.set_method(HTTP_POST);
+                    }
+                    else if (strHeaderValue == "GET")
+                    {
+                        oHttpMsg.set_method(HTTP_GET);
+                    }
+                    else
+                    {
+                        ;// TODO other http method
+                    }
+                }
+                else if (strHeaderName == ":path")
+                {
+                    oHttpMsg.set_path(strHeaderValue);
+                }
+                else
+                {
+                    oHttpMsg.mutable_headers()->insert({strHeaderName, strHeaderValue});
+                }
             }
         }
     }
     else
     {
-        if (oHttpMsg.body().size() > 0)
+        if (oHttpMsg.stream_id() & 0x01)
         {
-            auto pHeader = oHttpMsg.add_trailer_header();
-            pHeader->set_name(strHeaderName);
-            pHeader->set_value(strHeaderValue);
-        }
-        else
-        {
-            if (strHeaderName == ":status")
+            if (oHttpMsg.body().size() > 0)
             {
-                oHttpMsg.set_status_code(StringConverter::RapidAtoi<int32>(strHeaderValue.c_str()));
+                auto pHeader = oHttpMsg.add_trailer_header();
+                pHeader->set_name(strHeaderName);
+                pHeader->set_value(strHeaderValue);
             }
             else
             {
-                oHttpMsg.mutable_headers()->insert({strHeaderName, strHeaderValue});
+                if (strHeaderName == ":method")
+                {
+                    if (strHeaderValue == "POST")
+                    {
+                        oHttpMsg.set_method(HTTP_POST);
+                    }
+                    else if (strHeaderValue == "GET")
+                    {
+                        oHttpMsg.set_method(HTTP_GET);
+                    }
+                    else
+                    {
+                        ;// TODO other http method
+                    }
+                }
+                else if (strHeaderName == ":path")
+                {
+                    oHttpMsg.set_path(strHeaderValue);
+                }
+                else
+                {
+                    oHttpMsg.mutable_headers()->insert({strHeaderName, strHeaderValue});
+                }
+            }
+        }
+        else
+        {
+            if (oHttpMsg.body().size() > 0)
+            {
+                auto pHeader = oHttpMsg.add_trailer_header();
+                pHeader->set_name(strHeaderName);
+                pHeader->set_value(strHeaderValue);
+            }
+            else
+            {
+                if (strHeaderName == ":status")
+                {
+                    oHttpMsg.set_status_code(StringConverter::RapidAtoi<int32>(strHeaderValue.c_str()));
+                }
+                else
+                {
+                    oHttpMsg.mutable_headers()->insert({strHeaderName, strHeaderValue});
+                }
             }
         }
     }
