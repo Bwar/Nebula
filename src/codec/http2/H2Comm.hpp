@@ -78,7 +78,7 @@ struct tagH2FrameHead
 
 struct tagPriority
 {
-    char E                  = 0;
+    uint8 E                 = 0;
     uint8 ucWeight          = 0;
     uint32 uiDependency     = 0;
 

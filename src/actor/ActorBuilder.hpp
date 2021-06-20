@@ -98,6 +98,10 @@ public:
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg, uint32 uiFinalStepSeq = 0);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer);
+    bool OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
+    bool OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
+    bool OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg);
+    bool OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer);
     bool OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, int iErrno, const std::string& strErrMsg);
 
 public:

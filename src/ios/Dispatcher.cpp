@@ -1685,4 +1685,75 @@ void Dispatcher::EvBreak()
     ev_break (m_loop, EVBREAK_ALL);
 }
 
+bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel)
+{
+    return(false);
+}
+
+bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, uint32 uiStepSeq)
+{
+    if (uiStepSeq > 0)
+    {
+        pSelfChannel->SetStepSeq(uiStepSeq);
+    }
+    else
+    {
+        pSelfChannel->SetResponse();
+    }
+    auto pChannel = std::dynamic_pointer_cast<SocketChannel>(pSelfChannel);
+    m_pLastActivityChannel = pChannel;
+    MsgHead oMsgHead;
+    oMsgHead.set_cmd(iCmd);
+    oMsgHead.set_seq(uiSeq);
+    oMsgHead.set_len(oMsgBody.ByteSize());
+    return(m_pLabor->GetActorBuilder()->OnSelfMessage(pChannel, oMsgHead, oMsgBody));
+}
+
+bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel, const HttpMsg& oHttpMsg, uint32 uiStepSeq)
+{
+    if (uiStepSeq > 0)
+    {
+        pSelfChannel->SetStepSeq(uiStepSeq);
+    }
+    else
+    {
+        pSelfChannel->SetResponse();
+    }
+    auto pChannel = std::dynamic_pointer_cast<SocketChannel>(pSelfChannel);
+    m_pLastActivityChannel = pChannel;
+    return(m_pLabor->GetActorBuilder()->OnSelfMessage(pChannel, oHttpMsg));
+}
+
+bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel, const RedisMsg& oRedisMsg, uint32 uiStepSeq)
+{
+    if (uiStepSeq > 0)
+    {
+        pSelfChannel->SetStepSeq(uiStepSeq);
+    }
+    else
+    {
+        pSelfChannel->SetResponse();
+    }
+    auto pChannel = std::dynamic_pointer_cast<SocketChannel>(pSelfChannel);
+    m_pLastActivityChannel = pChannel;
+    return(m_pLabor->GetActorBuilder()->OnSelfMessage(pChannel, oRedisMsg));
+}
+
+bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel, const char* pRaw, uint32 uiRawSize, uint32 uiStepSeq)
+{
+    if (uiStepSeq > 0)
+    {
+        pSelfChannel->SetStepSeq(uiStepSeq);
+    }
+    else
+    {
+        pSelfChannel->SetResponse();
+    }
+    auto pChannel = std::dynamic_pointer_cast<SocketChannel>(pSelfChannel);
+    m_pLastActivityChannel = pChannel;
+    CBuffer oBuffer;
+    oBuffer.Write(pRaw, uiRawSize);
+    return(m_pLabor->GetActorBuilder()->OnSelfMessage(pChannel, oBuffer));
+}
+
 }

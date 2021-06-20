@@ -49,6 +49,7 @@ extern "C" {
 #include "pb/msg.pb.h"
 #include "labor/Labor.hpp"
 #include "channel/SocketChannel.hpp"
+#include "channel/SelfChannel.hpp"
 #include "logger/NetLogger.hpp"
 #include "Nodes.hpp"
 
@@ -114,6 +115,8 @@ public:
 
 public:
     bool AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout = 1.0);
+    template <typename ...Targs>
+    bool SendToSelf(Targs&&... args);
     template <typename ...Targs>
     bool SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args);
     template <typename ...Targs>
@@ -189,6 +192,11 @@ protected:
     bool AcceptServerConn(int iFd);
     void CheckFailedNode();
     void EvBreak();
+    bool Deliver(std::shared_ptr<SelfChannel> pSelfChannel);
+    bool Deliver(std::shared_ptr<SelfChannel> pSelfChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, uint32 uiStepSeq = 0);
+    bool Deliver(std::shared_ptr<SelfChannel> pSelfChannel, const HttpMsg& oHttpMsg, uint32 uiStepSeq = 0);
+    bool Deliver(std::shared_ptr<SelfChannel> pSelfChannel, const RedisMsg& oRedisMsg, uint32 uiStepSeq = 0);
+    bool Deliver(std::shared_ptr<SelfChannel> pSelfChannel, const char* pRaw, uint32 uiRawSize, uint32 uiStepSeq = 0);
 
 private:
     char* m_pErrBuff;
@@ -223,8 +231,25 @@ void Dispatcher::Logger(int iLogLevel, const char* szFileName, unsigned int uiFi
 }
 
 template <typename ...Targs>
+bool Dispatcher::SendToSelf(Targs&&... args)
+{
+    auto pSelfChannel = std::make_shared<SelfChannel>();
+    return(Deliver(pSelfChannel, std::forward<Targs>(args)...));
+}
+
+template <typename ...Targs>
 bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args)
 {
+    if (pChannel->GetCodecType() == CODEC_DIRECT)
+    {
+        auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
+        if (pSelfChannel == nullptr)
+        {
+            LOG4_ERROR("channel is not a self channel.");
+            return(false);
+        }
+        return(Deliver(pSelfChannel, std::forward<Targs>(args)...));
+    }
     E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(std::forward<Targs>(args)...);
     m_pLabor->IoStatAddSendNum(pChannel->GetFd());
     m_pLastActivityChannel = pChannel;

@@ -278,6 +278,26 @@ bool Actor::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     return(m_pLabor->GetDispatcher()->SendDataReport(iCmd, uiSeq, oMsgBody));
 }
 
+bool Actor::SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+{
+    return(m_pLabor->GetDispatcher()->SendToSelf(iCmd, uiSeq, oMsgBody, GetSequence()));
+}
+
+bool Actor::SendToSelf(const HttpMsg& oHttpMsg)
+{
+    return(m_pLabor->GetDispatcher()->SendToSelf(oHttpMsg, GetSequence()));
+}
+
+bool Actor::SendToSelf(const RedisMsg& oRedisMsg)
+{
+    return(m_pLabor->GetDispatcher()->SendToSelf(oRedisMsg, GetSequence()));
+}
+
+bool Actor::SendToSelf(const char* pRaw, uint32 uiRawSize)
+{
+    return(m_pLabor->GetDispatcher()->SendToSelf(pRaw, uiRawSize, GetSequence()));
+}
+
 std::shared_ptr<SocketChannel> Actor::GetLastActivityChannel()
 {
     return(m_pLabor->GetDispatcher()->GetLastActivityChannel());

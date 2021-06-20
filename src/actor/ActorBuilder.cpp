@@ -27,6 +27,7 @@
 #include "actor/session/sys_session/SessionLogger.hpp"
 #include "ios/Dispatcher.hpp"
 #include "channel/SocketChannel.hpp"
+#include "channel/SelfChannel.hpp"
 
 namespace neb
 {
@@ -550,6 +551,239 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const CBuf
         }
         LOG4_ERROR("no instance of RawCmd or derived class of RawCmd found for cmd %d", CMD_REQ_RAW_DATA);
         return(false);
+    }
+}
+
+bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
+{
+    if (gc_uiCmdReq & oMsgHead.cmd())    // 新请求
+    {
+        auto cmd_iter = m_mapCmd.find(gc_uiCmdBit & oMsgHead.cmd());
+        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
+        {
+            if (oMsgBody.trace_id().length() > 10)
+            {
+                cmd_iter->second->SetTraceId(oMsgBody.trace_id());
+            }
+            else
+            {
+                std::ostringstream oss;
+                oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
+                cmd_iter->second->SetTraceId(oss.str());
+            }
+            cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
+        }
+        else    // 没有对应的cmd，是需由接入层转发的请求
+        {
+            LOG4_ERROR("no handler to dispose cmd %u!", oMsgHead.cmd());
+            return(false);
+        }
+    }
+    else    // 回调
+    {
+        auto step_iter = m_mapCallbackStep.find(oMsgHead.seq());
+        if (step_iter != m_mapCallbackStep.end())   // 步骤回调
+        {
+            LOG4_TRACE("receive message, cmd = %d",
+                            oMsgHead.cmd());
+            if (step_iter->second != nullptr)
+            {
+                E_CMD_STATUS eResult;
+                step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                LOG4_TRACE("cmd %u, seq %u, step_seq %u, active_time %lf",
+                                oMsgHead.cmd(), oMsgHead.seq(), step_iter->second->GetSequence(),
+                                step_iter->second->GetActiveTime());
+                eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(pChannel, oMsgHead, oMsgBody);
+                if (CMD_STATUS_RUNNING != eResult)
+                {
+                    uint32 uiChainId = step_iter->second->GetChainId();
+                    RemoveStep(step_iter->second);
+                    if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
+                    {
+                        auto chain_iter = m_mapChain.find(uiChainId);
+                        if (chain_iter != m_mapChain.end())
+                        {
+                            chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                            eResult = chain_iter->second->Next();
+                            if (CMD_STATUS_RUNNING != eResult)
+                            {
+                                RemoveChain(uiChainId);
+                            }
+                        }
+                    }
+                }
+            }
+            ExecAssemblyLine(pChannel, oMsgHead, oMsgBody);
+        }
+        else
+        {
+            snprintf(m_pErrBuff, gc_iErrBuffLen, "no callback or the callback for seq %u had been timeout!", oMsgHead.seq());
+            LOG4_WARNING(m_pErrBuff);
+            return(false);
+        }
+    }
+    return(true);
+}
+
+bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
+{
+    if (HTTP_REQUEST == oHttpMsg.type())    // 新请求
+    {
+        LOG4_DEBUG("oInHttpMsg.type() = %d, oInHttpMsg.path() = %s",
+                    oHttpMsg.type(), oHttpMsg.path().c_str());
+        auto module_iter = m_mapModule.find(oHttpMsg.path());
+        if (module_iter == m_mapModule.end())
+        {
+            LOG4_ERROR("no module to dispose %s!", oHttpMsg.path().c_str());
+        }
+        else
+        {
+            module_iter->second->AnyMessage(pChannel, oHttpMsg);
+        }
+    }
+    else
+    {
+        auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
+        auto http_step_iter = m_mapCallbackStep.find(pSelfChannel->GetStepSeq());
+        if (http_step_iter == m_mapCallbackStep.end())
+        {
+            LOG4_TRACE("no callback for http response from %s!", oHttpMsg.url().c_str());
+        }
+        else
+        {
+            E_CMD_STATUS eResult;
+            http_step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+            eResult = http_step_iter->second->Callback(pChannel, oHttpMsg);
+            if (CMD_STATUS_RUNNING != eResult)
+            {
+                uint32 uiChainId = http_step_iter->second->GetChainId();
+                RemoveStep(http_step_iter->second);
+                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
+                {
+                    auto chain_iter = m_mapChain.find(uiChainId);
+                    if (chain_iter != m_mapChain.end())
+                    {
+                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                        eResult = chain_iter->second->Next();
+                        if (CMD_STATUS_RUNNING != eResult)
+                        {
+                            RemoveChain(uiChainId);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return(true);
+}
+
+bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg)
+{
+    auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
+    if (pSelfChannel->IsResponse())
+    {
+        auto cmd_iter = m_mapCmd.find(CMD_REQ_REDIS_PROXY);
+        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
+        {
+            auto pRedisCmd = std::dynamic_pointer_cast<RedisCmd>(cmd_iter->second);
+            if (pRedisCmd == nullptr)
+            {
+                LOG4_ERROR("cmd %d is not a RedisCmd instance!", CMD_REQ_REDIS_PROXY);
+                return(false);
+            }
+            return(pRedisCmd->AnyMessage(pChannel, oRedisMsg));
+        }
+        LOG4_ERROR("no instance of RedisCmd or derived class of RedisCmd found for cmd %d", CMD_REQ_REDIS_PROXY);
+        return(false);
+    }
+    else
+    {
+        auto step_iter = m_mapCallbackStep.find(pSelfChannel->GetStepSeq());
+        if (step_iter == m_mapCallbackStep.end())
+        {
+            LOG4_TRACE("no callback for redis reply from %s!", pChannel->GetIdentify().c_str());
+            return(false);
+        }
+        else
+        {
+            E_CMD_STATUS eResult;
+            step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+            eResult = step_iter->second->Callback(pChannel, oRedisMsg);
+            if (CMD_STATUS_RUNNING != eResult)
+            {
+                uint32 uiChainId = step_iter->second->GetChainId();
+                RemoveStep(step_iter->second);
+                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
+                {
+                    auto chain_iter = m_mapChain.find(uiChainId);
+                    if (chain_iter != m_mapChain.end())
+                    {
+                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                        eResult = chain_iter->second->Next();
+                        if (CMD_STATUS_RUNNING != eResult)
+                        {
+                            RemoveChain(uiChainId);
+                        }
+                    }
+                }
+            }
+            return(eResult);
+        }
+    }
+}
+
+bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer)
+{
+    auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
+    if (pSelfChannel->IsResponse())
+    {
+        auto cmd_iter = m_mapCmd.find(CMD_REQ_RAW_DATA);
+        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
+        {
+            auto pRawCmd = std::dynamic_pointer_cast<RawCmd>(cmd_iter->second);
+            if (pRawCmd == nullptr)
+            {
+                LOG4_ERROR("cmd %d is not a RawCmd instance!", CMD_REQ_RAW_DATA);
+                return(false);
+            }
+            return(pRawCmd->AnyMessage(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes()));
+        }
+        LOG4_ERROR("no instance of RawCmd or derived class of RawCmd found for cmd %d", CMD_REQ_RAW_DATA);
+        return(false);
+    }
+    else
+    {
+        auto step_iter = m_mapCallbackStep.find(pSelfChannel->GetStepSeq());
+        if (step_iter == m_mapCallbackStep.end())
+        {
+            LOG4_TRACE("no callback for raw data reply from %s!", pChannel->GetIdentify().c_str());
+            return(false);
+        }
+        else
+        {
+            E_CMD_STATUS eResult;
+            step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+            eResult = step_iter->second->Callback(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes());
+            if (CMD_STATUS_RUNNING != eResult)
+            {
+                uint32 uiChainId = step_iter->second->GetChainId();
+                RemoveStep(step_iter->second);
+                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
+                {
+                    auto chain_iter = m_mapChain.find(uiChainId);
+                    if (chain_iter != m_mapChain.end())
+                    {
+                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
+                        eResult = chain_iter->second->Next();
+                        if (CMD_STATUS_RUNNING != eResult)
+                        {
+                            RemoveChain(uiChainId);
+                        }
+                    }
+                }
+            }
+            return(eResult);
+        }
     }
 }
 

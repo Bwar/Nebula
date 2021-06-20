@@ -283,6 +283,14 @@ protected:
 
     virtual bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
+    /**
+     * @brief 发送请求到当前worker
+     */
+    bool SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    bool SendToSelf(const HttpMsg& oHttpMsg);
+    bool SendToSelf(const RedisMsg& oRedisMsg);
+    bool SendToSelf(const char* pRaw, uint32 uiRawSize);
+
     std::shared_ptr<SocketChannel> GetLastActivityChannel();
 
     /**
