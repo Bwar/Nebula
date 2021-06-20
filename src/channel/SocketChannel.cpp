@@ -20,6 +20,11 @@
 namespace neb
 {
 
+SocketChannel::SocketChannel()
+    : m_pImpl(nullptr), m_pLogger(nullptr)
+{
+}
+
 SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, ev_tstamp dKeepAlive)
     : m_pImpl(nullptr), m_pLogger(pLogger)
 {

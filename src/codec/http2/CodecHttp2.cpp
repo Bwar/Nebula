@@ -191,7 +191,6 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
 E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff)
 {
     LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
-    LOG4_TRACE("%s", pBuff->GetRawReadBuffer());
     if (m_bWantMagic && !m_bChannelIsClient)
     {
         if (pBuff->ReadableBytes() >= 24)

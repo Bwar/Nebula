@@ -66,6 +66,7 @@
 * [安装部署说明](docs/cn/install.md)
 * [Nebula工作原理](how_nebula_works.md)
 * [配置说明](docs/cn/configuration.md)
+* [服务监控](docs/cn/monitor.md)
 * [协议说明](docs/cn/protocol.md)
 * 开发组件说明
   * [Actor组件概述](docs/cn/actor_overview.md)

@@ -687,7 +687,7 @@ E_CODEC_STATUS Http2Frame::EncodeHeaders(CodecHttp2* pCodecH2,
             uint16 unNetLength = CodecUtil::H2N(strPadding.size());
             pBuff->Write(&unNetLength, 1);
             EncodePriority(stPriority, pBuff);
-            pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength);
+            pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength - uiAddtionLength);
             pBuff->Write(strPadding.c_str(), strPadding.size());
             EncodeSetStreamState(stFrameHead);
             return(eCodecStatus);
@@ -728,7 +728,7 @@ E_CODEC_STATUS Http2Frame::EncodeHeaders(CodecHttp2* pCodecH2,
             }
             EncodeFrameHeader(stFrameHead, pBuff);
             EncodePriority(stPriority, pBuff);
-            pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength);
+            pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength - uiAddtionLength);
             EncodeSetStreamState(stFrameHead);
             LOG4_TRACE("stFrameHead.uiLength = %u, stFrameHead.ucFlag = 0x%X, pBuff->ReadableBytes() = %u",
                     stFrameHead.uiLength, (uint32)stFrameHead.ucFlag, pBuff->ReadableBytes());
@@ -880,7 +880,7 @@ E_CODEC_STATUS Http2Frame::EncodePushPromise(CodecHttp2* pCodecH2,
             pBuff->Write(&unNetLength, 1);
             // ignore R
             pBuff->Write(&uiPromiseStreamId, 4);
-            pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength);
+            pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength - uiAddtionLength);
             pBuff->Write(strPadding.c_str(), strPadding.size());
             EncodeSetStreamState(stFrameHead);
             return(CODEC_STATUS_OK);
@@ -911,7 +911,7 @@ E_CODEC_STATUS Http2Frame::EncodePushPromise(CodecHttp2* pCodecH2,
             EncodeFrameHeader(stFrameHead, pBuff);
             // ignore R
             pBuff->Write(&uiPromiseStreamId, 4);
-            pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength);
+            pBuff->Write(oBuffer.GetRawReadBuffer(), stFrameHead.uiLength - uiAddtionLength);
             EncodeSetStreamState(stFrameHead);
             return(CODEC_STATUS_OK);
         }

@@ -30,6 +30,7 @@ public:
         int iCodecType;
     };
 
+    SocketChannel(); // only for SelfChannel
     SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl = false, ev_tstamp dKeepAlive = 10.0);
     virtual ~SocketChannel();
     
@@ -38,13 +39,13 @@ public:
 
     virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsClient = false);
 
-    int GetFd() const;
-    bool IsClient() const;
-    bool IsPipeline() const;
-    const std::string& GetIdentify() const;
-    const std::string& GetRemoteAddr() const;
-    const std::string& GetClientData() const;
-    E_CODEC_TYPE GetCodecType() const;
+    virtual int GetFd() const;
+    virtual bool IsClient() const;
+    virtual bool IsPipeline() const;
+    virtual const std::string& GetIdentify() const;
+    virtual const std::string& GetRemoteAddr() const;
+    virtual const std::string& GetClientData() const;
+    virtual E_CODEC_TYPE GetCodecType() const;
 
 private:
     // Hide most of the channel implementation for Actors
