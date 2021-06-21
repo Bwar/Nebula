@@ -24,7 +24,7 @@ namespace neb
  * 端发起的心跳机制，心跳时间间隔就是IO超时时间。
  */
 class StepIoTimeout: public PbStep,
-    public DynamicCreator<StepIoTimeout, std::shared_ptr<SocketChannel> >,
+    public DynamicCreator<StepIoTimeout, std::shared_ptr<SocketChannel>& >,
     public ActorSys
 {
 public:

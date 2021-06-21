@@ -34,7 +34,8 @@ struct NodeInfo
     bool bThreadMode                = 0;            ///< 是否线程模型
     bool bIsAccess                  = false;        ///< 是否接入Server
     bool bChannelVerify             = false;        ///< 是否需要连接验证
-    ev_tstamp dIoTimeout            = 10.0;          ///< IO（连接）超时配置
+    ev_tstamp dConnectionProtection = 0.0;          ///< >0时为连接保护时间，新建连接会设置成这个时间，接收到第一个数据包之后改设成dIoTimeout
+    ev_tstamp dIoTimeout            = 60.0;          ///< IO（连接）超时配置
     ev_tstamp dDataReportInterval   = 60.0;         ///< 统计数据上报时间间隔
     ev_tstamp dMsgStatInterval      = 60.0;          ///< 客户端连接发送数据包统计时间间隔
     ev_tstamp dAddrStatInterval     = 60.0;          ///< IP地址数据统计时间间隔

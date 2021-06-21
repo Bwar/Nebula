@@ -130,9 +130,10 @@ E_CODEC_STATUS Http2Frame::Encode(CodecHttp2* pCodecH2,
     }
     if (oHttpMsg.trailer_header_size() > 0)
     {
+        tagPriority stEmptyPriority;
         bEndStream = true;
         eCodecStatus = EncodeHeaders(pCodecH2, oHttpMsg.stream_id(), oHttpMsg,
-                H2_HEADER_TRAILER, stPriority, strPadding, bEndStream, pBuff);
+                H2_HEADER_TRAILER, stEmptyPriority, "", bEndStream, pBuff);
     }
     return(eCodecStatus);
 }
@@ -740,11 +741,6 @@ E_CODEC_STATUS Http2Frame::EncodeHeaders(CodecHttp2* pCodecH2,
 E_CODEC_STATUS Http2Frame::EncodePriority(CodecHttp2* pCodecH2,
         uint32 uiStreamId, const tagPriority& stPriority, CBuffer* pBuff)
 {
-    if (stPriority.uiDependency == 0x0)
-    {
-        pCodecH2->SetErrno(H2_ERR_PROTOCOL_ERROR);
-        return(CODEC_STATUS_PART_ERR);
-    }
     tagH2FrameHead stFrameHead;
     stFrameHead.cR = 0;
     stFrameHead.ucType = H2_FRAME_HEADERS;
@@ -1016,7 +1012,7 @@ E_CODEC_STATUS Http2Frame::EncodeContinuation(CodecHttp2* pCodecH2,
 
 void Http2Frame::EncodePriority(const tagPriority& stPriority, CBuffer* pBuff)
 {
-    if (stPriority.uiDependency > 0)
+    if (stPriority.ucWeight > 0)
     {
         uint32 uiPriority = stPriority.E;
         uiPriority <<= 31;

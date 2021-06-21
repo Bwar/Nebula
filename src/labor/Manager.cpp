@@ -326,6 +326,7 @@ bool Manager::GetConf()
 
     if (m_oLastConf.ToString() != m_oCurrentConf.ToString())
     {
+        m_oCurrentConf.Get("connection_protection", m_stNodeInfo.dConnectionProtection);
         m_oCurrentConf.Get("io_timeout", m_stNodeInfo.dIoTimeout);
         m_oCurrentConf.Get("data_report", m_stNodeInfo.dDataReportInterval);
         if (m_oLastConf.ToString().length() == 0)

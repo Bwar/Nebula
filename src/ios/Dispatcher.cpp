@@ -1300,7 +1300,16 @@ std::shared_ptr<SocketChannel> Dispatcher::CreateSocketChannel(int iFd, E_CODEC_
         std::shared_ptr<SocketChannel> pChannel = nullptr;
         try
         {
-            pChannel = std::make_shared<SocketChannel>(m_pLogger, iFd, m_pLabor->GetSequence(), bWithSsl);
+            if (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
+            {
+                pChannel = std::make_shared<SocketChannel>(m_pLogger, iFd,
+                        m_pLabor->GetSequence(), bWithSsl, m_pLabor->GetNodeInfo().dConnectionProtection);
+            }
+            else
+            {
+                pChannel = std::make_shared<SocketChannel>(m_pLogger, iFd,
+                        m_pLabor->GetSequence(), bWithSsl, m_pLabor->GetNodeInfo().dIoTimeout);
+            }
         }
         catch(std::bad_alloc& e)
         {
