@@ -563,46 +563,48 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
     size_t uiDecodeBuffLen = pBuff->ReadableBytes();
     size_t uiLen = http_parser_execute(&m_parser, &m_parser_setting,
                     pDecodeBuff, uiDecodeBuffLen);
-    if (!oHttpMsg.is_decoding())
+    if(m_parser.http_errno == HPE_OK)
     {
-        if(m_parser.http_errno != HPE_OK)
-        {
-            LOG4_WARNING("Failed to parse http message for cause:%s",
-                            http_errno_name((http_errno)m_parser.http_errno));
-            return(CODEC_STATUS_ERR);
-        }
         pBuff->AdvanceReadIndex(uiLen);
+        if (HTTP_REQUEST == oHttpMsg.type())
+        {
+            m_iHttpMajor = oHttpMsg.http_major();
+            m_iHttpMinor = oHttpMsg.http_minor();
+            m_dKeepAlive = (oHttpMsg.keep_alive() > 0) ? oHttpMsg.keep_alive() : m_dKeepAlive;
+        }
+        auto iter = oHttpMsg.headers().find("Content-Encoding");
+        if (iter != oHttpMsg.headers().end())
+        {
+            if ("gzip" == iter->second)
+            {
+                std::string strData;
+                if (Gunzip(oHttpMsg.body(), strData))
+                {
+                    oHttpMsg.set_body(strData);
+                }
+                else
+                {
+                    LOG4_WARNING("guzip error!");
+                    return(CODEC_STATUS_ERR);
+                }
+            }
+        }
+        if (!m_bChannelIsClient && !http_should_keep_alive(&m_parser))
+        {
+            oHttpMsg.set_keep_alive(0.0);
+            m_dKeepAlive = 0.0;
+        }
+        LOG4_DEBUG("%s", ToString(oHttpMsg).c_str());
+        return(CODEC_STATUS_OK);
     }
-    else
+    if (m_parser.http_errno == HPE_PAUSED)
     {
         LOG4_TRACE("decoding...");
         return(CODEC_STATUS_PAUSE);
     }
-    if (HTTP_REQUEST == oHttpMsg.type())
-    {
-        m_iHttpMajor = oHttpMsg.http_major();
-        m_iHttpMinor = oHttpMsg.http_minor();
-        m_dKeepAlive = (oHttpMsg.keep_alive() > 0) ? oHttpMsg.keep_alive() : m_dKeepAlive;
-    }
-    auto iter = oHttpMsg.headers().find("Content-Encoding");
-    if (iter != oHttpMsg.headers().end())
-    {
-        if ("gzip" == iter->second)
-        {
-            std::string strData;
-            if (Gunzip(oHttpMsg.body(), strData))
-            {
-                oHttpMsg.set_body(strData);
-            }
-            else
-            {
-                LOG4_WARNING("guzip error!");
-                return(CODEC_STATUS_ERR);
-            }
-        }
-    }
-    LOG4_DEBUG("%s", ToString(oHttpMsg).c_str());
-    return(CODEC_STATUS_OK);
+    LOG4_WARNING("Failed to parse http message for cause:%s",
+            http_errno_name((http_errno)m_parser.http_errno));
+    return(CODEC_STATUS_ERR);
 }
 
 void CodecHttp::AddHttpHeader(const std::string& strHeaderName, const std::string& strHeaderValue)
@@ -674,8 +676,6 @@ bool CodecHttp::CloseRightAway() const
 
 int CodecHttp::OnMessageBegin(http_parser *parser)
 {
-    HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
-    pHttpMsg->set_is_decoding(true);
     return(0);
 }
 
@@ -755,15 +755,6 @@ int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
     }
     else if (std::string("Connection") == strHeadName)
     {
-        if (std::string("keep-alive") == strHeadValue)
-        {
-            pHttpMsg->set_keep_alive(-1);     // 由配置的IoTimeout决定
-        }
-        else if (std::string("close") == strHeadValue)
-        {
-            pHttpMsg->set_keep_alive(0.0);
-        }
-
         size_t uiPos = 0;
         uiPos = strHeadValue.find_first_of("Upgrade");
         if (0 == uiPos)
@@ -816,31 +807,6 @@ int CodecHttp::OnMessageComplete(http_parser *parser)
     }
     pHttpMsg->set_http_major(parser->http_major);
     pHttpMsg->set_http_minor(parser->http_minor);
-    pHttpMsg->set_is_decoding(false);
-
-    if (!http_should_keep_alive(parser))
-    {
-        pHttpMsg->set_keep_alive(0.0); 
-    }
-    /*
-    switch ((http_method)pHttpMsg->method())
-    {
-        case HTTP_GET:
-        case HTTP_OPTIONS:
-            pHttpMsg->set_is_decoding(false);
-            break;
-        default:
-            if (parser->content_length == 0)
-            {
-                pHttpMsg->set_is_decoding(false);
-            }
-            else if (parser->content_length == pHttpMsg->body().size())
-            {
-                pHttpMsg->set_is_decoding(false);
-            }
-            break;
-    }
-    */
     return(0);
 }
 

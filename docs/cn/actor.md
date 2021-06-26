@@ -29,8 +29,8 @@ public:
         ACT_PB_STEP             = 6,        ///< Step步骤对象，处理pb请求或响应
         ACT_HTTP_STEP           = 7,        ///< Step步骤对象，处理http请求或响应
         ACT_REDIS_STEP          = 8,        ///< Step步骤对象，处理redis请求或响应
-        ACT_MODEL               = 9,        ///< Model模型对象，Model（IO无关）与Step（异步IO相关）共同构成功能链
-        ACT_CHAIN               = 10,       ///< Chain链对象，用于将Model和Step组合成功能链
+        ACT_OPERATOR            = 9,        ///< Operator算子对象，Operator（IO无关）与Step（异步IO相关）共同构成功能链
+        ACT_CHAIN               = 10,       ///< Chain链对象，用于将Operator和Step组合成功能链
     };
 
 public:
@@ -76,7 +76,7 @@ protected:
     std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     std::shared_ptr<Session> GetSession(const std::string& strSessionId);
     bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
-    std::shared_ptr<Model> GetModel(const std::string& strModelName);
+    std::shared_ptr<Operator> GetOperator(const std::string& strOperatorName);
     std::shared_ptr<Context> GetContext();
     void SetContext(std::shared_ptr<Context> pContext);
     void AddAssemblyLine(std::shared_ptr<Session> pSession);

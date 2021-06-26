@@ -238,11 +238,19 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                     bPlaceholder = true;
                 }
                 break;
+            case 'f':
+                if (bPlaceholder)
+                {
+                    pPos = szFormat + i + 1;
+                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << std::fixed << arg;
+                    return(pPos);
+                }
+                break;
             case 'a':
             case 'A':
             case 'c':
             case 'C':
-            case 'f':
             case 'p':
             case 's':
             case 'S':

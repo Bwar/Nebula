@@ -274,11 +274,19 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     bPlaceholder = true;
                 }
                 break;
+            case 'f':
+                if (bPlaceholder)
+                {
+                    pPos = szFormat + i + 1;
+                    m_fout << strOutStr;
+                    m_fout << std::fixed << arg;
+                    return(pPos);
+                }
+                break;
             case 'a':
             case 'A':
             case 'c':
             case 'C':
-            case 'f':
             case 'p':
             case 's':
             case 'S':

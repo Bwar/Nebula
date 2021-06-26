@@ -27,7 +27,6 @@ message HttpMsg
 	Upgrade upgrade                 = 12;       ///< 升级协议
 	float keep_alive				= 13;		///< keep alive time
 	string path				        = 14;		///< Http Decode时从url中解析出来，不需要人为填充（encode时不需要填）
-	bool is_decoding				= 15;		///< 是否正在解码（true 正在解码， false 未解码或已完成解码）
 
     bool chunk_notice               = 19;       ///< 是否启用分块传输通知（当包体比较大时，部分传输完毕也会通知业务层而无需等待整个http包传输并解码完毕。）
 

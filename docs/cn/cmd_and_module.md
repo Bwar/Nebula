@@ -284,7 +284,7 @@ bool ModuleHello::AnyMessage(
 
 ### 完整业务流程简析
 
-&emsp;&emsp;上述Cmd、Module定义和例子是为了说明Cmd和Module两种组件的用途及使用方法，测试Nebula的功能demo有Cmd和Module基本上就可以了。然而，实际的业务应用并不是demo这么简单的，不过再复杂的业务以Actor组件来实现也不难，熟悉了Actor组件甚至能更好地帮助开发者做业务逻辑抽象出来。Nebula的Actor组件有7种，其中Cmd、Module、Step、Session是与Nebula生而俱来的组件，其中Cmd和Module可视作同一种组件，有了这几个组件就可以满足绝大部分复杂业务。Context、Model、Chain是Nebula发展过程中产生的组件，我们暂且先不用关注。
+&emsp;&emsp;上述Cmd、Module定义和例子是为了说明Cmd和Module两种组件的用途及使用方法，测试Nebula的功能demo有Cmd和Module基本上就可以了。然而，实际的业务应用并不是demo这么简单的，不过再复杂的业务以Actor组件来实现也不难，熟悉了Actor组件甚至能更好地帮助开发者做业务逻辑抽象出来。Nebula的Actor组件有7种，其中Cmd、Module、Step、Session是与Nebula生而俱来的组件，其中Cmd和Module可视作同一种组件，有了这几个组件就可以满足绝大部分复杂业务。Context、Operator、Chain是Nebula发展过程中产生的组件，我们暂且先不用关注。
 
 &emsp;&emsp;使用Actor组件的普遍业务流程如图：
 

@@ -240,8 +240,17 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
 
     size_t uiReadIdx = pBuff->GetReadIndex();
     Http2Frame::DecodeFrameHeader(pBuff, m_stDecodeFrameHead);
-    LOG4_TRACE("m_stDecodeFrameHead.uiLength = %u, m_stDecodeFrameHead.ucType = %u, m_stDecodeFrameHead.ucFlag = %u, m_stDecodeFrameHead.uiStreamIdentifier = %u",
-            m_stDecodeFrameHead.uiLength, (uint32)m_stDecodeFrameHead.ucType, (uint32)m_stDecodeFrameHead.ucFlag, m_stDecodeFrameHead.uiStreamIdentifier);
+    LOG4_TRACE("m_stDecodeFrameHead.uiLength = %u, m_stDecodeFrameHead.ucType = %u,"
+            "m_stDecodeFrameHead.ucFlag = %u, m_stDecodeFrameHead.uiStreamIdentifier = %u",
+            m_stDecodeFrameHead.uiLength, (uint32)m_stDecodeFrameHead.ucType,
+            (uint32)m_stDecodeFrameHead.ucFlag, m_stDecodeFrameHead.uiStreamIdentifier);
+    if (!Http2Frame::IsValidFrameType(m_stDecodeFrameHead.ucType))
+    {
+        LOG4_ERROR("invalid frame type %u", (uint32)m_stDecodeFrameHead.ucType);
+        SetErrno(H2_ERR_PROTOCOL_ERROR);
+        m_pFrame->EncodeGoaway(this, H2_ERR_PROTOCOL_ERROR, "invalid frame type.", pReactBuff);
+        return(CODEC_STATUS_ERR);
+    }
     if (m_stDecodeFrameHead.uiLength > m_uiSettingsMaxDecodeFrameSize)
     {
         LOG4_TRACE("m_uiSettingsMaxDecodeFrameSize = %u, m_stDecodeFrameHead.uiLength = %u",

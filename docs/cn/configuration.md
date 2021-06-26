@@ -36,6 +36,7 @@
     "max_log_file_num": 5,
     "//max_log_file_size": "单个日志文件大小限制",
     "max_log_file_size": 20480000,
+    "always_flush_log":true,
     "log_levels": { "FATAL": 0, "CRITICAL": 1, "ERROR": 2, "NOTICE": 3, "WARNING": 4, "INFO": 5, "DEBUG": 6, "TRACE": 7 },
     "log_level": 7,
     "net_log_level": 6,
@@ -44,6 +45,8 @@
         "addr_permit": { "stat_interval": 60.0, "permit_num": 1000000000 },
         "uin_permit": { "stat_interval": 60.0, "permit_num": 600000000 }
     },
+    "//connection_protection": "连接保护时间（单位：秒），当值>0时新建连接设置为这个时间，接收到第一个数据包后改设为io_timeout",
+    "connection_protection": 0.0,
     "//io_timeout": "网络IO（连接）超时设置（单位：秒）小数点后面至少保留一位",
     "io_timeout": 300.0,
     "//step_timeout": "步骤超时设置（单位：秒）小数点后面至少保留一位",
@@ -148,10 +151,12 @@
 * log_path 日志文件存储路径，相对于NEBULA_HOME的路径。
 * max_log_file_num 最大日志文件数量，用于日志文件滚动，超出这个数量的日志文件将会被直接删除。
 * max_log_file_size 单个日志文件大小限制，用于日志文件滚动，超出这个限制将滚动日志，生成一个新的日志文件。
+* always_flush_log 是否总是刷新日志到磁盘
 * log_levels 日志级别枚举，仅用于给log_level和net_log_level配置时参考。
 * log_level 本地文件日志级别。框架级别的调试日志用的是LOG4_TRACE(日志量很大，部署生产时请不要打开TRACE级别日志)，建议业务的调试日志用LOG4_DEBUG。
 * net_log_level 发到LOGTRACE日志跟踪服务的网络日志级别。
 * permission 连接或消息发送频率限制。addr_permit为连接限制，限制每个IP在统计时间内连接次数，超出permit_num次数限制的连接会被直接拒绝；uin_permit为消息数量限制，限制每个用户在单位统计时间内permit_num发送消息数量，超出限制数量的消息会被直接丢弃。stat_interval到了之后重新计算。
+* connection_protection  连接保护时间（单位：秒），当值>0时新建连接设置为这个时间，接收到第一个数据包后改设为io_timeout",
 * io_timeout 网络IO（连接）超时设置（单位：秒）小数点后面至少保留一位，用于触发连接的有效性检查。如果在到达超时时间前连接有数据收或发过，则从最后一次收发数据时间开始重新计算超时时间；如果超时时间到达却一直没有数据收发过，有三种处理情况：(1) 需要做应用层心跳检查，自动发送心跳包，心跳包得到响应，连接得以保持，重新计算超时时间；(2) 需要做应用层心跳检查，自动发送心跳包，心跳包未得到响应，立即断开连接，回收连接所分配资源；(3) 无须做应用层心跳检查，立即断开连接，回收连接所分配资源。
 * step_timeout 步骤超时设置（单位：秒）小数点后面至少保留一位，用于请求发出后等待响应的默认超时等待。在代码层可以为每一个发出的请求设置等待超时，通常为Step类的最后一个参数，如果这个参数为缺省值，则配置文件里的step_timeout会作为这个Step发出请求后等待响应的超时时间。
 * with_ssl 配置接入服务的对外连接是否需要SSL传输加密，如果需要则配置ssl配置文件路径和相关文件名。

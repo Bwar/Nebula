@@ -128,6 +128,15 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.6.0
+   - add SelfChannel within the Worker, improve the actor model
+   - add service status monitoring and metrics for prometheus
+   - add Manager to Manager communication feature
+   - add initial connection timeout configuration
+   - replace va_list with variadic templates in logger
+   - thread id optimization
+   - chain optimization
+   - http2 dynamic table and stream priority bug fix
 #### v1.5.0
    - add native http2 server and client
    - add native grpc server and client

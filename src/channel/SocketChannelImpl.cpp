@@ -484,6 +484,11 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iHadWrittenLen)
         {
+            if (m_pCodec->GetCodecType() == CODEC_HTTP
+                    && ((CodecHttp*)m_pCodec)->GetKeepAlive() == 0.0)
+            {
+                return(CODEC_STATUS_EOF);
+            }
             return(eCodecStatus);
         }
         else
@@ -877,7 +882,8 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         {
             size_t uiSendBuffLen = m_pSendBuff->ReadableBytes();
             eCodecStatus = ((CodecHttp2*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg, m_pSendBuff);
-            if (m_pSendBuff->ReadableBytes() > uiSendBuffLen)
+            if (m_pSendBuff->ReadableBytes() > uiSendBuffLen
+                    && (eCodecStatus == CODEC_STATUS_OK || eCodecStatus == CODEC_STATUS_PART_OK))
             {
                 Send();
             }
@@ -916,6 +922,10 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
         {
             if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
             {
+                if (!m_bIsClientConnection)
+                {
+                    m_pSendBuff->Clear();
+                }
                 return(CODEC_STATUS_INVALID);
             }
         }
@@ -1099,6 +1109,13 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
         }
         LOG4_TRACE("channel_fd[%d], channel_seq[%u], cmd[%u], seq[%u]", m_iFd, m_uiSeq, oMsgHead.cmd(), oMsgHead.seq());
     }
+    else
+    {
+        if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
+        {
+            return(CODEC_STATUS_INVALID);
+        }
+    }
     if ((CODEC_STATUS_PAUSE == eCodecStatus)
             && (CODEC_STATUS_EOF == m_eLastCodecStatus
                 || CODEC_STATUS_INT == m_eLastCodecStatus))
@@ -1126,7 +1143,8 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
     {
         size_t uiSendBuffLen = m_pSendBuff->ReadableBytes();
         eCodecStatus = ((CodecHttp2*)m_pCodec)->Decode(m_pRecvBuff, oHttpMsg, m_pSendBuff);
-        if (m_pSendBuff->ReadableBytes() > uiSendBuffLen)
+        if (m_pSendBuff->ReadableBytes() > uiSendBuffLen
+                && (eCodecStatus == CODEC_STATUS_OK || eCodecStatus == CODEC_STATUS_PART_OK))
         {
             Send();
         }
@@ -1161,6 +1179,13 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
             }
         }
     }
+    else
+    {
+        if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
+        {
+            return(CODEC_STATUS_INVALID);
+        }
+    }
     if ((CODEC_STATUS_PAUSE == eCodecStatus)
             && (CODEC_STATUS_EOF == m_eLastCodecStatus
                 || CODEC_STATUS_INT == m_eLastCodecStatus))
@@ -1187,6 +1212,13 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(RedisReply& oRedisReply)
         {
             m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
             m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
+        }
+    }
+    else
+    {
+        if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
+        {
+            return(CODEC_STATUS_INVALID);
         }
     }
     if ((CODEC_STATUS_PAUSE == eCodecStatus)
@@ -1256,10 +1288,6 @@ Codec* SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAl
                 pNewCodec = new CodecProto(m_pLogger, eCodecType);
                 pNewCodec->SetKey(m_strKey);
                 break;
-            case CODEC_PRIVATE:
-                pNewCodec = new CodecPrivate(m_pLogger, eCodecType);
-                pNewCodec->SetKey(m_strKey);
-                break;
             case CODEC_HTTP:
                 pNewCodec = new CodecHttp(m_pLogger, eCodecType, dKeepAlive);
                 pNewCodec->SetKey(m_strKey);
@@ -1273,6 +1301,16 @@ Codec* SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAl
                 }
                 pNewCodec->SetKey(m_strKey);
                 break;
+            case CODEC_RESP:
+                pNewCodec = new CodecResp(m_pLogger, eCodecType);
+                pNewCodec->SetKey(m_strKey);
+                break;
+            case CODEC_PRIVATE:
+                pNewCodec = new CodecPrivate(m_pLogger, eCodecType);
+                pNewCodec->SetKey(m_strKey);
+                break;
+            case CODEC_UNKNOW:
+                break;
             default:
                 LOG4_ERROR("no codec defined for code type %d", eCodecType);
                 break;
@@ -1283,8 +1321,11 @@ Codec* SocketChannelImpl::SwitchCodec(E_CODEC_TYPE eCodecType, ev_tstamp dKeepAl
         LOG4_ERROR("%s", e.what());
         return(nullptr);
     }
-    DELETE(m_pCodec);
-    m_pCodec = pNewCodec;
+    if (pNewCodec != nullptr)
+    {
+        DELETE(m_pCodec);
+        m_pCodec = pNewCodec;
+    }
     m_dKeepAlive = dKeepAlive;
     m_dActiveTime = m_pLabor->GetNowTime();
     return(m_pCodec);

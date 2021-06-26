@@ -12,6 +12,7 @@
 
 #include <string>
 #include <list>
+#include <unordered_set>
 #include "Definition.hpp"
 #include "codec/Codec.hpp"
 #include "pb/http.pb.h"
@@ -57,6 +58,7 @@ public:
     static void DecodeFrameHeader(CBuffer* pBuff, tagH2FrameHead& stFrameHead);
     static void EncodeFrameHeader(const tagH2FrameHead& stFrameHead, CBuffer* pBuff);
     static E_CODEC_STATUS EncodeSetting(const std::vector<tagSetting>& vecSetting, std::string& strSettingFrame);
+    static bool IsValidFrameType(uint8 ucFrameType);
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
     {
@@ -147,6 +149,7 @@ private:
     friend class CodecHttp2;
     friend class Http2Stream;
 
+    static std::unordered_set<uint8> s_setFrameType;
     std::list<CBuffer*> m_listWaittingFrameData;
     tagH2FrameHead m_stLastDataFrameHead;
     Http2Stream* m_pStream;

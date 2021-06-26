@@ -109,10 +109,19 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 <a name="TODO"></a>
 ## 开发任务
    -  完成开发指南
-   -  原生支持dubbo、grpc等协议
+   -  原生支持dubbo、mqtt等协议
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.6.0
+   - 增加用于Worker内通信的SelfChannel，完善actor模型
+   - 增加服务状态监控和监控指标获取插件
+   - 增加节点之间Manager到Manager通信功能 
+   - 增加初始连接超时配置
+   - 日志组件采用可变模板参数替代va_list，解决日志组件遇到%容易coredump问题
+   - 线程ID优化
+   - Chain组件优化
+   - http2动态表、流优先级bug修复
 #### v1.5.0
    - 增加原生http2服务端和客户端支持  
    - 增加原生grpc服务端和客户端支持

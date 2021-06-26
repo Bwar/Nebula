@@ -15,6 +15,19 @@
 namespace neb
 {
 
+std::unordered_set<uint8> Http2Frame::s_setFrameType = {
+    H2_FRAME_DATA,
+    H2_FRAME_HEADERS,
+    H2_FRAME_PRIORITY,
+    H2_FRAME_RST_STREAM,
+    H2_FRAME_SETTINGS,
+    H2_FRAME_PUSH_PROMISE,
+    H2_FRAME_PING,
+    H2_FRAME_GOAWAY,
+    H2_FRAME_WINDOW_UPDATE,
+    H2_FRAME_CONTINUATION
+};
+
 Http2Frame::Http2Frame(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, Http2Stream* pStream)
     : Codec(pLogger, eCodecType), m_pStream(pStream)
 {
@@ -100,6 +113,16 @@ E_CODEC_STATUS Http2Frame::EncodeSetting(const std::vector<tagSetting>& vecSetti
     }
     strSettingFrame.assign(oBuff.GetRawReadBuffer(), oBuff.ReadableBytes());
     return(CODEC_STATUS_OK);
+}
+
+bool Http2Frame::IsValidFrameType(uint8 ucFrameType)
+{
+    auto iter = s_setFrameType.find(ucFrameType);
+    if (iter == s_setFrameType.end())
+    {
+        return(false);
+    }
+    return(true);
 }
 
 E_CODEC_STATUS Http2Frame::Encode(CodecHttp2* pCodecH2,

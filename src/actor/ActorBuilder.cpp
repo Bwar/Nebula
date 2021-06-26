@@ -682,22 +682,6 @@ bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const 
     auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
     if (pSelfChannel->IsResponse())
     {
-        auto cmd_iter = m_mapCmd.find(CMD_REQ_REDIS_PROXY);
-        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
-        {
-            auto pRedisCmd = std::dynamic_pointer_cast<RedisCmd>(cmd_iter->second);
-            if (pRedisCmd == nullptr)
-            {
-                LOG4_ERROR("cmd %d is not a RedisCmd instance!", CMD_REQ_REDIS_PROXY);
-                return(false);
-            }
-            return(pRedisCmd->AnyMessage(pChannel, oRedisMsg));
-        }
-        LOG4_ERROR("no instance of RedisCmd or derived class of RedisCmd found for cmd %d", CMD_REQ_REDIS_PROXY);
-        return(false);
-    }
-    else
-    {
         auto step_iter = m_mapCallbackStep.find(pSelfChannel->GetStepSeq());
         if (step_iter == m_mapCallbackStep.end())
         {
@@ -730,28 +714,28 @@ bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const 
             return(eResult);
         }
     }
+    else
+    {
+        auto cmd_iter = m_mapCmd.find(CMD_REQ_REDIS_PROXY);
+        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
+        {
+            auto pRedisCmd = std::dynamic_pointer_cast<RedisCmd>(cmd_iter->second);
+            if (pRedisCmd == nullptr)
+            {
+                LOG4_ERROR("cmd %d is not a RedisCmd instance!", CMD_REQ_REDIS_PROXY);
+                return(false);
+            }
+            return(pRedisCmd->AnyMessage(pChannel, oRedisMsg));
+        }
+        LOG4_ERROR("no instance of RedisCmd or derived class of RedisCmd found for cmd %d", CMD_REQ_REDIS_PROXY);
+        return(false);
+    }
 }
 
 bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer)
 {
     auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
     if (pSelfChannel->IsResponse())
-    {
-        auto cmd_iter = m_mapCmd.find(CMD_REQ_RAW_DATA);
-        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
-        {
-            auto pRawCmd = std::dynamic_pointer_cast<RawCmd>(cmd_iter->second);
-            if (pRawCmd == nullptr)
-            {
-                LOG4_ERROR("cmd %d is not a RawCmd instance!", CMD_REQ_RAW_DATA);
-                return(false);
-            }
-            return(pRawCmd->AnyMessage(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes()));
-        }
-        LOG4_ERROR("no instance of RawCmd or derived class of RawCmd found for cmd %d", CMD_REQ_RAW_DATA);
-        return(false);
-    }
-    else
     {
         auto step_iter = m_mapCallbackStep.find(pSelfChannel->GetStepSeq());
         if (step_iter == m_mapCallbackStep.end())
@@ -784,6 +768,22 @@ bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const 
             }
             return(eResult);
         }
+    }
+    else
+    {
+        auto cmd_iter = m_mapCmd.find(CMD_REQ_RAW_DATA);
+        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
+        {
+            auto pRawCmd = std::dynamic_pointer_cast<RawCmd>(cmd_iter->second);
+            if (pRawCmd == nullptr)
+            {
+                LOG4_ERROR("cmd %d is not a RawCmd instance!", CMD_REQ_RAW_DATA);
+                return(false);
+            }
+            return(pRawCmd->AnyMessage(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes()));
+        }
+        LOG4_ERROR("no instance of RawCmd or derived class of RawCmd found for cmd %d", CMD_REQ_RAW_DATA);
+        return(false);
     }
 }
 

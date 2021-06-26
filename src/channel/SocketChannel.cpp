@@ -47,7 +47,10 @@ SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32
 
 SocketChannel::~SocketChannel()
 {
-    m_pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "");
+    if (m_pLogger != nullptr)
+    {
+        m_pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "");
+    }
 }
 
 bool SocketChannel::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
