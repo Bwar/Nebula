@@ -134,6 +134,7 @@ A simple testing can be start with a NebulaInterface only, and also can be start
    - add Manager to Manager communication feature
    - add initial connection timeout configuration
    - replace va_list with variadic templates in logger
+   - add multi-protocol port support
    - thread id optimization
    - chain optimization
    - http2 dynamic table and stream priority bug fix

@@ -119,6 +119,7 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
    - 增加节点之间Manager到Manager通信功能 
    - 增加初始连接超时配置
    - 日志组件采用可变模板参数替代va_list，解决日志组件遇到%容易coredump问题
+   - 增加一个端口多协议支持
    - 线程ID优化
    - Chain组件优化
    - http2动态表、流优先级bug修复
