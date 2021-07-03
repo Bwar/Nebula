@@ -113,7 +113,6 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         pBuff->Write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24);
         m_bWantMagic = false;
     }
-    m_bChunkNotice = oHttpMsg.chunk_notice();
     for (int i = 0; i < oHttpMsg.adding_without_index_headers_size(); ++i)
     {
         m_setEncodingWithoutIndexHeaders.insert(oHttpMsg.adding_without_index_headers(i));

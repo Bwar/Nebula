@@ -266,9 +266,11 @@ bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args
             RemoveIoWriteEvent(pChannel);
             return(true);
         case CODEC_STATUS_EOF:      // a case: http1.0 respone and close
+            LOG4_TRACE("eStatus = %d, %s", eStatus, pChannel->GetIdentify().c_str());
             DiscardSocketChannel(pChannel);
             return(true);
         default:
+            LOG4_TRACE("eStatus = %d, %s", eStatus, pChannel->GetIdentify().c_str());
             DiscardSocketChannel(pChannel);
             return(false);
     }

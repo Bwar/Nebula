@@ -104,6 +104,7 @@ E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply)
             oReply.set_type(REDIS_REPLY_ERROR);
             oReply.set_integer(REDIS_ERR_PROTOCOL);
             pBuff->SetReadIndex(uiReadIndex);
+            LOG4_TRACE("cFirstByte = %d", int(cFirstByte));
             return(CODEC_STATUS_ERR);
     }
     if (CODEC_STATUS_OK != eStatus)
@@ -236,6 +237,8 @@ E_CODEC_STATUS CodecResp::DecodeSimpleString(CBuffer* pBuff, RedisReply& oReply)
                 }
                 else
                 {
+                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
+                            uiReadableBytes, i, int(cLastChar), (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }
                 break;
@@ -271,6 +274,8 @@ E_CODEC_STATUS CodecResp::DecodeError(CBuffer* pBuff, RedisReply& oReply)
                 }
                 else
                 {
+                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
+                            uiReadableBytes, i, int(cLastChar), (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }
                 break;
@@ -305,6 +310,8 @@ E_CODEC_STATUS CodecResp::DecodeInteger(CBuffer* pBuff, RedisReply& oReply)
                 }
                 else
                 {
+                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
+                            uiReadableBytes, i, int(cLastChar), (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }
                 break;
@@ -326,7 +333,7 @@ E_CODEC_STATUS CodecResp::DecodeBulkString(CBuffer* pBuff, RedisReply& oReply)
     bool bGotStringLen = false;
     const char* pData = pBuff->GetRawReadBuffer();
     const char* pPartBegin = pData;
-    for (size_t i = 0; i <= uiReadableBytes; ++i)
+    for (size_t i = 0; i < uiReadableBytes; ++i)
     {
         switch (pData[i])
         {
@@ -364,6 +371,8 @@ E_CODEC_STATUS CodecResp::DecodeBulkString(CBuffer* pBuff, RedisReply& oReply)
                 }
                 else
                 {
+                    LOG4_TRACE("uiReadableBytes = %u, i = %d, iStringLen = %d, cLastChar = %d, pData[i] = %d",
+                            uiReadableBytes, i, iStringLen, int(cLastChar), (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }
                 break;
@@ -435,6 +444,8 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
                                 default:
                                     oReply.set_type(REDIS_REPLY_ERROR);
                                     oReply.set_integer(REDIS_ERR_PROTOCOL);
+                                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cFirstByte = %d, cLastChar = %d, pData[i] = %d",
+                                        uiReadableBytes, i, (int)cFirstByte, (int)cLastChar, (int)pData[i]);
                                     return(CODEC_STATUS_ERR);
                             }
                             if (CODEC_STATUS_OK != eStatus)
@@ -448,6 +459,8 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
                 }
                 else
                 {
+                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
+                        uiReadableBytes, i, (int)cLastChar, (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }
                 break;

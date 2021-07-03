@@ -61,10 +61,6 @@ public:
     {
         return(m_bChannelIsClient);
     }
-    bool IsChunkNotice() const
-    {
-        return(m_bChunkNotice);
-    }
     void SetPriority(uint32 uiStreamId, const tagPriority& stPriority);
     void RstStream(uint32 uiStreamId);
     E_H2_ERR_CODE Setting(const std::vector<tagSetting>& vecSetting, bool bRecvSetting = false);
@@ -133,7 +129,6 @@ protected:
 private:
     bool m_bChannelIsClient = false;    // 当前编解码器所在channel是作为http客户端还是作为http服务端
     bool m_bWantMagic = true;
-    bool m_bChunkNotice = false;        // 是否启用分块传输通知（当包体比较大时，部分传输完毕也会通知业务层而无须等待整个http包传输完毕。）
     bool m_bHasWaittingFrame = false;
     uint32 m_uiStreamIdGenerate = 0;
     uint32 m_uiGoawayLastStreamId = 0;

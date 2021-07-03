@@ -94,6 +94,7 @@ private:
     int32 m_iSendWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
     uint32 m_uiRecvWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
     bool m_bEndHeaders;
+    bool m_bChunkNotice = false;        // 是否启用分块传输通知（当包体比较大时，部分传输完毕也会通知业务层而无须等待整个http包传输完毕。）
     std::unique_ptr<Http2Frame> m_pFrame;
     HttpMsg m_oHttpMsg;
 };

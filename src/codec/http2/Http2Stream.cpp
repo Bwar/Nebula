@@ -37,6 +37,7 @@ E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
     std::string strPadding;
     if (HTTP_REQUEST == oHttpMsg.type())
     {
+        m_bChunkNotice = oHttpMsg.chunk_notice();
         stPriority.uiDependency = 0;
         stPriority.ucWeight = 15;
         std::string strScheme = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(':'));
@@ -270,7 +271,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
                     m_oHttpMsg.set_type(HTTP_RESPONSE);
                 }
             }
-            if (pCodecH2->IsChunkNotice())
+            if (m_bChunkNotice)
             {
                 oHttpMsg = std::move(m_oHttpMsg);
             }

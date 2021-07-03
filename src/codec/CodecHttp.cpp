@@ -154,17 +154,17 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     {
         m_bChannelIsClient = true;
     }
-    if (0 == oHttpMsg.http_major())
-    {
-        LOG4_WARNING("miss http version!");
-        m_mapAddingHttpHeader.clear();
-        return(CODEC_STATUS_ERR);
-    }
 
     int iWriteSize = 0;
     int iHadEncodedSize = 0;
     if (HTTP_REQUEST == oHttpMsg.type())
     {
+        if (0 == oHttpMsg.http_major())
+        {
+            LOG4_WARNING("miss http version!");
+            m_mapAddingHttpHeader.clear();
+            return(CODEC_STATUS_ERR);
+        }
         if (oHttpMsg.url().size() == 0)
         {
             LOG4_WARNING("miss url!");
@@ -295,6 +295,11 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     }
     for (auto h_iter = m_mapAddingHttpHeader.begin(); h_iter != m_mapAddingHttpHeader.end(); ++h_iter)
     {
+        if (h_iter->first == "Content-Length" || h_iter->first == "content-length"
+                || h_iter->first == "Host" || h_iter->first == "host")
+        {
+            continue;
+        }
         iWriteSize = pBuff->Printf("%s: %s\r\n", h_iter->first.c_str(), h_iter->second.c_str());
         if (iWriteSize < 0)
         {
@@ -602,8 +607,8 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
         LOG4_TRACE("decoding...");
         return(CODEC_STATUS_PAUSE);
     }
-    LOG4_WARNING("Failed to parse http message for cause:%s",
-            http_errno_name((http_errno)m_parser.http_errno));
+    LOG4_WARNING("Failed to parse http message for cause:%s, message %s",
+            http_errno_name((http_errno)m_parser.http_errno), pDecodeBuff);
     return(CODEC_STATUS_ERR);
 }
 

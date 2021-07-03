@@ -333,6 +333,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                             pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
                 }
             }
+            LOG4_TRACE("eCodecStatus = %d", eCodecStatus);
             DiscardSocketChannel(pChannel);
             return(false);
     }
@@ -480,6 +481,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                             pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
                 }
             }
+            LOG4_TRACE("eCodecStatus = %d", eCodecStatus);
             DiscardSocketChannel(pChannel);
             return(false);
     }
@@ -674,6 +676,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     }
     else
     {
+        LOG4_TRACE("%s", pChannel->GetIdentify().c_str());
         DiscardSocketChannel(pChannel);
     }
     return(true);
@@ -897,6 +900,7 @@ std::shared_ptr<SocketChannel> Dispatcher::StressSend(const std::string& strIden
                 && CODEC_STATUS_WANT_WRITE != eCodecStatus
                 && CODEC_STATUS_WANT_READ != eCodecStatus)
         {
+            LOG4_TRACE("eStatus = %d, %s", eCodecStatus, pChannel->GetIdentify().c_str());
             DiscardSocketChannel(pChannel);
         }
         pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
@@ -968,6 +972,7 @@ std::shared_ptr<SocketChannel> Dispatcher::GetLastActivityChannel()
 
 bool Dispatcher::Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice)
 {
+    LOG4_TRACE("%s", pChannel->GetIdentify().c_str());
     return(DiscardSocketChannel(pChannel, bChannelNotice));
 }
 
@@ -980,9 +985,11 @@ bool Dispatcher::Disconnect(const std::string& strIdentify, bool bChannelNotice)
         while (named_iter->second.size() > 1)
         {
             channel_iter = named_iter->second.begin();
+            LOG4_TRACE("%s", (*channel_iter)->GetIdentify().c_str());
             DiscardSocketChannel(*channel_iter, bChannelNotice);
         }
         channel_iter = named_iter->second.begin();
+        LOG4_TRACE("%s", (*channel_iter)->GetIdentify().c_str());
         return(DiscardSocketChannel(*channel_iter, bChannelNotice));
     }
     return(false);
