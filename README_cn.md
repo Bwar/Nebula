@@ -113,6 +113,9 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.6.1
+   - http2分块响应通知改为作用于流而非连接
+   - resp解码字符串遇分包时bug修复
 #### v1.6.0
    - 增加用于Worker内通信的SelfChannel，完善actor模型
    - 增加服务状态监控和监控指标获取插件
