@@ -588,8 +588,13 @@ void CodecHttp2::UpdateSendWindow(uint32 uiStreamId, uint32 uiSendLength)
 
 void CodecHttp2::UpdateRecvWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
 {
-    m_pFrame->EncodeWindowUpdate(this, 0, uiRecvLength, pBuff);
-    m_uiRecvWindowSize = SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    m_uiRecvWindowSize -= uiRecvLength;
+    if (m_uiRecvWindowSize < DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE / 4)
+    {
+        m_pFrame->EncodeWindowUpdate(this, 0,
+                SETTINGS_MAX_INITIAL_WINDOW_SIZE - uiRecvLength, pBuff);
+        m_uiRecvWindowSize = SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    }
     if (uiStreamId > 0)
     {
         auto iter = m_mapStream.find(uiStreamId);

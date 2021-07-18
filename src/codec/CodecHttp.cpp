@@ -80,7 +80,7 @@ namespace neb
 
 CodecHttp::CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
     : Codec(pLogger, eCodecType),
-      m_bChannelIsClient(false), m_uiEncodedNum(0), m_uiDecodedNum(0),
+      m_bChannelIsClient(false), m_bIsDecoding(false), m_uiEncodedNum(0), m_uiDecodedNum(0),
       m_iHttpMajor(1), m_iHttpMinor(1), m_dKeepAlive(dKeepAlive)
 {
 }
@@ -295,6 +295,14 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     }
     for (auto h_iter = m_mapAddingHttpHeader.begin(); h_iter != m_mapAddingHttpHeader.end(); ++h_iter)
     {
+        if (std::string("Content-Encoding") == h_iter->first && std::string("gzip") == h_iter->second)
+        {
+            bIsGzip = true;
+        }
+        if (std::string("Transfer-Encoding") == h_iter->first && std::string("chunked") == h_iter->second)
+        {
+            bIsChunked = true;
+        }
         if (h_iter->first == "Content-Length" || h_iter->first == "content-length"
                 || h_iter->first == "Host" || h_iter->first == "host")
         {
@@ -310,14 +318,6 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         else
         {
             iHadEncodedSize += iWriteSize;
-        }
-        if (std::string("Content-Encoding") == h_iter->first && std::string("gzip") == h_iter->second)
-        {
-            bIsGzip = true;
-        }
-        if (std::string("Transfer-Encoding") == h_iter->first && std::string("chunked") == h_iter->second)
-        {
-            bIsChunked = true;
         }
     }
     if (oHttpMsg.body().size() > 0)
@@ -552,6 +552,7 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
         return(CODEC_STATUS_PAUSE);
     }
     ++m_uiDecodedNum;
+    m_oParsingHttpMsg.Clear();
     m_parser_setting.on_message_begin = OnMessageBegin;
     m_parser_setting.on_url = OnUrl;
     m_parser_setting.on_status = OnStatus;
@@ -562,30 +563,41 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
     m_parser_setting.on_message_complete = OnMessageComplete;
     m_parser_setting.on_chunk_header = OnChunkHeader;
     m_parser_setting.on_chunk_complete = OnChunkComplete;
-    m_parser.data = &oHttpMsg;
+    m_parser.data = this;
+    m_bIsDecoding = false;
     http_parser_init(&m_parser, HTTP_BOTH);
     const char* pDecodeBuff = pBuff->GetRawReadBuffer();
     size_t uiDecodeBuffLen = pBuff->ReadableBytes();
     size_t uiLen = http_parser_execute(&m_parser, &m_parser_setting,
                     pDecodeBuff, uiDecodeBuffLen);
+    if (m_parser.http_errno == HPE_PAUSED)
+    {
+        LOG4_TRACE("wait for message to complete...");
+        return(CODEC_STATUS_PAUSE);
+    }
     if(m_parser.http_errno == HPE_OK)
     {
-        pBuff->AdvanceReadIndex(uiLen);
-        if (HTTP_REQUEST == oHttpMsg.type())
+        if (m_bIsDecoding)
         {
-            m_iHttpMajor = oHttpMsg.http_major();
-            m_iHttpMinor = oHttpMsg.http_minor();
-            m_dKeepAlive = (oHttpMsg.keep_alive() > 0) ? oHttpMsg.keep_alive() : m_dKeepAlive;
+            LOG4_TRACE("wait for message to complete...");
+            return(CODEC_STATUS_PAUSE);
         }
-        auto iter = oHttpMsg.headers().find("Content-Encoding");
-        if (iter != oHttpMsg.headers().end())
+        pBuff->AdvanceReadIndex(uiLen);
+        if (HTTP_REQUEST == m_oParsingHttpMsg.type())
+        {
+            m_iHttpMajor = m_oParsingHttpMsg.http_major();
+            m_iHttpMinor = m_oParsingHttpMsg.http_minor();
+            m_dKeepAlive = (m_oParsingHttpMsg.keep_alive() > 0) ? m_oParsingHttpMsg.keep_alive() : m_dKeepAlive;
+        }
+        auto iter = m_oParsingHttpMsg.headers().find("Content-Encoding");
+        if (iter != m_oParsingHttpMsg.headers().end())
         {
             if ("gzip" == iter->second)
             {
                 std::string strData;
-                if (Gunzip(oHttpMsg.body(), strData))
+                if (Gunzip(m_oParsingHttpMsg.body(), strData))
                 {
-                    oHttpMsg.set_body(strData);
+                    m_oParsingHttpMsg.set_body(strData);
                 }
                 else
                 {
@@ -596,16 +608,12 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
         }
         if (!m_bChannelIsClient && !http_should_keep_alive(&m_parser))
         {
-            oHttpMsg.set_keep_alive(0.0);
+            m_oParsingHttpMsg.set_keep_alive(0.0);
             m_dKeepAlive = 0.0;
         }
-        LOG4_DEBUG("%s", ToString(oHttpMsg).c_str());
+        oHttpMsg = std::move(m_oParsingHttpMsg);
+        LOG4_TRACE("%s", ToString(oHttpMsg).c_str());
         return(CODEC_STATUS_OK);
-    }
-    if (m_parser.http_errno == HPE_PAUSED)
-    {
-        LOG4_TRACE("decoding...");
-        return(CODEC_STATUS_PAUSE);
     }
     LOG4_WARNING("Failed to parse http message for cause:%s, message %s",
             http_errno_name((http_errno)m_parser.http_errno), pDecodeBuff);
@@ -681,13 +689,15 @@ bool CodecHttp::CloseRightAway() const
 
 int CodecHttp::OnMessageBegin(http_parser *parser)
 {
+    CodecHttp* pCodec = (CodecHttp*)parser->data;
+    pCodec->m_bIsDecoding = true;
     return(0);
 }
 
 int CodecHttp::OnUrl(http_parser *parser, const char *at, size_t len)
 {
-    HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
-    pHttpMsg->set_url(at, len);
+    CodecHttp* pCodec = (CodecHttp*)parser->data;
+    pCodec->MutableParsingHttpMsg()->set_url(at, len);
     struct http_parser_url stUrl;
     if(0 == http_parser_parse_url(at, len, 0, &stUrl))
     {
@@ -713,7 +723,7 @@ int CodecHttp::OnUrl(http_parser *parser, const char *at, size_t len)
         {
             char *path = (char*)malloc(stUrl.field_data[UF_PATH].len);
             strncpy(path, at+stUrl.field_data[UF_PATH].off, stUrl.field_data[UF_PATH].len);
-            pHttpMsg->set_path(path, stUrl.field_data[UF_PATH].len);
+            pCodec->MutableParsingHttpMsg()->set_path(path, stUrl.field_data[UF_PATH].len);
             free(path);
         }
 
@@ -725,7 +735,7 @@ int CodecHttp::OnUrl(http_parser *parser, const char *at, size_t len)
             DecodeParameter(strQuery, mapParam);
             for (auto it = mapParam.begin(); it != mapParam.end(); ++it)
             {
-                (*pHttpMsg->mutable_params())[it->first] = it->second;
+                (*pCodec->MutableParsingHttpMsg()->mutable_params())[it->first] = it->second;
             }
         }
     }
@@ -734,29 +744,29 @@ int CodecHttp::OnUrl(http_parser *parser, const char *at, size_t len)
 
 int CodecHttp::OnStatus(http_parser *parser, const char *at, size_t len)
 {
-    HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
-    pHttpMsg->set_status_code(parser->status_code);
+    CodecHttp* pCodec = (CodecHttp*) parser->data;
+    pCodec->MutableParsingHttpMsg()->set_status_code(parser->status_code);
     return(0);
 }
 
 int CodecHttp::OnHeaderField(http_parser *parser, const char *at, size_t len)
 {
-    HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
-    pHttpMsg->set_body(at, len);        // 用body暂存head_name，解析完head_value后再填充到head里
+    CodecHttp* pCodec = (CodecHttp*) parser->data;
+    pCodec->MutableParsingHttpMsg()->set_body(at, len);        // 用body暂存head_name，解析完head_value后再填充到head里
     return(0);
 }
 
 int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
 {
-    HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
-    std::string strHeadName = pHttpMsg->body();
+    CodecHttp* pCodec = (CodecHttp*) parser->data;
+    std::string strHeadName = pCodec->MutableParsingHttpMsg()->body();
     std::string strHeadValue;
     strHeadValue.assign(at, len);
-    pHttpMsg->set_body("");
-    pHttpMsg->mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>(strHeadName, strHeadValue));
+    pCodec->MutableParsingHttpMsg()->set_body("");
+    pCodec->MutableParsingHttpMsg()->mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>(strHeadName, strHeadValue));
     if (strHeadName == std::string("Keep-Alive"))
     {
-        pHttpMsg->set_keep_alive(atof(strHeadValue.c_str()));
+        pCodec->MutableParsingHttpMsg()->set_keep_alive(atof(strHeadValue.c_str()));
     }
     else if (std::string("Connection") == strHeadName)
     {
@@ -764,16 +774,16 @@ int CodecHttp::OnHeaderValue(http_parser *parser, const char *at, size_t len)
         uiPos = strHeadValue.find_first_of("Upgrade");
         if (0 == uiPos)
         {
-            pHttpMsg->mutable_upgrade()->set_is_upgrade(true);
+            pCodec->MutableParsingHttpMsg()->mutable_upgrade()->set_is_upgrade(true);
         }
         else
         {
-            pHttpMsg->mutable_upgrade()->set_is_upgrade(false);
+            pCodec->MutableParsingHttpMsg()->mutable_upgrade()->set_is_upgrade(false);
         }
     }
     else if (std::string("Upgrade") == strHeadName)
     {
-        pHttpMsg->mutable_upgrade()->set_protocol(strHeadValue);
+        pCodec->MutableParsingHttpMsg()->mutable_upgrade()->set_protocol(strHeadValue);
     }
     return(0);
 }
@@ -785,33 +795,33 @@ int CodecHttp::OnHeadersComplete(http_parser *parser)
 
 int CodecHttp::OnBody(http_parser *parser, const char *at, size_t len)
 {
-    HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
-    if (pHttpMsg->body().size() > 0)
+    CodecHttp* pCodec = (CodecHttp*) parser->data;
+    if (pCodec->MutableParsingHttpMsg()->body().size() > 0)
     {
-        pHttpMsg->mutable_body()->append(at, len);
+        pCodec->MutableParsingHttpMsg()->mutable_body()->append(at, len);
     }
     else
     {
-        pHttpMsg->set_body(at, len);
+        pCodec->MutableParsingHttpMsg()->set_body(at, len);
     }
     return(0);
 }
 
 int CodecHttp::OnMessageComplete(http_parser *parser)
 {
-    HttpMsg* pHttpMsg = (HttpMsg*) parser->data;
+    CodecHttp* pCodec = (CodecHttp*) parser->data;
     if (0 != parser->status_code)
     {
-        pHttpMsg->set_status_code(parser->status_code);
-        pHttpMsg->set_type(HTTP_RESPONSE);
+        pCodec->MutableParsingHttpMsg()->set_status_code(parser->status_code);
+        pCodec->MutableParsingHttpMsg()->set_type(HTTP_RESPONSE);
     }
     else
     {
-        pHttpMsg->set_method(parser->method);
-        pHttpMsg->set_type(HTTP_REQUEST);
+        pCodec->MutableParsingHttpMsg()->set_method(parser->method);
+        pCodec->MutableParsingHttpMsg()->set_type(HTTP_REQUEST);
     }
-    pHttpMsg->set_http_major(parser->http_major);
-    pHttpMsg->set_http_minor(parser->http_minor);
+    pCodec->MutableParsingHttpMsg()->set_http_major(parser->http_major);
+    pCodec->MutableParsingHttpMsg()->set_http_minor(parser->http_minor);
     return(0);
 }
 

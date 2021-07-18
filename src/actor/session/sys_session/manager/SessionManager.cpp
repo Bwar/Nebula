@@ -430,10 +430,8 @@ bool SessionManager::WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE&
             m_mapWorkerFdPid.erase(fd_iter);
         }
         auto pControlChannel = GetLabor(this)->GetDispatcher()->GetChannel(worker_iter->second->iControlFd);
-        LOG4_TRACE("%s", pControlChannel->GetIdentify().c_str());
         GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pControlChannel); // 在io事件中已关闭连接，这里可以不需要
         auto pDataChannel = GetLabor(this)->GetDispatcher()->GetChannel(worker_iter->second->iDataFd);
-        LOG4_TRACE("%s", pDataChannel->GetIdentify().c_str());
         GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pDataChannel);
         delete worker_iter->second;
         m_mapWorkerInfo.erase(worker_iter);

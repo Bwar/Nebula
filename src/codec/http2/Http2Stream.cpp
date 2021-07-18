@@ -424,12 +424,18 @@ void Http2Stream::WindowUpdate(int32 iIncrement)
 
 void Http2Stream::UpdateRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
 {
+    m_uiRecvWindowSize -= uiRecvLength;
     if (m_eStreamState == H2_STREAM_OPEN
             || m_eStreamState == H2_STREAM_IDLE
             || m_eStreamState == H2_STREAM_RESERVED_LOCAL
             || m_eStreamState == H2_STREAM_RESERVED_REMOTE)
     {
-        m_pFrame->EncodeWindowUpdate(pCodecH2, uiStreamId, uiRecvLength, pBuff);
+        if (m_uiRecvWindowSize < DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE / 4)
+        {
+            m_pFrame->EncodeWindowUpdate(pCodecH2, uiStreamId,
+                    SETTINGS_MAX_INITIAL_WINDOW_SIZE - uiRecvLength, pBuff);
+            m_uiRecvWindowSize = SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+        }
     }
 }
 

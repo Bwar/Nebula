@@ -57,8 +57,14 @@ protected:
     static int OnChunkHeader(http_parser *parser);
     static int OnChunkComplete(http_parser *parser);
 
+    HttpMsg* MutableParsingHttpMsg()
+    {
+        return(&m_oParsingHttpMsg);
+    }
+
 private:
     bool m_bChannelIsClient;    // 当前编解码器所在channel是作为http客户端还是作为http服务端
+    bool m_bIsDecoding;         // 是否編解碼完成
     uint32 m_uiEncodedNum;
     uint32 m_uiDecodedNum;
     int32 m_iHttpMajor;

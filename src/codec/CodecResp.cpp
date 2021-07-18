@@ -104,7 +104,7 @@ E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply)
             oReply.set_type(REDIS_REPLY_ERROR);
             oReply.set_integer(REDIS_ERR_PROTOCOL);
             pBuff->SetReadIndex(uiReadIndex);
-            LOG4_TRACE("cFirstByte = %d", int(cFirstByte));
+            LOG4_ERROR("cFirstByte = %d", int(cFirstByte));
             return(CODEC_STATUS_ERR);
     }
     if (CODEC_STATUS_OK != eStatus)
@@ -237,7 +237,7 @@ E_CODEC_STATUS CodecResp::DecodeSimpleString(CBuffer* pBuff, RedisReply& oReply)
                 }
                 else
                 {
-                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
+                    LOG4_ERROR("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
                             uiReadableBytes, i, int(cLastChar), (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }
@@ -274,7 +274,7 @@ E_CODEC_STATUS CodecResp::DecodeError(CBuffer* pBuff, RedisReply& oReply)
                 }
                 else
                 {
-                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
+                    LOG4_ERROR("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
                             uiReadableBytes, i, int(cLastChar), (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }
@@ -310,7 +310,7 @@ E_CODEC_STATUS CodecResp::DecodeInteger(CBuffer* pBuff, RedisReply& oReply)
                 }
                 else
                 {
-                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
+                    LOG4_ERROR("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
                             uiReadableBytes, i, int(cLastChar), (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }
@@ -359,19 +359,16 @@ E_CODEC_STATUS CodecResp::DecodeBulkString(CBuffer* pBuff, RedisReply& oReply)
                             pBuff->AdvanceReadIndex(i + 1);
                             return(CODEC_STATUS_OK);
                         }
-                        if (uiReadableBytes - i < (uint32)iStringLen)
+                        i += (uint32)iStringLen;
+                        if (uiReadableBytes < (i + 1 + 2)) // not enough data (pos i + 1 is the end of bulk string)
                         {
                             return(CODEC_STATUS_PAUSE);
-                        }
-                        else
-                        {
-                            i += (uint32)iStringLen;
                         }
                     }
                 }
                 else
                 {
-                    LOG4_TRACE("uiReadableBytes = %u, i = %d, iStringLen = %d, cLastChar = %d, pData[i] = %d",
+                    LOG4_ERROR("uiReadableBytes = %u, i = %d, iStringLen = %d, cLastChar = %d, pData[i] = %d",
                             uiReadableBytes, i, iStringLen, int(cLastChar), (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }
@@ -444,7 +441,7 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
                                 default:
                                     oReply.set_type(REDIS_REPLY_ERROR);
                                     oReply.set_integer(REDIS_ERR_PROTOCOL);
-                                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cFirstByte = %d, cLastChar = %d, pData[i] = %d",
+                                    LOG4_ERROR("uiReadableBytes = %u, i = %d, cFirstByte = %d, cLastChar = %d, pData[i] = %d",
                                         uiReadableBytes, i, (int)cFirstByte, (int)cLastChar, (int)pData[i]);
                                     return(CODEC_STATUS_ERR);
                             }
@@ -459,7 +456,7 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
                 }
                 else
                 {
-                    LOG4_TRACE("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
+                    LOG4_ERROR("uiReadableBytes = %u, i = %d, cLastChar = %d, pData[i] = %d",
                         uiReadableBytes, i, (int)cLastChar, (int)pData[i]);
                     return(CODEC_STATUS_ERR);
                 }

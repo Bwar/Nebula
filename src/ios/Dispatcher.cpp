@@ -884,7 +884,7 @@ std::shared_ptr<SocketChannel> Dispatcher::StressSend(const std::string& strIden
     setsockopt(iFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount));
     setsockopt(iFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay));
     setsockopt(iFd, IPPROTO_TCP, TCP_QUICKACK, (void*)&iTcpQuickAck, sizeof(iTcpQuickAck));
-    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, eCodecType);
+    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iFd, eCodecType, true);
     if (nullptr != pChannel)
     {
         connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);

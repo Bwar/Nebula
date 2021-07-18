@@ -171,9 +171,10 @@ bool SocketChannelImpl::NeedAliveCheck() const
 E_CODEC_STATUS SocketChannelImpl::Send()
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus || CHANNEL_STATUS_BROKEN == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
+        LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
         return(CODEC_STATUS_EOF);
     }
     else if (CHANNEL_STATUS_ESTABLISHED != m_ucChannelStatus)
@@ -245,6 +246,7 @@ E_CODEC_STATUS SocketChannelImpl::Send()
         m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, m_strErrMsg.c_str());
+        m_ucChannelStatus = CHANNEL_STATUS_BROKEN;
         return(CODEC_STATUS_INT);
     }
 }
@@ -270,8 +272,10 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
             eCodecStatus = m_pCodec->Encode(oMsgHead, oMsgBody, m_pSendBuff);
             break;
         case CHANNEL_STATUS_CLOSED:
-            LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-            return(CODEC_STATUS_EOF);
+        case CHANNEL_STATUS_BROKEN:
+            LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                    m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+            return(CODEC_STATUS_ERR);
         case CHANNEL_STATUS_TELL_WORKER:
         case CHANNEL_STATUS_WORKER:
         case CHANNEL_STATUS_TRANSFER_TO_WORKER:
@@ -310,8 +314,8 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
         }
             break;
         default:
-            LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
-            return(CODEC_STATUS_OK);
+            LOG4_ERROR("%s invalid connection status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
+            return(CODEC_STATUS_ERR);
     }
 
     if (CODEC_STATUS_OK != eCodecStatus)
@@ -373,6 +377,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(int32 iCmd, uint32 uiSeq, const MsgBody& 
         m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, m_strErrMsg.c_str());
+        m_ucChannelStatus = CHANNEL_STATUS_BROKEN;
         return(CODEC_STATUS_INT);
     }
 }
@@ -416,8 +421,10 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
             }
             break;
         case CHANNEL_STATUS_CLOSED:
-            LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-            return(CODEC_STATUS_EOF);
+        case CHANNEL_STATUS_BROKEN:
+            LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                    m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+            return(CODEC_STATUS_ERR);
         case CHANNEL_STATUS_TELL_WORKER:
         case CHANNEL_STATUS_WORKER:
         case CHANNEL_STATUS_TRANSFER_TO_WORKER:
@@ -446,8 +453,8 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
             }
             break;
         default:
-            LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
-            return(CODEC_STATUS_OK);
+            LOG4_ERROR("%s invalid connection status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
+            return(CODEC_STATUS_ERR);
     }
 
     if (CODEC_STATUS_OK != eCodecStatus && CODEC_STATUS_PART_OK != eCodecStatus)
@@ -506,6 +513,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const HttpMsg& oHttpMsg, uint32 uiStepSeq
         m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, m_strErrMsg.c_str());
+        m_ucChannelStatus = CHANNEL_STATUS_BROKEN;
         return(CODEC_STATUS_INT);
     }
 }
@@ -530,7 +538,9 @@ E_CODEC_STATUS SocketChannelImpl::Send(const RedisMsg& oRedisMsg, uint32 uiStepS
             eCodecStatus = ((CodecResp*)m_pCodec)->Encode(oRedisMsg, m_pSendBuff);
             break;
         case CHANNEL_STATUS_CLOSED:
-            LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
+        case CHANNEL_STATUS_BROKEN:
+            LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                    m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
             return(CODEC_STATUS_EOF);
         case CHANNEL_STATUS_TELL_WORKER:
         case CHANNEL_STATUS_WORKER:
@@ -546,8 +556,8 @@ E_CODEC_STATUS SocketChannelImpl::Send(const RedisMsg& oRedisMsg, uint32 uiStepS
             }
             break;
         default:
-            LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
-            return(CODEC_STATUS_OK);
+            LOG4_ERROR("%s invalid connection status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
+            return(CODEC_STATUS_ERR);
     }
 
     if (CODEC_STATUS_OK != eCodecStatus)
@@ -605,6 +615,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const RedisMsg& oRedisMsg, uint32 uiStepS
         m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, m_strErrMsg.c_str());
+        m_ucChannelStatus = CHANNEL_STATUS_BROKEN;
         return(CODEC_STATUS_INT);
     }
 }
@@ -619,8 +630,10 @@ E_CODEC_STATUS SocketChannelImpl::Send(const char* pRaw, uint32 uiRawSize, uint3
             m_pSendBuff->Write(pRaw, uiRawSize);
             break;
         case CHANNEL_STATUS_CLOSED:
-            LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] send EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-            return(CODEC_STATUS_EOF);
+        case CHANNEL_STATUS_BROKEN:
+            LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                    m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+            return(CODEC_STATUS_ERR);
         case CHANNEL_STATUS_TELL_WORKER:
         case CHANNEL_STATUS_WORKER:
         case CHANNEL_STATUS_TRANSFER_TO_WORKER:
@@ -631,8 +644,8 @@ E_CODEC_STATUS SocketChannelImpl::Send(const char* pRaw, uint32 uiRawSize, uint3
             eCodecStatus = CODEC_STATUS_PAUSE;
             break;
         default:
-            LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
-            return(CODEC_STATUS_OK);
+            LOG4_ERROR("%s invalid connection status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
+            return(CODEC_STATUS_ERR);
     }
 
     if (CODEC_STATUS_OK != eCodecStatus)
@@ -690,6 +703,7 @@ E_CODEC_STATUS SocketChannelImpl::Send(const char* pRaw, uint32 uiRawSize, uint3
         m_strErrMsg = strerror_r(m_iErrno, m_szErrBuff, sizeof(m_szErrBuff));
         LOG4_ERROR("send to %s[fd %d] error %d: %s", m_strIdentify.c_str(),
                 m_iFd, m_iErrno, m_strErrMsg.c_str());
+        m_ucChannelStatus = CHANNEL_STATUS_BROKEN;
         return(CODEC_STATUS_INT);
     }
 }
@@ -735,6 +749,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                     m_strIdentify.c_str(), m_iFd, m_strRemoteAddr.c_str(),
                     m_iErrno, m_strErrMsg.c_str());
             m_eLastCodecStatus = CODEC_STATUS_INT;
+            m_ucChannelStatus = CHANNEL_STATUS_BROKEN;
             //return(CODEC_STATUS_INT);
         }
     }
@@ -766,8 +781,10 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                     }
                     break;
                 case CHANNEL_STATUS_CLOSED:
-                    LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-                    return(CODEC_STATUS_EOF);
+                case CHANNEL_STATUS_BROKEN:
+                    LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                            m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+                    return(CODEC_STATUS_ERR);
                 case CHANNEL_STATUS_TELL_WORKER:
                 case CHANNEL_STATUS_WORKER:
                 case CHANNEL_STATUS_TRANSFER_TO_WORKER:
@@ -799,7 +816,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
                 }
                     break;
                 default:
-                    LOG4_ERROR("%s invalid connect status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
+                    LOG4_ERROR("%s invalid connection status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
                     return(CODEC_STATUS_ERR);
             }
         }
@@ -819,10 +836,11 @@ E_CODEC_STATUS SocketChannelImpl::Recv(MsgHead& oMsgHead, MsgBody& oMsgBody)
 E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus || CHANNEL_STATUS_BROKEN == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+        return(CODEC_STATUS_ERR);
     }
     if (m_pCodec == nullptr)
     {
@@ -862,6 +880,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
                     m_strIdentify.c_str(), m_iFd, m_strRemoteAddr.c_str(),
                     m_iErrno, m_strErrMsg.c_str());
             m_eLastCodecStatus = CODEC_STATUS_INT;
+            m_ucChannelStatus = CHANNEL_STATUS_BROKEN;
         }
     }
 
@@ -941,10 +960,11 @@ E_CODEC_STATUS SocketChannelImpl::Recv(HttpMsg& oHttpMsg)
 E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus || CHANNEL_STATUS_BROKEN == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+        return(CODEC_STATUS_ERR);
     }
     if (m_pCodec == nullptr)
     {
@@ -984,6 +1004,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
                     m_strIdentify.c_str(), m_iFd, m_strRemoteAddr.c_str(),
                     m_iErrno, m_strErrMsg.c_str());
            m_eLastCodecStatus = CODEC_STATUS_INT;
+           m_ucChannelStatus = CHANNEL_STATUS_BROKEN;
         }
     }
 
@@ -1021,10 +1042,11 @@ E_CODEC_STATUS SocketChannelImpl::Recv(RedisReply& oRedisReply)
 E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus || CHANNEL_STATUS_BROKEN == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+        return(CODEC_STATUS_ERR);
     }
     int iReadLen = 0;
     int iHadReadLen = 0;
@@ -1059,6 +1081,7 @@ E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
                     m_strIdentify.c_str(), m_iFd, m_strRemoteAddr.c_str(),
                     m_iErrno, m_strErrMsg.c_str());
             m_eLastCodecStatus = CODEC_STATUS_INT;
+            m_ucChannelStatus = CHANNEL_STATUS_BROKEN;
         }
     }
 
@@ -1089,10 +1112,11 @@ E_CODEC_STATUS SocketChannelImpl::Recv(CBuffer& oRawBuff)
 E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus || CHANNEL_STATUS_BROKEN == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_TRACE("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+        return(CODEC_STATUS_ERR);
     }
     LOG4_TRACE("fetch from fd %d and m_pRecvBuff->ReadableBytes() = %d",
             m_iFd, m_pRecvBuff->ReadableBytes());
@@ -1128,10 +1152,11 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(MsgHead& oMsgHead, MsgBody& oMsgBody)
 E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus || CHANNEL_STATUS_BROKEN == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_TRACE("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+        return(CODEC_STATUS_ERR);
     }
     // 当http1.0响应包未带Content-Length头时，m_pRecvBuff可读字节数为0，以关闭连接表示数据发送完毕。
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
@@ -1198,10 +1223,11 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(HttpMsg& oHttpMsg)
 E_CODEC_STATUS SocketChannelImpl::Fetch(RedisReply& oRedisReply)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus || CHANNEL_STATUS_BROKEN == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_TRACE("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+        return(CODEC_STATUS_ERR);
     }
     E_CODEC_STATUS eCodecStatus = ((CodecResp*)m_pCodec)->Decode(m_pRecvBuff, oRedisReply);
     if (CODEC_STATUS_OK == eCodecStatus)
@@ -1233,10 +1259,11 @@ E_CODEC_STATUS SocketChannelImpl::Fetch(RedisReply& oRedisReply)
 E_CODEC_STATUS SocketChannelImpl::Fetch(CBuffer& oRawBuff)
 {
     LOG4_TRACE("channel_fd[%d], channel_seq[%d]", m_iFd, m_uiSeq);
-    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus)
+    if (CHANNEL_STATUS_CLOSED == m_ucChannelStatus || CHANNEL_STATUS_BROKEN == m_ucChannelStatus)
     {
-        LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d] recv EOF.", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
-        return(CODEC_STATUS_EOF);
+        LOG4_TRACE("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
+                m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
+        return(CODEC_STATUS_ERR);
     }
     if (oRawBuff.Write(m_pRecvBuff, m_pRecvBuff->ReadableBytes()) > 0)
     {
