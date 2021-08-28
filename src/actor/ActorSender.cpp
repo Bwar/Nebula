@@ -57,7 +57,7 @@ bool ActorSender::SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel,
 bool ActorSender::SendTo(Actor* pActor, const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pActor->GetTraceId());
-    return(pActor->m_pLabor->GetDispatcher()->SendTo(strIdentify, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
+    return(pActor->m_pLabor->GetDispatcher()->SendTo(strIdentify, SOCKET_STREAM, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
 }
 
 bool ActorSender::SendTo(Actor* pActor, const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq)
@@ -90,7 +90,7 @@ bool ActorSender::SendTo(Actor* pActor, const std::string& strHost, int iPort, c
 
 bool ActorSender::SendTo(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
-    return(pActor->m_pLabor->GetDispatcher()->SendTo(strIdentify, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, pActor->GetSequence()));
+    return(pActor->m_pLabor->GetDispatcher()->SendTo(strIdentify, SOCKET_STREAM, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, pActor->GetSequence()));
 }
 
 bool ActorSender::SendToCluster(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
@@ -100,12 +100,12 @@ bool ActorSender::SendToCluster(Actor* pActor, const std::string& strIdentify, c
 
 bool ActorSender::SendRoundRobin(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline)
 {
-    return(pActor->m_pLabor->GetDispatcher()->SendRoundRobin(strIdentify, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, pActor->GetSequence()));
+    return(pActor->m_pLabor->GetDispatcher()->SendRoundRobin(strIdentify, SOCKET_STREAM, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, pActor->GetSequence()));
 }
 
 bool ActorSender::SendTo(Actor* pActor, const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
-    return(pActor->m_pLabor->GetDispatcher()->SendTo(strIdentify, CODEC_UNKNOW, bWithSsl, bPipeline, pRawData, uiRawDataSize, pActor->GetSequence()));
+    return(pActor->m_pLabor->GetDispatcher()->SendTo(strIdentify, SOCKET_STREAM, CODEC_UNKNOW, bWithSsl, bPipeline, pRawData, uiRawDataSize, pActor->GetSequence()));
 }
 
 bool ActorSender::SendTo(Actor* pActor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
@@ -117,13 +117,13 @@ bool ActorSender::SendTo(Actor* pActor, int32 iCmd, uint32 uiSeq, const MsgBody&
 bool ActorSender::SendRoundRobin(Actor* pActor, const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pActor->GetTraceId());
-    return(pActor->m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
+    return(pActor->m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, SOCKET_STREAM, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
 }
 
 bool ActorSender::SendOriented(Actor* pActor, const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pActor->GetTraceId());
-    return(pActor->m_pLabor->GetDispatcher()->SendOriented(strNodeType, eCodecType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
+    return(pActor->m_pLabor->GetDispatcher()->SendOriented(strNodeType, SOCKET_STREAM, eCodecType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
 }
 
 bool ActorSender::SendOriented(Actor* pActor, const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
@@ -137,7 +137,7 @@ bool ActorSender::SendOriented(Actor* pActor, const std::string& strNodeType, in
         }
         else if (oMsgBody.req_target().route().length() > 0)
         {
-            return(pActor->m_pLabor->GetDispatcher()->SendOriented(strNodeType, eCodecType, false, true, oMsgBody.req_target().route(), iCmd, uiSeq, oMsgBody));
+            return(pActor->m_pLabor->GetDispatcher()->SendOriented(strNodeType, SOCKET_STREAM, eCodecType, false, true, oMsgBody.req_target().route(), iCmd, uiSeq, oMsgBody));
         }
         else
         {

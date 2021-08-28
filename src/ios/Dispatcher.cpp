@@ -333,7 +333,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                             pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
                 }
             }
-            LOG4_TRACE("eCodecStatus = %d", eCodecStatus);
+            LOG4_INFO("eCodecStatus = %d", eCodecStatus);
             DiscardSocketChannel(pChannel);
             return(false);
     }
@@ -481,7 +481,7 @@ bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
                             pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
                 }
             }
-            LOG4_TRACE("eCodecStatus = %d", eCodecStatus);
+            LOG4_INFO("eCodecStatus = %d", eCodecStatus);
             DiscardSocketChannel(pChannel);
             return(false);
     }
@@ -676,7 +676,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     }
     else
     {
-        LOG4_TRACE("%s", pChannel->GetIdentify().c_str());
+        LOG4_INFO("%s fd[%d]", pChannel->GetIdentify().c_str(), pChannel->GetFd());
         DiscardSocketChannel(pChannel);
     }
     return(true);
@@ -787,7 +787,7 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
 {
     if (m_pLabor->GetLaborType() == Labor::LABOR_MANAGER)
     {
-        return(Broadcast("BEACON", CODEC_NEBULA, false, true, iCmd, uiSeq, oMsgBody));
+        return(Broadcast("BEACON", SOCK_STREAM, CODEC_NEBULA, false, true, iCmd, uiSeq, oMsgBody));
     }
     else
     {
@@ -972,7 +972,7 @@ std::shared_ptr<SocketChannel> Dispatcher::GetLastActivityChannel()
 
 bool Dispatcher::Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice)
 {
-    LOG4_TRACE("%s", pChannel->GetIdentify().c_str());
+    LOG4_INFO("%s", pChannel->GetIdentify().c_str());
     return(DiscardSocketChannel(pChannel, bChannelNotice));
 }
 
@@ -985,11 +985,11 @@ bool Dispatcher::Disconnect(const std::string& strIdentify, bool bChannelNotice)
         while (named_iter->second.size() > 1)
         {
             channel_iter = named_iter->second.begin();
-            LOG4_TRACE("%s", (*channel_iter)->GetIdentify().c_str());
+            LOG4_INFO("%s", (*channel_iter)->GetIdentify().c_str());
             DiscardSocketChannel(*channel_iter, bChannelNotice);
         }
         channel_iter = named_iter->second.begin();
-        LOG4_TRACE("%s", (*channel_iter)->GetIdentify().c_str());
+        LOG4_INFO("%s", (*channel_iter)->GetIdentify().c_str());
         return(DiscardSocketChannel(*channel_iter, bChannelNotice));
     }
     return(false);
@@ -1088,6 +1088,11 @@ void Dispatcher::DelNodeIdentify(const std::string& strNodeType, const std::stri
     }
 }
 
+void Dispatcher::CircuitBreak(const std::string& strIdentify)
+{
+    m_pSessionNode->NodeFailed(strIdentify);
+}
+
 void Dispatcher::SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData)
 {
     pChannel->m_pImpl->SetClientData(strClientData);
@@ -1179,7 +1184,7 @@ bool Dispatcher::CreateListenFd(const std::string& strHost, int32 iPort, int& iF
     struct addrinfo* pAddrCurrent;
     memset(&stAddrHints, 0, sizeof(struct addrinfo));
     stAddrHints.ai_family = AF_UNSPEC;              /* Allow IPv4 or IPv6 */
-    stAddrHints.ai_socktype = SOCK_STREAM;
+    stAddrHints.ai_socktype = m_pLabor->GetNodeInfo().iForClientSocketType;
     stAddrHints.ai_protocol = IPPROTO_IP;
     stAddrHints.ai_flags = AI_PASSIVE;              /* For wildcard IP address */
     int iCode = getaddrinfo(strHost.c_str(),
@@ -1375,7 +1380,7 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     bool bCloseResult = pChannel->m_pImpl->Close();
     if (bCloseResult)
     {
-        LOG4_TRACE("%s disconnect, fd %d, channel_seq %u, identify %s",
+        LOG4_INFO("%s disconnect, fd %d, channel_seq %u, identify %s",
                 pChannel->m_pImpl->GetRemoteAddr().c_str(),
                 pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence(),
                 pChannel->m_pImpl->GetIdentify().c_str());

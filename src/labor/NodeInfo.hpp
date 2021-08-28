@@ -30,6 +30,7 @@ struct NodeInfo
     int32 iMsgPermitNum             = 0;            ///< 客户端统计时间内允许发送消息数量
     int32 iPortForServer            = 0;            ///< Server间通信监听端口，对应 iS2SListenFd
     int32 iPortForClient            = 0;            ///< 对Client通信监听端口，对应 iC2SListenFd
+    int32 iForClientSocketType      = 0;            ///< 对Client通信的socket类型
     int32 iGatewayPort              = 0;            ///< 对Client服务的真实端口
     bool bThreadMode                = 0;            ///< 是否线程模型
     bool bIsAccess                  = false;        ///< 是否接入Server

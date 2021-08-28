@@ -431,7 +431,8 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, const RedisMsg& oR
 bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg)
 {
     LOG4_TRACE("%s", pRedisMsg->DebugString().c_str());
-    bool bResult = GetLabor(this)->GetDispatcher()->SendTo(strIdentify, CODEC_RESP, m_bWithSsl, m_bPipeline, (*pRedisMsg.get()), GetSequence());
+    bool bResult = GetLabor(this)->GetDispatcher()->SendTo(strIdentify,
+            SOCKET_STREAM, CODEC_RESP, m_bWithSsl, m_bPipeline, (*pRedisMsg.get()), GetSequence());
     if (bResult)
     {
         auto iter = m_mapPipelineRequest.find(strIdentify);

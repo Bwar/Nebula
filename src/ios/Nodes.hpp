@@ -62,6 +62,7 @@ public:
         std::map<uint32, std::string> mapHash2Node;
         std::map<uint32, std::string>::const_iterator itHashRing;
         std::unordered_set<std::string> setFailedNode;
+        std::unordered_set<std::string>::const_iterator itPollingFailed;
 
         tagNode(){}
         ~tagNode(){}
@@ -87,6 +88,8 @@ public:
     bool GetNode(const std::string& strNodeType, std::string& strNodeIdentify);
 
     bool GetNode(const std::string& strNodeType, std::unordered_set<std::string>& setNodeIdentify);
+
+    bool NodeDetect(const std::string& strNodeType, std::string& strNodeIdentify);
 
     /**
      * @brief 添加节点

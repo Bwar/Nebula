@@ -223,9 +223,9 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
                 case H2_FRAME_PRIORITY:
                     break;
                 default:
+                    LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u", (int)m_eStreamState, (uint32)stFrameHead.ucType);
                     m_pFrame->EncodeRstStream(pCodecH2,
                             stFrameHead.uiStreamIdentifier, H2_ERR_STREAM_CLOSED, pReactBuff);
-                    LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u", (int)m_eStreamState, (uint32)stFrameHead.ucType);
                     return(CODEC_STATUS_PART_ERR);
             }
             break;
@@ -235,8 +235,6 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
                 case H2_FRAME_PRIORITY:
                     break;
                 default:
-                    m_pFrame->EncodeRstStream(pCodecH2,
-                            stFrameHead.uiStreamIdentifier, H2_ERR_STREAM_CLOSED, pReactBuff);
                     LOG4_ERROR("m_eStreamState = %d, stFrameHead.ucType = %u", (int)m_eStreamState, (uint32)stFrameHead.ucType);
                     return(CODEC_STATUS_PART_ERR);
             }

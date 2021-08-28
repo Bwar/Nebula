@@ -120,23 +120,22 @@ public:
     template <typename ...Targs>
     bool SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args);
     template <typename ...Targs>
-    bool SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    bool SendTo(const std::string& strIdentify, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     template <typename ...Targs>
-    bool SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    bool SendTo(const std::string& strHost, int iPort, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     template <typename ...Targs>
     bool AutoSend(const std::string& strIdentify, const std::string& strHost,
-            int iPort, int iRemoteWorkerIndex, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
+            int iPort, int iRemoteWorkerIndex, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     template <typename ...Targs>
-    bool SendRoundRobin(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    bool SendRoundRobin(const std::string& strNodeType, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     template <typename ...Targs>
-    bool SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType,
+    bool SendOriented(const std::string& strNodeType, int iSocketType, E_CODEC_TYPE eCodecType,
             bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args);
     template <typename ...Targs>
-    bool SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType,
+    bool SendOriented(const std::string& strNodeType, int iSocketType, E_CODEC_TYPE eCodecType,
             bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args);
     template <typename ...Targs>
-    bool Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
-    bool AutoSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    bool Broadcast(const std::string& strNodeType, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args);
     bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     std::shared_ptr<SocketChannel> StressSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
@@ -156,6 +155,7 @@ public:
     void DelNamedSocketChannel(const std::string& strIdentify);
     void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
+    void CircuitBreak(const std::string& strIdentify);
     void SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData);
     bool IsNodeType(const std::string& strNodeIdentify, const std::string& strNodeType);
 
@@ -277,7 +277,7 @@ bool Dispatcher::SendTo(std::shared_ptr<SocketChannel> pChannel, Targs&&... args
 }
 
 template <typename ...Targs>
-bool Dispatcher::SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool Dispatcher::SendTo(const std::string& strIdentify, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
     LOG4_TRACE("identify: %s", strIdentify.c_str());
     // 将strIdentify分割的功能只在此SendTo()函数内两处调用，定义为Dispatcher的成员函数语义上不太合适，故定义lambda表达式
@@ -335,7 +335,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType,
             LOG4_ERROR("%s", strError.c_str());
             return(false);
         }
-        return(AutoSend(strIdentify, strHost, iPort, iWorkerIndex, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        return(AutoSend(strIdentify, strHost, iPort, iWorkerIndex, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
     }
     else
     {
@@ -350,7 +350,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType,
                 LOG4_ERROR("%s", strError.c_str());
                 return(false);
             }
-            return(AutoSend(strIdentify, strHost, iPort, iWorkerIndex, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            return(AutoSend(strIdentify, strHost, iPort, iWorkerIndex, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
         }
         else
         {
@@ -366,7 +366,7 @@ bool Dispatcher::SendTo(const std::string& strIdentify, E_CODEC_TYPE eCodecType,
 }
 
 template <typename ...Targs>
-bool Dispatcher::SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool Dispatcher::SendTo(const std::string& strHost, int iPort, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
     LOG4_TRACE("host %s port %d", strHost.c_str(), iPort);
     std::ostringstream ossIdentify;
@@ -375,14 +375,14 @@ bool Dispatcher::SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCod
     if (named_iter == m_mapNamedSocketChannel.end())
     {
         LOG4_TRACE("no channel match %s.", ossIdentify.str().c_str());
-        return(AutoSend(ossIdentify.str(), strHost, iPort, 0, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        return(AutoSend(ossIdentify.str(), strHost, iPort, 0, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
     }
     else
     {
         auto channel_iter = named_iter->second.begin();
         if (channel_iter == named_iter->second.end())
         {
-            return(AutoSend(ossIdentify.str(), strHost, iPort, 0, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            return(AutoSend(ossIdentify.str(), strHost, iPort, 0, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
         }
         bool bResult = SendTo((*channel_iter), std::forward<Targs>(args)...);
         if (!bPipeline && bResult)
@@ -396,7 +396,7 @@ bool Dispatcher::SendTo(const std::string& strHost, int iPort, E_CODEC_TYPE eCod
 template <typename ...Targs>
 bool Dispatcher::AutoSend(
         const std::string& strIdentify, const std::string& strHost, int iPort,
-        int iRemoteWorkerIndex, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+        int iRemoteWorkerIndex, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
     LOG4_TRACE("%s", strIdentify.c_str());
     struct addrinfo stAddrHints;
@@ -404,7 +404,7 @@ bool Dispatcher::AutoSend(
     struct addrinfo* pAddrCurrent;
     memset(&stAddrHints, 0, sizeof(struct addrinfo));
     stAddrHints.ai_family = AF_UNSPEC;
-    stAddrHints.ai_socktype = SOCK_STREAM;
+    stAddrHints.ai_socktype = iSocketType;
     stAddrHints.ai_protocol = IPPROTO_IP;
     int iCode = getaddrinfo(strHost.c_str(), std::to_string(iPort).c_str(), &stAddrHints, &pAddrResult);
     if (0 != iCode)
@@ -489,20 +489,24 @@ bool Dispatcher::AutoSend(
 }
 
 template <typename ...Targs>
-bool Dispatcher::SendRoundRobin(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool Dispatcher::SendRoundRobin(const std::string& strNodeType, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
+    if (m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
+    {
+        SendTo(strOnlineNode, iSocketType, eCodecType, bWithSsl, bPipeline);
+    }
     if (m_pSessionNode->GetNode(strNodeType, strOnlineNode))
     {
-        return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        return(SendTo(strOnlineNode, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
     }
     else
     {
         LOG4_TRACE("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
         if (m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
         {
-            return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            return(SendTo(strOnlineNode, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
         }
         LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
@@ -510,20 +514,24 @@ bool Dispatcher::SendRoundRobin(const std::string& strNodeType, E_CODEC_TYPE eCo
 }
 
 template <typename ...Targs>
-bool Dispatcher::SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args)
+bool Dispatcher::SendOriented(const std::string& strNodeType, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
+    if (m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
+    {
+        SendTo(strOnlineNode, iSocketType, eCodecType, bWithSsl, bPipeline);
+    }
     if (m_pSessionNode->GetNode(strNodeType, uiFactor, strOnlineNode))
     {
-        return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        return(SendTo(strOnlineNode, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
     }
     else
     {
         LOG4_TRACE("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
         if (m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
         {
-            return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            return(SendTo(strOnlineNode, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
         }
         LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
@@ -531,20 +539,24 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCode
 }
 
 template <typename ...Targs>
-bool Dispatcher::SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args)
+bool Dispatcher::SendOriented(const std::string& strNodeType, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
+    if (m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
+    {
+        SendTo(strOnlineNode, iSocketType, eCodecType, bWithSsl, bPipeline);
+    }
     if (m_pSessionNode->GetNode(strNodeType, strFactor, strOnlineNode))
     {
-        return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        return(SendTo(strOnlineNode, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
     }
     else
     {
         LOG4_TRACE("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
         if (m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
         {
-            return(SendTo(strOnlineNode, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            return(SendTo(strOnlineNode, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
         }
         LOG4_ERROR("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
@@ -552,7 +564,7 @@ bool Dispatcher::SendOriented(const std::string& strNodeType, E_CODEC_TYPE eCode
 }
 
 template <typename ...Targs>
-bool Dispatcher::Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool Dispatcher::Broadcast(const std::string& strNodeType, int iSocketType, E_CODEC_TYPE eCodecType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
     LOG4_TRACE("node_type: %s", strNodeType.c_str());
     std::unordered_set<std::string> setOnlineNodes;
@@ -561,7 +573,7 @@ bool Dispatcher::Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecTy
         bool bSendResult = false;
         for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
         {
-            bSendResult |= SendTo(*node_iter, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...);
+            bSendResult |= SendTo(*node_iter, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...);
         }
         return(bSendResult);
     }
@@ -582,7 +594,7 @@ bool Dispatcher::Broadcast(const std::string& strNodeType, E_CODEC_TYPE eCodecTy
                     bool bSendResult = false;
                     for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
                     {
-                        bSendResult |= SendTo(*node_iter, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...);
+                        bSendResult |= SendTo(*node_iter, iSocketType, eCodecType, bWithSsl, bPipeline, std::forward<Targs>(args)...);
                     }
                     return(bSendResult);
                 }

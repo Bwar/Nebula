@@ -331,6 +331,7 @@ bool Manager::GetConf()
         m_oCurrentConf.Get("data_report", m_stNodeInfo.dDataReportInterval);
         if (m_oLastConf.ToString().length() == 0)
         {
+            std::string strSocketType = "TCP";
             m_stNodeInfo.uiWorkerNum = strtoul(m_oCurrentConf("worker_num").c_str(), NULL, 10);
             m_oCurrentConf.Get("node_type", m_stNodeInfo.strNodeType);
             m_oCurrentConf.Get("host", m_stNodeInfo.strHostForServer);
@@ -339,6 +340,15 @@ bool Manager::GetConf()
             m_oCurrentConf.Get("access_port", m_stNodeInfo.iPortForClient);
             m_oCurrentConf.Get("gateway", m_stNodeInfo.strGateway);
             m_oCurrentConf.Get("gateway_port", m_stNodeInfo.iGatewayPort);
+            m_oCurrentConf.Get("access_socket_type", strSocketType);
+            if (strSocketType == "UDP" || strSocketType == "udp")
+            {
+                m_stNodeInfo.iForClientSocketType = SOCK_DGRAM;
+            }
+            else
+            {
+                m_stNodeInfo.iForClientSocketType = SOCK_STREAM;
+            }
             m_stNodeInfo.strNodeIdentify = m_stNodeInfo.strHostForServer + std::string(":") + std::to_string(m_stNodeInfo.iPortForServer);
         }
         int32 iCodec;

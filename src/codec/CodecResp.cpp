@@ -104,7 +104,7 @@ E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply)
             oReply.set_type(REDIS_REPLY_ERROR);
             oReply.set_integer(REDIS_ERR_PROTOCOL);
             pBuff->SetReadIndex(uiReadIndex);
-            LOG4_ERROR("cFirstByte = %d", int(cFirstByte));
+            LOG4_TRACE("cFirstByte = %d", int(cFirstByte));
             return(CODEC_STATUS_ERR);
     }
     if (CODEC_STATUS_OK != eStatus)

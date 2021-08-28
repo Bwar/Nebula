@@ -169,6 +169,15 @@ const ev_tstamp gc_dNoTimeout = -1;
 const ev_tstamp gc_dConfigTimeout = 0;
 const ev_tstamp gc_dDefaultTimeout = 30.0;
 
+enum E_SOCKET_TYPE
+{
+    SOCKET_STREAM                       = 1,    ///< tcp
+    SOCKET_DGRAM                        = 2,    ///< udp
+    SOCKET_RAW                          = 3,    ///< 
+    SOCKET_RDW                          = 4,    ///< 
+    SOCKET_SEQPACKET                    = 5,    ///< 
+};
+
 /**
  * @brief 命令执行状态
  */

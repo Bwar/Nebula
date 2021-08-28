@@ -191,7 +191,8 @@ protected:
      * @param oCodecType 编解码方式
      * @return 是否发送成功
      */
-    virtual bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    virtual bool SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq,
+            const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
     /**
      * @brief 发送http请求
@@ -282,6 +283,12 @@ protected:
     virtual bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
     virtual bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+
+    /**
+     * @brief 断路器
+     * @note 连接错误框架会自动熔断，如果需要主动熔断（比如超时率太高）可主动调用此函数进行熔断。
+     */
+    void CircuitBreak(const std::string& strIdentify);
 
     /**
      * @brief 发送请求到当前worker

@@ -178,7 +178,7 @@ bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const char* pRawData
 bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, eCodecType, false, true, iCmd, uiSeq, oMsgBody)); 
+    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, SOCKET_STREAM, eCodecType, false, true, iCmd, uiSeq, oMsgBody)); 
 }
 
 bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq)
@@ -201,17 +201,17 @@ bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMs
     }
     if (oHttpMsg.http_major() == 2)
     {
-        return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, CODEC_HTTP2, bWithSsl, bPipeline, oHttpMsg, GetSequence()));
+        return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, SOCKET_STREAM, CODEC_HTTP2, bWithSsl, bPipeline, oHttpMsg, GetSequence()));
     }
     else
     {
-        return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, CODEC_HTTP, bWithSsl, bPipeline, oHttpMsg, GetSequence()));
+        return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, SOCKET_STREAM, CODEC_HTTP, bWithSsl, bPipeline, oHttpMsg, GetSequence()));
     }
 }
 
 bool Actor::SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
-    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
+    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, SOCKET_STREAM, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
 }
 
 bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
@@ -221,12 +221,12 @@ bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedis
 
 bool Actor::SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline)
 {
-    return(m_pLabor->GetDispatcher()->SendRoundRobin(strIdentify, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
+    return(m_pLabor->GetDispatcher()->SendRoundRobin(strIdentify, SOCKET_STREAM, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
 }
 
 bool Actor::SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
-    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, CODEC_UNKNOW, bWithSsl, bPipeline, pRawData, uiRawDataSize, GetSequence()));
+    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, SOCKET_STREAM, CODEC_UNKNOW, bWithSsl, bPipeline, pRawData, uiRawDataSize, GetSequence()));
 }
 
 bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
@@ -238,13 +238,13 @@ bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
+    return(m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, SOCKET_STREAM, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, eCodecType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
+    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, SOCKET_STREAM, eCodecType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
@@ -258,7 +258,7 @@ bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSe
         }
         else if (oMsgBody.req_target().route().length() > 0)
         {
-            return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, eCodecType, false, true, oMsgBody.req_target().route(), iCmd, uiSeq, oMsgBody));
+            return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, SOCKET_STREAM, eCodecType, false, true, oMsgBody.req_target().route(), iCmd, uiSeq, oMsgBody));
         }
         else
         {
@@ -276,6 +276,11 @@ bool Actor::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
     return(m_pLabor->GetDispatcher()->SendDataReport(iCmd, uiSeq, oMsgBody));
+}
+
+void Actor::CircuitBreak(const std::string& strIdentify)
+{
+    m_pLabor->GetDispatcher()->CircuitBreak(strIdentify);
 }
 
 bool Actor::SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)

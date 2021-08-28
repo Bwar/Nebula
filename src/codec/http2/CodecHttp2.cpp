@@ -215,8 +215,6 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
             oHttpMsg = std::move(*m_pHoldingHttpMsg);
             oHttpMsg.set_http_major(2);
             oHttpMsg.set_http_minor(0);
-            oHttpMsg.mutable_headers()->erase(
-                    oHttpMsg.mutable_headers()->find("Connection"));
             oHttpMsg.mutable_upgrade()->set_is_upgrade(false);
             oHttpMsg.mutable_upgrade()->set_protocol("");
             oHttpMsg.set_stream_id(1);
