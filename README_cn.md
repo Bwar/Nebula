@@ -13,27 +13,47 @@
 [![](https://travis-ci.org/Bwar/Nebula.svg?branch=master)](https://travis-ci.org/Bwar/Nebula) [![Author](https://img.shields.io/badge/author-@Bwar-blue.svg?style=flat)](cqc@vip.qq.com)  ![Platform](https://img.shields.io/badge/platform-Linux-green.svg?style=flat) [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)<br/>
 
 1. [概述](#Overview)
-2. [功能](#Features)
-3. [开始](#GettingStart)
-4. [文档](#Documentation)
-5. [依赖](#DependOn)
-6. [相关项目](#RelatedProject)
-7. [开发任务](#TODO)
-8. [版本历史](#ChangeLog)
-9. [交流与反馈](#Exchange)
+2. [生产应用](#UseCase)
+3. [功能](#Features)
+4. [开始](#GettingStart)
+5. [文档](#Documentation)
+6. [依赖](#DependOn)
+7. [相关项目](#RelatedProject)
+8. [开发任务](#TODO)
+9. [版本历史](#ChangeLog)
+10. [交流与反馈](#Exchange)
 
 <a name="Overview"></a>
 ## 概述 
 
-&emsp;&emsp;Nebula是一个灵活，高性能的面向业务的IoC分布式网络框架，专为生产环境而设计。Nebula以C\+\+语言开发基于事件驱动型的TCP协议，支持包括proto3、http、https、http2、grpc、websocket多种应用层通信协议。开发Nebula框架的目的是提供一种基于C\+\+快速构建高性能的分布式服务。Nebula自身核心代码只有2万行左右（不计算proto文件生成的代码）。
+&emsp;&emsp;Nebula是一个产线级的网络服务框架和分布式服务解决方案项目，适用于即时通讯、数据采集、实时计算、消息推送、接入网关、web后台服务等应用场景。
 
-&emsp;&emsp;Nebula可以作为单个高性能TCP服务器使用，不过基于Nebula搭建分布式服务才能真正体现其价值。为了能快速搭建分布式服务，开发了包括各种类型服务的NebulaBootstrap解决方案。
+&emsp;&emsp;原生支持proto3、resp、http、https、http2、grpc、websocket多种应用层通信协议。
 
-&emsp;&emsp;Nebula是一个产线级的框架和分布式解决方案项目，适用于即时通讯、数据采集、实时计算、消息推送等应用场景，也适用于web后台服务。Nebula已有即时通讯、埋点数据采集及实时分析的生产应用案例，很快将有一个面向庞大用户群的推荐引擎产线应用案例。
+&emsp;&emsp;详细的文档，入门简单，扩展容易，开发效率高。
 
-&emsp;&emsp;Nebula是个proactor模式开发框架，是proactor不是reactor（框架层实现的proactor而不是操作系统支持），应用于IO密集型的项目可以达到非常好的性能。对用惯了RPC框架的人而言，Nebula跟RPC很不一样，不过使用起来并不会比RPC复杂多少，但比RPC性能要高很多；对了解异步回调编程方式的开发者，Nebula是个非常简单的框架，比写常见的异步回调写法要简单多了。Nebula网络框架的技术分享和交流见[C++网络框架Nebula](https://zhuanlan.zhihu.com/c_216558336)
+&emsp;&emsp;依赖的第三方库极少，开发和部署无成本。
 
-&emsp;&emsp;Nebula从一个从2016年5月至今在生产环境稳定运行的IM底层框架Starship发展而来。Nebula跟Starship框架（也是Bwar一人独立开发）有20%左右的结构相似度，是基于Starship经验全新开发，可以认为Nebula(C++14)是Starship(C++03)的一个高级进化版本，具有Starship的所有优点，没有Starship的所有已发现的缺点，同时提供了更多高级功能。基于Nebula的应用Nebio（埋点数据采集和实时分析项目）在2018年7月底上线并稳定运行。
+&emsp;&emsp;基于channel、类actor模型异于传统rpc调用的无锁并发编程方式，进程&线程模型一键配置。
+
+&emsp;&emsp;支持插件式动态加载，不停服务热更新更方便。
+
+&emsp;&emsp;不仅是一个网络框架，还是一个十分通用的业务框架。选择Nebula，不必在网络框架之上再做业务框架封装。
+
+&emsp;&emsp;代码结构清晰，可读性非常好。
+
+<a name="UserCase"></a>
+## 部分生产应用（按时间倒序）
+
+* __计算机设备行业X公司智能设备数据采集服务__：基于http2协议通信向智能设备终端发连接，终端以http2流响应回传所采集的数据。
+* __移动互联网行业O公司特征画像服务__：基于redis协议、grpc协议、http协议通信，带复杂数据逻辑的redis数据代理，既是redis服务端也是redis客户端，高峰tps 33万。
+* __移动互联网行业O公司推荐引擎__：基于grpc协议和redis协议通信，计算密集型服务。
+* __移动互联网行业O公司向量搜索服务__：基于grpc协议和http协议通信，计算密集型服务。
+* __计算机设备行业X公司支付网关__：基于https协议通信，支付网关作为手持设备的https服务端和银行付款api的https客户端。
+* __移动互联网行业O公司http接入网关__：基于http协议，包括条件转发、hash路由、服务熔断与恢复、过载保护、服务降级等功能。
+* __游戏行业G公司即时通讯系统__：基于nebula协议和http协议通信，包括接入服务、逻辑服务、缓存代理服务、数据库代理服务、注册中心、配置中心等。
+* __O2O行业J公司埋点数据采集和实时分析系统__：基于http协议和nebula协议通信，包括接入服务、逻辑服务、数据库代理服务、注册中心。
+* __金融行业N公司即时通讯系统__：基于nebula协议和http协议通信，包括接入服务、逻辑服务、缓存代理服务、数据库代理服务、注册中心、配置中心、日志服务等。
 
 <a name="Features"></a>
 ## 功能
@@ -64,7 +84,7 @@
 * [分布式服务示例](docs/cn/nebula_distributed_demo.md)
 
 * [安装部署说明](docs/cn/install.md)
-* [Nebula工作原理](how_nebula_works.md)
+* [Nebula工作原理](docs/cn/how_nebula_works.md)
 * [配置说明](docs/cn/configuration.md)
 * [服务监控](docs/cn/monitor.md)
 * [协议说明](docs/cn/protocol.md)
@@ -113,6 +133,9 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.6.2
+   - 断路器优化
+   - http chunk解码、resp字符串解码、redis集群无可用节点bug修复
 #### v1.6.1
    - http2分块响应通知改为作用于流而非连接
    - resp解码字符串遇分包时bug修复

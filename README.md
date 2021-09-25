@@ -25,7 +25,7 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 
 Nebula is a flexible, high-performance business-oriented IoC distributed network framework developed in C++ language, designed for production environments. It supports multiple application layer communication protocols including proto3, http, https, http2, grpc, and websocket. Nebula makes it easy to deploy a fast and high-performance distributed service with C++, while keeping the same server architecture and APIs. NebulaBootstrap provides out-of-the-box integration with Nebula service, but can be easily extended to serve other types of application.
 
-Nebula is a production level framework and distributed solution project for instant messaging, data collection, real-time computing, message push and other applications, as well as web api services. There were production applications for instant messaging, data acquisition and real-time analysis on line now, and a recommendation engine application for a large user base will be born soon. By the way, using Nebula for toy-level projects is also good for learning network communication. Bwar welcomes more developers to join the Nebula project. Nebula is a proactor development framework(a framework-implemented proactor, not an operating system support). The IO-intensive application on nebula with be good performance.
+Nebula is a production level framework and distributed solution project for instant messaging, data collection, real-time computing, message push and other applications, as well as web api services. There were production applications for instant messaging, data acquisition and real-time analysis on line now, and a recommendation engine application for a large user base will be born soon. By the way, using Nebula for toy-level projects is also good for learning network communication. Bwar welcomes more developers to join the Nebula project. 
 
 Nebula can be used as a single high-performance TCP server, but building a cluster based on Nebula will be truly reflect its value. In order to build distributed service clusters quickly, Nebula Bootstrap cluster solutions including various types of services have been developed. 
 
@@ -128,6 +128,9 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.6.2
+   - circuit breaker optimization
+   - http chunk decode bug fixed; resp bulk string bug fixed
 #### v1.6.1
    - http2 chunk notice for stream
    - CodecResp bug string decode bug fixed
