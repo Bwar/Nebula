@@ -29,8 +29,8 @@ namespace neb
 std::mutex SessionManager::s_mutexWorker;
 std::vector<uint64> SessionManager::s_vecWorkerThreadId;
 
-SessionManager::SessionManager(bool bDirectToLoader)
-    : Session("neb::SessionManager", gc_dDefaultTimeout), m_bDirectToLoader(bDirectToLoader)
+SessionManager::SessionManager(bool bDirectToLoader, ev_tstamp dStatInterval)
+    : Session("neb::SessionManager", dStatInterval), m_bDirectToLoader(bDirectToLoader)
 {
     m_iterWorkerInfo = m_mapWorkerInfo.begin();
 }

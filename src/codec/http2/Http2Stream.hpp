@@ -38,7 +38,8 @@ class CodecHttp2;
 class Http2Stream: public Codec
 {
 public:
-    Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, uint32 uiStreamId);
+    Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+            std::shared_ptr<SocketChannel> pBindChannel, uint32 uiStreamId);
     virtual ~Http2Stream();
 
     virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)

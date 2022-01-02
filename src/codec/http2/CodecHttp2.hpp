@@ -36,20 +36,23 @@ class Http2Stream;
 class CodecHttp2: public Codec
 {
 public:
-    CodecHttp2(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, bool m_bChannelIsClient);
+    CodecHttp2(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, std::shared_ptr<SocketChannel> pBindChannel);
     virtual ~CodecHttp2();
 
-    virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
+    static E_CODEC_TYPE Type()
     {
-        return(CODEC_STATUS_INVALID);
-    }
-    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
-    {
-        return(CODEC_STATUS_INVALID);
+        return(CODEC_HTTP2);
     }
 
-    virtual E_CODEC_STATUS Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff);
-    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff);
+    virtual bool DecodeWithReator() const
+    {
+        return(true);
+    }
+
+    E_CODEC_STATUS Encode(CBuffer* pBuff);
+    E_CODEC_STATUS Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, HttpMsg& oHttpMsg);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff);
 
     /**
      * @brief HTTP2 连接建立
@@ -57,10 +60,6 @@ public:
     virtual void ConnectionSetting(CBuffer* pBuff);
 
 public:
-    bool IsClient() const
-    {
-        return(m_bChannelIsClient);
-    }
     void SetPriority(uint32 uiStreamId, const tagPriority& stPriority);
     void RstStream(uint32 uiStreamId);
     E_H2_ERR_CODE Setting(const std::vector<tagSetting>& vecSetting, bool bRecvSetting = false);
@@ -127,7 +126,6 @@ protected:
     void CloseStream(uint32 uiStreamId);
 
 private:
-    bool m_bChannelIsClient = false;    // 当前编解码器所在channel是作为http客户端还是作为http服务端
     bool m_bWantMagic = true;
     bool m_bHasWaittingFrame = false;
     uint32 m_uiStreamIdGenerate = 0;

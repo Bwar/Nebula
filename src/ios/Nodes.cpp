@@ -404,6 +404,39 @@ bool Nodes::SplitAddAndGetNode(const std::string& strNodeType, std::string& strN
     return(GetNode(strNodeType, strNodeIdentify));
 }
 
+bool Nodes::GetAuth(const std::string& strNodeType, std::string& strAuth, std::string& strPassword)
+{
+    auto node_type_iter = m_mapNode.find(strNodeType);
+    if (node_type_iter == m_mapNode.end())
+    {
+        return(false);
+    }
+    else
+    {
+        strAuth = node_type_iter->second->strAuth;
+        strPassword = node_type_iter->second->strPassword;
+        return(true);
+    }
+}
+
+void Nodes::SetAuth(const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword)
+{
+    auto node_type_iter = m_mapNode.find(strNodeType);
+    if (node_type_iter == m_mapNode.end())
+    {
+        std::shared_ptr<tagNode> pNode = std::make_shared<tagNode>();
+        m_mapNode.insert(std::make_pair(strNodeType, pNode));
+        pNode->strNodeType = strNodeType;
+        pNode->strAuth = strAuth;
+        pNode->strPassword = strPassword;
+    }
+    else
+    {
+        node_type_iter->second->strAuth = strAuth;
+        node_type_iter->second->strPassword = strPassword;
+    }
+}
+
 void Nodes::DelNode(const std::string& strNodeType, const std::string& strNodeIdentify)
 {
     auto node_type_iter = m_mapNode.find(strNodeType);

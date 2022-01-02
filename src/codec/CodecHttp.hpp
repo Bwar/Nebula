@@ -20,14 +20,19 @@ namespace neb
 class CodecHttp: public Codec
 {
 public:
-    CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive = -1.0);
+    CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+            std::shared_ptr<SocketChannel> pBindChannel, ev_tstamp dKeepAlive = -1.0);
     virtual ~CodecHttp();
 
-    virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);
-    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody);
+    static E_CODEC_TYPE Type()
+    {
+        return(CODEC_HTTP);
+    }
 
-    virtual E_CODEC_STATUS Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff);
-    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, HttpMsg& oHttpMsg);
+    E_CODEC_STATUS Encode(CBuffer* pBuff);
+    E_CODEC_STATUS Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, HttpMsg& oHttpMsg);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff);
 
     /**
      * @brief 添加http头
@@ -63,10 +68,7 @@ protected:
     }
 
 private:
-    bool m_bChannelIsClient;    // 当前编解码器所在channel是作为http客户端还是作为http服务端
     bool m_bIsDecoding;         // 是否編解碼完成
-    uint32 m_uiEncodedNum;
-    uint32 m_uiDecodedNum;
     int32 m_iHttpMajor;
     int32 m_iHttpMinor;
     ev_tstamp m_dKeepAlive;

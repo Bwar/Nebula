@@ -45,6 +45,10 @@ SessionDataReport::~SessionDataReport()
 E_CMD_STATUS SessionDataReport::Timeout()
 {
     LOG4_TRACE("");
+    if (Labor::LABOR_MANAGER != GetLabor(this)->GetLaborType())
+    {
+        ((Worker*)GetLabor(this))->DataReport();
+    }
     if (m_mapDataCollect.empty())
     {
         return(CMD_STATUS_RUNNING);
@@ -68,13 +72,10 @@ E_CMD_STATUS SessionDataReport::Timeout()
         m_pReport->mutable_records()->AddAllocated(iter->second);
         iter->second = nullptr;
     }
-    if (Labor::LABOR_MANAGER == GetLabor(this)->GetLaborType())
-    {
-        MsgBody oMsgBody;
-        m_pReport->SerializeToString(&m_strReport);
-        oMsgBody.set_data(m_strReport);
-        SendDataReport(CMD_REQ_DATA_REPORT, GetSequence(), oMsgBody);
-    }
+    MsgBody oMsgBody;
+    m_pReport->SerializeToString(&m_strReport);
+    oMsgBody.set_data(m_strReport);
+    SendDataReport(CMD_REQ_DATA_REPORT, GetSequence(), oMsgBody);
     m_uiNodeReportUpdatingIndex = 1 - m_uiNodeReportUpdatingIndex;
     m_vecNodeReport[m_uiNodeReportUpdatingIndex].clear();
     m_mapDataCollect.clear();

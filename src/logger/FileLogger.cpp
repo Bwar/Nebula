@@ -55,6 +55,10 @@ int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLi
 
     if(!m_fout.good())
     {
+        ReOpen();
+    }
+    if(!m_fout.good())
+    {
         std::cerr << "Write log error: no log file handle." << std::endl;
         return -1;
     }
@@ -80,6 +84,10 @@ int FileLogger::WriteLog(const std::string& strTraceId, int iLev, const char* sz
         return 0;
     }
 
+    if(!m_fout.good())
+    {
+        ReOpen();
+    }
     if(!m_fout.good())
     {
         std::cerr << "Write log error: no log file handle." << std::endl;
@@ -112,10 +120,7 @@ bool FileLogger::OpenLogFile(const std::string strLogFile)
 
 void FileLogger::ReOpen()
 {
-    if (m_fout.good())
-    {
-        m_fout.close();
-    }
+    m_fout.close();
     m_fout.open(m_strLogFileBase.c_str(), std::ios::app);
 }
 

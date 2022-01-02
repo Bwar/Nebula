@@ -45,6 +45,7 @@
 namespace neb
 {
 
+class CJsonObject;
 typedef RedisReply RedisMsg;
 
 class Manager;
@@ -66,8 +67,7 @@ class SessionLogger;
 class SocketChannel;
 class RedisChannel;
 class Dispatcher;
-
-class CJsonObject;
+template<typename T> class IO;
 
 class ActorBuilder
 {
@@ -95,13 +95,6 @@ public:
     bool OnSessionTimeout(std::shared_ptr<Session> pSession);
     bool OnChainTimeout(std::shared_ptr<Chain> pChain);
     bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
-    bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK);
-    bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg, uint32 uiFinalStepSeq = 0);
-    bool OnMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer);
-    bool OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
-    bool OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg);
-    bool OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg);
-    bool OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer);
     bool OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, int iErrno, const std::string& strErrMsg);
 
 public:
@@ -142,6 +135,7 @@ public:
     bool TransformToSharedSession(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedOperator(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
     bool TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> pSharedActor);
+    bool RegisterActor(const std::string& strActorName, Actor* pNewActor, Actor* pCreator = nullptr);
 
 public:
     bool SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq, bool bEnableReadOnly);
@@ -151,38 +145,28 @@ public:
     virtual std::shared_ptr<Operator> GetOperator(const std::string& strOperatorName);
     virtual bool ResetTimeout(std::shared_ptr<Actor> pSharedActor);
     int32 GetStepNum();
+    std::shared_ptr<NetLogger> GetLogger() const;
     bool ReloadCmdConf();
     bool AddNetLogMsg(const MsgBody& oMsgBody);
     void AddChainConf(const std::string& strChainKey, std::queue<std::vector<std::string> >&& queChainBlocks);
 
 protected:
-    void AddAssemblyLine(std::shared_ptr<Session> pSession);
     void RemoveStep(std::shared_ptr<Step> pStep);
     void RemoveSession(std::shared_ptr<Session> pSession);
     void RemoveChain(uint32 uiChainId);
     void ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const std::string& strClientData);
-    void ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody);
-    void ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg);
 
     void LoadSysCmd();
     void BootLoadCmd(CJsonObject& oCmdConf);
     void DynamicLoad(CJsonObject& oSoConf);
     tagSo* LoadSo(const std::string& strSoPath, const std::string& strVersion);
     void LoadDynamicSymbol(CJsonObject& oOneSoConf);
-    void UnloadDynamicSymbol(CJsonObject& oOneSoConf);
 
 private:
     char* m_pErrBuff;
     Labor* m_pLabor;
     std::shared_ptr<NetLogger> m_pLogger;
     std::shared_ptr<SessionLogger> m_pSessionLogger;
-
-    // dynamic load，use for load and unload.
-    std::unordered_map<std::string, tagSo*> m_mapLoadedSo;
-    std::unordered_map<std::string, std::unordered_set<int32> > m_mapLoadedCmd;             //key为CmdClassName，value为iCmd集合
-    std::unordered_map<std::string, std::unordered_set<std::string> > m_mapLoadedModule;    //key为ModuleClassName，value为strModulePath集合
-    std::unordered_map<std::string, std::unordered_set<uint32> > m_mapLoadedStep;           //key为StepClassName，value为uiSeq集合
-    std::unordered_map<std::string, std::unordered_set<std::string> > m_mapLoadedSession;   //key为SessionClassName，value为strSessionId集合
 
     // Cmd and Module
     std::unordered_map<int32, std::shared_ptr<Cmd> > m_mapCmd;
@@ -204,6 +188,7 @@ private:
     friend class Actor;
     friend class Dispatcher;
     friend class Chain;
+    template<typename T> friend class IO;
 };
 
 template <typename ...Targs>

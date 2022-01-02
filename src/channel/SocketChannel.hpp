@@ -10,17 +10,24 @@
 #ifndef SRC_CHANNEL_SOCKETCHANNEL_HPP_
 #define SRC_CHANNEL_SOCKETCHANNEL_HPP_
 
-#include "SocketChannelImpl.hpp"
-#ifdef WITH_OPENSSL
-#include "SocketChannelSslImpl.hpp"
-#endif
+#include <string>
+#include <memory>
+#include "Channel.hpp"
+#include "codec/Codec.hpp"
 
 namespace neb
 {
 
 class Dispatcher;
+class ChannelWatcher;
+class Labor;
+class CodecFactory;
+class CodecProto;
 
-class SocketChannel: public Channel, public std::enable_shared_from_this<SocketChannel>
+template<typename T> class IO;
+template<typename T> class SocketChannelImpl;
+
+class SocketChannel: public Channel
 {
 public:
     struct tagChannelCtx
@@ -31,31 +38,48 @@ public:
     };
 
     SocketChannel(); // only for SelfChannel
-    SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl = false, ev_tstamp dKeepAlive = 10.0);
+    SocketChannel(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, bool bIsClient, ev_tstamp dKeepAlive = 10.0);
     virtual ~SocketChannel();
     
     static int SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger);
     static int RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType, std::shared_ptr<NetLogger> pLogger);
 
-    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsClient = false);
-
-    virtual int GetFd() const;
     virtual bool IsClient() const;
+    virtual bool WithSsl() const;
+    virtual int GetFd() const;
+    virtual uint32 GetSequence() const;
     virtual bool IsPipeline() const;
     virtual const std::string& GetIdentify() const;
     virtual const std::string& GetRemoteAddr() const;
     virtual const std::string& GetClientData() const;
     virtual E_CODEC_TYPE GetCodecType() const;
+    virtual uint8 GetChannelStatus() const;
+    virtual uint32 PopStepSeq(uint32 uiStreamId = 0, E_CODEC_STATUS eStatus = CODEC_STATUS_OK);
+    virtual bool PipelineIsEmpty() const;
+    virtual int GetErrno() const;
+    virtual const std::string& GetErrMsg() const;
+    virtual Codec* GetCodec() const;
+    ChannelWatcher* MutableWatcher();
+
+protected:
+    virtual Labor* GetLabor();
+    bool InitImpl(std::shared_ptr<SocketChannel> pImpl);
 
 private:
+    bool m_bIsClient;
+    bool m_bWithSsl;
+    std::string m_strEmpty;
     // Hide most of the channel implementation for Actors
-    // 以m_pImpl对Actor及其派生类隐藏框架层才需要的Channel大部分实现
-    //std::unique_ptr<SocketChannelImpl> m_pImpl;
-    std::shared_ptr<SocketChannelImpl> m_pImpl;
+    std::shared_ptr<SocketChannel> m_pImpl;
     std::shared_ptr<NetLogger> m_pLogger;
+    ChannelWatcher* m_pWatcher;
     
     friend class Dispatcher;
     friend class ActorBuilder;
+    friend class CodecFactory;
+    friend class CodecProto;
+    template<typename T> friend class IO;
+    template<typename T> friend class SocketChannelImpl;
 };
 
 } /* namespace neb */

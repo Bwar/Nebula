@@ -13,8 +13,8 @@
 namespace neb
 {
 
-RedisStep::RedisStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
-    : Step(ACT_REDIS_STEP, pNextStep, dTimeout)
+RedisStep::RedisStep(ev_tstamp dTimeout)
+    : Step(ACT_REDIS_STEP, dTimeout)
 {
 }
 
@@ -57,7 +57,7 @@ std::string RedisStep::CmdToString() const
     return strCmd;
 }
 
-const RedisRequest& RedisStep::GenrateRedisRequest()
+const RedisRequest& RedisStep::GenerateRedisRequest()
 {
     m_oRedisRequest.Clear();
     m_oRedisRequest.set_type(REDIS_REPLY_ARRAY);
@@ -70,6 +70,11 @@ const RedisRequest& RedisStep::GenrateRedisRequest()
         pElement->set_type(REDIS_REPLY_STRING);
         pElement->set_str(m_vecCmdArguments[i].first);
     }
+    return(m_oRedisRequest);
+}
+
+const RedisRequest& RedisStep::GetRedisRequest() const
+{
     return(m_oRedisRequest);
 }
 

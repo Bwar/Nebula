@@ -102,6 +102,10 @@ int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLi
 
     if(!m_fout.good())
     {
+        ReOpen();
+    }
+    if(!m_fout.good())
+    {
         std::cerr << "Write log error: no log file handle." << std::endl;
         return -1;
     }
@@ -129,6 +133,10 @@ int FileLogger::WriteLog(const std::string& strTraceId, int iLev,
         return 0;
     }
 
+    if(!m_fout.good())
+    {
+        ReOpen();
+    }
     if(!m_fout.good())
     {
         std::cerr << "Write log error: no log file handle." << std::endl;
@@ -159,6 +167,10 @@ int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLi
 
     if(!m_fout.good())
     {
+        ReOpen();
+    }
+    if(!m_fout.good())
+    {
         std::cerr << "Write log error: no log file handle." << std::endl;
         return -1;
     }
@@ -186,6 +198,10 @@ int FileLogger::WriteLog(const std::string& strTraceId, int iLev,
         return 0;
     }
 
+    if(!m_fout.good())
+    {
+        ReOpen();
+    }
     if(!m_fout.good())
     {
         std::cerr << "Write log error: no log file handle." << std::endl;

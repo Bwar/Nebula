@@ -18,11 +18,61 @@ namespace neb
 class CodecProto: public Codec
 {
 public:
-    CodecProto(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
+    CodecProto(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+            std::shared_ptr<SocketChannel> pBindChannel);
     virtual ~CodecProto();
 
-    virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);
-    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody);
+    static E_CODEC_TYPE Type()
+    {
+        return(CODEC_PROTO);
+    }
+
+    E_CODEC_STATUS Encode(CBuffer* pBuff);
+    E_CODEC_STATUS Encode(int iCmd, uint32 uiSeq, const MsgBody& oMsgBody, CBuffer* pBuff);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody, CBuffer* pReactBuff);
+
+protected:
+    E_CODEC_STATUS ChannelSticky(MsgHead& oMsgHead, MsgBody& oMsgBody);
+
+private:
+    uint32 m_uiForeignSeq = 0;
+};
+
+class CodecNebula: public CodecProto
+{
+public:
+    CodecNebula(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+            std::shared_ptr<SocketChannel> pBindChannel)
+        : CodecProto(pLogger, eCodecType, pBindChannel)
+    {
+    }
+    virtual ~CodecNebula()
+    {
+    }
+
+    static E_CODEC_TYPE Type()
+    {
+        return(CODEC_NEBULA);
+    }
+};
+
+class CodecNebulaInNode: public CodecProto
+{
+public:
+    CodecNebulaInNode(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+            std::shared_ptr<SocketChannel> pBindChannel)
+        : CodecProto(pLogger, eCodecType, pBindChannel)
+    {
+    }
+    virtual ~CodecNebulaInNode()
+    {
+    }
+
+    static E_CODEC_TYPE Type()
+    {
+        return(CODEC_NEBULA_IN_NODE);
+    }
 };
 
 } /* namespace neb */

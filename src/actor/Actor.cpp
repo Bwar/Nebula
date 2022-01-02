@@ -10,7 +10,9 @@
 
 #include "actor/Actor.hpp"
 #include <algorithm>
+#include "ios/ActorWatcher.hpp"
 #include "ios/Dispatcher.hpp"
+#include "ios/IO.hpp"
 #include "actor/session/Session.hpp"
 #include "actor/step/Step.hpp"
 #include "labor/Worker.hpp"
@@ -19,17 +21,25 @@ namespace neb
 {
 
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
-    : m_eActorType(eActorType),
+    : m_eActorType(eActorType), m_uiActorStatus(ACT_STATUS_UNREGISTER),
       m_uiSequence(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
-      m_pLabor(nullptr), m_pTimerWatcher(NULL), m_pContext(nullptr)
+      m_pLabor(nullptr), m_pWatcher(nullptr), m_pContext(nullptr)
 {
 }
 
 Actor::~Actor()
 {
-    FREE(m_pTimerWatcher);
+    if (m_pWatcher != nullptr)
+    {
+        DELETE(m_pWatcher);
+    }
     LOG4_TRACE("eActorType %d, seq %u, actor name \"%s\"",
             m_eActorType, GetSequence(), m_strActorName.c_str());
+}
+
+bool Actor::RegisterActor(const std::string& strActorName, Actor* pNewActor, Actor* pCreator)
+{
+    return(m_pLabor->GetActorBuilder()->RegisterActor(strActorName, pNewActor, pCreator));
 }
 
 uint32 Actor::GetSequence()
@@ -143,42 +153,37 @@ void Actor::SetContext(std::shared_ptr<Context> pContext)
     m_pContext = pContext;
 }
 
-void Actor::AddAssemblyLine(std::shared_ptr<Session> pSession)
-{
-    m_pLabor->GetActorBuilder()->AddAssemblyLine(pSession);
-}
-
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel)
 {
-    return(m_pLabor->GetDispatcher()->SendTo(pChannel));
+    return(IO<CodecNebula>::Send(pChannel));
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendTo(pChannel, iCmd, uiSeq, oMsgBody));
+    return(IO<CodecNebula>::SendResponse(this, pChannel, iCmd, uiSeq, oMsgBody));
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
 {
     (const_cast<HttpMsg&>(oHttpMsg)).mutable_headers()->insert({"x-trace-id", GetTraceId()});
-    return(m_pLabor->GetDispatcher()->SendTo(pChannel, oHttpMsg, 0));
+    return(IO<CodecHttp>::SendResponse(this, pChannel, oHttpMsg));
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const RedisReply& oRedisReply)
 {
-    return(m_pLabor->GetDispatcher()->SendTo(pChannel, oRedisReply, 0));
+    return(IO<CodecResp>::SendResponse(this, pChannel, oRedisReply));
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const char* pRawData, uint32 uiRawDataSize)
 {
-    return(m_pLabor->GetDispatcher()->SendTo(pChannel, pRawData, uiRawDataSize, 0));
+    return(IO<CodecRaw>::SendResponse(this, pChannel, pRawData, uiRawDataSize));
 }
 
 bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, SOCKET_STREAM, eCodecType, false, true, iCmd, uiSeq, oMsgBody)); 
+    return(IO<CodecNebula>::SendTo(this, strIdentify, SOCKET_STREAM, false, true, iCmd, uiSeq, oMsgBody)); 
 }
 
 bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq)
@@ -201,17 +206,17 @@ bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMs
     }
     if (oHttpMsg.http_major() == 2)
     {
-        return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, SOCKET_STREAM, CODEC_HTTP2, bWithSsl, bPipeline, oHttpMsg, GetSequence()));
+        return(IO<CodecHttp2>::SendTo(this, strHost, iPort, SOCKET_STREAM, bWithSsl, bPipeline, oHttpMsg));
     }
     else
     {
-        return(m_pLabor->GetDispatcher()->SendTo(strHost, iPort, SOCKET_STREAM, CODEC_HTTP, bWithSsl, bPipeline, oHttpMsg, GetSequence()));
+        return(IO<CodecHttp>::SendTo(this, strHost, iPort, SOCKET_STREAM, bWithSsl, bPipeline, oHttpMsg));
     }
 }
 
 bool Actor::SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
-    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, SOCKET_STREAM, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
+    return(IO<CodecResp>::SendTo(this, strIdentify, SOCKET_STREAM, bWithSsl, bPipeline, oRedisMsg));
 }
 
 bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
@@ -221,12 +226,7 @@ bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedis
 
 bool Actor::SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline)
 {
-    return(m_pLabor->GetDispatcher()->SendRoundRobin(strIdentify, SOCKET_STREAM, CODEC_RESP, bWithSsl, bPipeline, oRedisMsg, GetSequence()));
-}
-
-bool Actor::SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
-{
-    return(m_pLabor->GetDispatcher()->SendTo(strIdentify, SOCKET_STREAM, CODEC_UNKNOW, bWithSsl, bPipeline, pRawData, uiRawDataSize, GetSequence()));
+    return(IO<CodecResp>::SendRoundRobin(this, strIdentify, bWithSsl, bPipeline, oRedisMsg));
 }
 
 bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
@@ -235,40 +235,40 @@ bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     return(m_pLabor->GetDispatcher()->SendTo(iCmd, uiSeq, oMsgBody));
 }
 
-bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
+bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendRoundRobin(strNodeType, SOCKET_STREAM, eCodecType, false, true, iCmd, uiSeq, oMsgBody));
+    return(IO<CodecNebula>::SendRoundRobin(this, strNodeType, false, true, iCmd, uiSeq, oMsgBody));
 }
 
-bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
+bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, SOCKET_STREAM, eCodecType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
+    return(IO<CodecNebula>::SendOriented(this, strNodeType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
 }
 
-bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
+bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
     if (oMsgBody.has_req_target())
     {
         if (0 != oMsgBody.req_target().route_id())
         {
-            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody, eCodecType));
+            return(SendOriented(strNodeType, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody));
         }
         else if (oMsgBody.req_target().route().length() > 0)
         {
-            return(m_pLabor->GetDispatcher()->SendOriented(strNodeType, SOCKET_STREAM, eCodecType, false, true, oMsgBody.req_target().route(), iCmd, uiSeq, oMsgBody));
+            return(IO<CodecNebula>::SendOriented(this, strNodeType, false, true, oMsgBody.req_target().route(), iCmd, uiSeq, oMsgBody));
         }
         else
         {
-            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType));
+            return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody));
         }
     }
     else
     {
         LOG4_ERROR("the request message has no req_target.");
-        return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody, eCodecType));
+        return(SendRoundRobin(strNodeType, iCmd, uiSeq, oMsgBody));
     }
 }
 
@@ -285,22 +285,17 @@ void Actor::CircuitBreak(const std::string& strIdentify)
 
 bool Actor::SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
-    return(m_pLabor->GetDispatcher()->SendToSelf(iCmd, uiSeq, oMsgBody, GetSequence()));
+    return(IO<CodecNebula>::SendToSelf(this, iCmd, uiSeq, oMsgBody));
 }
 
 bool Actor::SendToSelf(const HttpMsg& oHttpMsg)
 {
-    return(m_pLabor->GetDispatcher()->SendToSelf(oHttpMsg, GetSequence()));
+    return(IO<CodecHttp>::SendToSelf(this, oHttpMsg));
 }
 
 bool Actor::SendToSelf(const RedisMsg& oRedisMsg)
 {
-    return(m_pLabor->GetDispatcher()->SendToSelf(oRedisMsg, GetSequence()));
-}
-
-bool Actor::SendToSelf(const char* pRaw, uint32 uiRawSize)
-{
-    return(m_pLabor->GetDispatcher()->SendToSelf(pRaw, uiRawSize, GetSequence()));
+    return(IO<CodecResp>::SendToSelf(this, oRedisMsg));
 }
 
 std::shared_ptr<SocketChannel> Actor::GetLastActivityChannel()
@@ -322,6 +317,11 @@ int32 Actor::GetStepNum() const
     return(m_pLabor->GetActorBuilder()->GetStepNum());
 }
 
+void Actor::ResetTimeout(ev_tstamp dTimeout)
+{
+    m_dTimeout = dTimeout;
+}
+
 void Actor::SetLabor(Labor* pLabor)
 {
     m_pLabor = pLabor;
@@ -336,18 +336,20 @@ uint32 Actor::ForceNewSequence()
     return(m_uiSequence);
 }
 
-ev_timer* Actor::MutableTimerWatcher()
+ActorWatcher* Actor::MutableWatcher()
 {
-    if (NULL == m_pTimerWatcher)
+    if (nullptr == m_pWatcher)
     {
-        m_pTimerWatcher = (ev_timer*)malloc(sizeof(ev_timer));
-        if (NULL != m_pTimerWatcher)
+        try
         {
-            memset(m_pTimerWatcher, 0, sizeof(ev_timer));
-            m_pTimerWatcher->data = this;    // (void*)(Actor*)
+            m_pWatcher = new ActorWatcher();
+        }
+        catch(std::bad_alloc& e)
+        {
+            LOG4_ERROR("new ActorWatcher error: %s", e.what());
         }
     }
-    return(m_pTimerWatcher);
+    return(m_pWatcher);
 }
 
 void Actor::SetActorName(const std::string& strActorName)

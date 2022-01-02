@@ -46,11 +46,13 @@ enum E_H2_FRAME_FLAG
 
 class CodecHttp2;
 class Http2Stream;
+class SocketChannel;
 
 class Http2Frame: public Codec
 {
 public:
-    Http2Frame(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, Http2Stream* pStream = nullptr);
+    Http2Frame(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+            std::shared_ptr<SocketChannel> pBindChannel, Http2Stream* pStream = nullptr);
     virtual ~Http2Frame();
 
     static void WriteMediumInt(uint32 uiValue, CBuffer* pBuff);

@@ -10,18 +10,20 @@
 #include "Http2Stream.hpp"
 #include "Http2Frame.hpp"
 #include "CodecHttp2.hpp"
+#include "channel/SocketChannel.hpp"
 
 namespace neb
 {
 
-Http2Stream::Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, uint32 uiStreamId)
-    : Codec(pLogger, eCodecType),
+Http2Stream::Http2Stream(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+        std::shared_ptr<SocketChannel> pBindChannel, uint32 uiStreamId)
+    : Codec(pLogger, eCodecType, pBindChannel),
       m_eStreamState(H2_STREAM_IDLE), m_uiStreamId(uiStreamId), m_bEndHeaders(false), m_pFrame(nullptr)
 {
 #if __cplusplus >= 201401L
-    m_pFrame = std::make_unique<Http2Frame>(pLogger, eCodecType, this);
+    m_pFrame = std::make_unique<Http2Frame>(pLogger, eCodecType, pBindChannel, this);
 #else
-    m_pFrame = std::unique_ptr<Http2Frame>(new Http2Frame(pLogger, eCodecType, this));
+    m_pFrame = std::unique_ptr<Http2Frame>(new Http2Frame(pLogger, eCodecType, pBindChannel, this));
 #endif
 }
 
@@ -247,7 +249,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
     {
         if (CODEC_STATUS_OK == eStatus || CODEC_STATUS_PART_OK == eStatus)
         {
-            if (pCodecH2->IsClient())
+            if (pCodecH2->GetBindChannel()->IsClient())
             {
                 if (m_oHttpMsg.stream_id() & 0x01)
                 {

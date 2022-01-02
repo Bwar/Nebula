@@ -14,6 +14,7 @@
 #include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
 #include "ios/Dispatcher.hpp"
+#include "channel/SocketChannelImpl.hpp"
 #include "codec/http2/H2Comm.hpp"
 #include "codec/http2/Http2Frame.hpp"
 #include "codec/http2/CodecHttp2.hpp"
@@ -134,7 +135,8 @@ bool ModuleHttpUpgrade::UpgradeToWebSocket(std::shared_ptr<SocketChannel> pChann
         oOutHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("Sec-WebSocket-Extensions", "private-extension"));
         oOutHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("Sec-WebSocket-Accept", strBase64EncodeAcceptKey));
         SendTo(pChannel, oOutHttpMsg);
-        GetLabor(this)->GetDispatcher()->SwitchCodec(pChannel, CODEC_WS_EXTEND_JSON);
+        SocketChannelImpl<CodecHttp>::NewCodec(pChannel, GetLabor(this),
+                GetLabor(this)->GetActorBuilder()->GetLogger(), CODEC_WS_EXTEND_JSON);
     }
     else
     {
@@ -190,11 +192,13 @@ bool ModuleHttpUpgrade::UpgradeToHttp2(std::shared_ptr<SocketChannel> pChannel, 
     oOutHttpMsg.set_body(strSettingFrame);
     SendTo(pChannel, oOutHttpMsg);
 
-    auto pCodec = GetLabor(this)->GetDispatcher()->SwitchCodec(pChannel, CODEC_HTTP2, true);
-    if (pCodec == nullptr)
+    bool bRes = SocketChannelImpl<CodecHttp>::NewCodec(pChannel, GetLabor(this),
+            GetLabor(this)->GetActorBuilder()->GetLogger(), CODEC_HTTP2);
+    if (!bRes)
     {
         return(false);
     }
+    auto pCodec = pChannel->GetCodec();
     ((CodecHttp2*)pCodec)->Setting(vecSetting, false);
     return(true);
 }

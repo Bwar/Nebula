@@ -12,8 +12,8 @@
 namespace neb
 {
 
-PbStep::PbStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
-    : Step(Actor::ACT_PB_STEP, pNextStep, dTimeout)
+PbStep::PbStep(ev_tstamp dTimeout)
+    : Step(Actor::ACT_PB_STEP, dTimeout)
 {
 }
 

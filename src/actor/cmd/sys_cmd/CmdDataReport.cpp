@@ -49,7 +49,7 @@ bool CmdDataReport::AnyMessage(
     if (pReport == nullptr)
     {
         LOG4_ERROR("failed to new Report!");
-        return(CMD_STATUS_FAULT);
+        return(false);
     }
     if (!pReport->ParseFromString(oInMsgBody.data()))
     {

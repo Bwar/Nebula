@@ -12,8 +12,8 @@
 namespace neb
 {
 
-RawStep::RawStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
-    : Step(ACT_REDIS_STEP, pNextStep, dTimeout)
+RawStep::RawStep(ev_tstamp dTimeout)
+    : Step(ACT_REDIS_STEP, dTimeout)
 {
 }
 

@@ -20,11 +20,19 @@ namespace neb
 class CodecWsExtentJson: public Codec
 {
 public:
-    CodecWsExtentJson(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
+    CodecWsExtentJson(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+            std::shared_ptr<SocketChannel> pBindChannel);
     virtual ~CodecWsExtentJson();
 
-    virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);
-    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody);
+    static E_CODEC_TYPE Type()
+    {
+        return(CODEC_WS_EXTEND_JSON);
+    }
+
+    E_CODEC_STATUS Encode(CBuffer* pBuff);
+    E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody, CBuffer* pReactBuff);
 
 private:
     uint32 uiBeatCmd;

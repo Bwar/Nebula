@@ -19,8 +19,9 @@ const char CodecResp::RESP_INTEGER = ':';
 const char CodecResp::RESP_BULK_STRING = '$';
 const char CodecResp::RESP_ARRAY = '*';
 
-CodecResp::CodecResp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
-    : Codec(pLogger, eCodecType)
+CodecResp::CodecResp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+        std::shared_ptr<SocketChannel> pBindChannel)
+    : Codec(pLogger, eCodecType, pBindChannel)
 {
 }
 
@@ -28,14 +29,9 @@ CodecResp::~CodecResp()
 {
 }
 
-E_CODEC_STATUS CodecResp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
+E_CODEC_STATUS CodecResp::Encode(CBuffer* pBuff)
 {
-    return(CODEC_STATUS_INVALID);
-}
-
-E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
-{
-    return(CODEC_STATUS_INVALID);
+    return(CODEC_STATUS_OK);
 }
 
 E_CODEC_STATUS CodecResp::Encode(const RedisReply& oReply, CBuffer* pBuff)
@@ -469,6 +465,12 @@ E_CODEC_STATUS CodecResp::DecodeArray(CBuffer* pBuff, RedisReply& oReply)
         }
     }
     return(CODEC_STATUS_PAUSE);
+}
+
+E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply, CBuffer* pReactBuff)
+{
+    LOG4_ERROR("invalid");
+    return(CODEC_STATUS_ERR);
 }
 
 }

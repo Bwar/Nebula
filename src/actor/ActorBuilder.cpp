@@ -20,14 +20,18 @@
 #include "step/PbStep.hpp"
 #include "step/RedisStep.hpp"
 #include "step/RawStep.hpp"
+//#include "step/CassStep.hpp"
 #include "cmd/RedisCmd.hpp"
 #include "cmd/RawCmd.hpp"
 #include "operator/Operator.hpp"
 #include "chain/Chain.hpp"
 #include "actor/session/sys_session/SessionLogger.hpp"
+#include "ios/ActorWatcher.hpp"
 #include "ios/Dispatcher.hpp"
+#include "ios/IO.hpp"
 #include "channel/SocketChannel.hpp"
 #include "channel/SelfChannel.hpp"
+#include "codec/CodecProto.hpp"
 
 namespace neb
 {
@@ -44,12 +48,6 @@ ActorBuilder::~ActorBuilder()
     m_mapCallbackStep.clear();
     m_mapCallbackSession.clear();
 
-    for (auto so_iter = m_mapLoadedSo.begin();
-                    so_iter != m_mapLoadedSo.end(); ++so_iter)
-    {
-        DELETE(so_iter->second);
-    }
-    m_mapLoadedSo.clear();
     if (m_pErrBuff != nullptr)
     {
         free(m_pErrBuff);
@@ -62,6 +60,13 @@ bool ActorBuilder::Init(CJsonObject& oBootLoadConf, CJsonObject& oDynamicLoadCon
     LoadSysCmd();
     BootLoadCmd(oBootLoadConf);
     DynamicLoad(oDynamicLoadConf);
+    std::string strReportSessionId = "neb::SessionDataReport";
+    auto pSession = GetSession(strReportSessionId);
+    if (pSession == nullptr)
+    {
+        MakeSharedSession(nullptr, "neb::SessionDataReport",
+                strReportSessionId, (ev_tstamp)m_pLabor->GetNodeInfo().dDataReportInterval);
+    }
     return(true);
 }
 
@@ -75,8 +80,9 @@ void ActorBuilder::StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, 
 {
     if (watcher->data != NULL)
     {
-        Step* pStep = (Step*)watcher->data;
-        pStep->m_pLabor->GetActorBuilder()->OnStepTimeout(std::dynamic_pointer_cast<Step>(pStep->shared_from_this()));
+        auto pWatcher = static_cast<ActorWatcher*>(watcher->data);
+        auto pStep = std::static_pointer_cast<Step>(pWatcher->GetActor());
+        pStep->m_pLabor->GetActorBuilder()->OnStepTimeout(pStep);
     }
 }
 
@@ -84,8 +90,9 @@ void ActorBuilder::SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watche
 {
     if (watcher->data != NULL)
     {
-        Session* pSession = (Session*)watcher->data;
-        pSession->m_pLabor->GetActorBuilder()->OnSessionTimeout(std::dynamic_pointer_cast<Session>(pSession->shared_from_this()));
+        auto pWatcher = static_cast<ActorWatcher*>(watcher->data);
+        auto pSession = std::static_pointer_cast<Session>(pWatcher->GetActor());
+        pSession->m_pLabor->GetActorBuilder()->OnSessionTimeout(pSession);
     }
 }
 
@@ -93,43 +100,35 @@ void ActorBuilder::ChainTimeoutCallback(struct ev_loop* loop, ev_timer* watcher,
 {
     if (watcher->data != NULL)
     {
-        Chain* pChain = (Chain*)watcher->data;
-        pChain->m_pLabor->GetActorBuilder()->OnChainTimeout(std::dynamic_pointer_cast<Chain>(pChain->shared_from_this()));
+        auto pWatcher = static_cast<ActorWatcher*>(watcher->data);
+        auto pChain = std::static_pointer_cast<Chain>(pWatcher->GetActor());
+        pChain->m_pLabor->GetActorBuilder()->OnChainTimeout(pChain);
     }
 }
 
 bool ActorBuilder::OnStepTimeout(std::shared_ptr<Step> pStep)
 {
-    ev_timer* watcher = pStep->MutableTimerWatcher();
-    ev_tstamp after = pStep->GetActiveTime() - m_pLabor->GetNowTime() + pStep->GetTimeout();
-    if (after > 0)    // 在定时时间内被重新刷新过，重新设置定时器
+    ev_timer* watcher = pStep->MutableWatcher()->MutableTimerWatcher();
+    LOG4_TRACE("seq %lu: active_time %lf, now_time %lf, lifetime %lf",
+            pStep->GetSequence(), pStep->GetActiveTime(), m_pLabor->GetNowTime(), pStep->GetTimeout());
+    E_CMD_STATUS eResult = pStep->Timeout();
+    if (CMD_STATUS_RUNNING == eResult)
     {
+        ev_tstamp after = pStep->GetTimeout();
         m_pLabor->GetDispatcher()->RefreshEvent(watcher, after);
         return(true);
     }
-    else    // 步骤已超时
+    else
     {
-        LOG4_TRACE("seq %lu: active_time %lf, now_time %lf, lifetime %lf",
-                        pStep->GetSequence(), pStep->GetActiveTime(), m_pLabor->GetNowTime(), pStep->GetTimeout());
-        E_CMD_STATUS eResult = pStep->Timeout();
-        if (CMD_STATUS_RUNNING == eResult)
-        {
-            ev_tstamp after = pStep->GetTimeout();
-            m_pLabor->GetDispatcher()->RefreshEvent(watcher, after);
-            return(true);
-        }
-        else
-        {
-            RemoveChain(pStep->GetChainId());
-            RemoveStep(pStep);
-            return(true);
-        }
+        RemoveChain(pStep->GetChainId());
+        RemoveStep(pStep);
+        return(true);
     }
 }
 
 bool ActorBuilder::OnSessionTimeout(std::shared_ptr<Session> pSession)
 {
-    ev_timer* watcher = pSession->MutableTimerWatcher();
+    ev_timer* watcher = pSession->MutableWatcher()->MutableTimerWatcher();
     //LOG4_TRACE("CHECK watchar = 0x%x", watcher);
     ev_tstamp after = pSession->GetActiveTime() - m_pLabor->GetNowTime() + pSession->GetTimeout();
     if (after > 0)    // 定时时间内被重新刷新过，重新设置定时器
@@ -155,7 +154,7 @@ bool ActorBuilder::OnSessionTimeout(std::shared_ptr<Session> pSession)
 
 bool ActorBuilder::OnChainTimeout(std::shared_ptr<Chain> pChain)
 {
-    ev_timer* watcher = pChain->MutableTimerWatcher();
+    ev_timer* watcher = pChain->MutableWatcher()->MutableTimerWatcher();
     LOG4_TRACE("CHECK watchar = 0x%x", watcher);
     ev_tstamp after = pChain->GetActiveTime() - m_pLabor->GetNowTime() + pChain->GetTimeout();
     if (after > 0)    // 定时时间内被重新刷新过，重新设置定时器
@@ -248,7 +247,7 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
                         LOG4_ERROR(m_pErrBuff);
                         oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
                         oOutMsgBody.mutable_rsp_result()->set_msg(m_pErrBuff);
-                        m_pLabor->GetDispatcher()->SendTo(pChannel, oMsgHead.cmd() + 1, oMsgHead.seq(), oOutMsgBody);
+                        IO<CodecNebula>::SendResponse(m_pLabor->GetDispatcher(), pChannel, oMsgHead.cmd() + 1, oMsgHead.seq(), oOutMsgBody);
                         return(false);
                     }
                 }
@@ -275,7 +274,7 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
                         LOG4_ERROR(m_pErrBuff);
                         oOutMsgBody.mutable_rsp_result()->set_code(ERR_UNKNOWN_CMD);
                         oOutMsgBody.mutable_rsp_result()->set_msg(m_pErrBuff);
-                        m_pLabor->GetDispatcher()->SendTo(pChannel, oMsgHead.cmd() + 1, oMsgHead.seq(), oOutMsgBody);
+                        IO<CodecNebula>::SendResponse(m_pLabor->GetDispatcher(), pChannel, oMsgHead.cmd() + 1, oMsgHead.seq(), oOutMsgBody);
                         return(false);
                     }
                 }
@@ -301,7 +300,9 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
                 if (CMD_STATUS_RUNNING != eResult)
                 {
                     uint32 uiChainId = step_iter->second->GetChainId();
-                    RemoveStep(step_iter->second);
+                    m_pLabor->GetDispatcher()->DelEvent(step_iter->second->MutableWatcher()->MutableTimerWatcher());
+                    step_iter->second->MutableWatcher()->Reset();
+                    m_mapCallbackStep.erase(step_iter);
                     if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
                     {
                         auto chain_iter = m_mapChain.find(uiChainId);
@@ -317,474 +318,13 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
                     }
                 }
             }
-            ExecAssemblyLine(pChannel, oMsgHead, oMsgBody);
         }
         else
         {
-            snprintf(m_pErrBuff, gc_iErrBuffLen, "no callback or the callback for seq %u had been timeout!", oMsgHead.seq());
-            LOG4_WARNING(m_pErrBuff);
             return(false);
         }
     }
     return(true);
-}
-
-bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg, E_CODEC_STATUS eCodecStatus)
-{
-    if (HTTP_REQUEST == oHttpMsg.type())    // 新请求
-    {
-        LOG4_DEBUG("oInHttpMsg.type() = %d, oInHttpMsg.path() = %s",
-                    oHttpMsg.type(), oHttpMsg.path().c_str());
-        if (oHttpMsg.has_upgrade() && oHttpMsg.upgrade().is_upgrade())
-        {
-            auto module_iter = m_mapModule.find("http_upgrade");
-            if (module_iter != m_mapModule.end())
-            {
-                std::ostringstream oss;
-                oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
-                module_iter->second->SetTraceId(oss.str());
-                if (module_iter->second->AnyMessage(pChannel, oHttpMsg))
-                {
-                    return(true);
-                }
-            }
-        }
-        auto module_iter = m_mapModule.find(oHttpMsg.path());
-        if (module_iter == m_mapModule.end())
-        {
-            module_iter = m_mapModule.find("/switch");
-            if (module_iter == m_mapModule.end())
-            {
-                module_iter = m_mapModule.find("/route");
-                if (module_iter == m_mapModule.end())
-                {
-                    HttpMsg oOutHttpMsg;
-                    snprintf(m_pErrBuff, gc_iErrBuffLen, "no module to dispose %s!", oHttpMsg.path().c_str());
-                    LOG4_WARNING(m_pErrBuff);
-                    oOutHttpMsg.set_type(HTTP_RESPONSE);
-                    oOutHttpMsg.set_status_code(404);
-                    oOutHttpMsg.set_http_major(oHttpMsg.http_major());
-                    oOutHttpMsg.set_http_minor(oHttpMsg.http_minor());
-                    m_pLabor->GetDispatcher()->SendTo(pChannel, oOutHttpMsg, 0);
-                }
-                else
-                {
-                    std::ostringstream oss;
-                    oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
-                    module_iter->second->SetTraceId(oss.str());
-                    module_iter->second->AnyMessage(pChannel, oHttpMsg);
-                }
-            }
-            else
-            {
-                std::ostringstream oss;
-                oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
-                module_iter->second->SetTraceId(oss.str());
-                module_iter->second->AnyMessage(pChannel, oHttpMsg);
-            }
-        }
-        else
-        {
-            std::ostringstream oss;
-            oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
-            module_iter->second->SetTraceId(oss.str());
-            module_iter->second->AnyMessage(pChannel, oHttpMsg);
-        }
-    }
-    else
-    {
-        auto http_step_iter = m_mapCallbackStep.find(pChannel->m_pImpl->PopStepSeq(oHttpMsg.stream_id(), eCodecStatus));
-        if (!pChannel->IsPipeline() && pChannel->m_pImpl->GetPipelineStepSeq().empty())
-        {
-            m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel);
-        }
-        if (http_step_iter == m_mapCallbackStep.end())
-        {
-            LOG4_TRACE("no callback for http response from %s!", oHttpMsg.url().c_str());
-        }
-        else
-        {
-            E_CMD_STATUS eResult;
-            http_step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-            eResult = http_step_iter->second->Callback(pChannel, oHttpMsg);
-            if (CMD_STATUS_RUNNING != eResult)
-            {
-                uint32 uiChainId = http_step_iter->second->GetChainId();
-                RemoveStep(http_step_iter->second);
-                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
-                {
-                    auto chain_iter = m_mapChain.find(uiChainId);
-                    if (chain_iter != m_mapChain.end())
-                    {
-                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                        eResult = chain_iter->second->Next();
-                        if (CMD_STATUS_RUNNING != eResult)
-                        {
-                            RemoveChain(uiChainId);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return(true);
-}
-
-bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg, uint32 uiFinalStepSeq)
-{
-    if (pChannel->IsClient())
-    {
-        std::unordered_map<uint32, std::shared_ptr<Step>>::iterator step_iter;
-        if (uiFinalStepSeq == 0) // callback from SocketChannel by redis msg
-        {
-            step_iter = m_mapCallbackStep.find(pChannel->m_pImpl->PopStepSeq());
-        }
-        else // callback from StepRedisCluster
-        {
-            step_iter = m_mapCallbackStep.find(uiFinalStepSeq);
-        }
-        if (!pChannel->IsPipeline() && pChannel->m_pImpl->GetPipelineStepSeq().empty())
-        {
-            m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel); // push back to named socket channel pool.
-        }
-        if (step_iter == m_mapCallbackStep.end())
-        {
-            LOG4_TRACE("no callback for redis reply from %s!", pChannel->GetIdentify().c_str());
-            return(false);
-        }
-        else
-        {
-            E_CMD_STATUS eResult;
-            step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-            eResult = step_iter->second->Callback(pChannel, oRedisMsg);
-            if (CMD_STATUS_RUNNING != eResult)
-            {
-                uint32 uiChainId = step_iter->second->GetChainId();
-                RemoveStep(step_iter->second);
-                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
-                {
-                    auto chain_iter = m_mapChain.find(uiChainId);
-                    if (chain_iter != m_mapChain.end())
-                    {
-                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                        eResult = chain_iter->second->Next();
-                        if (CMD_STATUS_RUNNING != eResult)
-                        {
-                            RemoveChain(uiChainId);
-                        }
-                    }
-                }
-            }
-            return(eResult);
-        }
-    }
-    else
-    {
-        auto cmd_iter = m_mapCmd.find(CMD_REQ_REDIS_PROXY);
-        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
-        {
-            auto pRedisCmd = std::dynamic_pointer_cast<RedisCmd>(cmd_iter->second);
-            if (pRedisCmd == nullptr)
-            {
-                LOG4_ERROR("cmd %d is not a RedisCmd instance!", CMD_REQ_REDIS_PROXY);
-                return(false);
-            }
-            return(pRedisCmd->AnyMessage(pChannel, oRedisMsg));
-        }
-        LOG4_ERROR("no instance of RedisCmd or derived class of RedisCmd found for cmd %d", CMD_REQ_REDIS_PROXY);
-        return(false);
-    }
-}
-
-bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer)
-{
-    if (pChannel->IsClient())
-    {
-        auto step_iter = m_mapCallbackStep.find(pChannel->m_pImpl->PopStepSeq());
-        if (!pChannel->IsPipeline() && pChannel->m_pImpl->GetPipelineStepSeq().empty())
-        {
-            m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel); // push back to named socket channel pool.
-        }
-        if (step_iter == m_mapCallbackStep.end())
-        {
-            LOG4_TRACE("no callback for raw data reply from %s!", pChannel->GetIdentify().c_str());
-            return(false);
-        }
-        else
-        {
-            E_CMD_STATUS eResult;
-            step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-            eResult = step_iter->second->Callback(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes());
-            if (CMD_STATUS_RUNNING != eResult)
-            {
-                uint32 uiChainId = step_iter->second->GetChainId();
-                RemoveStep(step_iter->second);
-                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
-                {
-                    auto chain_iter = m_mapChain.find(uiChainId);
-                    if (chain_iter != m_mapChain.end())
-                    {
-                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                        eResult = chain_iter->second->Next();
-                        if (CMD_STATUS_RUNNING != eResult)
-                        {
-                            RemoveChain(uiChainId);
-                        }
-                    }
-                }
-            }
-            return(eResult);
-        }
-    }
-    else
-    {
-        auto cmd_iter = m_mapCmd.find(CMD_REQ_RAW_DATA);
-        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
-        {
-            auto pRawCmd = std::dynamic_pointer_cast<RawCmd>(cmd_iter->second);
-            if (pRawCmd == nullptr)
-            {
-                LOG4_ERROR("cmd %d is not a RawCmd instance!", CMD_REQ_RAW_DATA);
-                return(false);
-            }
-            return(pRawCmd->AnyMessage(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes()));
-        }
-        LOG4_ERROR("no instance of RawCmd or derived class of RawCmd found for cmd %d", CMD_REQ_RAW_DATA);
-        return(false);
-    }
-}
-
-bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
-{
-    if (gc_uiCmdReq & oMsgHead.cmd())    // 新请求
-    {
-        auto cmd_iter = m_mapCmd.find(gc_uiCmdBit & oMsgHead.cmd());
-        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
-        {
-            if (oMsgBody.trace_id().length() > 10)
-            {
-                cmd_iter->second->SetTraceId(oMsgBody.trace_id());
-            }
-            else
-            {
-                std::ostringstream oss;
-                oss << m_pLabor->GetNodeInfo().uiNodeId << "." << m_pLabor->GetNowTime() << "." << m_pLabor->GetSequence();
-                cmd_iter->second->SetTraceId(oss.str());
-            }
-            cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
-        }
-        else    // 没有对应的cmd，是需由接入层转发的请求
-        {
-            LOG4_ERROR("no handler to dispose cmd %u!", oMsgHead.cmd());
-            return(false);
-        }
-    }
-    else    // 回调
-    {
-        auto step_iter = m_mapCallbackStep.find(oMsgHead.seq());
-        if (step_iter != m_mapCallbackStep.end())   // 步骤回调
-        {
-            LOG4_TRACE("receive message, cmd = %d",
-                            oMsgHead.cmd());
-            if (step_iter->second != nullptr)
-            {
-                E_CMD_STATUS eResult;
-                step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                LOG4_TRACE("cmd %u, seq %u, step_seq %u, active_time %lf",
-                                oMsgHead.cmd(), oMsgHead.seq(), step_iter->second->GetSequence(),
-                                step_iter->second->GetActiveTime());
-                eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(pChannel, oMsgHead, oMsgBody);
-                if (CMD_STATUS_RUNNING != eResult)
-                {
-                    uint32 uiChainId = step_iter->second->GetChainId();
-                    RemoveStep(step_iter->second);
-                    if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
-                    {
-                        auto chain_iter = m_mapChain.find(uiChainId);
-                        if (chain_iter != m_mapChain.end())
-                        {
-                            chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                            eResult = chain_iter->second->Next();
-                            if (CMD_STATUS_RUNNING != eResult)
-                            {
-                                RemoveChain(uiChainId);
-                            }
-                        }
-                    }
-                }
-            }
-            ExecAssemblyLine(pChannel, oMsgHead, oMsgBody);
-        }
-        else
-        {
-            snprintf(m_pErrBuff, gc_iErrBuffLen, "no callback or the callback for seq %u had been timeout!", oMsgHead.seq());
-            LOG4_WARNING(m_pErrBuff);
-            return(false);
-        }
-    }
-    return(true);
-}
-
-bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const HttpMsg& oHttpMsg)
-{
-    if (HTTP_REQUEST == oHttpMsg.type())    // 新请求
-    {
-        LOG4_DEBUG("oInHttpMsg.type() = %d, oInHttpMsg.path() = %s",
-                    oHttpMsg.type(), oHttpMsg.path().c_str());
-        auto module_iter = m_mapModule.find(oHttpMsg.path());
-        if (module_iter == m_mapModule.end())
-        {
-            LOG4_ERROR("no module to dispose %s!", oHttpMsg.path().c_str());
-        }
-        else
-        {
-            module_iter->second->AnyMessage(pChannel, oHttpMsg);
-        }
-    }
-    else
-    {
-        auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
-        auto http_step_iter = m_mapCallbackStep.find(pSelfChannel->GetStepSeq());
-        if (http_step_iter == m_mapCallbackStep.end())
-        {
-            LOG4_TRACE("no callback for http response from %s!", oHttpMsg.url().c_str());
-        }
-        else
-        {
-            E_CMD_STATUS eResult;
-            http_step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-            eResult = http_step_iter->second->Callback(pChannel, oHttpMsg);
-            if (CMD_STATUS_RUNNING != eResult)
-            {
-                uint32 uiChainId = http_step_iter->second->GetChainId();
-                RemoveStep(http_step_iter->second);
-                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
-                {
-                    auto chain_iter = m_mapChain.find(uiChainId);
-                    if (chain_iter != m_mapChain.end())
-                    {
-                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                        eResult = chain_iter->second->Next();
-                        if (CMD_STATUS_RUNNING != eResult)
-                        {
-                            RemoveChain(uiChainId);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return(true);
-}
-
-bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const RedisMsg& oRedisMsg)
-{
-    auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
-    if (pSelfChannel->IsResponse())
-    {
-        auto step_iter = m_mapCallbackStep.find(pSelfChannel->GetStepSeq());
-        if (step_iter == m_mapCallbackStep.end())
-        {
-            LOG4_TRACE("no callback for redis reply from %s!", pChannel->GetIdentify().c_str());
-            return(false);
-        }
-        else
-        {
-            E_CMD_STATUS eResult;
-            step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-            eResult = step_iter->second->Callback(pChannel, oRedisMsg);
-            if (CMD_STATUS_RUNNING != eResult)
-            {
-                uint32 uiChainId = step_iter->second->GetChainId();
-                RemoveStep(step_iter->second);
-                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
-                {
-                    auto chain_iter = m_mapChain.find(uiChainId);
-                    if (chain_iter != m_mapChain.end())
-                    {
-                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                        eResult = chain_iter->second->Next();
-                        if (CMD_STATUS_RUNNING != eResult)
-                        {
-                            RemoveChain(uiChainId);
-                        }
-                    }
-                }
-            }
-            return(eResult);
-        }
-    }
-    else
-    {
-        auto cmd_iter = m_mapCmd.find(CMD_REQ_REDIS_PROXY);
-        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
-        {
-            auto pRedisCmd = std::dynamic_pointer_cast<RedisCmd>(cmd_iter->second);
-            if (pRedisCmd == nullptr)
-            {
-                LOG4_ERROR("cmd %d is not a RedisCmd instance!", CMD_REQ_REDIS_PROXY);
-                return(false);
-            }
-            return(pRedisCmd->AnyMessage(pChannel, oRedisMsg));
-        }
-        LOG4_ERROR("no instance of RedisCmd or derived class of RedisCmd found for cmd %d", CMD_REQ_REDIS_PROXY);
-        return(false);
-    }
-}
-
-bool ActorBuilder::OnSelfMessage(std::shared_ptr<SocketChannel> pChannel, const CBuffer& oBuffer)
-{
-    auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
-    if (pSelfChannel->IsResponse())
-    {
-        auto step_iter = m_mapCallbackStep.find(pSelfChannel->GetStepSeq());
-        if (step_iter == m_mapCallbackStep.end())
-        {
-            LOG4_TRACE("no callback for raw data reply from %s!", pChannel->GetIdentify().c_str());
-            return(false);
-        }
-        else
-        {
-            E_CMD_STATUS eResult;
-            step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-            eResult = step_iter->second->Callback(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes());
-            if (CMD_STATUS_RUNNING != eResult)
-            {
-                uint32 uiChainId = step_iter->second->GetChainId();
-                RemoveStep(step_iter->second);
-                if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
-                {
-                    auto chain_iter = m_mapChain.find(uiChainId);
-                    if (chain_iter != m_mapChain.end())
-                    {
-                        chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                        eResult = chain_iter->second->Next();
-                        if (CMD_STATUS_RUNNING != eResult)
-                        {
-                            RemoveChain(uiChainId);
-                        }
-                    }
-                }
-            }
-            return(eResult);
-        }
-    }
-    else
-    {
-        auto cmd_iter = m_mapCmd.find(CMD_REQ_RAW_DATA);
-        if (cmd_iter != m_mapCmd.end() && cmd_iter->second != nullptr)
-        {
-            auto pRawCmd = std::dynamic_pointer_cast<RawCmd>(cmd_iter->second);
-            if (pRawCmd == nullptr)
-            {
-                LOG4_ERROR("cmd %d is not a RawCmd instance!", CMD_REQ_RAW_DATA);
-                return(false);
-            }
-            return(pRawCmd->AnyMessage(pChannel, oBuffer.GetRawReadBuffer(), oBuffer.ReadableBytes()));
-        }
-        LOG4_ERROR("no instance of RawCmd or derived class of RawCmd found for cmd %d", CMD_REQ_RAW_DATA);
-        return(false);
-    }
 }
 
 bool ActorBuilder::OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, int iErrno, const std::string& strErrMsg)
@@ -800,7 +340,9 @@ bool ActorBuilder::OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiSte
             if (CMD_STATUS_RUNNING != eResult)
             {
                 uint32 uiChainId = step_iter->second->GetChainId();
-                RemoveStep(step_iter->second);
+                m_pLabor->GetDispatcher()->DelEvent(step_iter->second->MutableWatcher()->MutableTimerWatcher());
+                step_iter->second->MutableWatcher()->Reset();
+                m_mapCallbackStep.erase(step_iter);
                 if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
                 {
                     auto chain_iter = m_mapChain.find(uiChainId);
@@ -816,7 +358,6 @@ bool ActorBuilder::OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiSte
                 }
             }
         }
-        ExecAssemblyLine(pChannel, iErrno, strErrMsg);
         return(true);
     }
     else
@@ -827,11 +368,6 @@ bool ActorBuilder::OnError(std::shared_ptr<SocketChannel> pChannel, uint32 uiSte
     }
 }
 
-void ActorBuilder::AddAssemblyLine(std::shared_ptr<Session> pSession)
-{
-    m_setAssemblyLine.insert(pSession);
-}
-
 void ActorBuilder::RemoveStep(std::shared_ptr<Step> pStep)
 {
     if (nullptr == pStep)
@@ -839,31 +375,8 @@ void ActorBuilder::RemoveStep(std::shared_ptr<Step> pStep)
         return;
     }
     std::unordered_map<uint32, std::shared_ptr<Step> >::iterator callback_iter;
-    for (auto step_seq_iter = pStep->m_setPreStepSeq.begin();
-                    step_seq_iter != pStep->m_setPreStepSeq.end(); )
-    {
-        callback_iter = m_mapCallbackStep.find(*step_seq_iter);
-        if (callback_iter == m_mapCallbackStep.end())
-        {
-            pStep->m_setPreStepSeq.erase(step_seq_iter++);
-        }
-        else
-        {
-            LOG4_DEBUG("step %u had pre step %u running, delay delete callback.", pStep->GetSequence(), *step_seq_iter);
-            ResetTimeout(std::dynamic_pointer_cast<Actor>(pStep));
-            return;
-        }
-    }
-    auto class_iter = m_mapLoadedStep.find(pStep->GetActorName());
-    if (class_iter != m_mapLoadedStep.end())
-    {
-        auto id_iter = class_iter->second.find(pStep->GetSequence());
-        if (id_iter != class_iter->second.end())
-        {
-            class_iter->second.erase(id_iter);
-        }
-    }
-    m_pLabor->GetDispatcher()->DelEvent(pStep->MutableTimerWatcher());
+    m_pLabor->GetDispatcher()->DelEvent(pStep->MutableWatcher()->MutableTimerWatcher());
+    pStep->MutableWatcher()->Reset();
     callback_iter = m_mapCallbackStep.find(pStep->GetSequence());
     if (callback_iter != m_mapCallbackStep.end())
     {
@@ -878,16 +391,8 @@ void ActorBuilder::RemoveSession(std::shared_ptr<Session> pSession)
     {
         return;
     }
-    auto class_iter = m_mapLoadedSession.find(pSession->GetActorName());
-    if (class_iter != m_mapLoadedSession.end())
-    {
-        auto id_iter = class_iter->second.find(pSession->GetSessionId());
-        if (id_iter != class_iter->second.end())
-        {
-            class_iter->second.erase(id_iter);
-        }
-    }
-    m_pLabor->GetDispatcher()->DelEvent(pSession->MutableTimerWatcher());
+    m_pLabor->GetDispatcher()->DelEvent(pSession->MutableWatcher()->MutableTimerWatcher());
+    pSession->MutableWatcher()->Reset();
     auto iter = m_mapCallbackSession.find(pSession->GetSessionId());
     if (iter != m_mapCallbackSession.end())
     {
@@ -902,7 +407,8 @@ void ActorBuilder::RemoveChain(uint32 uiChainId)
     if (chain_iter != m_mapChain.end())
     {
         std::shared_ptr<Chain> pChain = chain_iter->second;
-        m_pLabor->GetDispatcher()->DelEvent(pChain->MutableTimerWatcher());
+        m_pLabor->GetDispatcher()->DelEvent(pChain->MutableWatcher()->MutableTimerWatcher());
+        pChain->MutableWatcher()->Reset();
         m_mapChain.erase(chain_iter);
     }
 }
@@ -926,84 +432,6 @@ void ActorBuilder::ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const 
         cmd_iter->second->SetTraceId(oss.str());
         cmd_iter->second->AnyMessage(pChannel, oMsgHead, oMsgBody);
     }
-}
-
-void ActorBuilder::ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
-{
-    for (auto session_iter = m_setAssemblyLine.begin(); session_iter != m_setAssemblyLine.end(); ++session_iter)
-    {
-        uint32 uiStepSeq = 0;
-        do
-        {
-            uiStepSeq = (*session_iter)->PopWaitingStep();
-            auto step_iter = m_mapCallbackStep.find(uiStepSeq);
-            if (step_iter != m_mapCallbackStep.end())
-            {
-                E_CMD_STATUS eResult;
-                step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->Callback(pChannel, oMsgHead, oMsgBody);
-                if (CMD_STATUS_RUNNING != eResult)
-                {
-                    uint32 uiChainId = step_iter->second->GetChainId();
-                    RemoveStep(step_iter->second);
-                    if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
-                    {
-                        auto chain_iter = m_mapChain.find(uiChainId);
-                        if (chain_iter != m_mapChain.end())
-                        {
-                            chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                            eResult = chain_iter->second->Next();
-                            if (CMD_STATUS_RUNNING != eResult)
-                            {
-                                RemoveChain(uiChainId);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        while(uiStepSeq > 0);
-    }
-    m_setAssemblyLine.clear();
-}
-
-void ActorBuilder::ExecAssemblyLine(std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg)
-{
-    for (auto session_iter = m_setAssemblyLine.begin(); session_iter != m_setAssemblyLine.end(); ++session_iter)
-    {
-        uint32 uiStepSeq = 0;
-        do
-        {
-            uiStepSeq = (*session_iter)->PopWaitingStep();
-            auto step_iter = m_mapCallbackStep.find(uiStepSeq);
-            if (step_iter != m_mapCallbackStep.end())
-            {
-                E_CMD_STATUS eResult;
-                step_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                eResult = (std::dynamic_pointer_cast<PbStep>(step_iter->second))->ErrBack(pChannel, iErrno, strErrMsg);
-                if (CMD_STATUS_RUNNING != eResult)
-                {
-                    uint32 uiChainId = step_iter->second->GetChainId();
-                    RemoveStep(step_iter->second);
-                    if (CMD_STATUS_FAULT != eResult && 0 != uiChainId)
-                    {
-                        auto chain_iter = m_mapChain.find(uiChainId);
-                        if (chain_iter != m_mapChain.end())
-                        {
-                            chain_iter->second->SetActiveTime(m_pLabor->GetNowTime());
-                            eResult = chain_iter->second->Next();
-                            if (CMD_STATUS_RUNNING != eResult)
-                            {
-                                RemoveChain(uiChainId);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        while(uiStepSeq > 0);
-    }
-    m_setAssemblyLine.clear();
 }
 
 void ActorBuilder::AddChainConf(const std::string& strChainKey, std::queue<std::vector<std::string> >&& queChainBlocks)
@@ -1063,9 +491,14 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
     pSharedActor->SetLabor(m_pLabor);
     pSharedActor->SetActiveTime(m_pLabor->GetNowTime());
     pSharedActor->SetActorName(strActorName);
-    if (nullptr != pCreator && pSharedActor->GetActorType() != Actor::ACT_CONTEXT)
+    pSharedActor->SetActorStatus(Actor::ACT_STATUS_SHARED);
+    if (nullptr != pCreator)
     {
-        pSharedActor->SetContext(pCreator->GetContext());
+        if (pSharedActor->GetActorType() != Actor::ACT_CONTEXT)
+        {
+            pSharedActor->SetContext(pCreator->GetContext());
+        }
+        pSharedActor->SetActorStatus(Actor::ACT_STATUS_DYNAMIC_LOAD | pCreator->GetActorStatus());
     }
     switch (pSharedActor->GetActorType())
     {
@@ -1113,7 +546,7 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
             }
             break;
         default:
-            LOG4_ERROR("\"%s\" must be a Step, a Session, a Operator, a Cmd or a Module.",
+            LOG4_ERROR("\"%s\" must be a Step, a Session, an Operator, a Cmd or a Module.",
                     strActorName.c_str());
             return(nullptr);
     }
@@ -1124,8 +557,14 @@ bool ActorBuilder::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor>
 {
     pSharedActor->m_dTimeout = (gc_dConfigTimeout == pSharedActor->m_dTimeout)
             ? m_pLabor->GetNodeInfo().dStepTimeout : pSharedActor->m_dTimeout;
-    ev_timer* timer_watcher = pSharedActor->MutableTimerWatcher();
-    if (NULL == timer_watcher)
+    auto pWatcher = pSharedActor->MutableWatcher();
+    if (nullptr == pWatcher)
+    {
+        return(false);
+    }
+    pWatcher->Set(pSharedActor);
+    ev_timer* timer_watcher = pWatcher->MutableTimerWatcher();
+    if (nullptr == timer_watcher)
     {
         return(false);
     }
@@ -1140,14 +579,6 @@ bool ActorBuilder::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor>
         pSharedActor->ForceNewSequence();
     }
     std::shared_ptr<Step> pSharedStep = std::dynamic_pointer_cast<Step>(pSharedActor);
-    for (auto iter = pSharedStep->m_setNextStepSeq.begin(); iter != pSharedStep->m_setNextStepSeq.end(); ++iter)
-    {
-        auto callback_iter = m_mapCallbackStep.find(*iter);
-        if (callback_iter != m_mapCallbackStep.end())
-        {
-            callback_iter->second->m_setPreStepSeq.insert(pSharedStep->GetSequence());
-        }
-    }
 
     auto ret = m_mapCallbackStep.insert(std::make_pair(pSharedStep->GetSequence(), pSharedStep));
     if (ret.second)
@@ -1158,11 +589,6 @@ bool ActorBuilder::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor>
         }
         LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
                         pSharedStep->GetSequence(), pSharedStep->GetActiveTime(), pSharedStep->GetTimeout());
-        auto step_class_iter = m_mapLoadedStep.find(pSharedStep->GetActorName());
-        if (step_class_iter != m_mapLoadedStep.end())
-        {
-            step_class_iter->second.insert(pSharedStep->GetSequence());
-        }
         return(true);
     }
     else
@@ -1174,8 +600,14 @@ bool ActorBuilder::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor>
 
 bool ActorBuilder::TransformToSharedSession(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
 {
-    ev_timer* timer_watcher = pSharedActor->MutableTimerWatcher();
-    if (NULL == timer_watcher)
+    auto pWatcher = pSharedActor->MutableWatcher();
+    if (nullptr == pWatcher)
+    {
+        return(false);
+    }
+    pWatcher->Set(pSharedActor);
+    ev_timer* timer_watcher = pWatcher->MutableTimerWatcher();
+    if (nullptr == timer_watcher)
     {
         return(false);
     }
@@ -1193,11 +625,6 @@ bool ActorBuilder::TransformToSharedSession(Actor* pCreator, std::shared_ptr<Act
         if (pSharedSession->m_dTimeout > 0)
         {
             m_pLabor->GetDispatcher()->AddEvent(timer_watcher, SessionTimeoutCallback, pSharedSession->m_dTimeout);
-        }
-        auto session_class_iter = m_mapLoadedSession.find(pSharedSession->GetActorName());
-        if (session_class_iter != m_mapLoadedSession.end())
-        {
-            session_class_iter->second.insert(pSharedSession->GetSessionId());
         }
         return(true);
     }
@@ -1220,11 +647,6 @@ bool ActorBuilder::TransformToSharedCmd(Actor* pCreator, std::shared_ptr<Actor> 
     {
         if (pSharedCmd->Init())
         {
-            auto cmd_class_iter = m_mapLoadedCmd.find(pSharedCmd->GetActorName());
-            if (cmd_class_iter != m_mapLoadedCmd.end())
-            {
-                cmd_class_iter->second.insert(pSharedCmd->GetCmd());
-            }
             return(true);
         }
         else
@@ -1253,11 +675,6 @@ bool ActorBuilder::TransformToSharedModule(Actor* pCreator, std::shared_ptr<Acto
     {
         if (pSharedModule->Init())
         {
-            auto module_class_iter = m_mapLoadedModule.find(pSharedModule->GetActorName());
-            if (module_class_iter != m_mapLoadedModule.end())
-            {
-                module_class_iter->second.insert(pSharedModule->GetModulePath());
-            }
             return(true);
         }
         else
@@ -1298,8 +715,14 @@ bool ActorBuilder::TransformToSharedOperator(Actor* pCreator, std::shared_ptr<Ac
 
 bool ActorBuilder::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor> pSharedActor)
 {
-    ev_timer* timer_watcher = pSharedActor->MutableTimerWatcher();
-    if (NULL == timer_watcher)
+    auto pWatcher = pSharedActor->MutableWatcher();
+    if (nullptr == pWatcher)
+    {
+        return(false);
+    }
+    pWatcher->Set(pSharedActor);
+    ev_timer* timer_watcher = pWatcher->MutableTimerWatcher();
+    if (nullptr == timer_watcher)
     {
         return(false);
     }
@@ -1350,6 +773,23 @@ bool ActorBuilder::TransformToSharedChain(Actor* pCreator, std::shared_ptr<Actor
         LOG4_ERROR("chain %u exist.", pSharedChain->GetSequence());
     }
     return(false);
+}
+
+bool ActorBuilder::RegisterActor(const std::string& strActorName, Actor* pNewActor, Actor* pCreator)
+{
+    if (nullptr == pNewActor)
+    {
+        return(false);
+    }
+    pNewActor->SetLabor(m_pLabor);
+    pNewActor->SetActiveTime(m_pLabor->GetNowTime());
+    pNewActor->SetActorName(strActorName);
+    pNewActor->SetActorStatus(Actor::ACT_STATUS_ACTIVITY);
+    if (nullptr != pCreator && pNewActor->GetActorType() != Actor::ACT_CONTEXT)
+    {
+        pNewActor->SetContext(pCreator->GetContext());
+    }
+    return(true);
 }
 
 bool ActorBuilder::SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq, bool bEnableReadOnly)
@@ -1431,7 +871,7 @@ std::shared_ptr<Operator> ActorBuilder::GetOperator(const std::string& strOperat
 
 bool ActorBuilder::ResetTimeout(std::shared_ptr<Actor> pSharedActor)
 {
-    ev_timer* watcher = pSharedActor->MutableTimerWatcher();
+    ev_timer* watcher = pSharedActor->MutableWatcher()->MutableTimerWatcher();
     ev_tstamp after = m_pLabor->GetNowTime() + pSharedActor->GetTimeout();
     m_pLabor->GetDispatcher()->RefreshEvent(watcher, after);
     return(true);
@@ -1440,6 +880,11 @@ bool ActorBuilder::ResetTimeout(std::shared_ptr<Actor> pSharedActor)
 int32 ActorBuilder::GetStepNum()
 {
     return((int32)m_mapCallbackStep.size());
+}
+
+std::shared_ptr<NetLogger> ActorBuilder::GetLogger() const
+{
+    return(m_pLogger);
 }
 
 bool ActorBuilder::ReloadCmdConf()
@@ -1500,98 +945,28 @@ void ActorBuilder::DynamicLoad(CJsonObject& oDynamicLoadingConf)
         oDynamicLoadingConf[i].Get("load", bIsload);
         if (bIsload)
         {
-            if (oDynamicLoadingConf[i].Get("so_path", strSoPath) && oDynamicLoadingConf[i].Get("version", strVersion))
+            std::string strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/")
+                    + oDynamicLoadingConf[i]("so_path") + std::string(".") + oDynamicLoadingConf[i]("version");
+            if (m_pLabor->GetNodeInfo().bThreadMode && Labor::LABOR_MANAGER != m_pLabor->GetLaborType())
             {
-                so_iter = m_mapLoadedSo.find(strSoPath);
-                if (so_iter == m_mapLoadedSo.end())
-                {
-                    std::string strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/")
-                        + oDynamicLoadingConf[i]("so_path") + std::string(".") + oDynamicLoadingConf[i]("version");
-                    if (m_pLabor->GetNodeInfo().bThreadMode && Labor::LABOR_MANAGER != m_pLabor->GetLaborType())
-                    {
-                        LoadDynamicSymbol(oDynamicLoadingConf[i]);
-                    }
-                    else
-                    {
-                        if (0 != access(strSoFile.c_str(), F_OK))
-                        {
-                            strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
-                            if (0 != access(strSoFile.c_str(), F_OK))
-                            {
-                                LOG4_WARNING("%s not exist!", strSoFile.c_str());
-                                continue;
-                            }
-                        }
-                        pSo = LoadSo(strSoFile, strVersion);
-                        if (pSo != nullptr)
-                        {
-                            LOG4_INFO("succeed in loading %s", strSoFile.c_str());
-                            m_mapLoadedSo.insert(std::make_pair(strSoPath, pSo));
-                            LoadDynamicSymbol(oDynamicLoadingConf[i]);
-                        }
-                    }
-                }
-                else
-                {
-                    if (strVersion != so_iter->second->strVersion)  // 版本升级，先卸载再加载
-                    {
-                        std::string strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/")
-                            + oDynamicLoadingConf[i]("so_path") + std::string(".") + oDynamicLoadingConf[i]("version");
-                        if (m_pLabor->GetNodeInfo().bThreadMode && Labor::LABOR_MANAGER != m_pLabor->GetLaborType())
-                        {
-                            UnloadDynamicSymbol(oDynamicLoadingConf[i]);
-                            LoadDynamicSymbol(oDynamicLoadingConf[i]);
-                        }
-                        else
-                        {
-                            if (0 != access(strSoFile.c_str(), F_OK))
-                            {
-                                strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
-                                if (0 != access(strSoFile.c_str(), F_OK))
-                                {
-                                    LOG4_WARNING("%s not exist!", strSoFile.c_str());
-                                    continue;
-                                }
-                            }
-                            UnloadDynamicSymbol(oDynamicLoadingConf[i]);
-                            dlclose(so_iter->second->pSoHandle);
-                            delete so_iter->second;
-                            pSo = LoadSo(strSoFile, strVersion);
-                            if (pSo != nullptr)
-                            {
-                                LOG4_INFO("succeed in loading %s", strSoFile.c_str());
-                                so_iter->second = pSo;
-                                LoadDynamicSymbol(oDynamicLoadingConf[i]);
-                            }
-                            else
-                            {
-                                m_mapLoadedSo.erase(so_iter);
-                            }
-                        }
-                    }
-                }
+                LoadDynamicSymbol(oDynamicLoadingConf[i]);
             }
-        }
-        else        // 卸载动态库
-        {
-            if (oDynamicLoadingConf[i].Get("so_path", strSoPath))
+            else
             {
-                if (m_pLabor->GetNodeInfo().bThreadMode && Labor::LABOR_MANAGER != m_pLabor->GetLaborType())
+                if (0 != access(strSoFile.c_str(), F_OK))
                 {
-                    UnloadDynamicSymbol(oDynamicLoadingConf[i]);
-                }
-                else
-                {
-                    so_iter = m_mapLoadedSo.find(strSoPath);
-                    if (so_iter != m_mapLoadedSo.end())
+                    strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/") + oDynamicLoadingConf[i]("so_path");
+                    if (0 != access(strSoFile.c_str(), F_OK))
                     {
-                        UnloadDynamicSymbol(oDynamicLoadingConf[i]);
-                        dlclose(so_iter->second->pSoHandle);
-                        delete so_iter->second;
-                        m_mapLoadedSo.erase(so_iter);
-                        LOG4_INFO("unload %s.%s", strSoPath.c_str(),
-                                oDynamicLoadingConf[i]("version").c_str());
+                        LOG4_WARNING("%s not exist!", strSoFile.c_str());
+                        continue;
                     }
+                }
+                pSo = LoadSo(strSoFile, strVersion);
+                if (pSo != nullptr)
+                {
+                    LOG4_INFO("succeed in loading %s", strSoFile.c_str());
+                    LoadDynamicSymbol(oDynamicLoadingConf[i]);
                 }
             }
         }
@@ -1631,109 +1006,14 @@ void ActorBuilder::LoadDynamicSymbol(CJsonObject& oOneSoConf)
     for (int i = 0; i < oOneSoConf["cmd"].GetArraySize(); ++i)
     {
         std::unordered_set<int32> setCmd;
-        m_mapLoadedCmd.insert(std::make_pair(oOneSoConf["cmd"][i]("class"), setCmd));
         oOneSoConf["cmd"][i].Get("cmd", iCmd);
         MakeSharedCmd(nullptr, oOneSoConf["cmd"][i]("class"), (int32)iCmd);
     }
     for (int j = 0; j < oOneSoConf["module"].GetArraySize(); ++j)
     {
         std::unordered_set<std::string> setModule;
-        m_mapLoadedModule.insert(std::make_pair(oOneSoConf["module"][j]("class"), setModule));
         oOneSoConf["module"][j].Get("path", strUrlPath);
         MakeSharedModule(nullptr, oOneSoConf["module"][j]("class"), strUrlPath);
-    }
-    for (int k = 0; k < oOneSoConf["session"].GetArraySize(); ++k)
-    {
-        std::unordered_set<std::string> setSession;
-        m_mapLoadedSession.insert(std::make_pair(oOneSoConf["session"](k), setSession));
-    }
-    for (int l = 0; l < oOneSoConf["step"].GetArraySize(); ++l)
-    {
-        std::unordered_set<uint32> setStep;
-        m_mapLoadedStep.insert(std::make_pair(oOneSoConf["step"](l), setStep));
-    }
-}
-
-void ActorBuilder::UnloadDynamicSymbol(CJsonObject& oOneSoConf)
-{
-    for (int i = 0; i < oOneSoConf["cmd"].GetArraySize(); ++i)
-    {
-        auto class_iter = m_mapLoadedCmd.find(oOneSoConf["cmd"][i]("class"));
-        if (class_iter != m_mapLoadedCmd.end())
-        {
-            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
-            {
-                auto cmd_iter = m_mapCmd.find(*id_iter);
-                if (cmd_iter != m_mapCmd.end())
-                {
-                    m_mapCmd.erase(cmd_iter);
-                }
-            }
-            class_iter->second.clear();
-            m_mapLoadedCmd.erase(class_iter);
-        }
-    }
-    for (int j = 0; j < oOneSoConf["module"].GetArraySize(); ++j)
-    {
-        auto class_iter = m_mapLoadedModule.find(oOneSoConf["module"][j]("class"));
-        if (class_iter != m_mapLoadedModule.end())
-        {
-            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
-            {
-                auto module_iter = m_mapModule.find(*id_iter);
-                if (module_iter != m_mapModule.end())
-                {
-                    m_mapModule.erase(module_iter);
-                }
-            }
-            class_iter->second.clear();
-            m_mapLoadedModule.erase(class_iter);
-        }
-    }
-    for (int k = 0; k < oOneSoConf["session"].GetArraySize(); ++k)
-    {
-        auto class_iter = m_mapLoadedSession.find(oOneSoConf["session"](k));
-        if (class_iter != m_mapLoadedSession.end())
-        {
-            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
-            {
-                auto session_iter = m_mapCallbackSession.find(*id_iter);
-                if (session_iter != m_mapCallbackSession.end())
-                {
-                    m_mapCallbackSession.erase(session_iter);
-                }
-            }
-            class_iter->second.clear();
-            m_mapLoadedSession.erase(class_iter);
-        }
-    }
-    for (int l = 0; l < oOneSoConf["step"].GetArraySize(); ++l)
-    {
-        auto class_iter = m_mapLoadedStep.find(oOneSoConf["step"](l));
-        if (class_iter != m_mapLoadedStep.end())
-        {
-            for (auto id_iter = class_iter->second.begin(); id_iter != class_iter->second.end(); ++id_iter)
-            {
-                auto step_iter = m_mapCallbackStep.find(*id_iter);
-                if (step_iter != m_mapCallbackStep.end())
-                {
-                    step_iter->second->Timeout();
-                    m_mapCallbackStep.erase(step_iter);
-                }
-            }
-            class_iter->second.clear();
-            m_mapLoadedStep.erase(class_iter);
-        }
-        std::unordered_set<uint32> setStep;
-        m_mapLoadedStep.insert(std::make_pair(oOneSoConf["step"](l), setStep));
-    }
-    for (int k = 0; k < oOneSoConf["model"].GetArraySize(); ++k)
-    {
-        auto class_iter = m_mapOperator.find(oOneSoConf["model"](k));
-        if (class_iter != m_mapOperator.end())
-        {
-            m_mapOperator.erase(class_iter);
-        }
     }
 }
 

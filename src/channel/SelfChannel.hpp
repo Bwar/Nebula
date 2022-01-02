@@ -21,11 +21,6 @@ public:
     SelfChannel();
     virtual ~SelfChannel();
     
-    virtual bool Init(E_CODEC_TYPE eCodecType, bool bIsClient = false) override
-    {
-        return(true);
-    }
-
     virtual int GetFd() const override
     {
         return(0);

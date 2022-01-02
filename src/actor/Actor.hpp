@@ -40,12 +40,16 @@ namespace neb
 typedef RedisReply RedisMsg;
 
 class Labor;
+class ActorWatcher;
 class Dispatcher;
+template<typename T> class IO;
 class ActorBuilder;
 class ActorSender;
 class ActorSys;
 
 class SocketChannel;
+template<typename T> class SocketChannelImpl;
+class CodecRaw;
 class Actor;
 class Cmd;
 class Module;
@@ -67,12 +71,21 @@ public:
         ACT_SESSION             = 3,        ///< Session会话对象
         ACT_TIMER               = 4,        ///< 定时器对象
         ACT_CONTEXT             = 5,        ///< 会话上下文对象
-        ACT_PB_STEP             = 6,        ///< Step步骤对象，处理pb请求或响应
-        ACT_HTTP_STEP           = 7,        ///< Step步骤对象，处理http请求或响应
-        ACT_REDIS_STEP          = 8,        ///< Step步骤对象，处理redis请求或响应
-        ACT_RAW_STEP            = 9,        ///< Step步骤对象，处理未经编解码的裸数据
-        ACT_OPERATOR            = 10,       ///< Operator算子对象，Operator（IO无关）与Step（异步IO相关）共同构成功能链
-        ACT_CHAIN               = 11,       ///< Chain链对象，用于将Operator和Step组合成功能链
+        ACT_OPERATOR            = 6,       ///< Operator算子对象，Operator（IO无关）与Step（异步IO相关）共同构成功能链
+        ACT_CHAIN               = 7,       ///< Chain链对象，用于将Operator和Step组合成功能链
+        ACT_PB_STEP             = 8,        ///< Step步骤对象，处理pb请求或响应
+        ACT_HTTP_STEP           = 9,        ///< Step步骤对象，处理http请求或响应
+        ACT_REDIS_STEP          = 10,        ///< Step步骤对象，处理redis请求或响应
+        ACT_RAW_STEP            = 11,        ///< Step步骤对象，处理未经编解码的裸数据
+    };
+
+    enum ACTOR_STATUS
+    {
+        ACT_STATUS_UNREGISTER   = 0x00,     ///< 未向框架注册的Actor
+        ACT_STATUS_SHARED       = 0x01,     ///< 完全由框架通过shared_ptr管理的actor，v1.7之前的版本只有这种类型
+        ACT_STATUS_ACTIVITY     = 0x02,     ///< 通过Register()方法向框架注册的有效actor
+        ACT_STATUS_OBSOLETE     = 0x04,     ///< 废弃的actor，可以被回收或重置后再复用
+        ACT_STATUS_DYNAMIC_LOAD = 0x010,    ///< 动态加载的actor
     };
 
 public:
@@ -87,10 +100,16 @@ public:
     template <typename ...Targs> std::shared_ptr<Context> MakeSharedContext(const std::string& strContextName, Targs&&... args);
     template <typename ...Targs> std::shared_ptr<Chain> MakeSharedChain(const std::string& strChainName, Targs&&... args);
     template <typename ...Targs> std::shared_ptr<Actor> MakeSharedActor(const std::string& strActorName, Targs&&... args);
+    bool RegisterActor(const std::string& strActorName, Actor* pNewActor, Actor* pCreator);
 
     ACTOR_TYPE GetActorType() const
     {
         return(m_eActorType);
+    }
+
+    uint32 GetActorStatus() const
+    {
+        return(m_uiActorStatus);
     }
 
     const std::string& GetActorName() const
@@ -131,6 +150,10 @@ protected:
     void AddAssemblyLine(std::shared_ptr<Session> pSession);
 
 protected:
+    virtual bool WantResponse() const
+    {
+        return(false);
+    }
     /**
      * @brief 连接成功后发送
      * @note 当前Server往另一个Server发送数据而两Server之间没有可用连接时，框架层向对端发起连接（发起连接
@@ -235,18 +258,6 @@ protected:
     virtual bool SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = false);
 
     /**
-     * @brief 发送raw请求
-     * @note 只有RawStep及其派生类才能调用此方法。
-     * @param strIdentify Channel通道标识
-     * @param pRawData裸数据
-     * @param bWithSsl 是否需要SSL
-     * @param bPipeline 是否支持pipeline
-     * @param uiStepSeq 应用层无用参数，框架层的系统Actor会用到
-     * @return 是否发送成功
-     */
-    virtual bool SendTo(const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl = false, bool bPipeline = false, uint32 uiStepSeq = 0);
-
-    /**
      * @brief 从worker发送到loader或从loader发送到worker
      * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
@@ -262,10 +273,9 @@ protected:
      * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
-     * @param oCodecType 编解码方式
      * @return 是否发送成功
      */
-    virtual bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    virtual bool SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     /**
      * @brief 以取模方式选择发送到同一类型节点
@@ -275,12 +285,11 @@ protected:
      * @param iCmd 发送的命令字
      * @param uiSeq 发送的数据包seq
      * @param oMsgBody 数据包体
-     * @param oCodecType 编解码方式
      * @return 是否发送成功
      */
-    virtual bool SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    virtual bool SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
-    virtual bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
+    virtual bool SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
     virtual bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
 
@@ -296,7 +305,6 @@ protected:
     bool SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     bool SendToSelf(const HttpMsg& oHttpMsg);
     bool SendToSelf(const RedisMsg& oRedisMsg);
-    bool SendToSelf(const char* pRaw, uint32 uiRawSize);
 
     std::shared_ptr<SocketChannel> GetLastActivityChannel();
 
@@ -308,6 +316,8 @@ protected:
     virtual bool CloseRawChannel(std::shared_ptr<SocketChannel> pChannel);
 
     int32 GetStepNum() const;
+
+    void ResetTimeout(ev_tstamp dTimeout);
 
 protected:
     virtual void SetActiveTime(ev_tstamp dActiveTime)
@@ -328,17 +338,20 @@ protected:
 private:
     void SetLabor(Labor* pLabor);
     uint32 ForceNewSequence();
-    ev_timer* MutableTimerWatcher();
+    ActorWatcher* MutableWatcher();
     void SetActorName(const std::string& strActorName);
     void SetTraceId(const std::string& strTraceId);
+    void SetActorStatus(uint32 uiActorStatus);
+    void UnsetActorStatus(uint32 uiActorStatus);
 
 private:
     ACTOR_TYPE m_eActorType;
+    uint32 m_uiActorStatus;
     uint32 m_uiSequence;
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
     Labor* m_pLabor;
-    ev_timer* m_pTimerWatcher;
+    ActorWatcher* m_pWatcher;
     std::string m_strActorName;
     std::string m_strTraceId;       // for log trace
     std::shared_ptr<Context> m_pContext;
@@ -348,6 +361,8 @@ private:
     friend class ActorSys;
     friend class ActorSender;
     friend class Chain;
+    template<typename T> friend class SocketChannelImpl;
+    template<typename T> friend class IO;
 };
 
 template <typename ...Targs>

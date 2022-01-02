@@ -20,8 +20,10 @@ extern "C" {
 #endif
 #include "Worker.hpp"
 #include "ios/Dispatcher.hpp"
+#include "ios/IO.hpp"
 #include "actor/ActorBuilder.hpp"
 #include "actor/session/sys_session/manager/SessionManager.hpp"
+#include "actor/session/sys_session/SessionDataReport.hpp"
 #include "pb/report.pb.h"
 
 namespace neb
@@ -104,27 +106,15 @@ bool Worker::CheckParent()
             exit(0);
         }
     }
+    return(true);
+}
+
+void Worker::DataReport()
+{
     m_stWorkerInfo.uiConnect = m_pDispatcher->GetConnectionNum();
     m_stWorkerInfo.uiClientNum = m_pDispatcher->GetClientNum();
     MsgBody oMsgBody;
     CJsonObject oJsonLoad;
-    neb::Report oReport;
-    auto pRecord = oReport.add_records();
-    pRecord->set_key("recv_num");
-    pRecord->set_item("nebula");
-    pRecord->add_value(m_stWorkerInfo.uiRecvNum);
-    pRecord = oReport.add_records();
-    pRecord->set_key("recv_byte");
-    pRecord->set_item("nebula");
-    pRecord->add_value(m_stWorkerInfo.uiRecvByte);
-    pRecord = oReport.add_records();
-    pRecord->set_key("send_num");
-    pRecord->set_item("nebula");
-    pRecord->add_value(m_stWorkerInfo.uiSendNum);
-    pRecord = oReport.add_records();
-    pRecord->set_key("send_byte");
-    pRecord->set_item("nebula");
-    pRecord->add_value(m_stWorkerInfo.uiSendByte);
     oJsonLoad.Add("load", int32(m_stWorkerInfo.uiConnect + m_pActorBuilder->GetStepNum()));
     oJsonLoad.Add("connect", m_stWorkerInfo.uiConnect);
     oJsonLoad.Add("recv_num", m_stWorkerInfo.uiRecvNum);
@@ -134,16 +124,33 @@ bool Worker::CheckParent()
     oJsonLoad.Add("client", m_stWorkerInfo.uiClientNum);
     oMsgBody.set_data(oJsonLoad.ToString());
     LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
-    m_pDispatcher->SendTo(m_pManagerControlChannel, CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
-    std::string strReport;
-    oReport.SerializeToString(&strReport);
-    oMsgBody.set_data(strReport);
-    m_pDispatcher->SendDataReport(CMD_REQ_DATA_REPORT, GetSequence(), oMsgBody);
+    IO<CodecNebulaInNode>::SendRequest(m_pDispatcher, 0, m_pManagerControlChannel, CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
+    auto pSessionDataReport = std::dynamic_pointer_cast<SessionDataReport>(m_pActorBuilder->GetSession("neb::SessionManager"));
+    if (pSessionDataReport != nullptr)
+    {
+        auto pReport = std::make_shared<neb::Report>();
+        auto pRecord = pReport->add_records();
+        pRecord->set_key("recv_num");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiRecvNum);
+        pRecord = pReport->add_records();
+        pRecord->set_key("recv_byte");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiRecvByte);
+        pRecord = pReport->add_records();
+        pRecord->set_key("send_num");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiSendNum);
+        pRecord = pReport->add_records();
+        pRecord->set_key("send_byte");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiSendByte);
+        pSessionDataReport->AddReport(pReport);
+    }
     m_stWorkerInfo.uiRecvNum = 0;
     m_stWorkerInfo.uiRecvByte = 0;
     m_stWorkerInfo.uiSendNum = 0;
     m_stWorkerInfo.uiSendByte = 0;
-    return(true);
 }
 
 bool Worker::Init(CJsonObject& oJsonConf)
@@ -207,19 +214,24 @@ bool Worker::Init(CJsonObject& oJsonConf)
     if (oJsonConf["with_ssl"]("config_path").length() > 0)
     {
 #ifdef WITH_OPENSSL
-        if (ERR_OK != SocketChannelSslImpl::SslInit(m_pLogger))
+        if (ERR_OK != SslContext::SslInit(m_pLogger))
         {
             LOG4_FATAL("SslInit() failed!");
             return(false);
         }
-        if (ERR_OK != SocketChannelSslImpl::SslServerCtxCreate(m_pLogger))
+        if (ERR_OK != SslContext::SslClientCtxCreate(m_pLogger))
+        {
+            LOG4_FATAL("SslClientCtxCreate() failed!");
+            return(false);
+        }
+        if (ERR_OK != SslContext::SslServerCtxCreate(m_pLogger))
         {
             LOG4_FATAL("SslServerCtxCreate() failed!");
             return(false);
         }
         std::string strCertFile = m_stNodeInfo.strWorkPath + "/" + oJsonConf["with_ssl"]("config_path") + "/" + oJsonConf["with_ssl"]("cert_file");
         std::string strKeyFile = m_stNodeInfo.strWorkPath + "/" + oJsonConf["with_ssl"]("config_path") + "/" + oJsonConf["with_ssl"]("key_file");
-        if (ERR_OK != SocketChannelSslImpl::SslServerCertificate(m_pLogger, strCertFile, strKeyFile))
+        if (ERR_OK != SslContext::SslServerCertificate(m_pLogger, strCertFile, strKeyFile))
         {
             LOG4_FATAL("SslServerCertificate() failed!");
             return(false);
@@ -383,7 +395,7 @@ void Worker::StartService()
 {
     MsgBody oMsgBody;
     oMsgBody.set_data(std::to_string(m_stWorkerInfo.iWorkerIndex));
-    m_pDispatcher->SendTo(m_pManagerControlChannel, CMD_REQ_START_SERVICE, GetSequence(), oMsgBody);
+    IO<CodecNebulaInNode>::SendRequest(m_pDispatcher, 0, m_pManagerControlChannel, CMD_REQ_START_SERVICE, GetSequence(), oMsgBody);
 }
 
 void Worker::Destroy()
@@ -391,7 +403,7 @@ void Worker::Destroy()
     LOG4_TRACE(" ");
 
 #ifdef WITH_OPENSSL
-    SocketChannelSslImpl::SslFree();
+    SslContext::SslFree();
 #endif
     if (m_pDispatcher != nullptr)
     {

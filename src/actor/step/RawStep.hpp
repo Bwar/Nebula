@@ -21,7 +21,7 @@ namespace neb
 class RawStep: public Step
 {
 public:
-    RawStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dConfigTimeout);
+    RawStep(ev_tstamp dTimeout = gc_dConfigTimeout);
     RawStep(const RawStep&) = delete;
     RawStep& operator=(const RawStep&) = delete;
     virtual ~RawStep();

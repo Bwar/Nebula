@@ -101,9 +101,17 @@
 #define LOG4_NOTICE(args...) Logger(neb::Logger::NOTICE, __FILE__, __LINE__, __FUNCTION__, ##args)
 #define LOG4_INFO(args...) Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__, ##args)
 #define LOG4_CRITICAL(args...) Logger(neb::Logger::CRITICAL, __FILE__, __LINE__, __FUNCTION__, ##args)
+#ifdef _TRACE
 #define LOG4_DEBUG(args...) Logger(neb::Logger::DEBUG, __FILE__, __LINE__, __FUNCTION__, ##args)
 #define LOG4_TRACE(args...) Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, ##args)
-//#define LOG4_TRACE(...) Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
+#else
+#ifdef _DEBUG
+#define LOG4_DEBUG(args...) Logger(neb::Logger::DEBUG, __FILE__, __LINE__, __FUNCTION__, ##args)
+#else
+#define LOG4_DEBUG(args...) /**/
+#endif
+#define LOG4_TRACE(args...) /**/
+#endif
 
 typedef int8_t int8;
 typedef uint8_t uint8;

@@ -13,8 +13,8 @@
 namespace neb
 {
 
-GrpcStep::GrpcStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
-    : HttpStep(pNextStep, dTimeout)
+GrpcStep::GrpcStep(ev_tstamp dTimeout)
+    : HttpStep(dTimeout)
 {
 }
 

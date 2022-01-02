@@ -13,10 +13,14 @@
 #include "Definition.hpp"
 #include "labor/Manager.hpp"
 #include "labor/Worker.hpp"
+#include "IO.hpp"
+#include "ChannelWatcher.hpp"
 #include "actor/Actor.hpp"
 #include "actor/step/Step.hpp"
 #include "actor/step/RedisStep.hpp"
 #include "actor/session/sys_session/manager/SessionManager.hpp"
+#include "codec/CodecFactory.hpp"
+#include "channel/SocketChannelImpl.hpp"
 
 namespace neb
 {
@@ -39,20 +43,20 @@ void Dispatcher::IoCallback(struct ev_loop* loop, struct ev_io* watcher, int rev
 {
     if (watcher->data != NULL)
     {
-        SocketChannel* pChannel = static_cast<SocketChannel*>(watcher->data);
+        auto pWatcher = static_cast<ChannelWatcher*>(watcher->data);
+        auto pChannel = pWatcher->GetSocketChannel();
         Dispatcher* pDispatcher = pChannel->m_pImpl->GetLabor()->GetDispatcher();
-        std::shared_ptr<SocketChannel> pSharedChannel = pChannel->shared_from_this();
         if (revents & EV_READ)
         {
-            pDispatcher->OnIoRead(pSharedChannel);
+            pDispatcher->OnIoRead(pChannel);
         }
-        if ((revents & EV_WRITE) && (CHANNEL_STATUS_CLOSED != pChannel->m_pImpl->GetChannelStatus())) // the channel maybe closed by OnIoRead()
+        if ((revents & EV_WRITE) && (CHANNEL_STATUS_CLOSED != pChannel->GetChannelStatus())) // the channel maybe closed by OnIoRead()
         {
-            pDispatcher->OnIoWrite(pSharedChannel);
+            pDispatcher->OnIoWrite(pChannel);
         }
         if (revents & EV_ERROR)
         {
-            pDispatcher->OnIoError(pSharedChannel);
+            pDispatcher->OnIoError(pChannel);
         }
     }
 }
@@ -61,13 +65,14 @@ void Dispatcher::IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int 
 {
     if (watcher->data != NULL)
     {
-        SocketChannel* pChannel = static_cast<SocketChannel*>(watcher->data);
+        auto pWatcher = static_cast<ChannelWatcher*>(watcher->data);
+        auto pChannel = pWatcher->GetSocketChannel();
         Dispatcher* pDispatcher = pChannel->m_pImpl->GetLabor()->GetDispatcher();
-        if (pChannel->m_pImpl->GetFd() < 3)      // TODO 这个判断是不得已的做法，需查找fd为0回调到这里的原因
+        if (pChannel->GetFd() < 3)      // TODO 查找fd为0回调到这里的原因
         {
             return;
         }
-        pDispatcher->OnIoTimeout(pChannel->shared_from_this());
+        pDispatcher->OnIoTimeout(pChannel);
     }
 }
 
@@ -119,16 +124,16 @@ void Dispatcher::ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_tim
 
 bool Dispatcher::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("fd[%d]", pChannel->m_pImpl->GetFd());
+    LOG4_TRACE("fd[%d]", pChannel->GetFd());
     m_pLastActivityChannel = pChannel;
     if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
     {
-        if (pChannel->m_pImpl->GetFd() == ((Manager*)m_pLabor)->GetManagerInfo().iS2SListenFd)
+        if (pChannel->GetFd() == ((Manager*)m_pLabor)->GetManagerInfo().iS2SListenFd)
         {
-            return(AcceptServerConn(pChannel->m_pImpl->GetFd()));
+            return(AcceptServerConn(pChannel->GetFd()));
         }
         else if (((Manager*)m_pLabor)->GetManagerInfo().iC2SListenFd > 2
-                && pChannel->m_pImpl->GetFd() == ((Manager*)m_pLabor)->GetManagerInfo().iC2SListenFd)
+                && pChannel->GetFd() == ((Manager*)m_pLabor)->GetManagerInfo().iC2SListenFd)
         {
             return(AcceptFdAndTransfer(((Manager*)m_pLabor)->GetManagerInfo().iC2SListenFd,
                     ((Manager*)m_pLabor)->GetManagerInfo().iC2SFamily));
@@ -140,9 +145,9 @@ bool Dispatcher::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
     }
     else if (Labor::LABOR_WORKER == m_pLabor->GetLaborType() || Labor::LABOR_LOADER == m_pLabor->GetLaborType())
     {
-        if (pChannel->m_pImpl->GetFd() == ((Worker*)m_pLabor)->GetWorkerInfo().iDataFd)
+        if (pChannel->GetFd() == ((Worker*)m_pLabor)->GetWorkerInfo().iDataFd)
         {
-            return(FdTransfer(pChannel->m_pImpl->GetFd()));
+            return(FdTransfer(pChannel->GetFd()));
         }
         else
         {
@@ -157,328 +162,40 @@ bool Dispatcher::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
 
 bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE(" ");
-    E_CODEC_STATUS eCodecStatus;
-    switch(pChannel->GetCodecType())
-    {
-        case CODEC_HTTP:
-        case CODEC_HTTP2:
-            for (int i = 0; ; ++i)
-            {
-                HttpMsg oHttpMsg;
-                if (0 == i)
-                {
-                    eCodecStatus = pChannel->m_pImpl->Recv(oHttpMsg);
-                }
-                else
-                {
-                    eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
-                }
-
-                if (CODEC_STATUS_OK == eCodecStatus
-                        || CODEC_STATUS_PART_OK == eCodecStatus)
-                {
-                    if (oHttpMsg.http_major() > 1)
-                    {
-                        if (oHttpMsg.stream_id() > 0)
-                        {
-                            m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg, eCodecStatus);
-                        }
-                    }
-                    else
-                    {
-                        m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                        m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
-                    }
-                }
-                else if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10) // http1.0 client close
-                {
-                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
-                }
-                else
-                {
-                    break;
-                }
-            }
-            break;
-        case CODEC_RESP:
-            for (int i = 0; ; ++i)
-            {
-                RedisMsg oRedisMsg;
-                if (0 == i)
-                {
-                    eCodecStatus = pChannel->m_pImpl->Recv(oRedisMsg);
-                }
-                else
-                {
-                    eCodecStatus = pChannel->m_pImpl->Fetch(oRedisMsg);
-                }
-
-                if (CODEC_STATUS_OK == eCodecStatus)
-                {
-                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oRedisMsg);
-                }
-                else
-                {
-                    break;
-                }
-            }
-            break;
-        case CODEC_UNKNOW:
-        {
-            CBuffer oBuff;
-            for (int i = 0; ; ++i)
-            {
-                RedisMsg oRedisMsg;
-                if (0 == i)
-                {
-                    eCodecStatus = pChannel->m_pImpl->Recv(oBuff);
-                }
-                else
-                {
-                    eCodecStatus = pChannel->m_pImpl->Fetch(oBuff);
-                }
-
-                if (CODEC_STATUS_OK == eCodecStatus)
-                {
-                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oBuff);
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-            break;
-        default:
-            for (int i = 0; ; ++i)
-            {
-                MsgHead oMsgHead;
-                MsgBody oMsgBody;
-                if (0 == i)
-                {
-                    eCodecStatus = pChannel->m_pImpl->Recv(oMsgHead, oMsgBody);
-                }
-                else
-                {
-                    eCodecStatus = pChannel->m_pImpl->Fetch(oMsgHead, oMsgBody);
-                }
-
-                if (CODEC_STATUS_OK == eCodecStatus)
-                {
-                    /*
-                    if (m_pLabor->GetNodeInfo().bChannelVerify && !pChannel->m_pImpl->IsChannelVerify())
-                    {
-                        if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType()
-                                && CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()
-                                && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
-                        {
-                            LOG4_TRACE("invalid request, please login first!");
-                            DiscardSocketChannel(pChannel);
-                            return(false);
-                        }
-                    }
-                    */
-                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oMsgHead, oMsgBody);
-                }
-                else
-                {
-                    break;
-                }
-            }
-    }
+    LOG4_TRACE("codec type %d", pChannel->GetCodecType());
+    E_CODEC_STATUS eCodecStatus = CodecFactory::OnEvent(this, pChannel);
 
     switch (eCodecStatus)
     {
-        case CODEC_STATUS_PAUSE: 
+        case CODEC_STATUS_PAUSE:
         case CODEC_STATUS_PART_OK:
         case CODEC_STATUS_PART_ERR:
             return(true);
-        case CODEC_STATUS_WANT_WRITE: 
-            return(SendTo(pChannel));
-        case CODEC_STATUS_WANT_READ: 
+        case CODEC_STATUS_WANT_WRITE:
+            return(true);
+        case CODEC_STATUS_WANT_READ:
             RemoveIoWriteEvent(pChannel);
             return(true);
         default: // 编解码出错或连接关闭或连接中断
-            if (CODEC_STATUS_INVALID == eCodecStatus && !pChannel->IsClient())
-            {
-                if (pChannel->m_pImpl->AutoSwitchCodec())
-                {
-                    return(DataFetchAndHandle(pChannel));
-                }
-            }
-            if (CHANNEL_STATUS_ESTABLISHED != pChannel->m_pImpl->GetChannelStatus())
+            if (CHANNEL_STATUS_ESTABLISHED != pChannel->GetChannelStatus())
             {
                 if (pChannel->IsClient())
                 {
                     m_pSessionNode->NodeFailed(pChannel->GetIdentify());
                 }
-                auto& listUncompletedStep = pChannel->m_pImpl->GetPipelineStepSeq();
+                auto& listUncompletedStep = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetPipelineStepSeq();
                 for (auto it = listUncompletedStep.begin();
                         it != listUncompletedStep.end(); ++it)
                 {
                     m_pLabor->GetActorBuilder()->OnError(pChannel, *it,
-                            pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
+                            pChannel->GetErrno(), pChannel->GetErrMsg());
                 }
-                auto& mapUncompletedStep = pChannel->m_pImpl->GetStreamStepSeq();
+                auto& mapUncompletedStep = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetStreamStepSeq();
                 for (auto it = mapUncompletedStep.begin();
                     it != mapUncompletedStep.end(); ++it)
                 {
                     m_pLabor->GetActorBuilder()->OnError(pChannel, it->second,
-                            pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
-                }
-            }
-            LOG4_INFO("eCodecStatus = %d", eCodecStatus);
-            DiscardSocketChannel(pChannel);
-            return(false);
-    }
-}
-
-bool Dispatcher::DataFetchAndHandle(std::shared_ptr<SocketChannel> pChannel)
-{
-    LOG4_TRACE(" ");
-    E_CODEC_STATUS eCodecStatus;
-    switch(pChannel->GetCodecType())
-    {
-        case CODEC_HTTP:
-        case CODEC_HTTP2:
-            {
-                HttpMsg oHttpMsg;
-                eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
-                while (CODEC_STATUS_OK == eCodecStatus
-                        || CODEC_STATUS_PART_OK == eCodecStatus)
-                {
-                    if (oHttpMsg.http_major() > 1)
-                    {
-                        if (oHttpMsg.stream_id() > 0)
-                        {
-                            m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                            m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg, eCodecStatus);
-                        }
-                    }
-                    else
-                    {
-                        m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                        m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
-                    }
-                    eCodecStatus = pChannel->m_pImpl->Fetch(oHttpMsg);
-                }
-                if (CODEC_STATUS_EOF == eCodecStatus && oHttpMsg.ByteSize() > 10) // http1.0 client close
-                {
-                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oHttpMsg);
-                }
-            }
-            break;
-        case CODEC_RESP:
-            for (int i = 0; ; ++i)
-            {
-                RedisMsg oRedisMsg;
-                eCodecStatus = pChannel->m_pImpl->Fetch(oRedisMsg);
-                if (CODEC_STATUS_OK == eCodecStatus)
-                {
-                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oRedisMsg);
-                }
-                else
-                {
-                    break;
-                }
-            }
-            break;
-        case CODEC_UNKNOW:
-        {
-            CBuffer oBuff;
-            for (int i = 0; ; ++i)
-            {
-                RedisMsg oRedisMsg;
-                eCodecStatus = pChannel->m_pImpl->Fetch(oBuff);
-                if (CODEC_STATUS_OK == eCodecStatus)
-                {
-                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oBuff);
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-            break;
-        default:
-            for (int i = 0; ; ++i)
-            {
-                MsgHead oMsgHead;
-                MsgBody oMsgBody;
-                eCodecStatus = pChannel->m_pImpl->Fetch(oMsgHead, oMsgBody);
-                if (CODEC_STATUS_OK == eCodecStatus)
-                {
-                    /*
-                    if (m_pLabor->GetNodeInfo().bChannelVerify && !pChannel->m_pImpl->IsChannelVerify())
-                    {
-                        if (CODEC_NEBULA != pChannel->m_pImpl->GetCodecType()
-                                && CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()
-                                && pChannel->m_pImpl->GetMsgNum() > 1)   // 未经账号验证的客户端连接发送数据过来，直接断开
-                        {
-                            LOG4_TRACE("invalid request, please login first!");
-                            DiscardSocketChannel(pChannel);
-                            return(false);
-                        }
-                    }
-                    */
-                    m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-                    m_pLabor->GetActorBuilder()->OnMessage(pChannel, oMsgHead, oMsgBody);
-                }
-                else
-                {
-                    break;
-                }
-            }
-    }
-
-    switch (eCodecStatus)
-    {
-        case CODEC_STATUS_PAUSE: 
-        case CODEC_STATUS_PART_OK:
-        case CODEC_STATUS_PART_ERR:
-            return(true);
-        case CODEC_STATUS_WANT_WRITE: 
-            return(SendTo(pChannel));
-        case CODEC_STATUS_WANT_READ: 
-            RemoveIoWriteEvent(pChannel);
-            return(true);
-        default: // 编解码出错或连接关闭或连接中断
-            if (CODEC_STATUS_INVALID == eCodecStatus && !pChannel->IsClient())
-            {
-                if (pChannel->m_pImpl->AutoSwitchCodec())
-                {
-                    return(DataFetchAndHandle(pChannel));
-                }
-            }
-            if (CHANNEL_STATUS_ESTABLISHED != pChannel->m_pImpl->GetChannelStatus())
-            {
-                if (pChannel->IsClient())
-                {
-                    m_pSessionNode->NodeFailed(pChannel->GetIdentify());
-                }
-                auto& listUncompletedStep = pChannel->m_pImpl->GetPipelineStepSeq();
-                for (auto it = listUncompletedStep.begin();
-                        it != listUncompletedStep.end(); ++it)
-                {
-                    m_pLabor->GetActorBuilder()->OnError(pChannel, *it,
-                            pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
-                }
-                auto& mapUncompletedStep = pChannel->m_pImpl->GetStreamStepSeq();
-                for (auto it = mapUncompletedStep.begin();
-                    it != mapUncompletedStep.end(); ++it)
-                {
-                    m_pLabor->GetActorBuilder()->OnError(pChannel, it->second,
-                            pChannel->m_pImpl->GetErrno(), pChannel->m_pImpl->GetErrMsg());
+                            pChannel->GetErrno(), pChannel->GetErrMsg());
                 }
             }
             LOG4_INFO("eCodecStatus = %d", eCodecStatus);
@@ -557,7 +274,7 @@ bool Dispatcher::FdTransfer(int iFd)
                 {
                     inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
                     LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
-                    pChannel->m_pImpl->SetRemoteAddr(std::string(szClientAddr));
+                    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetRemoteAddr(std::string(szClientAddr));
                 }
                 else
                 {
@@ -575,7 +292,7 @@ bool Dispatcher::FdTransfer(int iFd)
                 {
                     inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
                     LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
-                    pChannel->m_pImpl->SetRemoteAddr(std::string(szClientAddr));
+                    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetRemoteAddr(std::string(szClientAddr));
                 }
                 else
                 {
@@ -596,13 +313,13 @@ bool Dispatcher::FdTransfer(int iFd)
             }
             else if (CODEC_NEBULA_IN_NODE == iCodec)
             {
-                pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+                std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
                 m_mapLoaderAndWorkerChannel.insert(std::make_pair(pChannel->GetFd(), pChannel));
                 m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
             }
             else
             {
-                pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+                std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
                 AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
             }
             return(true);
@@ -617,9 +334,9 @@ bool Dispatcher::FdTransfer(int iFd)
 
 bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
-    if (CODEC_NEBULA == pChannel->m_pImpl->GetCodecType())  // 系统内部Server间通信
+    if (CODEC_NEBULA == pChannel->GetCodecType())  // 系统内部Server间通信
     {
-        if (pChannel->m_pImpl->GetRemoteWorkerIndex() < 0) // connect to Manager
+        if (std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetRemoteWorkerIndex() < 0) // connect to Manager
         {
             std::shared_ptr<Step> pStepTellWorker
                 = m_pLabor->GetActorBuilder()->MakeSharedStep(nullptr, "neb::StepTellWorker", pChannel);
@@ -628,14 +345,14 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
                 return(false);
             }
             pStepTellWorker->Emit(ERR_OK);
-            pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
         }
         else
         {
-            if (CHANNEL_STATUS_TRY_CONNECT == pChannel->m_pImpl->GetChannelStatus())  // connect之后的第一个写事件
+            if (CHANNEL_STATUS_TRY_CONNECT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
             {
                 std::shared_ptr<Step> pStepConnectWorker = m_pLabor->GetActorBuilder()->MakeSharedStep(
-                        nullptr, "neb::StepConnectWorker", pChannel, pChannel->m_pImpl->GetRemoteWorkerIndex());
+                        nullptr, "neb::StepConnectWorker", pChannel, std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetRemoteWorkerIndex());
                 if (nullptr == pStepConnectWorker)
                 {
                     LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
@@ -651,17 +368,17 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     }
     else
     {
-        if (CHANNEL_STATUS_CLOSED != pChannel->m_pImpl->GetChannelStatus())
+        if (CHANNEL_STATUS_CLOSED != pChannel->GetChannelStatus())
         {
-            pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
         }
     }
 
-    if (pChannel->IsClient() && pChannel->m_pImpl->GetMsgNum() == 0)
+    if (pChannel->IsClient() && std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetMsgNum() == 0)
     {
         m_pSessionNode->NodeRecover(pChannel->GetIdentify());
     }
-    E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send();
+    E_CODEC_STATUS eCodecStatus = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->Send();
     if (CODEC_STATUS_OK == eCodecStatus)
     {
         RemoveIoWriteEvent(pChannel);
@@ -676,7 +393,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     }
     else
     {
-        LOG4_INFO("%s fd[%d]", pChannel->GetIdentify().c_str(), pChannel->GetFd());
+        LOG4_INFO("%s channel[%d]", pChannel->GetIdentify().c_str(), pChannel->GetFd());
         DiscardSocketChannel(pChannel);
     }
     return(true);
@@ -691,17 +408,18 @@ bool Dispatcher::OnIoError(std::shared_ptr<SocketChannel> pChannel)
 bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
 {
     //ev_tstamp after = pChannel->m_pImpl->GetActiveTime() - ev_now(m_loop) + m_pLabor->GetNodeInfo().dIoTimeout;
-    ev_tstamp after = pChannel->m_pImpl->GetActiveTime() - ev_now(m_loop) + pChannel->m_pImpl->GetKeepAlive();
+    ev_tstamp after = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetActiveTime()
+            - ev_now(m_loop) + std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetKeepAlive();
     if (after > 0)    // IO在定时时间内被重新刷新过，重新设置定时器
     {
-        ev_timer_stop (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
-        ev_timer_set (pChannel->m_pImpl->MutableTimerWatcher(), after + ev_time() - ev_now(m_loop), 0);
-        ev_timer_start (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
+        ev_timer_stop (m_loop, pChannel->MutableWatcher()->MutableTimerWatcher());
+        ev_timer_set (pChannel->MutableWatcher()->MutableTimerWatcher(), after + ev_time() - ev_now(m_loop), 0);
+        ev_timer_start (m_loop, pChannel->MutableWatcher()->MutableTimerWatcher());
         return(true);
     }
 
-    LOG4_TRACE("fd %d, seq %u:", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
-    if (pChannel->m_pImpl->NeedAliveCheck())     // 需要发送心跳检查
+    LOG4_TRACE("fd %d, seq %u:", pChannel->GetFd(), pChannel->GetSequence());
+    if (std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->NeedAliveCheck())     // 需要发送心跳检查
     {
         std::shared_ptr<Step> pStepIoTimeout = m_pLabor->GetActorBuilder()->MakeSharedStep(
                 nullptr, "neb::StepIoTimeout", pChannel);
@@ -720,8 +438,8 @@ bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
     }
     else        // 关闭文件描述符并清理相关资源
     {
-        if ((CODEC_NEBULA != pChannel->m_pImpl->GetCodecType())
-            && (CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()))   // 非内部服务器间的连接才会在超时中关闭
+        if ((CODEC_NEBULA != pChannel->GetCodecType())
+            && (CODEC_NEBULA_IN_NODE != pChannel->GetCodecType()))   // 非内部服务器间的连接才会在超时中关闭
         {
             LOG4_TRACE("io timeout!");
             DiscardSocketChannel(pChannel);
@@ -760,8 +478,10 @@ void Dispatcher::EventRun()
 
 bool Dispatcher::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout)
 {
-    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
-    ev_timer* timer_watcher = pChannel->m_pImpl->MutableTimerWatcher();
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
+    auto pWatcher = pChannel->MutableWatcher();
+    pWatcher->Set(pChannel);
+    ev_timer* timer_watcher = pWatcher->MutableTimerWatcher();
     if (NULL == timer_watcher)
     {
         return(false);
@@ -787,7 +507,7 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
 {
     if (m_pLabor->GetLaborType() == Labor::LABOR_MANAGER)
     {
-        return(Broadcast("BEACON", SOCK_STREAM, CODEC_NEBULA, false, true, iCmd, uiSeq, oMsgBody));
+        return(IO<CodecNebula>::Broadcast(this, 0, "BEACON", false, true, iCmd, uiSeq, oMsgBody));
     }
     else
     {
@@ -797,24 +517,7 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
             LOG4_ERROR("no connected channel to manager!");
             return(false);
         }
-        E_CODEC_STATUS eStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
-        m_pLabor->IoStatAddSendNum(pChannel->GetFd());
-        if (CODEC_STATUS_OK == eStatus)
-        {
-            RemoveIoWriteEvent(pChannel);
-            return(true);
-        }
-        else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
-        {
-            AddIoWriteEvent(pChannel);
-            return(true);
-        }
-        else if (CODEC_STATUS_WANT_READ == eStatus)
-        {
-            RemoveIoWriteEvent(pChannel);
-            return(true);
-        }
-        return(false);
+        return(IO<CodecNebulaInNode>::SendRequest(this, 0, pChannel, iCmd, uiSeq, oMsgBody));
     }
 }
 
@@ -892,18 +595,8 @@ std::shared_ptr<SocketChannel> Dispatcher::StressSend(const std::string& strIden
         AddIoTimeout(pChannel, 1.5);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
-        pChannel->m_pImpl->SetRemoteAddr(strHost);
-        E_CODEC_STATUS eCodecStatus = pChannel->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
-        m_pLabor->IoStatAddSendNum(pChannel->GetFd());
-        if (CODEC_STATUS_OK != eCodecStatus
-                && CODEC_STATUS_PAUSE != eCodecStatus
-                && CODEC_STATUS_WANT_WRITE != eCodecStatus
-                && CODEC_STATUS_WANT_READ != eCodecStatus)
-        {
-            LOG4_TRACE("eStatus = %d, %s", eCodecStatus, pChannel->GetIdentify().c_str());
-            DiscardSocketChannel(pChannel);
-        }
-        pChannel->m_pImpl->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
+        std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetRemoteAddr(strHost);
+        IO<CodecNebula>::SendRequest(this, 0, pChannel, iCmd, uiSeq, oMsgBody);
         return(pChannel);
     }
     else
@@ -930,29 +623,17 @@ bool Dispatcher::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
             return(false);
         }
     }
-    E_CODEC_STATUS eStatus = m_iterLoaderAndWorkerChannel->second->m_pImpl->Send(iCmd, uiSeq, oMsgBody);
-    //m_pLabor->IoStatAddSendNum(pChannel->GetFd());
-    m_pLastActivityChannel = m_iterLoaderAndWorkerChannel->second;
-    if (CODEC_STATUS_OK == eStatus)
+    bool bRes = false;
+    if (gc_uiCmdReq & iCmd)
     {
-        RemoveIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
-        m_iterLoaderAndWorkerChannel++;
-        return(true);
+        bRes = IO<CodecNebulaInNode>::SendRequest(this, 0, m_iterLoaderAndWorkerChannel->second, iCmd, uiSeq, oMsgBody);
     }
-    else if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
+    else
     {
-        AddIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
-        m_iterLoaderAndWorkerChannel++;
-        return(true);
-    }
-    else if (CODEC_STATUS_WANT_READ == eStatus)
-    {
-        RemoveIoWriteEvent(m_iterLoaderAndWorkerChannel->second);
-        m_iterLoaderAndWorkerChannel++;
-        return(true);
+        bRes = IO<CodecNebulaInNode>::SendResponse(this, m_iterLoaderAndWorkerChannel->second, iCmd, uiSeq, oMsgBody);
     }
     m_iterLoaderAndWorkerChannel++;
-    return(false);
+    return(bRes);
 }
 
 bool Dispatcher::SendTo(int iFd, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
@@ -960,7 +641,16 @@ bool Dispatcher::SendTo(int iFd, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBo
     auto iter = m_mapSocketChannel.find(iFd);
     if (iter != m_mapSocketChannel.end())
     {
-        return(SendTo(iter->second, iCmd, uiSeq, oMsgBody));
+        bool bRes = false;
+        if (gc_uiCmdReq & iCmd)
+        {
+            bRes = IO<CodecNebulaInNode>::SendRequest(this, 0, iter->second, iCmd, uiSeq, oMsgBody);
+        }
+        else
+        {
+            bRes = IO<CodecNebulaInNode>::SendResponse(this, iter->second, iCmd, uiSeq, oMsgBody);
+        }
+        return(bRes);
     }
     return(false);
 }
@@ -1009,18 +699,13 @@ bool Dispatcher::DiscardNamedChannel(const std::string& strIdentify)
         for (auto channel_iter = named_iter->second.begin();
                 channel_iter != named_iter->second.end(); ++channel_iter)
         {
-            (*channel_iter)->m_pImpl->SetIdentify("");
-            (*channel_iter)->m_pImpl->SetClientData("");
+            std::static_pointer_cast<SocketChannelImpl<CodecNebula>>((*channel_iter)->m_pImpl)->SetIdentify("");
+            std::static_pointer_cast<SocketChannelImpl<CodecNebula>>((*channel_iter)->m_pImpl)->SetClientData("");
         }
         named_iter->second.clear();
         m_mapNamedSocketChannel.erase(named_iter);
         return(true);
     }
-}
-
-Codec* Dispatcher::SwitchCodec(std::shared_ptr<SocketChannel> pChannel, E_CODEC_TYPE eCodecType, bool bIsUpgrade)
-{
-    return(pChannel->m_pImpl->SwitchCodec(eCodecType, m_pLabor->GetNodeInfo().dIoTimeout, bIsUpgrade));
 }
 
 bool Dispatcher::AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel)
@@ -1037,7 +722,7 @@ bool Dispatcher::AddNamedSocketChannel(const std::string& strIdentify, std::shar
     {
         named_iter->second.insert(pChannel);
     }
-    pChannel->m_pImpl->SetIdentify(strIdentify);
+    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetIdentify(strIdentify);
     return(true);
 }
 
@@ -1056,7 +741,7 @@ void Dispatcher::DelNamedSocketChannel(const std::string& strIdentify)
 
 void Dispatcher::SetChannelIdentify(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify)
 {
-    pChannel->m_pImpl->SetIdentify(strIdentify);
+    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetIdentify(strIdentify);
 }
 
 void Dispatcher::AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify)
@@ -1095,12 +780,22 @@ void Dispatcher::CircuitBreak(const std::string& strIdentify)
 
 void Dispatcher::SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData)
 {
-    pChannel->m_pImpl->SetClientData(strClientData);
+    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetClientData(strClientData);
 }
 
 bool Dispatcher::IsNodeType(const std::string& strNodeIdentify, const std::string& strNodeType)
 {
     return(m_pSessionNode->IsNodeType(strNodeIdentify, strNodeType));
+}
+
+bool Dispatcher::GetAuth(const std::string& strNodeType, std::string& strAuth, std::string& strPassword)
+{
+    return(m_pSessionNode->GetAuth(strNodeType, strAuth, strPassword));
+}
+
+void Dispatcher::SetAuth(const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword)
+{
+    m_pSessionNode->SetAuth(strNodeType, strAuth, strPassword);
 }
 
 bool Dispatcher::AddEvent(ev_signal* signal_watcher, signal_callback pFunc, int iSignum)
@@ -1276,11 +971,6 @@ bool Dispatcher::Init()
 #else
     m_pSessionNode = std::unique_ptr<Nodes>(new Nodes());
 #endif
-    Codec::AddAutoSwitchCodecType(CODEC_HTTP);
-    Codec::AddAutoSwitchCodecType(CODEC_PROTO);
-    Codec::AddAutoSwitchCodecType(CODEC_RESP);
-    Codec::AddAutoSwitchCodecType(CODEC_HTTP2);
-    Codec::AddAutoSwitchCodecType(CODEC_PRIVATE);
     return(true);
 }
 
@@ -1313,13 +1003,13 @@ std::shared_ptr<SocketChannel> Dispatcher::CreateSocketChannel(int iFd, E_CODEC_
         {
             if (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
             {
-                pChannel = std::make_shared<SocketChannel>(m_pLogger, iFd,
-                        m_pLabor->GetSequence(), bWithSsl, m_pLabor->GetNodeInfo().dConnectionProtection);
+                pChannel = std::make_shared<SocketChannel>(m_pLabor, m_pLogger, iFd,
+                        m_pLabor->GetSequence(), bWithSsl, bIsClient, m_pLabor->GetNodeInfo().dConnectionProtection);
             }
             else
             {
-                pChannel = std::make_shared<SocketChannel>(m_pLogger, iFd,
-                        m_pLabor->GetSequence(), bWithSsl, m_pLabor->GetNodeInfo().dIoTimeout);
+                pChannel = std::make_shared<SocketChannel>(m_pLabor, m_pLogger, iFd,
+                        m_pLabor->GetSequence(), bWithSsl, bIsClient, m_pLabor->GetNodeInfo().dIoTimeout);
             }
         }
         catch(std::bad_alloc& e)
@@ -1327,21 +1017,20 @@ std::shared_ptr<SocketChannel> Dispatcher::CreateSocketChannel(int iFd, E_CODEC_
             LOG4_ERROR("new channel for fd %d error: %s", e.what());
             return(nullptr);
         }
-        pChannel->m_pImpl->SetLabor(m_pLabor);
-        bool bInitResult = pChannel->Init(eCodecType, bIsClient);
-        if (bInitResult)
+        Codec* pCodec = CodecFactory::Create(m_pLogger, eCodecType, pChannel);
+        if (pCodec == nullptr)
         {
-            m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
-            if ((CODEC_NEBULA != eCodecType) && (CODEC_NEBULA_IN_NODE != eCodecType))
-            {
-                ++m_iClientNum;
-            }
-            return(pChannel);
-        }
-        else
-        {
+            LOG4_ERROR("failed to new codec with codec type %d", eCodecType);
             return(nullptr);
         }
+        std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetCodec(pCodec);
+        m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
+        if ((CODEC_NEBULA != eCodecType) && (CODEC_NEBULA_IN_NODE != eCodecType))
+        {
+            ++m_iClientNum;
+        }
+        LOG4_TRACE("new channel[%d] with codec type %d", pChannel->GetFd(), pChannel->GetCodecType());
+        return(pChannel);
     }
     else
     {
@@ -1367,7 +1056,7 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
            if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
            {
                named_iter->second.erase(it);
-               LOG4_TRACE("erase channel %d from m_mapNamedSocketChannel.", pChannel->m_pImpl->GetFd());
+               LOG4_TRACE("erase channel %d from m_mapNamedSocketChannel.", pChannel->GetFd());
                break;
            }
        }
@@ -1377,24 +1066,37 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
        }
     }
 
-    bool bCloseResult = pChannel->m_pImpl->Close();
+    bool bCloseResult = false;
+    if (pChannel->WithSsl())
+    {
+#ifdef WITH_OPENSSL
+        bCloseResult = std::static_pointer_cast<SocketChannelSslImpl<CodecNebula>>(pChannel->m_pImpl)->Close();
+#else
+        bCloseResult = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->Close();
+#endif
+    }
+    else
+    {
+        bCloseResult = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->Close();
+    }
     if (bCloseResult)
     {
         LOG4_INFO("%s disconnect, fd %d, channel_seq %u, identify %s",
-                pChannel->m_pImpl->GetRemoteAddr().c_str(),
-                pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence(),
-                pChannel->m_pImpl->GetIdentify().c_str());
+                pChannel->GetRemoteAddr().c_str(),
+                pChannel->GetFd(), pChannel->GetSequence(),
+                pChannel->GetIdentify().c_str());
         if (bChannelNotice)
         {
-            m_pLabor->GetActorBuilder()->ChannelNotice(pChannel, pChannel->m_pImpl->GetIdentify(), pChannel->m_pImpl->GetClientData());
+            m_pLabor->GetActorBuilder()->ChannelNotice(pChannel, pChannel->GetIdentify(), pChannel->GetClientData());
         }
-        ev_io_stop (m_loop, pChannel->m_pImpl->MutableIoWatcher());
-        if (nullptr != pChannel->m_pImpl->MutableTimerWatcher())
+        ev_io_stop (m_loop, pChannel->MutableWatcher()->MutableIoWatcher());
+        if (nullptr != pChannel->MutableWatcher()->MutableTimerWatcher())
         {
-            ev_timer_stop (m_loop, pChannel->m_pImpl->MutableTimerWatcher());
+            ev_timer_stop (m_loop, pChannel->MutableWatcher()->MutableTimerWatcher());
         }
+        pChannel->MutableWatcher()->Reset();
 
-        if (CODEC_NEBULA_IN_NODE == pChannel->m_pImpl->GetCodecType())
+        if (CODEC_NEBULA_IN_NODE == pChannel->GetCodecType())
         {
             auto inner_channel_iter = m_mapLoaderAndWorkerChannel.find(pChannel->GetFd());
             if (inner_channel_iter != m_mapLoaderAndWorkerChannel.end())
@@ -1404,17 +1106,17 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
             m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
         }
 
-        auto channel_iter = m_mapSocketChannel.find(pChannel->m_pImpl->GetFd());
+        auto channel_iter = m_mapSocketChannel.find(pChannel->GetFd());
         if (channel_iter != m_mapSocketChannel.end())
         {
             m_mapSocketChannel.erase(channel_iter);
-            if ((CODEC_NEBULA != pChannel->m_pImpl->GetCodecType())
-                && (CODEC_NEBULA_IN_NODE != pChannel->m_pImpl->GetCodecType()))
+            if ((CODEC_NEBULA != pChannel->GetCodecType())
+                && (CODEC_NEBULA_IN_NODE != pChannel->GetCodecType()))
             {
                 --m_iClientNum;
             }
             LOG4_TRACE("erase channel %d channel_seq %u from m_mapSocketChannel.",
-                    pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
+                    pChannel->GetFd(), pChannel->GetSequence());
         }
         return(true);
     }
@@ -1426,8 +1128,10 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
 
 bool Dispatcher::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("fd[%d], seq[%u]", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
-    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
+    LOG4_TRACE("fd[%d], seq[%u]", pChannel->GetFd(), pChannel->GetSequence());
+    auto pWatcher = pChannel->MutableWatcher();
+    pWatcher->Set(pChannel);
+    ev_io* io_watcher = pWatcher->MutableIoWatcher();
     if (NULL == io_watcher || pChannel->GetFd() < 0)
     {
         return(false);
@@ -1442,7 +1146,7 @@ bool Dispatcher::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
         }
         else
         {
-            ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_READ);
+            ev_io_init (io_watcher, IoCallback, pChannel->GetFd(), EV_READ);
             ev_io_start (m_loop, io_watcher);
         }
         return(true);
@@ -1451,8 +1155,10 @@ bool Dispatcher::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 
 bool Dispatcher::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
-    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
+    auto pWatcher = pChannel->MutableWatcher();
+    pWatcher->Set(pChannel);
+    ev_io* io_watcher = pWatcher->MutableIoWatcher();
     if (NULL == io_watcher || pChannel->GetFd() < 0)
     {
         return(false);
@@ -1467,7 +1173,7 @@ bool Dispatcher::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
         }
         else
         {
-            ev_io_init (io_watcher, IoCallback, pChannel->m_pImpl->GetFd(), EV_WRITE);
+            ev_io_init (io_watcher, IoCallback, pChannel->GetFd(), EV_WRITE);
             ev_io_start (m_loop, io_watcher);
         }
         return(true);
@@ -1475,8 +1181,10 @@ bool Dispatcher::AddIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 }
 bool Dispatcher::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 {
-    LOG4_TRACE("%d, %u", pChannel->m_pImpl->GetFd(), pChannel->m_pImpl->GetSequence());
-    ev_io* io_watcher = pChannel->m_pImpl->MutableIoWatcher();
+    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
+    auto pWatcher = pChannel->MutableWatcher();
+    pWatcher->Set(pChannel);
+    ev_io* io_watcher = pWatcher->MutableIoWatcher();
     if (NULL == io_watcher || pChannel->GetFd() < 0)
     {
         return(false);
@@ -1492,7 +1200,7 @@ bool Dispatcher::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 
 void Dispatcher::SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus)
 {
-    pChannel->m_pImpl->SetChannelStatus(eStatus);
+    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(eStatus);
 }
 
 bool Dispatcher::AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout)
@@ -1705,75 +1413,5 @@ void Dispatcher::EvBreak()
     ev_break (m_loop, EVBREAK_ALL);
 }
 
-bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel)
-{
-    return(false);
 }
 
-bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, uint32 uiStepSeq)
-{
-    if (uiStepSeq > 0)
-    {
-        pSelfChannel->SetStepSeq(uiStepSeq);
-    }
-    else
-    {
-        pSelfChannel->SetResponse();
-    }
-    auto pChannel = std::dynamic_pointer_cast<SocketChannel>(pSelfChannel);
-    m_pLastActivityChannel = pChannel;
-    MsgHead oMsgHead;
-    oMsgHead.set_cmd(iCmd);
-    oMsgHead.set_seq(uiSeq);
-    oMsgHead.set_len(oMsgBody.ByteSize());
-    return(m_pLabor->GetActorBuilder()->OnSelfMessage(pChannel, oMsgHead, oMsgBody));
-}
-
-bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel, const HttpMsg& oHttpMsg, uint32 uiStepSeq)
-{
-    if (uiStepSeq > 0)
-    {
-        pSelfChannel->SetStepSeq(uiStepSeq);
-    }
-    else
-    {
-        pSelfChannel->SetResponse();
-    }
-    auto pChannel = std::dynamic_pointer_cast<SocketChannel>(pSelfChannel);
-    m_pLastActivityChannel = pChannel;
-    return(m_pLabor->GetActorBuilder()->OnSelfMessage(pChannel, oHttpMsg));
-}
-
-bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel, const RedisMsg& oRedisMsg, uint32 uiStepSeq)
-{
-    if (uiStepSeq > 0)
-    {
-        pSelfChannel->SetStepSeq(uiStepSeq);
-    }
-    else
-    {
-        pSelfChannel->SetResponse();
-    }
-    auto pChannel = std::dynamic_pointer_cast<SocketChannel>(pSelfChannel);
-    m_pLastActivityChannel = pChannel;
-    return(m_pLabor->GetActorBuilder()->OnSelfMessage(pChannel, oRedisMsg));
-}
-
-bool Dispatcher::Deliver(std::shared_ptr<SelfChannel> pSelfChannel, const char* pRaw, uint32 uiRawSize, uint32 uiStepSeq)
-{
-    if (uiStepSeq > 0)
-    {
-        pSelfChannel->SetStepSeq(uiStepSeq);
-    }
-    else
-    {
-        pSelfChannel->SetResponse();
-    }
-    auto pChannel = std::dynamic_pointer_cast<SocketChannel>(pSelfChannel);
-    m_pLastActivityChannel = pChannel;
-    CBuffer oBuffer;
-    oBuffer.Write(pRaw, uiRawSize);
-    return(m_pLabor->GetActorBuilder()->OnSelfMessage(pChannel, oBuffer));
-}
-
-}

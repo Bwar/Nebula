@@ -39,6 +39,8 @@ public:
     ActorSender();
     virtual ~ActorSender();
 
+    static void SetAuth(Actor* pActor, const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword);
+
     static bool SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel);
 
     // send pb message

@@ -15,26 +15,14 @@
 namespace neb
 {
 
-std::vector<E_CODEC_TYPE> Codec::m_vecAutoSwitchCodecType;
-
-Codec::Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
-    : m_pLogger(pLogger), m_iErrno(0), m_eCodecType(eCodecType)
+Codec::Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, std::shared_ptr<SocketChannel> pBindChannel)
+    : m_pLogger(pLogger), m_iErrno(0), m_eCodecType(eCodecType), m_pBindChannel(pBindChannel)
 {
 }
 
 Codec::~Codec()
 {
     LOG4_TRACE("codec_type %d", m_eCodecType);
-}
-
-const std::vector<E_CODEC_TYPE>& Codec::GetAutoSwitchCodecType()
-{
-    return(m_vecAutoSwitchCodecType);
-}
-
-void Codec::AddAutoSwitchCodecType(E_CODEC_TYPE eCodecType)
-{
-    m_vecAutoSwitchCodecType.push_back(eCodecType);
 }
 
 bool Codec::Zip(const std::string& strSrc, std::string& strDest)
@@ -246,3 +234,4 @@ bool Codec::AesDecrypt(const std::string& strSrc, std::string& strDest)
 }
 
 } /* namespace neb */
+
