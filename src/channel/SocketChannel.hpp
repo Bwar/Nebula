@@ -61,6 +61,8 @@ public:
     virtual Codec* GetCodec() const;
     ChannelWatcher* MutableWatcher();
 
+    template <typename ...Targs>
+    void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args) const;
 protected:
     virtual Labor* GetLabor();
     bool InitImpl(std::shared_ptr<SocketChannel> pImpl);
@@ -81,6 +83,15 @@ private:
     template<typename T> friend class IO;
     template<typename T> friend class SocketChannelImpl;
 };
+
+template <typename ...Targs>
+void SocketChannel::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args) const
+{
+    if (m_pLogger != nullptr)
+    {
+        m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
+    }
+}
 
 } /* namespace neb */
 

@@ -158,7 +158,11 @@ bool Worker::Init(CJsonObject& oJsonConf)
     char szProcessName[64] = {0};
     snprintf(szProcessName, sizeof(szProcessName), "%s_W%d", oJsonConf("server_name").c_str(), m_stWorkerInfo.iWorkerIndex);
     oJsonConf.Get("thread_mode", m_stNodeInfo.bThreadMode);
-    if (!m_stNodeInfo.bThreadMode)
+    if (m_stNodeInfo.bThreadMode)
+    {
+        oJsonConf.Get("async_logger", m_stNodeInfo.bAsyncLogger);
+    }
+    else
     {
         ngx_setproctitle(szProcessName);
     }
@@ -314,7 +318,14 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf, const std::string& strLogN
         oJsonConf.Get("net_log_level", iNetLogLevel);
         oJsonConf.Get("log_level", iLogLevel);
         oJsonConf.Get("always_flush_log", bAlwaysFlushLog);
-        m_pLogger = std::make_shared<neb::NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, iMaxLogLineLen, bAlwaysFlushLog, this);
+        if (m_stNodeInfo.bAsyncLogger)
+        {
+            m_pLogger = std::make_shared<NetLogger>(m_stWorkerInfo.iWorkerIndex, strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, this);
+        }
+        else
+        {
+            m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, bAlwaysFlushLog, this);
+        }
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_NOTICE("%s program begin...", getproctitle());
         return(true);

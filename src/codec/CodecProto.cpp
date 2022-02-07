@@ -33,7 +33,6 @@ E_CODEC_STATUS CodecProto::Encode(CBuffer* pBuff)
 
 E_CODEC_STATUS CodecProto::Encode(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, CBuffer* pBuff)
 {
-    LOG4_TRACE("pBuff->ReadableBytes()=%u, oMsgHead.ByteSize() = %d", pBuff->ReadableBytes(), oMsgHead.ByteSize());
     int iHadWriteLen = 0;
     int iWriteLen = 0;
     int iNeedWriteLen = gc_uiMsgHeadSize;
@@ -53,14 +52,14 @@ E_CODEC_STATUS CodecProto::Encode(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgB
     iHadWriteLen += iWriteLen;
     if (oMsgHead.len() <= 0)    // 无包体（心跳包等），nebula在proto3的使用上以-1表示包体长度为0
     {
-        return(CODEC_STATUS_OK);
+        return(ChannelSticky(oMsgHead, oMsgBody));
     }
     iNeedWriteLen = oMsgBody.ByteSize();
     oMsgBody.SerializeToString(&strTmpData);
     iWriteLen = pBuff->Write(strTmpData.c_str(), oMsgBody.ByteSize());
     if (iWriteLen == iNeedWriteLen)
     {
-        return(CODEC_STATUS_OK);
+        return(ChannelSticky(oMsgHead, oMsgBody));
     }
     else
     {
@@ -94,6 +93,7 @@ E_CODEC_STATUS CodecProto::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oM
                 if (bResult)
                 {
                     pBuff->SkipBytes(gc_uiMsgHeadSize + oMsgHead.len());
+                    oMsgBody.set_add_on(GetBindChannel()->GetClientData());
                     return(ChannelSticky(oMsgHead, oMsgBody));
                 }
                 else
@@ -125,7 +125,7 @@ E_CODEC_STATUS CodecProto::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oM
     return(CODEC_STATUS_ERR);
 }
 
-E_CODEC_STATUS CodecProto::ChannelSticky(MsgHead& oMsgHead, MsgBody& oMsgBody)
+E_CODEC_STATUS CodecProto::ChannelSticky(const MsgHead& oMsgHead, const MsgBody& oMsgBody)
 {
     switch (GetBindChannel()->GetChannelStatus())
     {
@@ -133,7 +133,6 @@ E_CODEC_STATUS CodecProto::ChannelSticky(MsgHead& oMsgHead, MsgBody& oMsgBody)
             if ((gc_uiCmdReq & oMsgHead.cmd()) && (GetBindChannel()->GetClientData().size() > 0))
             {
                 m_uiForeignSeq = oMsgHead.seq();
-                oMsgBody.set_add_on(GetBindChannel()->GetClientData());
             }
             break;
         case CHANNEL_STATUS_CLOSED:
@@ -166,7 +165,8 @@ E_CODEC_STATUS CodecProto::ChannelSticky(MsgHead& oMsgHead, MsgBody& oMsgBody)
                     break;
                 default:
                     LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[from %d to %d] may be a fault.",
-                            m_iFd, m_uiSeq, (int)m_ucChannelStatus, CHANNEL_STATUS_ESTABLISHED);
+                            pChannelImpl->GetFd(), pChannelImpl->GetSequence(),
+                            (int)pChannelImpl->GetChannelStatus(), CHANNEL_STATUS_ESTABLISHED);
                     pChannelImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
                     break;
             }

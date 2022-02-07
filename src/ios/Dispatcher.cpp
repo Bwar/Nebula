@@ -352,7 +352,8 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
             if (CHANNEL_STATUS_TRY_CONNECT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
             {
                 std::shared_ptr<Step> pStepConnectWorker = m_pLabor->GetActorBuilder()->MakeSharedStep(
-                        nullptr, "neb::StepConnectWorker", pChannel, std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetRemoteWorkerIndex());
+                        nullptr, "neb::StepConnectWorker", pChannel,
+                        std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetRemoteWorkerIndex());
                 if (nullptr == pStepConnectWorker)
                 {
                     LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
@@ -378,6 +379,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     {
         m_pSessionNode->NodeRecover(pChannel->GetIdentify());
     }
+    LOG4_TRACE("");
     E_CODEC_STATUS eCodecStatus = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->Send();
     if (CODEC_STATUS_OK == eCodecStatus)
     {

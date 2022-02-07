@@ -23,7 +23,7 @@ English | [中文](/README_cn.md)     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a name="Overview"></a>
 ## Overview 
 
-Nebula is a flexible, high-performance business-oriented IoC distributed network framework developed in C++ language, designed for production environments. It supports multiple application layer communication protocols including proto3, http, https, http2, grpc, and websocket. Nebula makes it easy to deploy a fast and high-performance distributed service with C++, while keeping the same server architecture and APIs. NebulaBootstrap provides out-of-the-box integration with Nebula service, but can be easily extended to serve other types of application.
+Nebula is a flexible, high-performance business-oriented IoC distributed network framework developed in C++ language, designed for production environments. It supports multiple application layer communication protocols including proto3, http, https, http2, grpc, cassandra, and websocket. Nebula makes it easy to deploy a fast and high-performance distributed service with C++, while keeping the same server architecture and APIs. NebulaBootstrap provides out-of-the-box integration with Nebula service, but can be easily extended to serve other types of application.
 
 Nebula is a production level framework and distributed solution project for instant messaging, data collection, real-time computing, message push and other applications, as well as web api services. There were production applications for instant messaging, data acquisition and real-time analysis on line now, and a recommendation engine application for a large user base will be born soon. By the way, using Nebula for toy-level projects is also good for learning network communication. Bwar welcomes more developers to join the Nebula project. 
 
@@ -128,6 +128,14 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.7.0
+   - IO optimization, codec plug-in.
+   - remove shared_from_this of Channel and Actor and use ChannelWatcher and ActorWatcher instead to improve performance.
+   - removed the unload feature of dynamically loaded plugins (which reduces performance).
+   - raw data codec is independent into codec.
+   - add cassandra client codec.
+   - add support for password verification of redis cluster.
+   - improve log performance; add asynchronous file logs.
 #### v1.6.2
    - circuit breaker optimization
    - http chunk decode bug fixed; resp bulk string bug fixed

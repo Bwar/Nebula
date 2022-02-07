@@ -330,5 +330,10 @@ bool ActorSender::SendTo(Actor* pActor, const std::string& strUrl, const std::st
     }
 }
 
+bool ActorSender::SendRoundRobin(Actor* pActor, const std::string& strIdentify, const CassMessage& oCassMsg, bool bWithSsl, bool bPipeline)
+{
+    return(IO<CodecCass>::SendRoundRobin(pActor, strIdentify, bWithSsl, bPipeline, oCassMsg));
+}
+
 } /* namespace neb */
 

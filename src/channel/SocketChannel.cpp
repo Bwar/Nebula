@@ -30,24 +30,24 @@ SocketChannel::SocketChannel()
 }
 
 SocketChannel::SocketChannel(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, bool bIsClient, ev_tstamp dKeepAlive)
-    : m_bIsClient(bIsClient), m_bWithSsl(bWithSsl), m_pImpl(nullptr), m_pLogger(nullptr), m_pWatcher(nullptr)
+    : m_bIsClient(bIsClient), m_bWithSsl(bWithSsl), m_pImpl(nullptr), m_pLogger(pLogger), m_pWatcher(nullptr)
 {
     if (bWithSsl)
     {
 #ifdef WITH_OPENSSL
-        pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "with openssl, create SocekChannelSslImpl.");
+        LOG4_TRACE("with openssl, create SocekChannelSslImpl.");
         auto pImpl = std::make_shared<SocketChannelSslImpl<CodecNebula>>(pLabor, pLogger, iFd, ulSeq, dKeepAlive);
         pImpl->Init(bIsClient);
         m_pImpl = std::static_pointer_cast<SocketChannel>(pImpl);
 #else
-        pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "without openssl, SocekChannelImpl instead.");
+        LOG4_TRACE("without openssl, SocekChannelImpl instead.");
         auto pImpl = std::make_shared<SocketChannelImpl<CodecNebula>>(pLabor, pLogger, iFd, ulSeq, dKeepAlive);
         m_pImpl = std::static_pointer_cast<SocketChannel>(pImpl);
 #endif
     }
     else
     {
-        pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "create SocekChannelImpl.");
+        LOG4_TRACE("create SocekChannelImpl.");
         auto pImpl = std::make_shared<SocketChannelImpl<CodecNebula>>(pLabor, pLogger, iFd, ulSeq, dKeepAlive);
         m_pImpl = std::static_pointer_cast<SocketChannel>(pImpl);
     }
@@ -55,10 +55,7 @@ SocketChannel::SocketChannel(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, 
 
 SocketChannel::~SocketChannel()
 {
-    if (m_pLogger != nullptr)
-    {
-        m_pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "");
-    }
+    LOG4_TRACE("");
     if (nullptr != m_pWatcher)
     {
         delete m_pWatcher;
@@ -353,7 +350,7 @@ ChannelWatcher* SocketChannel::MutableWatcher()
         }
         catch(std::bad_alloc& e)
         {
-            m_pLogger->WriteLog(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "new ChannelWatcher error %s", e.what());
+            LOG4_TRACE("new ChannelWatcher error %s", e.what());
         }
     }
     return(m_pWatcher);

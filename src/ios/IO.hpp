@@ -181,8 +181,7 @@ bool IO<T>::SendResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel>
 {
     if (CODEC_UNKNOW == pChannel->GetCodecType())
     {
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "CODEC_UNKNOW is invalid, channel had not been init?");
+        LOG4_TRACE_DISPATCH("CODEC_UNKNOW is invalid, channel had not been init?");
         return(false);
     }
     if (pChannel->GetCodecType() == CODEC_DIRECT)
@@ -190,8 +189,7 @@ bool IO<T>::SendResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel>
         auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
         if (pSelfChannel == nullptr)
         {
-            pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                    "channel is not a self channel.");
+            LOG4_TRACE_DISPATCH("channel is not a self channel.");
             return(false);
         }
         pSelfChannel->SetResponse();
@@ -208,8 +206,7 @@ bool IO<T>::SendResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel>
         }
         else
         {
-            pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                    "failed to change codec type of channel %s[%d] from %d to %d",
+            LOG4_TRACE_DISPATCH("failed to change codec type of channel %s[%d] from %d to %d",
                     pChannel->GetIdentify().c_str(), eOriginCodecType, pChannel->GetCodecType());
             return(false);
         }
@@ -286,8 +283,7 @@ bool IO<T>::SendRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_p
 {
     if (CODEC_UNKNOW == pChannel->GetCodecType())
     {
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "CODEC_UNKNOW is invalid, channel had not been init?");
+        LOG4_TRACE_DISPATCH("CODEC_UNKNOW is invalid, channel had not been init?");
         return(false);
     }
     if (T::Type() != pChannel->GetCodecType())
@@ -301,8 +297,7 @@ bool IO<T>::SendRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_p
         }
         else
         {
-            pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                    "failed to change codec type of channel %s[%d] from %d to %d",
+            LOG4_TRACE_DISPATCH("failed to change codec type of channel %s[%d] from %d to %d",
                     pChannel->GetIdentify().c_str(), eOriginCodecType, pChannel->GetCodecType());
             return(false);
         }
@@ -379,8 +374,7 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
-    pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-            "identify: %s", strIdentify.c_str());
+    LOG4_TRACE_DISPATCH("identify: %s", strIdentify.c_str());
     // 将strIdentify分割的功能只在此SendTo()函数内两处调用，定义为Dispatcher的成员函数语义上不太合适，故定义lambda表达式
     auto split = [](const std::string& strIdentify, std::string& strHost, int& iPort, int& iWorkerIndex, std::string& strError)->bool
     {
@@ -426,8 +420,7 @@ bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string&
     auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
     {
-        pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-                "no channel match %s.", strIdentify.c_str());
+        LOG4_TRACE_DISPATCH("no channel match %s.", strIdentify.c_str());
         std::string strError;
         std::string strHost;
         int iPort = 0;
@@ -502,8 +495,7 @@ bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string&
     auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(ossIdentify.str());
     if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
     {
-        pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-                "no channel match %s.", ossIdentify.str().c_str());
+        LOG4_TRACE_DISPATCH("no channel match %s.", ossIdentify.str().c_str());
         return(AutoSend(pDispatcher, uiStepSeq, ossIdentify.str(), strHost, iPort, 0, iSocketType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
     }
     else
@@ -563,14 +555,12 @@ bool IO<T>::SendRoundRobin(Dispatcher* pDispatcher, uint32 uiStepSeq, const std:
     }
     else
     {
-        pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-                "node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+        LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
         if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
         {
             return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...));
         }
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "no online node match node_type \"%s\"", strNodeType.c_str());
+        LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
     }
 }
@@ -606,8 +596,7 @@ template<typename ...Targs>
 bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType,
         bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args)
 {
-    pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-            "node_type: %s", strNodeType.c_str());
+    LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
     if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
     {
@@ -619,14 +608,12 @@ bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::s
     }
     else
     {
-        pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-                "node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+        LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
         if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
         {
             return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...));
         }
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "no online node match node_type \"%s\"", strNodeType.c_str());
+        LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
     }
 }
@@ -662,8 +649,7 @@ template<typename ...Targs>
 bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType,
         bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args)
 {
-    pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-            "node_type: %s", strNodeType.c_str());
+    LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
     if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
     {
@@ -675,14 +661,12 @@ bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::s
     }
     else
     {
-        pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-                "node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+        LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
         if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
         {
             return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...));
         }
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "no online node match node_type \"%s\"", strNodeType.c_str());
+        LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
     }
 }
@@ -716,8 +700,7 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
-    pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-            "node_type: %s", strNodeType.c_str());
+    LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
     std::unordered_set<std::string> setOnlineNodes;
     if (pDispatcher->m_pSessionNode->GetNode(strNodeType, setOnlineNodes))
     {
@@ -736,8 +719,7 @@ bool IO<T>::Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::stri
         }
         else
         {
-            pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-                    "node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+            LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
             std::string strOnlineNode;
             if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
             {
@@ -751,8 +733,7 @@ bool IO<T>::Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::stri
                     return(bSendResult);
                 }
             }
-            pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                    "no online node match node_type \"%s\"", strNodeType.c_str());
+            LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
         }
         return(false);
     }
@@ -783,8 +764,7 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::strin
     int iCode = getaddrinfo(strHost.c_str(), std::to_string(iPort).c_str(), &stAddrHints, &pAddrResult);
     if (0 != iCode)
     {
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "getaddrinfo(\"%s\", \"%d\") error %d: %s",
+        LOG4_TRACE_DISPATCH("getaddrinfo(\"%s\", \"%d\") error %d: %s",
                 strHost.c_str(), iPort, iCode, gai_strerror(iCode));
         return(false);
     }
@@ -805,8 +785,7 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::strin
     /* No address succeeded */
     if (pAddrCurrent == NULL)
     {
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "Could not connect to \"%s:%d\"", strHost.c_str(), iPort);
+        LOG4_TRACE_DISPATCH("Could not connect to \"%s:%d\"", strHost.c_str(), iPort);
         freeaddrinfo(pAddrResult);           /* No longer needed */
         return(false);
     }
@@ -885,15 +864,13 @@ E_CODEC_STATUS IO<T>::Recv(Dispatcher* pDispatcher, std::shared_ptr<SocketChanne
 {
     if (CODEC_UNKNOW == pChannel->GetCodecType())
     {
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "CODEC_UNKNOW is invalid, channel had not been init?");
+        LOG4_TRACE_DISPATCH("CODEC_UNKNOW is invalid, channel had not been init?");
         return(CODEC_STATUS_ERR);
     }
     if (T::Type() != pChannel->GetCodecType())
     {
         E_CODEC_TYPE eOriginCodecType = pChannel->GetCodecType();
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "failed to change codec type of channel %s[%d] from %d to %d",
+        LOG4_TRACE_DISPATCH("failed to change codec type of channel %s[%d] from %d to %d",
                 pChannel->GetIdentify().c_str(), eOriginCodecType, pChannel->GetCodecType());
         return(CODEC_STATUS_ERR);
     }
@@ -924,15 +901,13 @@ E_CODEC_STATUS IO<T>::Fetch(Dispatcher* pDispatcher, std::shared_ptr<SocketChann
 {
     if (CODEC_UNKNOW == pChannel->GetCodecType())
     {
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "CODEC_UNKNOW is invalid, channel had not been init?");
+        LOG4_TRACE_DISPATCH("CODEC_UNKNOW is invalid, channel had not been init?");
         return(CODEC_STATUS_ERR);
     }
     if (T::Type() != pChannel->GetCodecType())
     {
         E_CODEC_TYPE eOriginCodecType = pChannel->GetCodecType();
-        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                "failed to change codec type of channel %s[%d] from %d to %d",
+        LOG4_TRACE_DISPATCH("failed to change codec type of channel %s[%d] from %d to %d",
                 pChannel->GetIdentify().c_str(), eOriginCodecType, pChannel->GetCodecType());
         return(CODEC_STATUS_ERR);
     }
@@ -1122,8 +1097,7 @@ template<typename T>
 template<typename ...Targs>
 std::shared_ptr<SocketChannel> IO<T>::CreateSocketChannel(Dispatcher* pDispatcher, int iFd, bool bIsClient, bool bWithSsl)
 {
-    pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-            "iFd %d, codec_type %d, with_ssl = %d", iFd, T::Type(), bWithSsl);
+    LOG4_TRACE_DISPATCH("iFd %d, codec_type %d, with_ssl = %d", iFd, T::Type(), bWithSsl);
     auto iter = pDispatcher->m_mapSocketChannel.find(iFd);
     if (iter == pDispatcher->m_mapSocketChannel.end())
     {

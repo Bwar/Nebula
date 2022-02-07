@@ -54,7 +54,6 @@ Manager::Manager(const std::string& strConfFile)
     {
         exit(3);
     }
-    m_stManagerInfo.iWorkerBeat = (gc_iBeatInterval * 2) + 1;
     CreateEvents();
     if (m_stNodeInfo.bThreadMode)
     {
@@ -163,7 +162,20 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         oJsonConf.Get("log_max_line_len", iMaxLogLineLen);
         oJsonConf.Get("log_level", iLogLevel);
         oJsonConf.Get("always_flush_log", bAlwaysFlushLog);
-        m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, iMaxLogLineLen, bAlwaysFlushLog, this);
+        if (m_stNodeInfo.bAsyncLogger)
+        {
+            uint32 uiLogThreadNum = m_stNodeInfo.uiWorkerNum + m_stNodeInfo.uiLoaderNum + 1;
+            if (m_stNodeInfo.uiLoaderNum == 0)
+            {
+                uiLogThreadNum++;
+            }
+            AsyncLogger::Instance(uiLogThreadNum, iLogLevel, iMaxLogFileSize, iMaxLogFileNum);
+            m_pLogger = std::make_shared<NetLogger>(-1, strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, this);
+        }
+        else
+        {
+            m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, bAlwaysFlushLog, this);
+        }
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_NOTICE("%s program begin, and work path %s...", oJsonConf("server_name").c_str(), m_stNodeInfo.strWorkPath.c_str());
         return(true);
@@ -365,6 +377,10 @@ bool Manager::GetConf()
 bool Manager::Init()
 {
     m_oCurrentConf.Get("thread_mode", m_stNodeInfo.bThreadMode);
+    if (m_stNodeInfo.bThreadMode)
+    {
+        m_oCurrentConf.Get("async_logger", m_stNodeInfo.bAsyncLogger);
+    }
     if (!InitLogger(m_oCurrentConf) || !InitDispatcher() || !InitActorBuilder())
     {
         return(false);

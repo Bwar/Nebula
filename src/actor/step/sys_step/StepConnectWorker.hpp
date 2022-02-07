@@ -10,13 +10,15 @@
 #ifndef SRC_ACTOR_STEP_SYS_STEP_STEPCONNECTWORKER_HPP_
 #define SRC_ACTOR_STEP_SYS_STEP_STEPCONNECTWORKER_HPP_
 
+#include <actor/DynamicCreator.hpp>
 #include <actor/step/PbStep.hpp>
 #include <actor/step/sys_step/StepTellWorker.hpp>
 
 namespace neb
 {
 
-class StepConnectWorker: public PbStep, public DynamicCreator<StepConnectWorker, std::shared_ptr<SocketChannel>, int16>
+class StepConnectWorker: public PbStep,
+    public DynamicCreator<StepConnectWorker, std::shared_ptr<SocketChannel>&, int16>
 {
 public:
     StepConnectWorker(std::shared_ptr<SocketChannel> pChannel, int16 iRemoteWorkerIndex);

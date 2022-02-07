@@ -104,6 +104,9 @@
 #ifdef _TRACE
 #define LOG4_DEBUG(args...) Logger(neb::Logger::DEBUG, __FILE__, __LINE__, __FUNCTION__, ##args)
 #define LOG4_TRACE(args...) Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_TRACE_DISPATCH(args...) pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_TRACE_BUILDER(args...) pBuilder->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, ##args)
+#define LOG4_TRACE_LOGGER(args...) pLogger->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, ##args)
 #else
 #ifdef _DEBUG
 #define LOG4_DEBUG(args...) Logger(neb::Logger::DEBUG, __FILE__, __LINE__, __FUNCTION__, ##args)
@@ -111,6 +114,9 @@
 #define LOG4_DEBUG(args...) /**/
 #endif
 #define LOG4_TRACE(args...) /**/
+#define LOG4_TRACE_DISPATCH(args...) /**/
+#define LOG4_TRACE_BUILDER(args...) /**/
+#define LOG4_TRACE_LOGGER(args...) /**/
 #endif
 
 typedef int8_t int8;

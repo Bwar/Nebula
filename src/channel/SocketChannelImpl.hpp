@@ -418,14 +418,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
                 m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
         return(CODEC_STATUS_ERR);
     }
-    else if (CHANNEL_STATUS_ESTABLISHED != m_ucChannelStatus)
-    {
-        return(CODEC_STATUS_PAUSE);
-    }
     int iNeedWriteLen = 0;
     iNeedWriteLen = m_pSendBuff->ReadableBytes();
     if (0 == iNeedWriteLen)
     {
+        if (CHANNEL_STATUS_ESTABLISHED != m_ucChannelStatus)
+        {
+            return(CODEC_STATUS_OK);
+        }
         iNeedWriteLen = m_pWaitForSendBuff->ReadableBytes();
         if (0 == iNeedWriteLen)
         {
@@ -756,6 +756,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
             m_pRecvBuff->Compact(m_pRecvBuff->ReadableBytes() * 2);
         }
         m_dActiveTime = m_pLabor->GetNowTime();
+        auto uiReadIndex = m_pRecvBuff->GetReadIndex();
         E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
         if (m_pCodec->DecodeWithReactor())
         {
@@ -771,7 +772,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
         {
             eCodecStatus = (static_cast<T*>(m_pCodec))->Decode(m_pRecvBuff, std::forward<Targs>(args)...);
         }
-        if (CODEC_STATUS_OK == eCodecStatus)
+        if (CODEC_STATUS_OK == eCodecStatus || CODEC_STATUS_PART_OK == eCodecStatus)
         {
             ++m_uiUnitTimeMsgNum;
             ++m_uiMsgNum;
@@ -783,6 +784,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
         }
         else
         {
+            m_pRecvBuff->SetReadIndex(uiReadIndex);
             if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
             {
                 if (!IsClient())
@@ -808,6 +810,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Fetch(Targs&&... args)
                 m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
         return(CODEC_STATUS_ERR);
     }
+    auto uiReadIndex = m_pRecvBuff->GetReadIndex();
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     if (m_pCodec->DecodeWithReactor())
     {
@@ -823,7 +826,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Fetch(Targs&&... args)
     {
         eCodecStatus = (static_cast<T*>(m_pCodec))->Decode(m_pRecvBuff, std::forward<Targs>(args)...);
     }
-    if (CODEC_STATUS_OK == eCodecStatus)
+    if (CODEC_STATUS_OK == eCodecStatus || CODEC_STATUS_PART_OK == eCodecStatus)
     {
         ++m_uiUnitTimeMsgNum;
         ++m_uiMsgNum;
@@ -835,6 +838,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Fetch(Targs&&... args)
     }
     else
     {
+        m_pRecvBuff->SetReadIndex(uiReadIndex);
         if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
         {
             return(CODEC_STATUS_INVALID);

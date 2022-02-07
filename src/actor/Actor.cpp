@@ -362,4 +362,14 @@ void Actor::SetTraceId(const std::string& strTraceId)
     m_strTraceId = strTraceId;
 }
 
+void Actor::SetActorStatus(uint32 uiActorStatus)
+{
+    m_uiActorStatus |= uiActorStatus;
+}
+
+void Actor::UnsetActorStatus(uint32 uiActorStatus)
+{
+    m_uiActorStatus &= (~uiActorStatus);
+}
+
 } /* namespace neb */

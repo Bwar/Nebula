@@ -773,6 +773,7 @@ int CodecHttp::OnMessageComplete(http_parser *parser)
     }
     pCodec->MutableParsingHttpMsg()->set_http_major(parser->http_major);
     pCodec->MutableParsingHttpMsg()->set_http_minor(parser->http_minor);
+    pCodec->m_bIsDecoding = false;
     return(0);
 }
 

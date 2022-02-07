@@ -388,8 +388,7 @@ bool CodecFactory::AutoSwitchCodec(Dispatcher* pDispatcher,
         Codec* pCodec = Create(pDispatcher->GetLogger(), s_vecAutoSwitchCodec[i], pChannel);
         if (pCodec == nullptr)
         {
-            pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                    "failed to new codec with codec type %d", s_vecAutoSwitchCodec[i]);
+            LOG4_TRACE_DISPATCH("failed to new codec with codec type %d", s_vecAutoSwitchCodec[i]);
             continue;
         }
         uiLastCodecPos = i;

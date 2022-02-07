@@ -8,21 +8,22 @@
  * Modify history:
  ******************************************************************************/
 
+#include "NetLogger.hpp"
 #include <cstdio>
 #include <cstdarg>
 #include "pb/msg.pb.h"
 #include "pb/neb_sys.pb.h"
 #include "labor/NodeInfo.hpp"
 #include "labor/Labor.hpp"
+#include "labor/Worker.hpp"
 #include "actor/cmd/CW.hpp"
-#include "NetLogger.hpp"
 
 namespace neb
 {
 
-NetLogger::NetLogger(const std::string strLogFile, int iLogLev, unsigned int uiMaxFileSize,
-        unsigned int uiMaxRollFileIndex, unsigned int uiMaxLogLineLen, bool bAlwaysFlush, Labor* pLabor)
-    : m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO), m_uiMaxLogLineLen(uiMaxFileSize),
+NetLogger::NetLogger(const std::string& strLogFile, int iLogLev, unsigned int uiMaxFileSize,
+        unsigned int uiMaxRollFileIndex, bool bAlwaysFlush, Labor* pLabor)
+    : m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO),
       m_bEnableNetLogger(false), m_pLabor(pLabor), m_pLog(nullptr)
 {
 #if __cplusplus >= 201401L
@@ -32,8 +33,58 @@ NetLogger::NetLogger(const std::string strLogFile, int iLogLev, unsigned int uiM
 #endif
 }
 
+NetLogger::NetLogger(int iWorkerIndex, const std::string& strLogFile, int iLogLev, unsigned int uiMaxFileSize,
+        unsigned int uiMaxRollFileIndex, Labor* pLabor)
+    : m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO),
+      m_bEnableNetLogger(false), m_pLabor(pLabor), m_pLog(nullptr)
+{
+    AsyncLogger::Instance()->AddLogFile(iWorkerIndex, strLogFile);
+}
+
 NetLogger::~NetLogger()
 {
+}
+
+void NetLogger::WriteFileLog(int iLev, const char* szFileName, unsigned int uiFileLine,
+        const char* szFunction, const std::string& strLogContent)
+{
+    if (m_pLog == nullptr) // m_pLabor->GetNodeInfo().bAsyncLogger
+    {
+        if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
+        {
+            AsyncLogger::Instance()->WriteLog(-1, iLev, szFileName, uiFileLine, szFunction, strLogContent);
+        }
+        else
+        {
+            AsyncLogger::Instance()->WriteLog(((Worker*)m_pLabor)->GetWorkerInfo().iWorkerIndex,
+                    iLev, szFileName, uiFileLine, szFunction, strLogContent);
+        }
+    }
+    else
+    {
+        m_pLog->WriteLog(iLev, szFileName, uiFileLine, szFunction, strLogContent);
+    }
+}
+
+void NetLogger::WriteFileLog(const std::string& strTraceId, int iLev, const char* szFileName,
+        unsigned int uiFileLine, const char* szFunction, const std::string& strLogContent)
+{
+    if (m_pLog == nullptr) // m_pLabor->GetNodeInfo().bAsyncLogger
+    {
+        if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
+        {
+            AsyncLogger::Instance()->WriteLog(-1, strTraceId, iLev, szFileName, uiFileLine, szFunction, strLogContent);
+        }
+        else
+        {
+            AsyncLogger::Instance()->WriteLog(((Worker*)m_pLabor)->GetWorkerInfo().iWorkerIndex,
+                    strTraceId, iLev, szFileName, uiFileLine, szFunction, strLogContent);
+        }
+    }
+    else
+    {
+        m_pLog->WriteLog(strTraceId, iLev, szFileName, uiFileLine, szFunction, strLogContent);
+    }
 }
 
 void NetLogger::SinkLog(int iLev, const char* szFileName, unsigned int uiFileLine,
@@ -59,8 +110,8 @@ void NetLogger::SinkLog(int iLev, const char* szFileName, unsigned int uiFileLin
         {
             oMsgBody.mutable_req_target()->set_route(m_pLabor->GetNodeInfo().strNodeIdentify);
         }
-        oTraceLog.SerializeToString(&m_strLogData);
-        oMsgBody.set_data(m_strLogData);
+        oTraceLog.SerializeToString(&m_strOutStr);
+        oMsgBody.set_data(m_strOutStr);
         m_pLabor->AddNetLogMsg(oMsgBody);
     }
 }

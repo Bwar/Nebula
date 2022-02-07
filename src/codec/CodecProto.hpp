@@ -33,7 +33,7 @@ public:
     E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody, CBuffer* pReactBuff);
 
 protected:
-    E_CODEC_STATUS ChannelSticky(MsgHead& oMsgHead, MsgBody& oMsgBody);
+    E_CODEC_STATUS ChannelSticky(const MsgHead& oMsgHead, const MsgBody& oMsgBody);
 
 private:
     uint32 m_uiForeignSeq = 0;

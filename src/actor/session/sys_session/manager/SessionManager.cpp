@@ -391,8 +391,8 @@ bool SessionManager::CheckWorker()
         if (worker_iter->second->bStartBeatCheck && !GetLabor(this)->GetNodeInfo().bThreadMode)
         {
             LOG4_TRACE("now %lf, worker_beat_time %lf, worker_beat %d",
-                    GetNowTime(), worker_iter->second->dBeatTime, ((Manager*)GetLabor(this))->GetManagerInfo().iWorkerBeat);
-            if (GetNowTime() - worker_iter->second->dBeatTime > ((Manager*)GetLabor(this))->GetManagerInfo().iWorkerBeat)
+                    GetNowTime(), worker_iter->second->dBeatTime, GetLabor(this)->GetNodeInfo().dDataReportInterval);
+            if (GetNowTime() - worker_iter->second->dBeatTime > GetLabor(this)->GetNodeInfo().dDataReportInterval)
             {
                 LOG4_ERROR("worker_%d pid %d is unresponsive, "
                             "terminate it.", worker_iter->second->iWorkerIndex, worker_iter->first);

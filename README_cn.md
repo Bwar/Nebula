@@ -133,6 +133,14 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.7.0
+   - 优化IO通信，编解码器插件化。
+   - 移除Channel和Actor的shared_from_this，改用ChannelWatcher和ActorWatcher替代，以提高性能。
+   - 移除动态加载插件的卸载功能（会降低性能）。
+   - 裸数据编解码独立成编解码器。
+   - 增加cassandra客户端编解码器。
+   - 增加redis cluster密码校验支持。
+   - 优化文件日志，提升写日志性能；增加异步文件日志。
 #### v1.6.2
    - 断路器优化
    - http chunk解码、resp字符串解码、redis集群无可用节点bug修复
