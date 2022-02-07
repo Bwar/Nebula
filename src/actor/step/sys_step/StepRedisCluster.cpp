@@ -13,6 +13,7 @@
 #include <algorithm>
 #include "util/StringCoder.hpp"
 #include "ios/Dispatcher.hpp"
+#include "ios/IO.hpp"
 #include "util/StringCoder.hpp"
 #include "util/encrypt/crc16.h"
 
@@ -102,8 +103,7 @@ const std::unordered_set<std::string> StepRedisCluster::s_setMultipleKeyValueCmd
 
 StepRedisCluster::StepRedisCluster(
         const std::string& strIdentify,  bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
-    : RedisStep(nullptr, 10.0),
-      m_bWithSsl(bWithSsl), m_bPipeline(bPipeline), m_bEnableReadOnly(bEnableReadOnly),
+    : m_bWithSsl(bWithSsl), m_bPipeline(bPipeline), m_bEnableReadOnly(bEnableReadOnly),
       m_uiAddressIndex(0),
       m_strIdentify(strIdentify)
 {
@@ -143,10 +143,40 @@ E_CMD_STATUS StepRedisCluster::Callback(
         {
             CmdReadOnlyCallback(pChannel, pChannel->GetIdentify(), oRedisReply);
         }
+        else if (pRedisRequest->element(0).str() == "AUTH")
+        {
+            if (REDIS_REPLY_ERROR == oRedisReply.type())
+            {
+                CmdErrBack(pChannel, oRedisReply.type(), oRedisReply.str());
+            }
+            else
+            {
+                if (m_mapSlot2Node.size() == 0)
+                {
+                    SendCmdClusterSlots();
+                }
+            }
+        }
         else
         {
-            CmdClusterSlotsCallback(oRedisReply);
-            SendWaittingRequest();
+            if (REDIS_REPLY_ERROR == oRedisReply.type())
+            {
+                std::vector<std::string> vecMsg;
+                Split(oRedisReply.str(), " ", vecMsg);
+                if (vecMsg.size() >= 3)
+                {
+                    if (vecMsg[0] == "NOAUTH")
+                    {
+                        Auth(pChannel->GetIdentify(), nullptr);
+                        return(CMD_STATUS_RUNNING);
+                    }
+                }
+            }
+            else
+            {
+                CmdClusterSlotsCallback(oRedisReply);
+                SendWaittingRequest();
+            }
         }
     }
     else
@@ -172,9 +202,14 @@ E_CMD_STATUS StepRedisCluster::Callback(
                         SendCmdAsking(vecMsg[2]);
                         return(CMD_STATUS_RUNNING);
                     }
+                    if (vecMsg[0] == "NOAUTH")
+                    {
+                        Auth(pChannel->GetIdentify(), pRedisRequest);
+                        return(CMD_STATUS_RUNNING);
+                    }
                 }
             }
-            GetLabor(this)->GetActorBuilder()->OnMessage(pChannel, oRedisReply, uiRealStepSeq);
+            IO<RedisStep>::OnResponse(GetLabor(this)->GetActorBuilder(), pChannel, uiRealStepSeq, oRedisReply);
         }
         else    // 多key请求的响应
         {
@@ -224,7 +259,7 @@ E_CMD_STATUS StepRedisCluster::Callback(
                         oFinalReply.mutable_element()->AddAllocated(reply_iter->second[k]);
                         reply_iter->second[k] = nullptr;
                     }
-                    GetLabor(this)->GetActorBuilder()->OnMessage(pChannel, oFinalReply, uiRealStepSeq);
+                    IO<RedisStep>::OnResponse(GetLabor(this)->GetActorBuilder(), pChannel, uiRealStepSeq, oFinalReply);
                     m_mapStepEmitNum.erase(num_iter);
                     m_mapReply.erase(reply_iter);
                 }
@@ -294,7 +329,7 @@ E_CMD_STATUS StepRedisCluster::Callback(
                         oFinalReply.mutable_element()->AddAllocated(reply_iter->second[k]);
                         reply_iter->second[k] = nullptr;
                     }
-                    GetLabor(this)->GetActorBuilder()->OnMessage(pChannel, oFinalReply, uiRealStepSeq);
+                    IO<RedisStep>::OnResponse(GetLabor(this)->GetActorBuilder(), pChannel, uiRealStepSeq, oFinalReply);
                     m_mapStepEmitNum.erase(num_iter);
                     m_mapReply.erase(reply_iter);
                 }
@@ -306,6 +341,7 @@ E_CMD_STATUS StepRedisCluster::Callback(
 
 E_CMD_STATUS StepRedisCluster::Timeout()
 {
+    SendCmdClusterSlots();
     for (auto timeout_iter = m_mapTimeoutStep.begin(); timeout_iter != m_mapTimeoutStep.end(); )
     {
         if (GetNowTime() - timeout_iter->first >= GetTimeout())
@@ -339,6 +375,14 @@ E_CMD_STATUS StepRedisCluster::ErrBack(
         std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg)
 {
     LOG4_ERROR("error %d: %s", iErrno, strErrMsg.c_str());
+    SendCmdClusterSlots();
+    CmdErrBack(pChannel, iErrno, strErrMsg);
+    return(CMD_STATUS_RUNNING);
+}
+
+void StepRedisCluster::CmdErrBack(
+        std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg)
+{
     auto step_iter = m_mapPipelineRequest.find(pChannel->GetIdentify());
     if (step_iter == m_mapPipelineRequest.end())
     {
@@ -406,7 +450,7 @@ E_CMD_STATUS StepRedisCluster::ErrBack(
                             oFinalReply.mutable_element()->AddAllocated(reply_iter->second[k]);
                             reply_iter->second[k] = nullptr;
                         }
-                        GetLabor(this)->GetActorBuilder()->OnMessage(pChannel, oFinalReply, uiRealStepSeq);
+                        IO<RedisStep>::OnResponse(GetLabor(this)->GetActorBuilder(), pChannel, uiRealStepSeq, oFinalReply);
                         m_mapStepEmitNum.erase(num_iter);
                         m_mapReply.erase(reply_iter);
                     }
@@ -415,7 +459,6 @@ E_CMD_STATUS StepRedisCluster::ErrBack(
         }
         AskingQueueErrBack(pChannel, iErrno, strErrMsg);
     }
-    return(CMD_STATUS_RUNNING);
 }
 
 bool StepRedisCluster::SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg,
@@ -435,8 +478,8 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, const RedisMsg& oR
 bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg)
 {
     LOG4_TRACE("%s", pRedisMsg->DebugString().c_str());
-    bool bResult = GetLabor(this)->GetDispatcher()->SendTo(strIdentify,
-            SOCKET_STREAM, CODEC_RESP, m_bWithSsl, m_bPipeline, (*pRedisMsg.get()), GetSequence());
+    bool bResult = IO<CodecResp>::SendTo(this, strIdentify,
+            SOCKET_STREAM, m_bWithSsl, m_bPipeline, (*pRedisMsg.get()));
     if (bResult)
     {
         auto iter = m_mapPipelineRequest.find(strIdentify);
@@ -892,7 +935,7 @@ void StepRedisCluster::AskingQueueErrBack(
                             oFinalReply.mutable_element()->AddAllocated(reply_iter->second[k]);
                             reply_iter->second[k] = nullptr;
                         }
-                        GetLabor(this)->GetActorBuilder()->OnMessage(pChannel, oFinalReply, uiRealStepSeq);
+                        IO<RedisStep>::OnResponse(GetLabor(this)->GetActorBuilder(), pChannel, uiRealStepSeq, oFinalReply);
                         m_mapStepEmitNum.erase(num_iter);
                         m_mapReply.erase(reply_iter);
                     }
@@ -1039,6 +1082,25 @@ void StepRedisCluster::AddToAskingQueue(const std::string& strIdentify, std::sha
     }
 }
 
-} /* namespace neb */
+bool StepRedisCluster::Auth(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg)
+{
+    std::string strAuth;
+    std::string strPassword;
+    GetLabor(this)->GetDispatcher()->GetAuth(strIdentify, strAuth, strPassword);
+    SetCmd("AUTH");
+    Append(strPassword);
+    auto pRedisRequest = MutableRedisRequest();
+    pRedisRequest->set_integer(GetSequence());
+    if (pRedisMsg == nullptr)
+    {
+        return(SendTo(strIdentify, pRedisRequest));
+    }
+    else
+    {
+        SendTo(strIdentify, pRedisRequest);
+        return(SendTo(strIdentify, pRedisMsg));
+    }
+}
 
+} /* namespace neb */
 

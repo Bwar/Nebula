@@ -15,13 +15,19 @@
 namespace neb
 {
 
-CodecPrivate::CodecPrivate(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
-    : Codec(pLogger, eCodecType)
+CodecPrivate::CodecPrivate(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+        std::shared_ptr<SocketChannel> pBindChannel)
+    : Codec(pLogger, eCodecType, pBindChannel)
 {
 }
 
 CodecPrivate::~CodecPrivate()
 {
+}
+
+E_CODEC_STATUS CodecPrivate::Encode(CBuffer* pBuff)
+{
+    return(CODEC_STATUS_OK);
 }
 
 E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
@@ -30,9 +36,9 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
     tagMsgHead stMsgHead;
     stMsgHead.version = 1;        // version暂时无用
     stMsgHead.encript = (unsigned char)(oMsgHead.cmd() >> 24);
-    stMsgHead.cmd = htons((unsigned short)(gc_uiCmdBit & oMsgHead.cmd()));
-    stMsgHead.body_len = htonl((unsigned int)oMsgHead.len());
-    stMsgHead.seq = htonl(oMsgHead.seq());
+    stMsgHead.cmd = CodecUtil::H2N((unsigned short)(gc_uiCmdBit & oMsgHead.cmd()));
+    stMsgHead.body_len = CodecUtil::H2N((unsigned int)oMsgHead.len());
+    stMsgHead.seq = CodecUtil::H2N(oMsgHead.seq());
     //stMsgHead.checksum = htons((unsigned short)stMsgHead.checksum);
     if (oMsgBody.ByteSize() > 1000000) // pb 最大限制
     {
@@ -123,7 +129,7 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
 
         if (strEncryptData.size() > 0)              // 加密后的数据包
         {
-            stMsgHead.body_len = htonl((unsigned int)strEncryptData.size());
+            stMsgHead.body_len = CodecUtil::H2N((unsigned int)strEncryptData.size());
             iWriteLen = pBuff->Write(&stMsgHead, iNeedWriteLen);
             LOG4_TRACE("sizeof(stClientMsgHead) = %d, iWriteLen = %d", sizeof(stMsgHead), iWriteLen);
             if (iWriteLen != iNeedWriteLen)
@@ -144,7 +150,7 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
         }
         else if (strCompressData.size() > 0)        // 压缩后的数据包
         {
-            stMsgHead.body_len = htonl((unsigned int)strCompressData.size());
+            stMsgHead.body_len = CodecUtil::H2N((unsigned int)strCompressData.size());
             iWriteLen = pBuff->Write(&stMsgHead, iNeedWriteLen);
             LOG4_TRACE("sizeof(stClientMsgHead) = %d, iWriteLen = %d", sizeof(stMsgHead), iWriteLen);
             if (iWriteLen != iNeedWriteLen)
@@ -198,10 +204,10 @@ E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& 
         tagMsgHead stMsgHead;
         int iReadIdx = pBuff->GetReadIndex();
         pBuff->Read(&stMsgHead, uiHeadSize);
-        stMsgHead.cmd = ntohs(stMsgHead.cmd);
-        stMsgHead.body_len = ntohl(stMsgHead.body_len);
-        stMsgHead.seq = ntohl(stMsgHead.seq);
-        stMsgHead.checksum = ntohs(stMsgHead.checksum);
+        stMsgHead.cmd = CodecUtil::N2H(stMsgHead.cmd);
+        stMsgHead.body_len = CodecUtil::N2H(stMsgHead.body_len);
+        stMsgHead.seq = CodecUtil::N2H(stMsgHead.seq);
+        stMsgHead.checksum = CodecUtil::N2H(stMsgHead.checksum);
         LOG4_TRACE("cmd %u, seq %u, len %u, pBuff->ReadableBytes() %u",
                         stMsgHead.cmd, stMsgHead.seq, stMsgHead.body_len,
                         pBuff->ReadableBytes());
@@ -312,6 +318,12 @@ E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& 
     {
         return(CODEC_STATUS_PAUSE);
     }
+}
+
+E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody, CBuffer* pReactBuff)
+{
+    LOG4_ERROR("invalid");
+    return(CODEC_STATUS_ERR);
 }
 
 } /* namespace neb */

@@ -28,8 +28,9 @@ std::unordered_set<uint8> Http2Frame::s_setFrameType = {
     H2_FRAME_CONTINUATION
 };
 
-Http2Frame::Http2Frame(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, Http2Stream* pStream)
-    : Codec(pLogger, eCodecType), m_pStream(pStream)
+Http2Frame::Http2Frame(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+        std::shared_ptr<SocketChannel> pBindChannel, Http2Stream* pStream)
+    : Codec(pLogger, eCodecType, pBindChannel), m_pStream(pStream)
 {
 }
 

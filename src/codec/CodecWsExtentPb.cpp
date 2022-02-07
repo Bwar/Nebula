@@ -15,14 +15,20 @@
 namespace neb
 {
 
-CodecWsExtentPb::CodecWsExtentPb(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
-    : Codec(pLogger, eCodecType),
+CodecWsExtentPb::CodecWsExtentPb(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+        std::shared_ptr<SocketChannel> pBindChannel)
+    : Codec(pLogger, eCodecType, pBindChannel),
       uiBeatCmd(0), uiBeatSeq(0)
 {
 }
 
 CodecWsExtentPb::~CodecWsExtentPb()
 {
+}
+
+E_CODEC_STATUS CodecWsExtentPb::Encode(CBuffer* pBuff)
+{
+    return(CODEC_STATUS_OK);
 }
 
 E_CODEC_STATUS CodecWsExtentPb::Encode(const MsgHead& oMsgHead,
@@ -413,6 +419,12 @@ E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff,
     {
         return (CODEC_STATUS_PAUSE);
     }
+}
+
+E_CODEC_STATUS CodecWsExtentPb::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody, CBuffer* pReactBuff)
+{
+    LOG4_ERROR("invalid");
+    return(CODEC_STATUS_ERR);
 }
 
 } /* namespace neb */

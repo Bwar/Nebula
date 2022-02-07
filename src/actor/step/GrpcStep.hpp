@@ -18,7 +18,7 @@ namespace neb
 class GrpcStep: public HttpStep
 {
 public:
-    GrpcStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dConfigTimeout);
+    GrpcStep(ev_tstamp dTimeout = gc_dConfigTimeout);
     GrpcStep(const GrpcStep&) = delete;
     GrpcStep& operator=(const GrpcStep&) = delete;
     virtual ~GrpcStep();

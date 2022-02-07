@@ -23,10 +23,11 @@ namespace neb
 class Loader;
 
 class SessionManager : public Session,
-    public DynamicCreator<SessionManager, bool>, public ActorSys
+    public DynamicCreator<SessionManager, bool&, ev_tstamp&>,
+    public ActorSys
 {
 public:
-    SessionManager(bool bDirectToLoader);
+    SessionManager(bool bDirectToLoader, ev_tstamp dStatInterval);
     virtual ~SessionManager();
 
     virtual E_CMD_STATUS Timeout();

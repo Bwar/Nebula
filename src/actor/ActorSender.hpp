@@ -24,6 +24,7 @@ namespace neb
 {
 
 typedef RedisReply RedisMsg;
+class CassMessage;
 
 class Actor;
 class SocketChannel;
@@ -38,6 +39,8 @@ class ActorSender
 public:
     ActorSender();
     virtual ~ActorSender();
+
+    static void SetAuth(Actor* pActor, const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword);
 
     static bool SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel);
 
@@ -69,6 +72,9 @@ public:
             E_GRPC_STATUS_CODE eStatus, const std::string& strStatusMessage,
             E_COMPRESSION eCompression = COMPRESS_NA);
     static bool SendTo(Actor* pActor, const std::string& strUrl, const std::string& strGrpcRequest, E_COMPRESSION eCompression = COMPRESS_NA);
+
+    // send cass message
+    static bool SendRoundRobin(Actor* pActor, const std::string& strIdentify, const CassMessage& oCassMsg, bool bWithSsl = false, bool bPipeline = true);
 };
 
 } /* namespace neb */

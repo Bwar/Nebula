@@ -12,20 +12,14 @@
 namespace neb
 {
 
-Step::Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
+Step::Step(Actor::ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : Actor(eActorType, dTimeout),
       m_uiChainId(0)
 {
-    if (nullptr != pNextStep)
-    {
-        m_setNextStepSeq.insert(pNextStep->GetSequence());
-    }
 }
 
 Step::~Step()
 {
-    m_setNextStepSeq.clear();
-    m_setPreStepSeq.clear();
 }
 
 E_CMD_STATUS Step::Callback(std::shared_ptr<SocketChannel> pChannel,
@@ -70,19 +64,6 @@ E_CMD_STATUS Step::Callback(std::shared_ptr<SocketChannel> pChannel,
                 "you need to implement a RawStep callback");
     }
     return(CMD_STATUS_FAULT);
-}
-
-void Step::NextStep(int iErrno, const std::string& strErrMsg, void* data)
-{
-    if (iErrno != ERR_OK)
-    {
-        return;
-    }
-
-    for (auto it = m_setNextStepSeq.begin(); it != m_setNextStepSeq.end(); ++it)
-    {
-        ExecStep(*it, iErrno, strErrMsg, data);
-    }
 }
 
 void Step::SetChainId(uint32 uiChainId)

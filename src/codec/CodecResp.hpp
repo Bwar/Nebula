@@ -21,14 +21,19 @@ class RedisStep;
 class CodecResp: public neb::Codec
 {
 public:
-    CodecResp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
+    CodecResp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+            std::shared_ptr<SocketChannel> pBindChannel);
     virtual ~CodecResp();
 
-    virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff);
-    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody);
+    static E_CODEC_TYPE Type()
+    {
+        return(CODEC_RESP);
+    }
 
-    virtual E_CODEC_STATUS Encode(const RedisReply& oReply, CBuffer* pBuff);
-    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, RedisReply& oReply);
+    E_CODEC_STATUS Encode(CBuffer* pBuff);
+    E_CODEC_STATUS Encode(const RedisReply& oReply, CBuffer* pBuff);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, RedisReply& oReply);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, RedisReply& oReply, CBuffer* pReactBuff);
 
 protected:
     E_CODEC_STATUS EncodeSimpleString(const RedisReply& oReply, CBuffer* pBuff);

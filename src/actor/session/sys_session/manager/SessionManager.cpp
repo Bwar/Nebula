@@ -29,8 +29,8 @@ namespace neb
 std::mutex SessionManager::s_mutexWorker;
 std::vector<uint64> SessionManager::s_vecWorkerThreadId;
 
-SessionManager::SessionManager(bool bDirectToLoader)
-    : Session("neb::SessionManager", gc_dDefaultTimeout), m_bDirectToLoader(bDirectToLoader)
+SessionManager::SessionManager(bool bDirectToLoader, ev_tstamp dStatInterval)
+    : Session("neb::SessionManager", dStatInterval), m_bDirectToLoader(bDirectToLoader)
 {
     m_iterWorkerInfo = m_mapWorkerInfo.begin();
 }
@@ -391,8 +391,8 @@ bool SessionManager::CheckWorker()
         if (worker_iter->second->bStartBeatCheck && !GetLabor(this)->GetNodeInfo().bThreadMode)
         {
             LOG4_TRACE("now %lf, worker_beat_time %lf, worker_beat %d",
-                    GetNowTime(), worker_iter->second->dBeatTime, ((Manager*)GetLabor(this))->GetManagerInfo().iWorkerBeat);
-            if (GetNowTime() - worker_iter->second->dBeatTime > ((Manager*)GetLabor(this))->GetManagerInfo().iWorkerBeat)
+                    GetNowTime(), worker_iter->second->dBeatTime, GetLabor(this)->GetNodeInfo().dDataReportInterval);
+            if (GetNowTime() - worker_iter->second->dBeatTime > GetLabor(this)->GetNodeInfo().dDataReportInterval)
             {
                 LOG4_ERROR("worker_%d pid %d is unresponsive, "
                             "terminate it.", worker_iter->second->iWorkerIndex, worker_iter->first);

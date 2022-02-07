@@ -44,14 +44,14 @@ public:
 
 const std::string LogLevMsg[Logger::LEV_MAX] =
 {
-    "FATAL",            //致命错误
-    "CRITICAL",         //严重错误
-    "ERROR",            //一般错误
-    "NOTICE",           //关键提示消息
-    "WARNING",          //警告
-    "INFO",             //一般提示消息
-    "DEBUG",            //调试消息
-    "TRACE"
+    "[FATAL]",            //致命错误
+    "[CRITICAL]",         //严重错误
+    "[ERROR]",            //一般错误
+    "[NOTICE]",           //关键提示消息
+    "[WARN]",             //警告
+    "[INFO]",             //一般提示消息
+    "[DEBUG]",            //调试消息
+    "[TRACE]"
 };
 
 } /* namespace neb */

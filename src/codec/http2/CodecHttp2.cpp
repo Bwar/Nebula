@@ -14,18 +14,18 @@
 #include "Http2Header.hpp"
 #include "codec/CodecUtil.hpp"
 #include "util/StringConverter.hpp"
+#include "channel/SocketChannel.hpp"
 
 namespace neb
 {
 
 CodecHttp2::CodecHttp2(std::shared_ptr<NetLogger> pLogger,
-        E_CODEC_TYPE eCodecType, bool bChannelIsClient)
-    : Codec(pLogger, eCodecType),
-      m_bChannelIsClient(bChannelIsClient)
+        E_CODEC_TYPE eCodecType, std::shared_ptr<SocketChannel> pBindChannel)
+    : Codec(pLogger, eCodecType, pBindChannel)
 {
     try
     {
-        m_pFrame = new Http2Frame(pLogger, eCodecType);
+        m_pFrame = new Http2Frame(pLogger, eCodecType, pBindChannel);
         m_pStreamWeightRoot = new TreeNode<tagStreamWeight>();
         m_pStreamWeightRoot->pData = new tagStreamWeight();
         m_pStreamWeightRoot->pData->uiStreamId = 0;
@@ -64,7 +64,7 @@ void CodecHttp2::ConnectionSetting(CBuffer* pBuff)
 {
     std::vector<tagSetting> vecSetting;
     tagSetting stSetting;
-    if (m_bChannelIsClient)
+    if (GetBindChannel()->IsClient())
     {
         pBuff->Write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24);
         m_bWantMagic = false;
@@ -106,9 +106,14 @@ void CodecHttp2::ConnectionSetting(CBuffer* pBuff)
     }
 }
 
+E_CODEC_STATUS CodecHttp2::Encode(CBuffer* pBuff)
+{
+    return(CODEC_STATUS_OK);
+}
+
 E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
 {
-    if (m_bWantMagic && m_bChannelIsClient)
+    if (m_bWantMagic && GetBindChannel()->IsClient())
     {
         pBuff->Write("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", 24);
         m_bWantMagic = false;
@@ -177,8 +182,8 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     if (CODEC_STATUS_PART_ERR == eCodecStatus
             || CODEC_STATUS_OK == eCodecStatus)
     {
-        LOG4_TRACE("m_bChannelIsClient = %d, m_pCodingStream->GetStreamId() = %u",
-                m_bChannelIsClient, m_pCodingStream->GetStreamId());
+        LOG4_TRACE("is_client = %d, m_pCodingStream->GetStreamId() = %u",
+                GetBindChannel()->IsClient(), m_pCodingStream->GetStreamId());
         if (m_pCodingStream->GetStreamState() == H2_STREAM_CLOSE)
         {
             CloseStream(m_stDecodeFrameHead.uiStreamIdentifier);
@@ -187,10 +192,16 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     return(eCodecStatus);
 }
 
+E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
+{
+    LOG4_ERROR("invalid");
+    return(CODEC_STATUS_ERR);
+}
+
 E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff)
 {
     LOG4_TRACE("pBuff->ReadableBytes() = %u", pBuff->ReadableBytes());
-    if (m_bWantMagic && !m_bChannelIsClient)
+    if (m_bWantMagic && !GetBindChannel()->IsClient())
     {
         if (pBuff->ReadableBytes() >= 24)
         {
@@ -220,7 +231,7 @@ E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pR
             oHttpMsg.set_stream_id(1);
             try
             {
-                m_pCodingStream = new Http2Stream(m_pLogger, GetCodecType(), oHttpMsg.stream_id());
+                m_pCodingStream = new Http2Stream(m_pLogger, GetCodecType(), GetBindChannel(), oHttpMsg.stream_id());
                 m_pCodingStream->SetState(H2_STREAM_HALF_CLOSE_REMOTE);
                 m_mapStream.insert(std::make_pair((uint32)1, m_pCodingStream));
             }
@@ -775,7 +786,7 @@ E_CODEC_STATUS CodecHttp2::PromiseStream(uint32 uiStreamId, CBuffer* pReactBuff)
     Http2Stream* pPromiseStream = nullptr;
     try
     {
-        pPromiseStream = new Http2Stream(m_pLogger, GetCodecType(), uiStreamId);
+        pPromiseStream = new Http2Stream(m_pLogger, GetCodecType(), GetBindChannel(), uiStreamId);
         pPromiseStream->SetState(H2_STREAM_RESERVED_REMOTE);
         m_mapStream.insert(std::make_pair(uiStreamId, pPromiseStream));
     }
@@ -839,7 +850,7 @@ void CodecHttp2::TransferHoldingMsg(HttpMsg* pHoldingHttpMsg)
 
 uint32 CodecHttp2::StreamIdGenerate()
 {
-    if (m_bChannelIsClient)
+    if (GetBindChannel()->IsClient())
     {
         if (m_uiStreamIdGenerate & 0x01)    // odd number
         {
@@ -869,7 +880,7 @@ Http2Stream* CodecHttp2::NewCodingStream(uint32 uiStreamId)
     uint32 uiNewWindowSize = m_uiRecvWindowSize + DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
     try
     {
-        m_pCodingStream = new Http2Stream(m_pLogger, GetCodecType(), uiStreamId);
+        m_pCodingStream = new Http2Stream(m_pLogger, GetCodecType(), GetBindChannel(), uiStreamId);
         m_pCodingStream->WindowInit(m_uiSettingsMaxWindowSize);
         m_uiRecvWindowSize = (uiNewWindowSize < SETTINGS_MAX_INITIAL_WINDOW_SIZE)
                 ? uiNewWindowSize : SETTINGS_MAX_INITIAL_WINDOW_SIZE;
@@ -1038,7 +1049,7 @@ E_CODEC_STATUS CodecHttp2::UnpackHeaderLiteralIndexing(CBuffer* pBuff, uint8 ucF
 void CodecHttp2::ClassifyHeader(const std::string& strHeaderName, const std::string& strHeaderValue, HttpMsg& oHttpMsg)
 {
     LOG4_TRACE("strHeaderName = %s, strHeaderValue = %s", strHeaderName.c_str(), strHeaderValue.c_str());
-    if (IsClient())
+    if (GetBindChannel()->IsClient())
     {
         if (oHttpMsg.stream_id() & 0x01)
         {

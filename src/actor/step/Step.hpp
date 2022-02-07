@@ -22,7 +22,7 @@ class Chain;
 class Step: public Actor
 {
 public:
-    Step(Actor::ACTOR_TYPE eActorType, std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dConfigTimeout);
+    Step(Actor::ACTOR_TYPE eActorType, ev_tstamp dTimeout = gc_dConfigTimeout);
     Step(const Step&) = delete;
     Step& operator=(const Step&) = delete;
     virtual ~Step();
@@ -60,23 +60,21 @@ public:
     virtual E_CMD_STATUS Callback(std::shared_ptr<SocketChannel> pChannel,
             const char* pRawData, uint32 uiRawDataSize);
 
-protected:
-    /**
-     * @brief 执行当前步骤接下来的步骤
-     */
-    void NextStep(int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);
-
     uint32 GetChainId() const
     {
         return(m_uiChainId);
+    }
+
+protected:
+    virtual bool WantResponse() const
+    {
+        return(true);
     }
 
 private:
     void SetChainId(uint32 uiChainId);
 
     uint32 m_uiChainId;
-    std::unordered_set<uint32> m_setNextStepSeq;
-    std::unordered_set<uint32> m_setPreStepSeq;
 
     friend class ActorBuilder;
     friend class Chain;

@@ -57,6 +57,8 @@ public:
     {
         bool bCheckFailedNode = false;
         std::string strNodeType;
+        std::string strAuth;
+        std::string strPassword;
         T_NODE2HASH_MAP mapNode2Hash;
         T_NODE2HASH_MAP::iterator itPollingNode;
         std::map<uint32, std::string> mapHash2Node;
@@ -110,6 +112,10 @@ public:
      * @param[out] strNodeIdentify 节点标识
      */
     bool SplitAddAndGetNode(const std::string& strNodeType, std::string& strNodeIdentify);
+
+    bool GetAuth(const std::string& strNodeType, std::string& strAuth, std::string& strPassword);
+
+    void SetAuth(const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword);
 
     /**
      * @brief 删除节点

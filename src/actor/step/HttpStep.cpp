@@ -13,8 +13,8 @@
 namespace neb
 {
 
-HttpStep::HttpStep(std::shared_ptr<Step> pNextStep, ev_tstamp dTimeout)
-    : Step(ACT_HTTP_STEP, pNextStep, dTimeout)
+HttpStep::HttpStep(ev_tstamp dTimeout)
+    : Step(ACT_HTTP_STEP, dTimeout)
 {
 }
 

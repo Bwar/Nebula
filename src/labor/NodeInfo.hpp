@@ -32,7 +32,8 @@ struct NodeInfo
     int32 iPortForClient            = 0;            ///< 对Client通信监听端口，对应 iC2SListenFd
     int32 iForClientSocketType      = 0;            ///< 对Client通信的socket类型
     int32 iGatewayPort              = 0;            ///< 对Client服务的真实端口
-    bool bThreadMode                = 0;            ///< 是否线程模型
+    bool bThreadMode                = false;        ///< 是否线程模型
+    bool bAsyncLogger               = false;        ///< 是否启用异步文件日志
     bool bIsAccess                  = false;        ///< 是否接入Server
     bool bChannelVerify             = false;        ///< 是否需要连接验证
     ev_tstamp dConnectionProtection = 0.0;          ///< >0时为连接保护时间，新建连接会设置成这个时间，接收到第一个数据包之后改设成dIoTimeout

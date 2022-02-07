@@ -15,6 +15,7 @@
 #include <sstream>
 #include "Logger.hpp"
 #include "FileLogger.hpp"
+#include "AsyncLogger.hpp"
 
 namespace neb
 {
@@ -25,12 +26,18 @@ class NetLogger: public Logger
 {
 public:
     NetLogger(
-        const std::string strLogFile,
+        const std::string& strLogFile,
         int iLogLev = Logger::INFO,
         unsigned int uiMaxFileSize = gc_uiMaxLogFileSize,
         unsigned int uiMaxRollFileIndex = gc_uiMaxRollLogFileIndex,
-        unsigned int uiMaxLogLineLen = gc_uiMaxLogLineLen,
         bool bAlwaysFlush = true,
+        Labor* pLabor = nullptr);
+    NetLogger(
+        int iWorkerIndex,
+        const std::string& strLogFile,
+        int iLogLev = Logger::INFO,
+        unsigned int uiMaxFileSize = gc_uiMaxLogFileSize,
+        unsigned int uiMaxRollFileIndex = gc_uiMaxRollLogFileIndex,
         Labor* pLabor = nullptr);
     virtual ~NetLogger();
 
@@ -50,7 +57,14 @@ public:
     virtual void SetLogLevel(int iLev)
     {
         m_iLogLevel = iLev;
-        m_pLog->SetLogLevel(iLev);
+        if (m_pLog == nullptr)
+        {
+            AsyncLogger::Instance()->SetLogLevel(iLev);
+        }
+        else
+        {
+            m_pLog->SetLogLevel(iLev);
+        }
     }
 
     virtual void SetNetLogLevel(int iLev)
@@ -69,17 +83,20 @@ protected:
     template<typename T> void Append(T&& arg);
     template<typename T, typename ...Targs> void Append(const char* szFormat, T&& arg, Targs&&... args);
     template<typename T> const char* PrintfAppend(const char* szFormat, T&& arg);
+    void WriteFileLog(int iLev, const char* szFileName, unsigned int uiFileLine,
+            const char* szFunction, const std::string& strLogContent);
+    void WriteFileLog(const std::string& strTraceId, int iLev, const char* szFileName,
+            unsigned int uiFileLine, const char* szFunction, const std::string& strLogContent);
     void SinkLog(int iLev, const char* szFileName, unsigned int uiFileLine,
             const char* szFunction, const std::string& strLogContent, const std::string& strTraceId = "");
 
 private:
     int m_iLogLevel;
     int m_iNetLogLevel;
-    unsigned int m_uiMaxLogLineLen;
     bool m_bEnableNetLogger;
     std::ostringstream m_ossLogContent;
     Labor* m_pLabor;
-    std::string m_strLogData;   ///< 用于提高序列化效率
+    std::string m_strOutStr;
     std::unique_ptr<neb::FileLogger> m_pLog;
 };
 
@@ -94,7 +111,7 @@ int NetLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLin
     m_ossLogContent.str("");
     Append(szLogFormat, std::forward<Targs>(args)...);
 
-    m_pLog->WriteLog(iLev, szFileName, uiFileLine, szFunction, m_ossLogContent.str());
+    WriteFileLog(iLev, szFileName, uiFileLine, szFunction, m_ossLogContent.str());
 
     if (iLev > m_iNetLogLevel)
     {
@@ -115,7 +132,7 @@ int NetLogger::WriteLog(const std::string& strTraceId, int iLev, const char* szF
     m_ossLogContent.str("");
     Append(szLogFormat, std::forward<Targs>(args)...);
 
-    m_pLog->WriteLog(strTraceId, iLev, szFileName, uiFileLine, szFunction, m_ossLogContent.str());
+    WriteFileLog(strTraceId, iLev, szFileName, uiFileLine, szFunction, m_ossLogContent.str());
 
     if (iLev > m_iNetLogLevel)
     {
@@ -137,7 +154,7 @@ int NetLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLin
     m_ossLogContent.str("");
     Append(std::forward<Targs>(args)...);
 
-    m_pLog->WriteLog(iLev, szFileName, uiFileLine, szFunction, m_ossLogContent.str());
+    WriteFileLog(iLev, szFileName, uiFileLine, szFunction, m_ossLogContent.str());
 
     if (iLev > m_iNetLogLevel)
     {
@@ -158,7 +175,7 @@ int NetLogger::WriteLog(const std::string& strTraceId, int iLev, const char* szF
     m_ossLogContent.str("");
     Append(std::forward<Targs>(args)...);
 
-    m_pLog->WriteLog(strTraceId, iLev, szFileName, uiFileLine, szFunction, m_ossLogContent.str());
+    WriteFileLog(strTraceId, iLev, szFileName, uiFileLine, szFunction, m_ossLogContent.str());
 
     if (iLev > m_iNetLogLevel)
     {
@@ -210,7 +227,7 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
     }
     const char* pPos = szFormat;
     bool bPlaceholder = false;
-    std::string strOutStr;
+    m_strOutStr.clear();
     int i = 0;
     for (size_t i = 0; ; ++i)
     {
@@ -219,22 +236,22 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
             case '\0':
                 if (i > 0)
                 {
-                    strOutStr.assign(szFormat, i);
-                    m_ossLogContent << strOutStr;
+                    m_strOutStr.assign(szFormat, i);
+                    m_ossLogContent << m_strOutStr;
                 }
                 m_ossLogContent << arg;
                 return(nullptr);
             case '%':
                 if (bPlaceholder)
                 {
-                    strOutStr.append("%");
+                    m_strOutStr.append("%");
                     pPos = szFormat + i + 1;
-                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << m_strOutStr;
                     return(PrintfAppend(pPos, std::forward<T>(arg)));
                 }
                 else
                 {
-                    strOutStr.assign(szFormat, i);
+                    m_strOutStr.assign(szFormat, i);
                     bPlaceholder = true;
                 }
                 break;
@@ -242,7 +259,7 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                 if (bPlaceholder)
                 {
                     pPos = szFormat + i + 1;
-                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << m_strOutStr;
                     m_ossLogContent << std::fixed << arg;
                     return(pPos);
                 }
@@ -257,7 +274,7 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                 if (bPlaceholder)
                 {
                     pPos = szFormat + i + 1;
-                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << m_strOutStr;
                     m_ossLogContent << arg;
                     return(pPos);
                 }
@@ -268,7 +285,7 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                 if (bPlaceholder)
                 {
                     pPos = szFormat + i + 1;
-                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << m_strOutStr;
                     m_ossLogContent << std::dec << arg;
                     return(pPos);
                 }
@@ -277,7 +294,7 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                 if (bPlaceholder)
                 {
                     pPos = szFormat + i + 1;
-                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << m_strOutStr;
                     m_ossLogContent << std::hex << std::nouppercase << arg;
                     return(pPos);
                 }
@@ -286,7 +303,7 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                 if (bPlaceholder)
                 {
                     pPos = szFormat + i + 1;
-                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << m_strOutStr;
                     m_ossLogContent << std::hex << std::uppercase << arg;
                     return(pPos);
                 }
@@ -295,7 +312,7 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                 if (bPlaceholder)
                 {
                     pPos = szFormat + i + 1;
-                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << m_strOutStr;
                     m_ossLogContent << std::oct << arg;
                     return(pPos);
                 }
@@ -305,7 +322,7 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                 if (bPlaceholder)
                 {
                     pPos = szFormat + i + 1;
-                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << m_strOutStr;
                     m_ossLogContent << std::scientific << std::nouppercase << arg;
                     return(pPos);
                 }
@@ -315,7 +332,7 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                 if (bPlaceholder)
                 {
                     pPos = szFormat + i + 1;
-                    m_ossLogContent << strOutStr;
+                    m_ossLogContent << m_strOutStr;
                     m_ossLogContent << std::scientific << std::uppercase << arg;
                     return(pPos);
                 }
@@ -324,8 +341,8 @@ const char* NetLogger::PrintfAppend(const char* szFormat, T&& arg)
                 ;
         }
     }
-    strOutStr.assign(szFormat, i);
-    m_ossLogContent << strOutStr;
+    m_strOutStr.assign(szFormat, i);
+    m_ossLogContent << m_strOutStr;
     return(nullptr);
 }
 

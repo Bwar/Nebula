@@ -12,7 +12,7 @@
 
 #include <set>
 #include <list>
-#include "actor/step/Step.hpp"
+#include "Step.hpp"
 #include "pb/redis.pb.h"
 
 namespace neb
@@ -26,7 +26,7 @@ typedef RedisReply RedisRequest;
 class RedisStep: public Step
 {
 public:
-    RedisStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dConfigTimeout);
+    RedisStep(ev_tstamp dTimeout = gc_dConfigTimeout);
     RedisStep(const RedisStep&) = delete;
     RedisStep& operator=(const RedisStep&) = delete;
     virtual ~RedisStep();
@@ -80,7 +80,9 @@ public:
         return(m_vecCmdArguments);
     }
 
-    const RedisRequest& GenrateRedisRequest();
+    const RedisRequest& GenerateRedisRequest();
+
+    const RedisRequest& GetRedisRequest() const;
 
 protected:
     std::shared_ptr<RedisRequest> MutableRedisRequest();

@@ -29,6 +29,7 @@ extern "C" {
 
 #include "util/CBuffer.hpp"
 #include "labor/Labor.hpp"
+#include "util/json/CJsonObject.hpp"
 #include "channel/SocketChannel.hpp"
 #include "codec/Codec.hpp"
 #include "logger/NetLogger.hpp"
@@ -52,6 +53,7 @@ public:
     // timeout，worker进程无响应或与Manager通信通道异常，被manager进程终止时返回
     void OnTerminated(struct ev_signal* watcher);
     bool CheckParent();
+    void DataReport();
 
     virtual bool Init(CJsonObject& oJsonConf);
     void Run();

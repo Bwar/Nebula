@@ -93,10 +93,12 @@ protected:
     void CmdReadOnlyCallback(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const RedisReply& oRedisReply);
     void AskingQueueErrBack(std::shared_ptr<SocketChannel> pChannel,
             int iErrno, const std::string& strErrMsg);
+    void CmdErrBack(std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg);
     bool Dispatch(const RedisMsg& oRedisMsg, uint32 uiStepSeq);
     void SendWaittingRequest();
     void RegisterStep(uint32 uiStepSeq);
     void AddToAskingQueue(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg);
+    bool Auth(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg);
 
 private:
     bool m_bWithSsl;                        ///< 是否支持SSL

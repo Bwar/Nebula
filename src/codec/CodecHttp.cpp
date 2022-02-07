@@ -10,6 +10,7 @@
 #include <algorithm>
 #include "util/StringCoder.hpp"
 #include "logger/NetLogger.hpp"
+#include "channel/SocketChannel.hpp"
 #include "CodecHttp.hpp"
 
 #define STATUS_CODE(code, str) case code: return str;
@@ -78,9 +79,10 @@ static const char * status_string(int code)
 namespace neb
 {
 
-CodecHttp::CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, ev_tstamp dKeepAlive)
-    : Codec(pLogger, eCodecType),
-      m_bChannelIsClient(false), m_bIsDecoding(false), m_uiEncodedNum(0), m_uiDecodedNum(0),
+CodecHttp::CodecHttp(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+        std::shared_ptr<SocketChannel> pBindChannel, ev_tstamp dKeepAlive)
+    : Codec(pLogger, eCodecType, pBindChannel),
+      m_bIsDecoding(false), 
       m_iHttpMajor(1), m_iHttpMinor(1), m_dKeepAlive(dKeepAlive)
 {
 }
@@ -89,71 +91,15 @@ CodecHttp::~CodecHttp()
 {
 }
 
-E_CODEC_STATUS CodecHttp::Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff)
+E_CODEC_STATUS CodecHttp::Encode(CBuffer* pBuff)
 {
-    LOG4_TRACE(" ");
-    ++m_uiEncodedNum;
-    if (m_uiEncodedNum > m_uiDecodedNum)
-    {
-        m_bChannelIsClient = true;
-    }
-    HttpMsg oHttpMsg;
-    if (oHttpMsg.ParseFromString(oMsgBody.data()))
-    {
-        oHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("x-cmd", std::to_string(oMsgHead.cmd())));
-        oHttpMsg.mutable_headers()->insert(google::protobuf::MapPair<std::string, std::string>("x-seq", std::to_string(oMsgHead.seq())));
-        return(Encode(oHttpMsg, pBuff));
-    }
-    else
-    {
-        LOG4_ERROR("oHttpMsg.ParseFromString() error!");
-        return(CODEC_STATUS_ERR);
-    }
-}
-
-E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)
-{
-    LOG4_TRACE(" ");
-    if (pBuff->ReadableBytes() == 0)
-    {
-        LOG4_DEBUG("no data...");
-        return(CODEC_STATUS_PAUSE);
-    }
-    ++m_uiDecodedNum;
-    HttpMsg oHttpMsg;
-    E_CODEC_STATUS eCodecStatus = Decode(pBuff, oHttpMsg);
-    if (CODEC_STATUS_OK == eCodecStatus)
-    {
-        oMsgBody.set_data(oHttpMsg.body());
-        oMsgHead.set_len(oMsgBody.ByteSize());
-        for (auto it = oHttpMsg.headers().begin(); it != oHttpMsg.headers().end(); ++it)
-        {
-            if (std::string("x-cmd") == it->first
-                            || std::string("x-CMD") == it->first
-                            || std::string("x-Cmd") == it->first)
-            {
-                oMsgHead.set_cmd(atoi(it->second.c_str()));
-            }
-            else if (std::string("x-seq") == it->first
-                            || std::string("x-SEQ") == it->first
-                            || std::string("x-Seq") == it->first)
-            {
-                oMsgHead.set_seq(strtoul(it->second.c_str(), NULL, 10));
-            }
-        }
-    }
-    return(eCodecStatus);
+    return(CODEC_STATUS_OK);
 }
 
 E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
 {
     LOG4_TRACE("pBuff->ReadableBytes() = %u, ReadIndex = %u, WriteIndex = %u",
                     pBuff->ReadableBytes(), pBuff->GetReadIndex(), pBuff->GetWriteIndex());
-    ++m_uiEncodedNum;
-    if (m_uiEncodedNum > m_uiDecodedNum)
-    {
-        m_bChannelIsClient = true;
-    }
 
     int iWriteSize = 0;
     int iHadEncodedSize = 0;
@@ -264,7 +210,7 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         {
             iHadEncodedSize += iWriteSize;
         }
-        if (!m_bChannelIsClient)
+        if (GetBindChannel()->IsClient())
         {
             if (m_dKeepAlive == 0)
             {
@@ -551,7 +497,6 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
     {
         return(CODEC_STATUS_PAUSE);
     }
-    ++m_uiDecodedNum;
     m_oParsingHttpMsg.Clear();
     m_parser_setting.on_message_begin = OnMessageBegin;
     m_parser_setting.on_url = OnUrl;
@@ -606,7 +551,7 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
                 }
             }
         }
-        if (!m_bChannelIsClient && !http_should_keep_alive(&m_parser))
+        if (!GetBindChannel()->IsClient() && !http_should_keep_alive(&m_parser))
         {
             m_oParsingHttpMsg.set_keep_alive(0.0);
             m_dKeepAlive = 0.0;
@@ -617,6 +562,12 @@ E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
     }
     LOG4_WARNING("Failed to parse http message for cause:%s, message %s",
             http_errno_name((http_errno)m_parser.http_errno), pDecodeBuff);
+    return(CODEC_STATUS_ERR);
+}
+
+E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff)
+{
+    LOG4_ERROR("invalid");
     return(CODEC_STATUS_ERR);
 }
 
@@ -647,7 +598,7 @@ const std::string& CodecHttp::ToString(const HttpMsg& oHttpMsg)
         if (oHttpMsg.status_code() > 0)
         {
             char tmp[10];
-            sprintf(tmp, " %u\r\n", oHttpMsg.status_code());
+            snprintf(tmp, 10, " %d\r\n", oHttpMsg.status_code());
             m_strHttpString += tmp;
         }
     }
@@ -670,7 +621,7 @@ const std::string& CodecHttp::ToString(const HttpMsg& oHttpMsg)
 
 bool CodecHttp::CloseRightAway() const
 {
-    if (m_bChannelIsClient)
+    if (GetBindChannel()->IsClient())
     {
         if (m_dKeepAlive == 0.0)
         {

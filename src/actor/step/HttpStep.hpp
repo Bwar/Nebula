@@ -20,7 +20,7 @@ namespace neb
 class HttpStep: public Step
 {
 public:
-    HttpStep(std::shared_ptr<Step> pNextStep = nullptr, ev_tstamp dTimeout = gc_dConfigTimeout);
+    HttpStep(ev_tstamp dTimeout = gc_dConfigTimeout);
     HttpStep(const HttpStep&) = delete;
     HttpStep& operator=(const HttpStep&) = delete;
     virtual ~HttpStep();

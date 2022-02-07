@@ -47,7 +47,6 @@ class Manager: public Labor
 public:
     struct tagManagerInfo
     {
-        int iWorkerBeat     = 7;   ///< worker进程心跳，若大于此心跳未收到worker进程上报，则重启worker进程
         int iS2SListenFd    = -1;  ///< Server to Server监听文件描述符（Server与Server之间的连接较少，但每个Server的每个Worker均与其他Server的每个Worker相连）
         int iS2SFamily      = 0;   ///<
         int iC2SListenFd    = -1;  ///< Client to Server监听文件描述符（Client与Server之间的连接较多，但每个Client只需连接某个Server的某个Worker）

@@ -7,90 +7,201 @@
  * @note
  * Modify history:
  ******************************************************************************/
+#include "SocketChannel.hpp"
 #include <memory>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <arpa/inet.h>
-#include "pb/msg.pb.h"
-#include "pb/http.pb.h"
-#include "SocketChannel.hpp"
+#include "ios/ChannelWatcher.hpp"
+#include "SocketChannelImpl.hpp"
+#ifdef WITH_OPENSSL
+#include "SocketChannelSslImpl.hpp"
+#endif
+#include "codec/CodecProto.hpp"
 
 namespace neb
 {
 
 SocketChannel::SocketChannel()
-    : m_pImpl(nullptr), m_pLogger(nullptr)
+    : m_bIsClient(false), m_bWithSsl(false), m_pImpl(nullptr), m_pLogger(nullptr), m_pWatcher(nullptr)
 {
 }
 
-SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, ev_tstamp dKeepAlive)
-    : m_pImpl(nullptr), m_pLogger(pLogger)
+SocketChannel::SocketChannel(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, bool bIsClient, ev_tstamp dKeepAlive)
+    : m_bIsClient(bIsClient), m_bWithSsl(bWithSsl), m_pImpl(nullptr), m_pLogger(pLogger), m_pWatcher(nullptr)
 {
     if (bWithSsl)
     {
 #ifdef WITH_OPENSSL
-        pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "with openssl, create SocekChannelSslImpl.");
-        m_pImpl = std::dynamic_pointer_cast<SocketChannelImpl>(std::make_shared<SocketChannelSslImpl>(this, pLogger, iFd, ulSeq, dKeepAlive));
+        LOG4_TRACE("with openssl, create SocekChannelSslImpl.");
+        auto pImpl = std::make_shared<SocketChannelSslImpl<CodecNebula>>(pLabor, pLogger, iFd, ulSeq, dKeepAlive);
+        pImpl->Init(bIsClient);
+        m_pImpl = std::static_pointer_cast<SocketChannel>(pImpl);
 #else
-        pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "without openssl, SocekChannelImpl instead.");
-        m_pImpl = std::make_shared<SocketChannelImpl>(this, pLogger, iFd, ulSeq, dKeepAlive);
+        LOG4_TRACE("without openssl, SocekChannelImpl instead.");
+        auto pImpl = std::make_shared<SocketChannelImpl<CodecNebula>>(pLabor, pLogger, iFd, ulSeq, dKeepAlive);
+        m_pImpl = std::static_pointer_cast<SocketChannel>(pImpl);
 #endif
     }
     else
     {
-        pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "create SocekChannelImpl.");
-        m_pImpl = std::make_shared<SocketChannelImpl>(this, pLogger, iFd, ulSeq, dKeepAlive);
+        LOG4_TRACE("create SocekChannelImpl.");
+        auto pImpl = std::make_shared<SocketChannelImpl<CodecNebula>>(pLabor, pLogger, iFd, ulSeq, dKeepAlive);
+        m_pImpl = std::static_pointer_cast<SocketChannel>(pImpl);
     }
 }
 
 SocketChannel::~SocketChannel()
 {
-    if (m_pLogger != nullptr)
+    LOG4_TRACE("");
+    if (nullptr != m_pWatcher)
     {
-        m_pLogger->WriteLog(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "");
+        delete m_pWatcher;
+        m_pWatcher = nullptr;
     }
-}
-
-bool SocketChannel::Init(E_CODEC_TYPE eCodecType, bool bIsClient)
-{
-    return(m_pImpl->Init(eCodecType, bIsClient));
-}
-
-int SocketChannel::GetFd() const
-{
-    return(m_pImpl->GetFd());
 }
 
 bool SocketChannel::IsClient() const
 {
-    return(m_pImpl->IsClient());
+    return(m_bIsClient);
+}
+
+bool SocketChannel::WithSsl() const
+{
+    return(m_bWithSsl);
+}
+int SocketChannel::GetFd() const
+{
+    if (m_pImpl == nullptr)
+    {
+        return(-1);
+    }
+    return(m_pImpl->GetFd());
+}
+
+uint32 SocketChannel::GetSequence() const
+{
+    if (m_pImpl == nullptr)
+    {
+        return(0);
+    }
+    return(m_pImpl->GetSequence());
 }
 
 bool SocketChannel::IsPipeline() const
 {
+    if (m_pImpl == nullptr)
+    {
+        return(false);
+    }
     return(m_pImpl->IsPipeline());
 }
 
 const std::string& SocketChannel::GetIdentify() const
 {
+    if (m_pImpl == nullptr)
+    {
+        return(m_strEmpty);
+    }
     return(m_pImpl->GetIdentify());
 }
 
 const std::string& SocketChannel::GetRemoteAddr() const
 {
+    if (m_pImpl == nullptr)
+    {
+        return(m_strEmpty);
+    }
     return(m_pImpl->GetRemoteAddr());
 }
 
 const std::string& SocketChannel::GetClientData() const
 {
+    if (m_pImpl == nullptr)
+    {
+        return(m_strEmpty);
+    }
     return(m_pImpl->GetClientData());
 }
 
 E_CODEC_TYPE SocketChannel::GetCodecType() const
 {
+    if (m_pImpl == nullptr)
+    {
+        return(CODEC_UNKNOW);
+    }
     return(m_pImpl->GetCodecType());
+}
+
+uint8 SocketChannel::GetChannelStatus() const
+{
+    if (m_pImpl == nullptr)
+    {
+        return(0);
+    }
+    return(m_pImpl->GetChannelStatus());
+}
+
+uint32 SocketChannel::PopStepSeq(uint32 uiStreamId, E_CODEC_STATUS eStatus)
+{
+    if (m_pImpl == nullptr)
+    {
+        return(0);
+    }
+    return(m_pImpl->PopStepSeq(uiStreamId, eStatus));
+}
+
+bool SocketChannel::PipelineIsEmpty() const
+{
+    if (m_pImpl == nullptr)
+    {
+        return(0);
+    }
+    return(m_pImpl->PipelineIsEmpty());
+}
+
+int SocketChannel::GetErrno() const
+{
+    if (m_pImpl == nullptr)
+    {
+        return(0);
+    }
+    return(m_pImpl->GetErrno());
+}
+
+const std::string& SocketChannel::GetErrMsg() const
+{
+    if (m_pImpl == nullptr)
+    {
+        return(m_strEmpty);
+    }
+    return(m_pImpl->GetErrMsg());
+}
+
+Codec* SocketChannel::GetCodec() const
+{
+    if (m_pImpl == nullptr)
+    {
+        return(nullptr);
+    }
+    return(m_pImpl->GetCodec());
+}
+
+bool SocketChannel::InitImpl(std::shared_ptr<SocketChannel> pImpl)
+{
+    if (pImpl == nullptr)
+    {
+        return(false);
+    }
+    m_pImpl = pImpl;
+    return(true);
+}
+
+Labor* SocketChannel::GetLabor()
+{
+    return(nullptr);
 }
 
 int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger)
@@ -227,6 +338,22 @@ int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, in
     iCodecType = stCh.iCodecType;
 
     return(ERR_OK);
+}
+
+ChannelWatcher* SocketChannel::MutableWatcher()
+{
+    if (nullptr == m_pWatcher)
+    {
+        try
+        {
+            m_pWatcher = new ChannelWatcher();
+        }
+        catch(std::bad_alloc& e)
+        {
+            LOG4_TRACE("new ChannelWatcher error %s", e.what());
+        }
+    }
+    return(m_pWatcher);
 }
 
 }

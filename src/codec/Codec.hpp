@@ -46,6 +46,8 @@ enum E_CODEC_TYPE
     CODEC_RESP              = 9,        ///< redis数据传输协议resp
     CODEC_HTTP2             = 10,       ///< http2编解码
     CODEC_DIRECT            = 11,       ///< 虚拟编解码类型，用于SelfChannel，以参数方式直接传递数据包
+    CODEC_CASS              = 12,       ///< cassandra scylladb
+    CODEC_RAW               = 13,       ///< 裸数据传输
 };
 
 /**
@@ -68,10 +70,12 @@ enum E_CODEC_STATUS
     CODEC_STATUS_INT        = 9,    ///< 连接非正常关闭
 };
 
+class SocketChannel;
+
 class Codec
 {
 public:
-    Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
+    Codec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, std::shared_ptr<SocketChannel> pBindChannel);
     virtual ~Codec();
 
     E_CODEC_TYPE GetCodecType() const
@@ -79,23 +83,27 @@ public:
         return(m_eCodecType);
     }
 
-    /**
-     * @brief 字节流编码
-     * @param[in] oMsgHead  消息包头
-     * @param[in] oMsgBody  消息包体
-     * @param[out] pBuff  数据缓冲区
-     * @return 编解码状态
-     */
-    virtual E_CODEC_STATUS Encode(const MsgHead& oMsgHead, const MsgBody& oMsgBody, CBuffer* pBuff) = 0;
+    virtual uint32 GetLastStreamId()
+    {
+        return(0);
+    }
+
+    virtual ev_tstamp GetKeepAlive() const
+    {
+        return(0.0);
+    }
+
+    virtual bool DecodeWithReactor() const
+    {
+        return(false);
+    }
 
     /**
-     * @brief 字节流解码
-     * @param[in,out] pBuff 数据缓冲区
-     * @param[out] oMsgHead 消息包头
-     * @param[out] oMsgBody 消息包体
-     * @return 编解码状态
+     * @see CodecHttp2::ConnectionSetting()
      */
-    virtual E_CODEC_STATUS Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody) = 0;
+    virtual void ConnectionSetting(CBuffer* pBuff)
+    {
+    }
 
     void SetKey(const std::string& strKey)
     {
@@ -107,8 +115,10 @@ public:
         return(m_iErrno);
     }
 
-    static const std::vector<E_CODEC_TYPE>& GetAutoSwitchCodecType();
-    static void AddAutoSwitchCodecType(E_CODEC_TYPE eCodecType);
+    std::shared_ptr<SocketChannel> GetBindChannel() const
+    {
+        return(m_pBindChannel);
+    }
 
     template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
@@ -137,6 +147,7 @@ protected:
 private:
     int32 m_iErrno;
     E_CODEC_TYPE m_eCodecType;
+    std::shared_ptr<SocketChannel> m_pBindChannel;
     std::string m_strKey;       // 密钥
     static std::vector<E_CODEC_TYPE> m_vecAutoSwitchCodecType;   // 自动转换有效的编解码类型
 
