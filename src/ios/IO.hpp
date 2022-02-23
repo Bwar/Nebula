@@ -743,7 +743,7 @@ template<typename T>
 template <typename ...Targs>
 bool IO<T>::SendToSelf(Actor* pActor, Targs&&... args)
 {
-    auto pSelfChannel = std::make_shared<SelfChannel>();
+    auto pSelfChannel = std::make_shared<SelfChannel>(pActor->m_pLabor->GetSequence());
     return(CodecFactory::OnSelfRequest(pActor->m_pLabor->GetDispatcher(),
             pActor->GetSequence(), pSelfChannel, std::forward<Targs>(args)...));
 }

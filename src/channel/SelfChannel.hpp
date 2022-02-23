@@ -18,12 +18,17 @@ namespace neb
 class SelfChannel: public SocketChannel
 {
 public:
-    SelfChannel();
+    SelfChannel(uint32 uiSeq);
     virtual ~SelfChannel();
     
     virtual int GetFd() const override
     {
         return(0);
+    }
+
+    virtual uint32 GetSequence() const override
+    {
+        return(m_uiChannelSeq);
     }
 
     virtual bool IsClient() const override
@@ -77,8 +82,9 @@ public:
     }
 
 private:
-    bool m_bIsResponse = false;
-    uint32 m_uiStepSeq = 0;
+    bool m_bIsResponse;
+    uint32 m_uiChannelSeq;
+    uint32 m_uiStepSeq;
     std::string strEmpty;
 };
 
