@@ -28,7 +28,8 @@ FileLogger* FileLogger::s_pInstance = nullptr;
 FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
         unsigned int uiMaxFileSize, unsigned int uiMaxRollFileIndex, bool bAlwaysFlush)
     : m_iLogLevel(iLogLev), m_uiLogNum(0), m_uiMaxFileSize(uiMaxFileSize),
-      m_uiMaxRollFileIndex(uiMaxRollFileIndex), m_bAlwaysFlush(bAlwaysFlush), m_strLogFileBase(strLogFile)
+      m_uiMaxRollFileIndex(uiMaxRollFileIndex), m_bAlwaysFlush(bAlwaysFlush),
+      m_lTimeSec(0), m_strLogFileBase(strLogFile)
 {
 #if __GNUC__ < 5
     m_szTime = (char*)malloc(20);

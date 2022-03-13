@@ -93,6 +93,7 @@ protected:
 private:
     int m_iLogLevel;
     int m_iNetLogLevel;
+    int m_iWorkerIndex;
     bool m_bEnableNetLogger;
     std::ostringstream m_ossLogContent;
     Labor* m_pLabor;

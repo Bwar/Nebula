@@ -23,7 +23,7 @@ namespace neb
 
 NetLogger::NetLogger(const std::string& strLogFile, int iLogLev, unsigned int uiMaxFileSize,
         unsigned int uiMaxRollFileIndex, bool bAlwaysFlush, Labor* pLabor)
-    : m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO),
+    : m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO), m_iWorkerIndex(0),
       m_bEnableNetLogger(false), m_pLabor(pLabor), m_pLog(nullptr)
 {
 #if __cplusplus >= 201401L
@@ -35,7 +35,7 @@ NetLogger::NetLogger(const std::string& strLogFile, int iLogLev, unsigned int ui
 
 NetLogger::NetLogger(int iWorkerIndex, const std::string& strLogFile, int iLogLev, unsigned int uiMaxFileSize,
         unsigned int uiMaxRollFileIndex, Labor* pLabor)
-    : m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO),
+    : m_iLogLevel(iLogLev), m_iNetLogLevel(Logger::INFO), m_iWorkerIndex(iWorkerIndex),
       m_bEnableNetLogger(false), m_pLabor(pLabor), m_pLog(nullptr)
 {
     AsyncLogger::Instance()->AddLogFile(iWorkerIndex, strLogFile);
@@ -50,15 +50,7 @@ void NetLogger::WriteFileLog(int iLev, const char* szFileName, unsigned int uiFi
 {
     if (m_pLog == nullptr) // m_pLabor->GetNodeInfo().bAsyncLogger
     {
-        if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
-        {
-            AsyncLogger::Instance()->WriteLog(-1, iLev, szFileName, uiFileLine, szFunction, strLogContent);
-        }
-        else
-        {
-            AsyncLogger::Instance()->WriteLog(((Worker*)m_pLabor)->GetWorkerInfo().iWorkerIndex,
-                    iLev, szFileName, uiFileLine, szFunction, strLogContent);
-        }
+        AsyncLogger::Instance()->WriteLog(m_iWorkerIndex, iLev, szFileName, uiFileLine, szFunction, strLogContent);
     }
     else
     {
@@ -71,15 +63,7 @@ void NetLogger::WriteFileLog(const std::string& strTraceId, int iLev, const char
 {
     if (m_pLog == nullptr) // m_pLabor->GetNodeInfo().bAsyncLogger
     {
-        if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
-        {
-            AsyncLogger::Instance()->WriteLog(-1, strTraceId, iLev, szFileName, uiFileLine, szFunction, strLogContent);
-        }
-        else
-        {
-            AsyncLogger::Instance()->WriteLog(((Worker*)m_pLabor)->GetWorkerInfo().iWorkerIndex,
-                    strTraceId, iLev, szFileName, uiFileLine, szFunction, strLogContent);
-        }
+        AsyncLogger::Instance()->WriteLog(m_iWorkerIndex, strTraceId, iLev, szFileName, uiFileLine, szFunction, strLogContent);
     }
     else
     {

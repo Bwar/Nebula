@@ -12,7 +12,8 @@
 namespace neb
 {
 
-SelfChannel::SelfChannel()
+SelfChannel::SelfChannel(uint32 uiSeq)
+    : m_bIsResponse(false), m_uiChannelSeq(uiSeq), m_uiStepSeq(0)
 {
 }
 
