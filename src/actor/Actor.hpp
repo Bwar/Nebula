@@ -301,10 +301,11 @@ protected:
 
     /**
      * @brief 发送请求到当前worker
+     * @return SelfChannel的seq
      */
-    bool SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    bool SendToSelf(const HttpMsg& oHttpMsg);
-    bool SendToSelf(const RedisMsg& oRedisMsg);
+    uint32 SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
+    uint32 SendToSelf(const HttpMsg& oHttpMsg);
+    uint32 SendToSelf(const RedisMsg& oRedisMsg);
 
     std::shared_ptr<SocketChannel> GetLastActivityChannel();
 

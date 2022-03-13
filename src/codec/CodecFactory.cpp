@@ -118,7 +118,9 @@ bool CodecFactory::OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std:
     oMsgHead.set_seq(uiSeq);
     oMsgHead.set_len(oMsgBody.ByteSize());
     pChannel->SetStepSeq(uiStepSeq);
-    return(IO<Cmd>::OnRequest(pDispatcher, std::static_pointer_cast<SocketChannel>(pChannel), iCmd, oMsgHead, oMsgBody));
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<Cmd>::OnRequest(pDispatcher, pSocketChannel, iCmd, oMsgHead, oMsgBody));
 }
 
 bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
@@ -127,45 +129,61 @@ bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfC
     oMsgHead.set_cmd(iCmd);
     oMsgHead.set_seq(uiSeq);
     oMsgHead.set_len(oMsgBody.ByteSize());
-    return(IO<PbStep>::OnResponse(pDispatcher, std::static_pointer_cast<SocketChannel>(pChannel), uiSeq, oMsgHead, oMsgBody));
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<PbStep>::OnResponse(pDispatcher, pSocketChannel, uiSeq, oMsgHead, oMsgBody));
 }
 
 bool CodecFactory::OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SelfChannel> pChannel, const HttpMsg& oHttpMsg)
 {
     pChannel->SetStepSeq(uiStepSeq);
-    return(IO<Module>::OnRequest(pDispatcher, std::static_pointer_cast<SocketChannel>(pChannel), oHttpMsg.path(), oHttpMsg));
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<Module>::OnRequest(pDispatcher, pSocketChannel, oHttpMsg.path(), oHttpMsg));
 }
 
 bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, const HttpMsg& oHttpMsg)
 {
-    return(IO<HttpStep>::OnResponse(pDispatcher, std::static_pointer_cast<SocketChannel>(pChannel), pChannel->GetStepSeq(), oHttpMsg));
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<HttpStep>::OnResponse(pDispatcher, pSocketChannel, pChannel->GetStepSeq(), oHttpMsg));
 }
 
 bool CodecFactory::OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SelfChannel> pChannel, const RedisMsg& oRedisMsg)
 {
     pChannel->SetStepSeq(uiStepSeq);
-    return(IO<RedisCmd>::OnRequest(pDispatcher, std::static_pointer_cast<SocketChannel>(pChannel), (int32)CMD_REQ_REDIS_PROXY, oRedisMsg));
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<RedisCmd>::OnRequest(pDispatcher, pSocketChannel, (int32)CMD_REQ_REDIS_PROXY, oRedisMsg));
 }
 
 bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, const RedisMsg& oRedisMsg)
 {
-    return(IO<RedisStep>::OnResponse(pDispatcher, std::static_pointer_cast<SocketChannel>(pChannel), pChannel->GetStepSeq(), oRedisMsg));
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<RedisStep>::OnResponse(pDispatcher, pSocketChannel, pChannel->GetStepSeq(), oRedisMsg));
 }
 
 bool CodecFactory::OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SelfChannel> pChannel, const char* pRaw, uint32 uiRawSize)
 {
     pChannel->SetStepSeq(uiStepSeq);
-    return(IO<RawCmd>::OnRequest(pDispatcher, std::static_pointer_cast<SocketChannel>(pChannel), (int32)CMD_REQ_RAW_DATA, pRaw, uiRawSize));
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<RawCmd>::OnRequest(pDispatcher, pSocketChannel, (int32)CMD_REQ_RAW_DATA, pRaw, uiRawSize));
 }
 
 bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, const char* pRaw, uint32 uiRawSize)
 {
-    return(IO<RawStep>::OnResponse(pDispatcher, std::static_pointer_cast<SocketChannel>(pChannel), pChannel->GetStepSeq(), pRaw, uiRawSize));
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<RawStep>::OnResponse(pDispatcher, pSocketChannel, pChannel->GetStepSeq(), pRaw, uiRawSize));
 }
 
 bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, const CassMessage& oCassMsg)
 {
-    return(IO<CassStep>::OnResponse(pDispatcher, std::static_pointer_cast<SocketChannel>(pChannel), pChannel->GetStepSeq(), oCassMsg));
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<CassStep>::OnResponse(pDispatcher, pSocketChannel, pChannel->GetStepSeq(), oCassMsg));
 }
 
 E_CODEC_STATUS CodecFactory::OnNebulaEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, int iStart)

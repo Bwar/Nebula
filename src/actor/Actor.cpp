@@ -283,17 +283,17 @@ void Actor::CircuitBreak(const std::string& strIdentify)
     m_pLabor->GetDispatcher()->CircuitBreak(strIdentify);
 }
 
-bool Actor::SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
+uint32 Actor::SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     return(IO<CodecNebula>::SendToSelf(this, iCmd, uiSeq, oMsgBody));
 }
 
-bool Actor::SendToSelf(const HttpMsg& oHttpMsg)
+uint32 Actor::SendToSelf(const HttpMsg& oHttpMsg)
 {
     return(IO<CodecHttp>::SendToSelf(this, oHttpMsg));
 }
 
-bool Actor::SendToSelf(const RedisMsg& oRedisMsg)
+uint32 Actor::SendToSelf(const RedisMsg& oRedisMsg)
 {
     return(IO<CodecResp>::SendToSelf(this, oRedisMsg));
 }

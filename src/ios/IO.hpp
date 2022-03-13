@@ -90,7 +90,7 @@ public:
     static bool Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args);
 
     template <typename ...Targs>
-    static bool SendToSelf(Actor* pActor, Targs&&... args);
+    static uint32 SendToSelf(Actor* pActor, Targs&&... args);
 
     template<typename ...Targs>
     static E_CODEC_STATUS Recv(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, Targs&&... args);
@@ -741,11 +741,15 @@ bool IO<T>::Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::stri
 
 template<typename T>
 template <typename ...Targs>
-bool IO<T>::SendToSelf(Actor* pActor, Targs&&... args)
+uint32 IO<T>::SendToSelf(Actor* pActor, Targs&&... args)
 {
     auto pSelfChannel = std::make_shared<SelfChannel>(pActor->m_pLabor->GetSequence());
-    return(CodecFactory::OnSelfRequest(pActor->m_pLabor->GetDispatcher(),
-            pActor->GetSequence(), pSelfChannel, std::forward<Targs>(args)...));
+    if (CodecFactory::OnSelfRequest(pActor->m_pLabor->GetDispatcher(),
+            pActor->GetSequence(), pSelfChannel, std::forward<Targs>(args)...))
+    {
+        return(pSelfChannel->GetSequence());
+    }
+    return(0); // failed
 }
 
 template<typename T>
