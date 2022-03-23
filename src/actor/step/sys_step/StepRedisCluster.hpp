@@ -88,7 +88,9 @@ protected:
     bool SendCmdClusterSlots();
     bool CmdClusterSlotsCallback(const RedisReply& oRedisReply);
     bool SendCmdAsking(const std::string& strIdentify);
+    bool SendCmdPing(const std::string& strIdentify);
     void CmdAskingCallback(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const RedisReply& oRedisReply);
+    void CmdPingCallback(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const RedisReply& oRedisReply);
     bool SendCmdReadOnly(const std::string& strIdentify);
     void CmdReadOnlyCallback(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const RedisReply& oRedisReply);
     void AskingQueueErrBack(std::shared_ptr<SocketChannel> pChannel,
@@ -115,6 +117,7 @@ private:
     std::unordered_map<uint32, std::vector<RedisReply*>> m_mapReply;
     std::map<time_t, std::vector<uint32>> m_mapTimeoutStep;
     std::vector<std::pair<uint32, RedisRequest>> m_vecWaittingRequest;
+    std::set<std::string> m_setFailedNode;
 
     static const uint16 sc_unClusterSlots;  ///< redis cluster槽位数
     static const std::unordered_set<std::string> s_setSupportExtractCmd;

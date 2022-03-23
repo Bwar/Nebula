@@ -174,23 +174,28 @@ void FileLogger::AppendLogPattern(int iLev, const char* szFileName, unsigned int
             return;
         }
     }
-    auto time_now = std::chrono::system_clock::now();
-    auto duration_in_ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_now.time_since_epoch());
-    auto t = std::chrono::system_clock::to_time_t(time_now);
-    std::ostringstream oss;
-// There is a bug: The std::get_time and std::put_time manipulators are still missing in gcc 4.9.
-// See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=54354
-#if __GNUC__ >= 5
-    oss << "[" << std::put_time(std::localtime(&t), "%Y-%m-%d %H:%M:%S") << "."
-        << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
-        << szFileName << ":" << uiFileLine << "][" << szFunction << "] ";
-#else
-    strftime(m_szTime, 20, "%Y-%m-%d %H:%M:%S", std::localtime(&t));
-    oss << "[" << m_szTime << "."
-        << duration_in_ms.count() % 1000 << "][" << LogLevMsg[iLev] << "]["
-        << szFileName << ":" << uiFileLine << "][" << szFunction << "] ";
-#endif
-    Append(oss.str());
+    struct timeval timeval;
+    gettimeofday(&timeval, NULL);
+    if (timeval.tv_sec > m_lTimeSec)
+    {
+        char szTime[32];
+        m_lTimeSec = (time_t)timeval.tv_sec;
+        strftime(szTime, 32, "[%Y-%m-%d %H:%M:%S.", std::localtime(&m_lTimeSec));
+        m_strLogFormatTime = szTime;
+    }
+    m_strLogLine.clear();
+    m_strLogLine.append(m_strLogFormatTime);
+    m_strLogLine.append(std::to_string(timeval.tv_usec / 1000));
+    m_strLogLine.append("]");
+    m_strLogLine.append(LogLevMsg[iLev]);
+    m_strLogLine.append(" ");
+    m_strLogLine.append(szFileName);
+    m_strLogLine.append(":");
+    m_strLogLine.append(std::to_string(uiFileLine));
+    m_strLogLine.append(" ");
+    m_strLogLine.append(szFunction);
+    m_strLogLine.append(" ");
+    Append(m_strLogLine);
 }
 
 void FileLogger::AppendLogPattern(const std::string& strTraceId, int iLev, const char* szFileName, unsigned int uiFileLine, const char* szFunction)
@@ -227,11 +232,14 @@ void FileLogger::AppendLogPattern(const std::string& strTraceId, int iLev, const
     m_strLogLine.append(std::to_string(timeval.tv_usec / 1000));
     m_strLogLine.append("]");
     m_strLogLine.append(LogLevMsg[iLev]);
+    m_strLogLine.append(" ");
     m_strLogLine.append(szFileName);
     m_strLogLine.append(":");
     m_strLogLine.append(std::to_string(uiFileLine));
     m_strLogLine.append(" ");
     m_strLogLine.append(szFunction);
+    m_strLogLine.append(" ");
+    m_strLogLine.append(strTraceId);
     m_strLogLine.append(" ");
     Append(m_strLogLine);
 }

@@ -177,7 +177,7 @@ bool Nodes::GetNode(const std::string& strNodeType, std::string& strNodeIdentify
     }
 }
 
-bool Nodes::GetNode(const std::string& strNodeType, std::unordered_set<std::string>& setNodeIdentify)
+bool Nodes::GetNode(const std::string& strNodeType, std::set<std::string>& setNodeIdentify)
 {
     auto node_type_iter = m_mapNode.find(strNodeType);
     if (node_type_iter == m_mapNode.end())
@@ -296,7 +296,7 @@ void Nodes::AddNode(const std::string& strNodeType, const std::string& strNodeId
     auto node_id_iter = m_mapNodeType.find(strNodeIdentify);
     if (node_id_iter == m_mapNodeType.end())
     {
-        std::unordered_set<std::string> setNodeType;
+        std::set<std::string> setNodeType;
         setNodeType.insert(strNodeType);
         m_mapNodeType.insert(std::make_pair(strNodeIdentify, std::move(setNodeType)));
     }
@@ -375,7 +375,7 @@ void Nodes::AddNodeKetama(const std::string& strNodeType, const std::string& str
     auto node_id_iter = m_mapNodeType.find(strNodeIdentify);
     if (node_id_iter == m_mapNodeType.end())
     {
-        std::unordered_set<std::string> setNodeType;
+        std::set<std::string> setNodeType;
         setNodeType.insert(strNodeType);
         m_mapNodeType.insert(std::make_pair(strNodeIdentify, std::move(setNodeType)));
     }
@@ -465,6 +465,7 @@ void Nodes::DelNode(const std::string& strNodeType, const std::string& strNodeId
             if (it != node_type_iter->second->setFailedNode.end())
             {
                 node_type_iter->second->setFailedNode.erase(it);
+                node_type_iter->second->itPollingFailed = node_type_iter->second->setFailedNode.begin();
             }
         }
 
@@ -494,6 +495,10 @@ void Nodes::NodeFailed(const std::string& strNodeIdentify)
             auto node_type_iter = m_mapNode.find(*type_it);
             if (node_type_iter != m_mapNode.end())
             {
+                if (node_type_iter->second->mapNode2Hash.size() <= 1)
+                {
+                    continue;  // only one node, should not be circuit break.
+                }
                 auto node_iter = node_type_iter->second->mapNode2Hash.find(strNodeIdentify);
                 if (node_iter != node_type_iter->second->mapNode2Hash.end())
                 {
@@ -537,6 +542,7 @@ void Nodes::NodeRecover(const std::string& strNodeIdentify)
                     if (it != node_type_iter->second->setFailedNode.end())
                     {
                         node_type_iter->second->setFailedNode.erase(it);
+                        node_type_iter->second->itPollingFailed = node_type_iter->second->setFailedNode.begin();
                     }
                 }
                 AddNode(*type_it, strNodeIdentify);

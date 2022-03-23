@@ -15,7 +15,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
-#include <unordered_set>
+#include <set>
 #include "Definition.hpp"
 
 //#define ROT32(x, y) ((x << y) | (x >> (32 - y))) // avoid effort
@@ -63,8 +63,8 @@ public:
         T_NODE2HASH_MAP::iterator itPollingNode;
         std::map<uint32, std::string> mapHash2Node;
         std::map<uint32, std::string>::const_iterator itHashRing;
-        std::unordered_set<std::string> setFailedNode;
-        std::unordered_set<std::string>::const_iterator itPollingFailed;
+        std::set<std::string> setFailedNode;
+        std::set<std::string>::const_iterator itPollingFailed;
 
         tagNode(){}
         ~tagNode(){}
@@ -89,7 +89,7 @@ public:
 
     bool GetNode(const std::string& strNodeType, std::string& strNodeIdentify);
 
-    bool GetNode(const std::string& strNodeType, std::unordered_set<std::string>& setNodeIdentify);
+    bool GetNode(const std::string& strNodeType, std::set<std::string>& setNodeIdentify);
 
     bool NodeDetect(const std::string& strNodeType, std::string& strNodeIdentify);
 
@@ -152,7 +152,7 @@ private:
     const int m_iVirtualNodeNum;
 
     std::unordered_map<std::string, std::shared_ptr<tagNode> > m_mapNode;
-    std::unordered_map<std::string, std::unordered_set<std::string>> m_mapNodeType;  // key为节点标识
+    std::unordered_map<std::string, std::set<std::string>> m_mapNodeType;  // key为节点标识
 };
 
 } /* namespace neb */

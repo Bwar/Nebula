@@ -139,6 +139,10 @@ E_CMD_STATUS StepRedisCluster::Callback(
         {
             CmdAskingCallback(pChannel, pChannel->GetIdentify(), oRedisReply);
         }
+        else if (pRedisRequest->element(0).str() == "PING")
+        {
+            CmdPingCallback(pChannel, pChannel->GetIdentify(), oRedisReply);
+        }
         else if (pRedisRequest->element(0).str() == "READONLY")
         {
             CmdReadOnlyCallback(pChannel, pChannel->GetIdentify(), oRedisReply);
@@ -342,6 +346,10 @@ E_CMD_STATUS StepRedisCluster::Callback(
 E_CMD_STATUS StepRedisCluster::Timeout()
 {
     SendCmdClusterSlots();
+    for (auto iter = m_setFailedNode.begin(); iter != m_setFailedNode.end(); ++iter)
+    {
+        SendCmdPing(*iter);
+    }
     for (auto timeout_iter = m_mapTimeoutStep.begin(); timeout_iter != m_mapTimeoutStep.end(); )
     {
         if (GetNowTime() - timeout_iter->first >= GetTimeout())
@@ -375,6 +383,7 @@ E_CMD_STATUS StepRedisCluster::ErrBack(
         std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg)
 {
     LOG4_ERROR("error %d: %s", iErrno, strErrMsg.c_str());
+    m_setFailedNode.insert(pChannel->GetIdentify());
     SendCmdClusterSlots();
     CmdErrBack(pChannel, iErrno, strErrMsg);
     return(CMD_STATUS_RUNNING);
@@ -397,7 +406,7 @@ void StepRedisCluster::CmdErrBack(
             step_iter->second.pop();
             if (uiRealStepSeq == GetSequence())
             {
-                SendCmdClusterSlots();
+                ; // SendCmdClusterSlots();
             }
             else
             {
@@ -667,13 +676,23 @@ bool StepRedisCluster::GetRedisNode(int iSlotId, int iReadOrWrite, std::string& 
     }
     else
     {
-        slot_iter->second->iterFllower++;
-        if (slot_iter->second->iterFllower == slot_iter->second->setFllower.end())
+        for (uint32 i = 0; i < slot_iter->second->setFllower.size(); ++i)
         {
-            slot_iter->second->iterFllower = slot_iter->second->setFllower.begin();
+            slot_iter->second->iterFllower++;
+            if (slot_iter->second->iterFllower == slot_iter->second->setFllower.end())
+            {
+                slot_iter->second->iterFllower = slot_iter->second->setFllower.begin();
+            }
+            strNodeIdentify = *(slot_iter->second->iterFllower);
+            bIsMaster = false;
+            auto node_iter = m_setFailedNode.find(strNodeIdentify);
+            if (node_iter == m_setFailedNode.end())
+            {
+                return(true);
+            }
         }
-        strNodeIdentify = *(slot_iter->second->iterFllower);
-        bIsMaster = false;
+        strNodeIdentify = slot_iter->second->strMaster;
+        bIsMaster = true;
     }
     return(true);
 }
@@ -790,6 +809,14 @@ bool StepRedisCluster::SendCmdAsking(const std::string& strIdentify)
     return(SendTo(strIdentify, pRedisRequest));
 }
 
+bool StepRedisCluster::SendCmdPing(const std::string& strIdentify)
+{
+    SetCmd("PING");
+    auto pRedisRequest = MutableRedisRequest();
+    pRedisRequest->set_integer(GetSequence());    // 借用integer暂存seq
+    return(SendTo(strIdentify, pRedisRequest));
+}
+
 void StepRedisCluster::CmdAskingCallback(std::shared_ptr<SocketChannel> pChannel,
         const std::string& strIdentify, const RedisReply& oRedisReply)
 {
@@ -829,6 +856,19 @@ void StepRedisCluster::CmdAskingCallback(std::shared_ptr<SocketChannel> pChannel
     else
     {
         AskingQueueErrBack(pChannel, oRedisReply.type(), oRedisReply.str());
+    }
+}
+
+void StepRedisCluster::CmdPingCallback(std::shared_ptr<SocketChannel> pChannel,
+        const std::string& strIdentify, const RedisReply& oRedisReply)
+{
+    if (REDIS_REPLY_STATUS == oRedisReply.type() || REDIS_REPLY_STRING == oRedisReply.type())
+    {
+        auto iter = m_setFailedNode.find(strIdentify);
+        if (iter != m_setFailedNode.end())
+        {
+            m_setFailedNode.erase(iter);
+        }
     }
 }
 
