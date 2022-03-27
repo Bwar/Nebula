@@ -701,7 +701,7 @@ template<typename ...Targs>
 bool IO<T>::Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
     LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
-    std::unordered_set<std::string> setOnlineNodes;
+    std::set<std::string> setOnlineNodes;
     if (pDispatcher->m_pSessionNode->GetNode(strNodeType, setOnlineNodes))
     {
         bool bSendResult = false;

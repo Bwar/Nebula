@@ -42,6 +42,7 @@ extern "C" {
 
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <sstream>
 #include <memory>
 

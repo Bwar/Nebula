@@ -128,6 +128,11 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.7.1
+   - async logger optimization
+   - add selfchannel sequence
+   - StepRedisCluster circuit break and recovery
+   - Nodes recovery bug fixed
 #### v1.7.0
    - IO optimization, codec plug-in.
    - remove shared_from_this of Channel and Actor and use ChannelWatcher and ActorWatcher instead to improve performance.

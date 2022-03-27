@@ -133,6 +133,11 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v1.7.1
+   - 优化异步文件日志
+   - SelfChannel增加seq
+   - redis cluster客户端增加熔断和熔断恢复
+   - 节点熔断bug修复
 #### v1.7.0
    - 优化IO通信，编解码器插件化。
    - 移除Channel和Actor的shared_from_this，改用ChannelWatcher和ActorWatcher替代，以提高性能。
