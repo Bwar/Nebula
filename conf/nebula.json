@@ -7,6 +7,7 @@
     "access_port": 9988,
     "//access_codec": "接入端编解码器，见codec/Codec.hpp中E_CODEC_TYPE枚举定义"
     "access_codec": 4,
+    "access_socket_type":"TCP",
     "//need_channel_verify":"是否需要连接验证，如设置为true，第一个消息必须是验证消息，未经验证的连接收到第二个消息会被立即关闭",
     "need_channel_verify":false,
     "gateway": "113.102.157.188",
@@ -47,6 +48,7 @@
     "//max_log_file_size": "单个日志文件大小限制",
     "max_log_file_size": 20480000,
     "always_flush_log":true,
+    "async_logger":false,
     "//permission": "限制。addr_permit为连接限制，限制每个IP在统计时间内连接次数；uin_permit为消息数量限制，限制每个用户在单位统计时间内发送消息数量。",
     "permission": {
         "addr_permit": { "stat_interval": 60.0, "permit_num": 1000000000 },
