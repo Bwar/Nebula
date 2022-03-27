@@ -43,11 +43,12 @@ Nebula can be used as a single high-performance TCP server, but building a clust
 * Load balancing
 * Circuit Breakers
 * Leadership election and cluster state
+* A convenient way to extend third-party protocols
 
 <a name="GettingStart"></a>
 ## Getting Start
    Nebula was developed with C++11/C++14 standard, requires a compiler capable of the C++11-standard and at least gcc4.8 (some C++14 features are replaced by C++11 standard when encountering a lower version of the compiler).
-   We provides [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap), which allows developers to build and deploy Nebula quickly. Nebula will be a framework that be widely used. A distributed solution based on NebulaBootstrap will make it easy to develop micro-service applications in C++.
+   [NebulaBootstrap](https://github.com/Bwar/NebulaBootstrap) provides a quick way to build and deploy Nebula. A distributed solution based on NebulaBootstrap will make it easy to develop micro-service applications in C++.
    All dependencies will be automatically resolved in the following build steps.
 
    first install gcc and auto tools. centos:
