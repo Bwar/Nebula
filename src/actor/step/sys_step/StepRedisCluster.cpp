@@ -345,7 +345,10 @@ E_CMD_STATUS StepRedisCluster::Callback(
 
 E_CMD_STATUS StepRedisCluster::Timeout()
 {
-    SendCmdClusterSlots();
+    if (m_setFailedNode.size() > 0)
+    {
+        SendCmdClusterSlots();
+    }
     for (auto iter = m_setFailedNode.begin(); iter != m_setFailedNode.end(); ++iter)
     {
         SendCmdPing(*iter);
