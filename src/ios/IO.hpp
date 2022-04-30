@@ -202,12 +202,12 @@ bool IO<T>::SendResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel>
         {
             pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
                     "channel %s[%d] change codec type from %d to %d",
-                    pChannel->GetIdentify().c_str(), eOriginCodecType, pChannel->GetCodecType());
+                    pChannel->GetIdentify().c_str(), pChannel->GetFd(), eOriginCodecType, pChannel->GetCodecType());
         }
         else
         {
             LOG4_TRACE_DISPATCH("failed to change codec type of channel %s[%d] from %d to %d",
-                    pChannel->GetIdentify().c_str(), eOriginCodecType, pChannel->GetCodecType());
+                    pChannel->GetIdentify().c_str(), pChannel->GetFd(), eOriginCodecType, pChannel->GetCodecType());
             return(false);
         }
     }
@@ -814,7 +814,9 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::strin
     {
         connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
         freeaddrinfo(pAddrResult);           /* No longer needed */
-        pDispatcher->AddIoTimeout(pChannel, 1.5);
+        ev_tstamp dIoTimeout = (pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection > 0)
+            ? pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection : pDispatcher->m_pLabor->GetNodeInfo().dIoTimeout;
+        pDispatcher->AddIoTimeout(pChannel, dIoTimeout);
         pDispatcher->AddIoReadEvent(pChannel);
         pDispatcher->AddIoWriteEvent(pChannel);
         std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetIdentify(strIdentify);
@@ -894,8 +896,11 @@ E_CODEC_STATUS IO<T>::Recv(Dispatcher* pDispatcher, std::shared_ptr<SocketChanne
         eStatus = std::static_pointer_cast<SocketChannelImpl<T>>(
                 pChannel->m_pImpl)->Recv(std::forward<Targs>(args)...);
     }
-    pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-    pDispatcher->m_pLastActivityChannel = pChannel;
+    if (CODEC_STATUS_OK == eStatus)
+    {
+        pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
+        pDispatcher->m_pLastActivityChannel = pChannel;
+    }
     return(eStatus);
 }
 
@@ -917,8 +922,11 @@ E_CODEC_STATUS IO<T>::Fetch(Dispatcher* pDispatcher, std::shared_ptr<SocketChann
     }
     E_CODEC_STATUS eStatus = std::static_pointer_cast<SocketChannelImpl<T>>(
             pChannel->m_pImpl)->Fetch(std::forward<Targs>(args)...);
-    pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
-    pDispatcher->m_pLastActivityChannel = pChannel;
+    if (CODEC_STATUS_OK == eStatus)
+    {
+        pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
+        pDispatcher->m_pLastActivityChannel = pChannel;
+    }
     return(eStatus);
 }
 
@@ -1106,7 +1114,8 @@ std::shared_ptr<SocketChannel> IO<T>::CreateSocketChannel(Dispatcher* pDispatche
     if (iter == pDispatcher->m_mapSocketChannel.end())
     {
         std::shared_ptr<SocketChannel> pChannel = nullptr;
-        ev_tstamp dKeepAlive = pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection;
+        ev_tstamp dKeepAlive = (pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection > 0)
+            ? pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection : pDispatcher->m_pLabor->GetNodeInfo().dIoTimeout;
         (dKeepAlive > 0) ? dKeepAlive : pDispatcher->m_pLabor->GetNodeInfo().dIoTimeout;
         try
         {
@@ -1127,10 +1136,6 @@ std::shared_ptr<SocketChannel> IO<T>::CreateSocketChannel(Dispatcher* pDispatche
             return(nullptr);
         }
         pDispatcher->m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
-        if ((CODEC_NEBULA != T::Type()) && (CODEC_NEBULA_IN_NODE != T::Type()))
-        {
-            ++pDispatcher->m_iClientNum;
-        }
         pDispatcher->Logger(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
                 "new channel for fd %d with codec type %d", pChannel->GetFd(), pChannel->GetCodecType());
         return(pChannel);

@@ -35,15 +35,16 @@ E_CODEC_STATUS CodecProto::Encode(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgB
 {
     int iHadWriteLen = 0;
     int iWriteLen = 0;
-    int iNeedWriteLen = gc_uiMsgHeadSize;
     std::string strTmpData;
     MsgHead oMsgHead;
+    int32 iMsgBodyLen = oMsgBody.ByteSize();
     oMsgHead.set_cmd(iCmd);
     oMsgHead.set_seq(uiSeq);
-    oMsgHead.set_len(oMsgBody.ByteSize());
+    iMsgBodyLen = (iMsgBodyLen > 0) ? iMsgBodyLen : -1;
+    oMsgHead.set_len(iMsgBodyLen);
     oMsgHead.SerializeToString(&strTmpData);
     iWriteLen = pBuff->Write(strTmpData.c_str(), gc_uiMsgHeadSize);
-    if (iWriteLen != iNeedWriteLen)
+    if (iWriteLen != gc_uiMsgHeadSize)
     {
         LOG4_ERROR("buff write head iWriteLen != iNeedWriteLen!");
         pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadWriteLen);
@@ -54,10 +55,10 @@ E_CODEC_STATUS CodecProto::Encode(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgB
     {
         return(ChannelSticky(oMsgHead, oMsgBody));
     }
-    iNeedWriteLen = oMsgBody.ByteSize();
     oMsgBody.SerializeToString(&strTmpData);
-    iWriteLen = pBuff->Write(strTmpData.c_str(), oMsgBody.ByteSize());
-    if (iWriteLen == iNeedWriteLen)
+    iWriteLen = pBuff->Write(strTmpData.c_str(), iMsgBodyLen);
+    iHadWriteLen += iWriteLen;
+    if (iWriteLen == iMsgBodyLen)
     {
         return(ChannelSticky(oMsgHead, oMsgBody));
     }
@@ -82,6 +83,7 @@ E_CODEC_STATUS CodecProto::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oM
                             pBuff->ReadableBytes(), oMsgHead.len());
             if (oMsgHead.len() <= 0)      // 无包体（心跳包等），nebula在proto3的使用上以-1表示包体长度为0
             {
+                oMsgHead.set_len(0);
                 pBuff->SkipBytes(gc_uiMsgHeadSize);
                 return(ChannelSticky(oMsgHead, oMsgBody));
             }
@@ -109,7 +111,7 @@ E_CODEC_STATUS CodecProto::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oM
         }
         else
         {
-            LOG4_TRACE("oMsgHead.ParseFromArray() error!");   // maybe port scan from operation and maintenance system.
+            LOG4_TRACE("oMsgHead.ParseFromArray() failed!");   // maybe port scan from operation and maintenance system.
             return(CODEC_STATUS_ERR);
         }
     }

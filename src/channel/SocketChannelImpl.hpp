@@ -114,6 +114,13 @@ public:
         return(m_listPipelineStepSeq.empty());
     }
 
+    virtual ev_tstamp GetActiveTime() const
+    {
+        return(m_dActiveTime);
+    }
+
+    virtual ev_tstamp GetKeepAlive();
+
     virtual int GetErrno() const
     {
         return(m_iErrno);
@@ -133,13 +140,6 @@ public:
     {
         return(m_pLabor);
     }
-
-    ev_tstamp GetActiveTime() const
-    {
-        return(m_dActiveTime);
-    }
-
-    ev_tstamp GetKeepAlive();
 
     int16 GetRemoteWorkerIndex() const
     {
@@ -441,6 +441,10 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
         }
     }
 
+    if (m_uiMsgNum < 1)
+    {
+        m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+    }
     m_dActiveTime = m_pLabor->GetNowTime();
     int iHadWrittenLen = 0;
     int iWrittenLen = 0;
@@ -870,6 +874,10 @@ template<typename T>
 bool SocketChannelImpl<T>::Close()
 {
     LOG4_TRACE("channel[%d] channel_status %d", m_iFd, (int)m_ucChannelStatus);
+    if (m_pCodec != nullptr)
+    {
+        m_pCodec->UnbindChannel();
+    }
     if (CHANNEL_STATUS_CLOSED != m_ucChannelStatus)
     {
         m_pSendBuff->Compact(1);

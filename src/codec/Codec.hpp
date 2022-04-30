@@ -71,6 +71,7 @@ enum E_CODEC_STATUS
 };
 
 class SocketChannel;
+template<typename T> class SocketChannelImpl;
 
 class Codec
 {
@@ -141,6 +142,11 @@ protected:
     bool AesEncrypt(const std::string& strSrc, std::string& strDest);
     bool AesDecrypt(const std::string& strSrc, std::string& strDest);
 
+private:
+    void UnbindChannel()
+    {
+        m_pBindChannel = nullptr;
+    }
 protected:
     std::shared_ptr<NetLogger> m_pLogger;
 
@@ -152,6 +158,7 @@ private:
     static std::vector<E_CODEC_TYPE> m_vecAutoSwitchCodecType;   // 自动转换有效的编解码类型
 
     friend class SocketChannel;
+    template<typename T> friend class SocketChannelImpl;
 };
 
 template <typename ...Targs>

@@ -66,12 +66,10 @@ E_CMD_STATUS SessionManager::Timeout()
     neb::ReportRecord* pRecord = nullptr;
     uint32 uiLoad = 0;
     uint32 uiConnect = 0;
-    uint32 uiClient = 0;
     for (auto iter = m_mapWorkerInfo.begin(); iter != m_mapWorkerInfo.end(); ++iter)
     {
         uiLoad += iter->second->uiLoad;
         uiConnect += iter->second->uiConnect;
-        uiClient += iter->second->uiClientNum;
     }
     pRecord = pReport->add_records();
     pRecord->set_key("load");
@@ -82,11 +80,6 @@ E_CMD_STATUS SessionManager::Timeout()
     pRecord->set_key("connect");
     pRecord->set_item("nebula");
     pRecord->add_value(uiConnect);
-    pRecord->set_value_type(ReportRecord::VALUE_FIXED);
-    pRecord = pReport->add_records();
-    pRecord->set_key("client");
-    pRecord->set_item("nebula");
-    pRecord->add_value(uiClient);
     pRecord->set_value_type(ReportRecord::VALUE_FIXED);
     std::string strSessionId = "neb::SessionDataReport";
     auto pSharedSession = GetSession(strSessionId);
@@ -284,7 +277,6 @@ bool SessionManager::SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad)
             oJsonLoad.Get("recv_byte", it->second->uiRecvByte);
             oJsonLoad.Get("send_num", it->second->uiSendNum);
             oJsonLoad.Get("send_byte", it->second->uiSendByte);
-            oJsonLoad.Get("client", it->second->uiClientNum);
             it->second->dBeatTime = GetNowTime();
             it->second->bStartBeatCheck = true;
             return(true);
@@ -481,9 +473,9 @@ void SessionManager::SendOnlineNodesToWorker()
  *     },
  *     "worker":
  *     [
- *          {"load":655666, "connect":495873, "recv_num":98755266, "recv_byte":98856648832, "send_num":154846322, "send_byte":648469320222,"client":195870}},
- *          {"load":655235, "connect":485872, "recv_num":98755266, "recv_byte":98856648832, "send_num":154846322, "send_byte":648469320222,"client":195870}},
- *          {"load":585696, "connect":415379, "recv_num":98755266, "recv_byte":98856648832, "send_num":154846322, "send_byte":648469320222,"client":195870}}
+ *          {"load":655666, "connect":495873, "recv_num":98755266, "recv_byte":98856648832, "send_num":154846322, "send_byte":648469320222}},
+ *          {"load":655235, "connect":485872, "recv_num":98755266, "recv_byte":98856648832, "send_num":154846322, "send_byte":648469320222}},
+ *          {"load":585696, "connect":415379, "recv_num":98755266, "recv_byte":98856648832, "send_num":154846322, "send_byte":648469320222}}
  *     ]
  * }
  */
@@ -495,7 +487,6 @@ void SessionManager::MakeReportData(CJsonObject& oReportData)
     int iRecvByte = 0;
     int iSendNum = 0;
     int iSendByte = 0;
-    int iClientNum = 0;
     CJsonObject oMember;
     oReportData.Add("node_type", GetLabor(this)->GetNodeInfo().strNodeType);
     oReportData.Add("node_id", GetLabor(this)->GetNodeInfo().uiNodeId);
@@ -541,7 +532,6 @@ void SessionManager::MakeReportData(CJsonObject& oReportData)
         iRecvByte += worker_iter->second->uiRecvByte;
         iSendNum += worker_iter->second->uiSendNum;
         iSendByte += worker_iter->second->uiSendByte;
-        iClientNum += worker_iter->second->uiClientNum;
         oMember.Clear();
         oMember.Add("load", worker_iter->second->uiLoad);
         oMember.Add("connect", worker_iter->second->uiConnect);
@@ -549,7 +539,6 @@ void SessionManager::MakeReportData(CJsonObject& oReportData)
         oMember.Add("recv_byte", worker_iter->second->uiRecvByte);
         oMember.Add("send_num", worker_iter->second->uiSendNum);
         oMember.Add("send_byte", worker_iter->second->uiSendByte);
-        oMember.Add("client", worker_iter->second->uiClientNum);
         oReportData["worker"].Add(oMember);
     }
     oReportData["node"].Add("load", iLoad);
@@ -558,7 +547,6 @@ void SessionManager::MakeReportData(CJsonObject& oReportData)
     oReportData["node"].Add("recv_byte", iRecvByte);
     oReportData["node"].Add("send_num", iSendNum);
     oReportData["node"].Add("send_byte", iSendByte);
-    oReportData["node"].Add("client", iClientNum);
 }
 
 int SessionManager::GetLoaderDataFd() const

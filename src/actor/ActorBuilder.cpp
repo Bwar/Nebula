@@ -479,7 +479,7 @@ void ActorBuilder::LoadSysCmd()
         strModulePath = "/health";
         MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
         strModulePath = "/status";
-        MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
+        MakeSharedModule(nullptr, "neb::ModuleMetrics", strModulePath);
         strModulePath = "http_upgrade";
         MakeSharedModule(nullptr, "neb::ModuleHttpUpgrade", strModulePath);
     }
@@ -587,7 +587,7 @@ bool ActorBuilder::TransformToSharedStep(Actor* pCreator, std::shared_ptr<Actor>
         {
             m_pLabor->GetDispatcher()->AddEvent(timer_watcher, StepTimeoutCallback, pSharedStep->m_dTimeout);
         }
-        LOG4_TRACE("Step(seq %u, active_time %lf, lifetime %lf) register successful.",
+        LOG4_TRACE("%s(seq %u, active_time %lf, lifetime %lf) register successful.", pSharedStep->GetActorName().c_str(),
                         pSharedStep->GetSequence(), pSharedStep->GetActiveTime(), pSharedStep->GetTimeout());
         return(true);
     }

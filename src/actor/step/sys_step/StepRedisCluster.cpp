@@ -345,10 +345,21 @@ E_CMD_STATUS StepRedisCluster::Callback(
 
 E_CMD_STATUS StepRedisCluster::Timeout()
 {
-    SendCmdClusterSlots();
+    if (m_setFailedNode.size() > 0)
+    {
+        SendCmdClusterSlots();
+    }
     for (auto iter = m_setFailedNode.begin(); iter != m_setFailedNode.end(); ++iter)
     {
-        SendCmdPing(*iter);
+        if (m_setAllNode.find(*iter) == m_setAllNode.end())
+        {
+            m_setFailedNode.erase(iter);
+            iter = m_setFailedNode.begin();
+        }
+        else
+        {
+            SendCmdPing(*iter);
+        }
     }
     for (auto timeout_iter = m_mapTimeoutStep.begin(); timeout_iter != m_mapTimeoutStep.end(); )
     {
@@ -731,6 +742,7 @@ bool StepRedisCluster::CmdClusterSlotsCallback(const RedisReply& oRedisReply)
 {
     if (REDIS_REPLY_ARRAY == oRedisReply.type())
     {
+        m_setAllNode.clear();
         int iFromSlot = 0;
         int iToSlot = 0;
         for (int i = 0; i < oRedisReply.element_size(); ++i)
@@ -775,6 +787,7 @@ bool StepRedisCluster::CmdClusterSlotsCallback(const RedisReply& oRedisReply)
                     {
                         pRedisNode->setFllower.insert(oss.str());
                     }
+                    m_setAllNode.insert(oss.str());
                 }
                 pRedisNode->iterFllower = pRedisNode->setFllower.begin();
                 for (int iSlotId = iFromSlot; iSlotId <= iToSlot; ++iSlotId)
