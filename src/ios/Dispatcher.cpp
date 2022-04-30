@@ -26,7 +26,7 @@ namespace neb
 {
 
 Dispatcher::Dispatcher(Labor* pLabor, std::shared_ptr<NetLogger> pLogger)
-   : m_pErrBuff(NULL), m_pLabor(pLabor), m_loop(NULL), m_iClientNum(0), m_lLastCheckNodeTime(0),
+   : m_pErrBuff(NULL), m_pLabor(pLabor), m_loop(NULL), m_lLastCheckNodeTime(0),
      m_pLogger(pLogger), m_pSessionNode(nullptr)
 {
     m_pErrBuff = (char*)malloc(gc_iErrBuffLen);
@@ -319,8 +319,10 @@ bool Dispatcher::FdTransfer(int iFd)
             }
             else
             {
+                ev_tstamp dIoTimeout = (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
+                    ? m_pLabor->GetNodeInfo().dConnectionProtection : m_pLabor->GetNodeInfo().dIoTimeout;
                 std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
-                AddIoTimeout(pChannel, 1.0);     // 为了防止大量连接攻击，初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
+                AddIoTimeout(pChannel, dIoTimeout);
             }
             return(true);
         }
@@ -421,7 +423,8 @@ bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
     }
 
     LOG4_TRACE("fd %d, seq %u:", pChannel->GetFd(), pChannel->GetSequence());
-    if (std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->NeedAliveCheck())     // 需要发送心跳检查
+    if (CODEC_PROTO == pChannel->GetCodecType()
+            && std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->NeedAliveCheck())     // 需要发送心跳检查
     {
         std::shared_ptr<Step> pStepIoTimeout = m_pLabor->GetActorBuilder()->MakeSharedStep(
                 nullptr, "neb::StepIoTimeout", pChannel);
@@ -480,7 +483,7 @@ void Dispatcher::EventRun()
 
 bool Dispatcher::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout)
 {
-    LOG4_TRACE("%d, %u", pChannel->GetFd(), pChannel->GetSequence());
+    LOG4_TRACE("channel_fd %d, channel_seq %u, timeout %f", pChannel->GetFd(), pChannel->GetSequence(), dTimeout);
     auto pWatcher = pChannel->MutableWatcher();
     pWatcher->Set(pChannel);
     ev_timer* timer_watcher = pWatcher->MutableTimerWatcher();
@@ -594,7 +597,9 @@ std::shared_ptr<SocketChannel> Dispatcher::StressSend(const std::string& strIden
     {
         connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
         freeaddrinfo(pAddrResult);  /* no longer needed */
-        AddIoTimeout(pChannel, 1.5);
+        ev_tstamp dIoTimeout = (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
+            ? m_pLabor->GetNodeInfo().dConnectionProtection : m_pLabor->GetNodeInfo().dIoTimeout;
+        AddIoTimeout(pChannel, dIoTimeout);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
         std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetRemoteAddr(strHost);
@@ -961,10 +966,6 @@ int32 Dispatcher::GetConnectionNum() const
 {
     return((int32)m_mapSocketChannel.size());
 }
-int32 Dispatcher::GetClientNum() const
-{
-    return(m_iClientNum);
-}
 
 bool Dispatcher::Init()
 {
@@ -1027,10 +1028,6 @@ std::shared_ptr<SocketChannel> Dispatcher::CreateSocketChannel(int iFd, E_CODEC_
         }
         std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetCodec(pCodec);
         m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
-        if ((CODEC_NEBULA != eCodecType) && (CODEC_NEBULA_IN_NODE != eCodecType))
-        {
-            ++m_iClientNum;
-        }
         LOG4_TRACE("new channel[%d] with codec type %d", pChannel->GetFd(), pChannel->GetCodecType());
         return(pChannel);
     }
@@ -1112,11 +1109,6 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         if (channel_iter != m_mapSocketChannel.end())
         {
             m_mapSocketChannel.erase(channel_iter);
-            if ((CODEC_NEBULA != pChannel->GetCodecType())
-                && (CODEC_NEBULA_IN_NODE != pChannel->GetCodecType()))
-            {
-                --m_iClientNum;
-            }
             LOG4_TRACE("erase channel %d channel_seq %u from m_mapSocketChannel.",
                     pChannel->GetFd(), pChannel->GetSequence());
         }
@@ -1394,7 +1386,9 @@ bool Dispatcher::AcceptServerConn(int iFd)
         std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(iAcceptFd, CODEC_NEBULA);
         if (NULL != pChannel)
         {
-            AddIoTimeout(pChannel, 1.0);     // 初始化连接只有一秒即超时，在正常发送第一个数据包之后才采用正常配置的网络IO超时检查
+            ev_tstamp dIoTimeout = (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
+                ? m_pLabor->GetNodeInfo().dConnectionProtection : m_pLabor->GetNodeInfo().dIoTimeout;
+            AddIoTimeout(pChannel, dIoTimeout);
             AddIoReadEvent(pChannel);
         }
     }

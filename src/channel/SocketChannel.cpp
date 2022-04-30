@@ -162,6 +162,24 @@ bool SocketChannel::PipelineIsEmpty() const
     return(m_pImpl->PipelineIsEmpty());
 }
 
+ev_tstamp SocketChannel::GetActiveTime() const
+{
+    if (m_pImpl == nullptr)
+    {
+        return(0.0);
+    }
+    return(m_pImpl->GetActiveTime());
+}
+
+ev_tstamp SocketChannel::GetKeepAlive()
+{
+    if (m_pImpl == nullptr)
+    {
+        return(0.0);
+    }
+    return(m_pImpl->GetKeepAlive());
+}
+
 int SocketChannel::GetErrno() const
 {
     if (m_pImpl == nullptr)

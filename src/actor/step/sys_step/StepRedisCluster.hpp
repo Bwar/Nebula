@@ -117,6 +117,7 @@ private:
     std::unordered_map<uint32, std::vector<RedisReply*>> m_mapReply;
     std::map<time_t, std::vector<uint32>> m_mapTimeoutStep;
     std::vector<std::pair<uint32, RedisRequest>> m_vecWaittingRequest;
+    std::set<std::string> m_setAllNode;
     std::set<std::string> m_setFailedNode;
 
     static const uint16 sc_unClusterSlots;  ///< redis cluster槽位数

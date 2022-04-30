@@ -171,7 +171,6 @@ protected:
     bool DelEvent(ev_io* io_watcher);
     bool DelEvent(ev_timer* timer_watcher);
     int32 GetConnectionNum() const;
-    int32 GetClientNum() const;
     void SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus);
     bool AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout = 60.0);
     bool AcceptFdAndTransfer(int iFd, int iFamily = AF_INET);
@@ -183,7 +182,6 @@ private:
     char* m_pErrBuff;
     Labor* m_pLabor;
     struct ev_loop* m_loop;
-    int32 m_iClientNum;
     time_t m_lLastCheckNodeTime;
     std::shared_ptr<NetLogger> m_pLogger;
     std::unique_ptr<Nodes> m_pSessionNode;

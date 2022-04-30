@@ -479,7 +479,7 @@ void ActorBuilder::LoadSysCmd()
         strModulePath = "/health";
         MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
         strModulePath = "/status";
-        MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
+        MakeSharedModule(nullptr, "neb::ModuleMetrics", strModulePath);
         strModulePath = "http_upgrade";
         MakeSharedModule(nullptr, "neb::ModuleHttpUpgrade", strModulePath);
     }

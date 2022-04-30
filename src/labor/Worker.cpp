@@ -112,7 +112,6 @@ bool Worker::CheckParent()
 void Worker::DataReport()
 {
     m_stWorkerInfo.uiConnect = m_pDispatcher->GetConnectionNum();
-    m_stWorkerInfo.uiClientNum = m_pDispatcher->GetClientNum();
     MsgBody oMsgBody;
     CJsonObject oJsonLoad;
     oJsonLoad.Add("load", int32(m_stWorkerInfo.uiConnect + m_pActorBuilder->GetStepNum()));
@@ -121,11 +120,10 @@ void Worker::DataReport()
     oJsonLoad.Add("recv_byte", m_stWorkerInfo.uiRecvByte);
     oJsonLoad.Add("send_num", m_stWorkerInfo.uiSendNum);
     oJsonLoad.Add("send_byte", m_stWorkerInfo.uiSendByte);
-    oJsonLoad.Add("client", m_stWorkerInfo.uiClientNum);
     oMsgBody.set_data(oJsonLoad.ToString());
     LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
     IO<CodecNebulaInNode>::SendRequest(m_pDispatcher, 0, m_pManagerControlChannel, CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
-    auto pSessionDataReport = std::dynamic_pointer_cast<SessionDataReport>(m_pActorBuilder->GetSession("neb::SessionManager"));
+    auto pSessionDataReport = std::dynamic_pointer_cast<SessionDataReport>(m_pActorBuilder->GetSession("neb::SessionDataReport"));
     if (pSessionDataReport != nullptr)
     {
         auto pReport = std::make_shared<neb::Report>();

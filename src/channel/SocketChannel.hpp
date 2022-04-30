@@ -56,6 +56,8 @@ public:
     virtual uint8 GetChannelStatus() const;
     virtual uint32 PopStepSeq(uint32 uiStreamId = 0, E_CODEC_STATUS eStatus = CODEC_STATUS_OK);
     virtual bool PipelineIsEmpty() const;
+    virtual ev_tstamp GetActiveTime() const;
+    virtual ev_tstamp GetKeepAlive();
     virtual int GetErrno() const;
     virtual const std::string& GetErrMsg() const;
     virtual Codec* GetCodec() const;

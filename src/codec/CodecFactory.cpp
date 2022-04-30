@@ -403,6 +403,7 @@ bool CodecFactory::AutoSwitchCodec(Dispatcher* pDispatcher,
             continue;
         }
 
+        LOG4_TRACE_DISPATCH("to codec type %d", s_vecAutoSwitchCodec[i]);
         Codec* pCodec = Create(pDispatcher->GetLogger(), s_vecAutoSwitchCodec[i], pChannel);
         if (pCodec == nullptr)
         {
