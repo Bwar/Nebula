@@ -78,7 +78,6 @@ public:
 
     virtual bool SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg,
             bool bWithSsl, bool bPipeline, uint32 uiStepSeq) override;
-
 protected:
     bool SendTo(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg);
     bool ExtractCmd(const RedisMsg& oRedisMsg, std::string& strCmd,
@@ -101,12 +100,14 @@ protected:
     void RegisterStep(uint32 uiStepSeq);
     void AddToAskingQueue(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg);
     bool Auth(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg);
+    void HealthCheck();
 
 private:
     bool m_bWithSsl;                        ///< 是否支持SSL
     bool m_bPipeline;                       ///< 是否支持pipeline
     bool m_bEnableReadOnly;                 ///< 是否对从节点启用只读
     uint32 m_uiAddressIndex;
+    time_t m_lLastCheckTime;                ///< last helth check time
 
     std::string m_strIdentify;      ///< 地址标识，由m_vecAddress合并而成，形如 192.168.47.101:6379,198.168.47.102:6379,192.168.47.103:6379
     std::vector<std::string> m_vecAddress;  ///< 集群地址

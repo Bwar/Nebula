@@ -181,6 +181,7 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             {
                 if (pChannel->IsClient())
                 {
+                    LOG4_INFO("NodeFailed(%s)", pChannel->GetIdentify().c_str());
                     m_pSessionNode->NodeFailed(pChannel->GetIdentify());
                 }
                 auto& listUncompletedStep = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetPipelineStepSeq();
@@ -274,7 +275,7 @@ bool Dispatcher::FdTransfer(int iFd)
                 {
                     inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
                     LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
-                    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetRemoteAddr(std::string(szClientAddr));
+                    pChannel->SetRemoteAddr(std::string(szClientAddr));
                 }
                 else
                 {
@@ -292,7 +293,7 @@ bool Dispatcher::FdTransfer(int iFd)
                 {
                     inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
                     LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
-                    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetRemoteAddr(std::string(szClientAddr));
+                    pChannel->SetRemoteAddr(std::string(szClientAddr));
                 }
                 else
                 {
@@ -313,7 +314,7 @@ bool Dispatcher::FdTransfer(int iFd)
             }
             else if (CODEC_NEBULA_IN_NODE == iCodec)
             {
-                std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+                pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
                 m_mapLoaderAndWorkerChannel.insert(std::make_pair(pChannel->GetFd(), pChannel));
                 m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
             }
@@ -321,7 +322,7 @@ bool Dispatcher::FdTransfer(int iFd)
             {
                 ev_tstamp dIoTimeout = (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
                     ? m_pLabor->GetNodeInfo().dConnectionProtection : m_pLabor->GetNodeInfo().dIoTimeout;
-                std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+                pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
                 AddIoTimeout(pChannel, dIoTimeout);
             }
             return(true);
@@ -338,7 +339,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
     if (CODEC_NEBULA == pChannel->GetCodecType())  // 系统内部Server间通信
     {
-        if (std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetRemoteWorkerIndex() < 0) // connect to Manager
+        if (pChannel->GetRemoteWorkerIndex() < 0) // connect to Manager
         {
             std::shared_ptr<Step> pStepTellWorker
                 = m_pLabor->GetActorBuilder()->MakeSharedStep(nullptr, "neb::StepTellWorker", pChannel);
@@ -347,7 +348,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
                 return(false);
             }
             pStepTellWorker->Emit(ERR_OK);
-            std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
         }
         else
         {
@@ -355,7 +356,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
             {
                 std::shared_ptr<Step> pStepConnectWorker = m_pLabor->GetActorBuilder()->MakeSharedStep(
                         nullptr, "neb::StepConnectWorker", pChannel,
-                        std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetRemoteWorkerIndex());
+                        pChannel->GetRemoteWorkerIndex());
                 if (nullptr == pStepConnectWorker)
                 {
                     LOG4_ERROR("error %d: new StepConnectWorker() error!", ERR_NEW);
@@ -373,16 +374,16 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
     {
         if (CHANNEL_STATUS_CLOSED != pChannel->GetChannelStatus())
         {
-            std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+            pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
         }
     }
 
-    if (pChannel->IsClient() && std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetMsgNum() == 0)
+    if (pChannel->IsClient() && pChannel->GetMsgNum() == 0)
     {
         m_pSessionNode->NodeRecover(pChannel->GetIdentify());
     }
     LOG4_TRACE("");
-    E_CODEC_STATUS eCodecStatus = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->Send();
+    auto eCodecStatus = pChannel->Send();
     if (CODEC_STATUS_OK == eCodecStatus)
     {
         RemoveIoWriteEvent(pChannel);
@@ -411,9 +412,7 @@ bool Dispatcher::OnIoError(std::shared_ptr<SocketChannel> pChannel)
 
 bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
 {
-    //ev_tstamp after = pChannel->m_pImpl->GetActiveTime() - ev_now(m_loop) + m_pLabor->GetNodeInfo().dIoTimeout;
-    ev_tstamp after = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetActiveTime()
-            - ev_now(m_loop) + std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetKeepAlive();
+    ev_tstamp after = pChannel->GetActiveTime() - ev_now(m_loop) + pChannel->GetKeepAlive();
     if (after > 0)    // IO在定时时间内被重新刷新过，重新设置定时器
     {
         ev_timer_stop (m_loop, pChannel->MutableWatcher()->MutableTimerWatcher());
@@ -422,9 +421,10 @@ bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
         return(true);
     }
 
-    LOG4_TRACE("fd %d, seq %u:", pChannel->GetFd(), pChannel->GetSequence());
-    if (CODEC_PROTO == pChannel->GetCodecType()
-            && std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->NeedAliveCheck())     // 需要发送心跳检查
+    LOG4_TRACE("fd %d, seq %u, active time %f, now time %f, keep alive %f",
+            pChannel->GetFd(), pChannel->GetSequence(), pChannel->GetActiveTime(),
+            ev_now(m_loop), pChannel->GetKeepAlive());
+    if (CODEC_PROTO == pChannel->GetCodecType() && pChannel->NeedAliveCheck())     // 需要发送心跳检查
     {
         std::shared_ptr<Step> pStepIoTimeout = m_pLabor->GetActorBuilder()->MakeSharedStep(
                 nullptr, "neb::StepIoTimeout", pChannel);
@@ -484,6 +484,11 @@ void Dispatcher::EventRun()
 bool Dispatcher::AddIoTimeout(std::shared_ptr<SocketChannel> pChannel, ev_tstamp dTimeout)
 {
     LOG4_TRACE("channel_fd %d, channel_seq %u, timeout %f", pChannel->GetFd(), pChannel->GetSequence(), dTimeout);
+    if (dTimeout < 0)
+    {
+        LOG4_INFO("no io timeout");
+        return(true);
+    }
     auto pWatcher = pChannel->MutableWatcher();
     pWatcher->Set(pChannel);
     ev_timer* timer_watcher = pWatcher->MutableTimerWatcher();
@@ -602,7 +607,7 @@ std::shared_ptr<SocketChannel> Dispatcher::StressSend(const std::string& strIden
         AddIoTimeout(pChannel, dIoTimeout);
         AddIoReadEvent(pChannel);
         AddIoWriteEvent(pChannel);
-        std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetRemoteAddr(strHost);
+        pChannel->SetRemoteAddr(strHost);
         IO<CodecNebula>::SendRequest(this, 0, pChannel, iCmd, uiSeq, oMsgBody);
         return(pChannel);
     }
@@ -706,8 +711,8 @@ bool Dispatcher::DiscardNamedChannel(const std::string& strIdentify)
         for (auto channel_iter = named_iter->second.begin();
                 channel_iter != named_iter->second.end(); ++channel_iter)
         {
-            std::static_pointer_cast<SocketChannelImpl<CodecNebula>>((*channel_iter)->m_pImpl)->SetIdentify("");
-            std::static_pointer_cast<SocketChannelImpl<CodecNebula>>((*channel_iter)->m_pImpl)->SetClientData("");
+            (*channel_iter)->SetIdentify("");
+            (*channel_iter)->SetClientData("");
         }
         named_iter->second.clear();
         m_mapNamedSocketChannel.erase(named_iter);
@@ -729,7 +734,7 @@ bool Dispatcher::AddNamedSocketChannel(const std::string& strIdentify, std::shar
     {
         named_iter->second.insert(pChannel);
     }
-    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetIdentify(strIdentify);
+    pChannel->SetIdentify(strIdentify);
     return(true);
 }
 
@@ -748,7 +753,7 @@ void Dispatcher::DelNamedSocketChannel(const std::string& strIdentify)
 
 void Dispatcher::SetChannelIdentify(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify)
 {
-    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetIdentify(strIdentify);
+    pChannel->SetIdentify(strIdentify);
 }
 
 void Dispatcher::AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify)
@@ -787,7 +792,7 @@ void Dispatcher::CircuitBreak(const std::string& strIdentify)
 
 void Dispatcher::SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData)
 {
-    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetClientData(strClientData);
+    pChannel->SetClientData(strClientData);
 }
 
 bool Dispatcher::IsNodeType(const std::string& strNodeIdentify, const std::string& strNodeType)
@@ -1001,34 +1006,12 @@ std::shared_ptr<SocketChannel> Dispatcher::CreateSocketChannel(int iFd, E_CODEC_
     auto iter = m_mapSocketChannel.find(iFd);
     if (iter == m_mapSocketChannel.end())
     {
-        std::shared_ptr<SocketChannel> pChannel = nullptr;
-        try
+        auto pChannel = CodecFactory::CreateChannel(m_pLabor, m_pLogger, iFd, eCodecType, bIsClient, bWithSsl);
+        if (pChannel != nullptr)
         {
-            if (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
-            {
-                pChannel = std::make_shared<SocketChannel>(m_pLabor, m_pLogger, iFd,
-                        m_pLabor->GetSequence(), bWithSsl, bIsClient, m_pLabor->GetNodeInfo().dConnectionProtection);
-            }
-            else
-            {
-                pChannel = std::make_shared<SocketChannel>(m_pLabor, m_pLogger, iFd,
-                        m_pLabor->GetSequence(), bWithSsl, bIsClient, m_pLabor->GetNodeInfo().dIoTimeout);
-            }
+            m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
+            LOG4_TRACE("new channel[%d] with codec type %d", pChannel->GetFd(), pChannel->GetCodecType());
         }
-        catch(std::bad_alloc& e)
-        {
-            LOG4_ERROR("new channel for fd %d error: %s", e.what());
-            return(nullptr);
-        }
-        Codec* pCodec = CodecFactory::Create(m_pLogger, eCodecType, pChannel);
-        if (pCodec == nullptr)
-        {
-            LOG4_ERROR("failed to new codec with codec type %d", eCodecType);
-            return(nullptr);
-        }
-        std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetCodec(pCodec);
-        m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
-        LOG4_TRACE("new channel[%d] with codec type %d", pChannel->GetFd(), pChannel->GetCodecType());
         return(pChannel);
     }
     else
@@ -1069,14 +1052,14 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     if (pChannel->WithSsl())
     {
 #ifdef WITH_OPENSSL
-        bCloseResult = std::static_pointer_cast<SocketChannelSslImpl<CodecNebula>>(pChannel->m_pImpl)->Close();
+        bCloseResult = pChannel->Close();
 #else
-        bCloseResult = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->Close();
+        bCloseResult = pChannel->Close();
 #endif
     }
     else
     {
-        bCloseResult = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->Close();
+        bCloseResult = pChannel->Close();
     }
     if (bCloseResult)
     {
@@ -1194,7 +1177,7 @@ bool Dispatcher::RemoveIoWriteEvent(std::shared_ptr<SocketChannel> pChannel)
 
 void Dispatcher::SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus)
 {
-    std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->SetChannelStatus(eStatus);
+    pChannel->SetChannelStatus(eStatus);
 }
 
 bool Dispatcher::AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout)

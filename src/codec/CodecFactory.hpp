@@ -43,7 +43,8 @@ public:
     CodecFactory();
     virtual ~CodecFactory();
 
-    static Codec* Create(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, std::shared_ptr<SocketChannel> pBindChannel);
+    static std::shared_ptr<SocketChannel> CreateChannel(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, E_CODEC_TYPE eCodecType, bool bIsClient, bool bWithSsl);
+    static Codec* CreateCodec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, std::shared_ptr<SocketChannel> pBindChannel);
 
     static E_CODEC_STATUS OnEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel);
 

@@ -29,28 +29,9 @@ SocketChannel::SocketChannel()
 {
 }
 
-SocketChannel::SocketChannel(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, bool bIsClient, ev_tstamp dKeepAlive)
+SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, bool bIsClient, bool bWithSsl)
     : m_bIsClient(bIsClient), m_bWithSsl(bWithSsl), m_pImpl(nullptr), m_pLogger(pLogger), m_pWatcher(nullptr)
 {
-    if (bWithSsl)
-    {
-#ifdef WITH_OPENSSL
-        LOG4_TRACE("with openssl, create SocekChannelSslImpl.");
-        auto pImpl = std::make_shared<SocketChannelSslImpl<CodecNebula>>(pLabor, pLogger, iFd, ulSeq, dKeepAlive);
-        pImpl->Init(bIsClient);
-        m_pImpl = std::static_pointer_cast<SocketChannel>(pImpl);
-#else
-        LOG4_TRACE("without openssl, SocekChannelImpl instead.");
-        auto pImpl = std::make_shared<SocketChannelImpl<CodecNebula>>(pLabor, pLogger, iFd, ulSeq, dKeepAlive);
-        m_pImpl = std::static_pointer_cast<SocketChannel>(pImpl);
-#endif
-    }
-    else
-    {
-        LOG4_TRACE("create SocekChannelImpl.");
-        auto pImpl = std::make_shared<SocketChannelImpl<CodecNebula>>(pLabor, pLogger, iFd, ulSeq, dKeepAlive);
-        m_pImpl = std::static_pointer_cast<SocketChannel>(pImpl);
-    }
 }
 
 SocketChannel::~SocketChannel()
@@ -76,6 +57,7 @@ int SocketChannel::GetFd() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(-1);
     }
     return(m_pImpl->GetFd());
@@ -85,6 +67,7 @@ uint32 SocketChannel::GetSequence() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(0);
     }
     return(m_pImpl->GetSequence());
@@ -94,6 +77,7 @@ bool SocketChannel::IsPipeline() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(false);
     }
     return(m_pImpl->IsPipeline());
@@ -103,6 +87,7 @@ const std::string& SocketChannel::GetIdentify() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(m_strEmpty);
     }
     return(m_pImpl->GetIdentify());
@@ -112,6 +97,7 @@ const std::string& SocketChannel::GetRemoteAddr() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(m_strEmpty);
     }
     return(m_pImpl->GetRemoteAddr());
@@ -121,6 +107,7 @@ const std::string& SocketChannel::GetClientData() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(m_strEmpty);
     }
     return(m_pImpl->GetClientData());
@@ -130,6 +117,7 @@ E_CODEC_TYPE SocketChannel::GetCodecType() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(CODEC_UNKNOW);
     }
     return(m_pImpl->GetCodecType());
@@ -139,6 +127,7 @@ uint8 SocketChannel::GetChannelStatus() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(0);
     }
     return(m_pImpl->GetChannelStatus());
@@ -148,6 +137,7 @@ uint32 SocketChannel::PopStepSeq(uint32 uiStreamId, E_CODEC_STATUS eStatus)
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(0);
     }
     return(m_pImpl->PopStepSeq(uiStreamId, eStatus));
@@ -157,6 +147,7 @@ bool SocketChannel::PipelineIsEmpty() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(0);
     }
     return(m_pImpl->PipelineIsEmpty());
@@ -166,15 +157,17 @@ ev_tstamp SocketChannel::GetActiveTime() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(0.0);
     }
     return(m_pImpl->GetActiveTime());
 }
 
-ev_tstamp SocketChannel::GetKeepAlive()
+ev_tstamp SocketChannel::GetKeepAlive() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(0.0);
     }
     return(m_pImpl->GetKeepAlive());
@@ -184,6 +177,7 @@ int SocketChannel::GetErrno() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(0);
     }
     return(m_pImpl->GetErrno());
@@ -193,6 +187,7 @@ const std::string& SocketChannel::GetErrMsg() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(m_strEmpty);
     }
     return(m_pImpl->GetErrMsg());
@@ -202,15 +197,123 @@ Codec* SocketChannel::GetCodec() const
 {
     if (m_pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(nullptr);
     }
     return(m_pImpl->GetCodec());
+}
+
+bool SocketChannel::IsChannelVerify() const
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+        return(false);
+    }
+    return(m_pImpl->IsChannelVerify());
+}
+
+bool SocketChannel::NeedAliveCheck() const
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+        return(false);
+    }
+    return(m_pImpl->NeedAliveCheck());
+}
+
+uint32 SocketChannel::GetMsgNum() const
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+        return(false);
+    }
+    return(m_pImpl->GetMsgNum());
+}
+
+uint32 SocketChannel::GetUnitTimeMsgNum() const
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+        return(false);
+    }
+    return(m_pImpl->GetUnitTimeMsgNum());
+}
+
+E_CODEC_STATUS SocketChannel::Send()
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+        return(CODEC_STATUS_ERR);
+    }
+    return(m_pImpl->Send());
+}
+
+int16 SocketChannel::GetRemoteWorkerIndex() const
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+        return(false);
+    }
+    return(m_pImpl->GetRemoteWorkerIndex());
+}
+
+void SocketChannel::SetChannelStatus(E_CHANNEL_STATUS eStatus)
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+    }
+    return(m_pImpl->SetChannelStatus(eStatus));
+}
+
+void SocketChannel::SetClientData(const std::string& strClientData)
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+    }
+    return(m_pImpl->SetClientData(strClientData));
+}
+
+void SocketChannel::SetIdentify(const std::string& strIdentify)
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+    }
+    return(m_pImpl->SetIdentify(strIdentify));
+}
+
+void SocketChannel::SetRemoteAddr(const std::string& strRemoteAddr)
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+    }
+    return(m_pImpl->SetRemoteAddr(strRemoteAddr));
+}
+
+bool SocketChannel::Close()
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+        return(false);
+    }
+    return(m_pImpl->Close());
 }
 
 bool SocketChannel::InitImpl(std::shared_ptr<SocketChannel> pImpl)
 {
     if (pImpl == nullptr)
     {
+        LOG4_TRACE("m_pImpl is nullptr");
         return(false);
     }
     m_pImpl = pImpl;

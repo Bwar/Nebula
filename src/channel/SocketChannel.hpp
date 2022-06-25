@@ -38,7 +38,7 @@ public:
     };
 
     SocketChannel(); // only for SelfChannel
-    SocketChannel(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, bool bWithSsl, bool bIsClient, ev_tstamp dKeepAlive = 10.0);
+    SocketChannel(std::shared_ptr<NetLogger> pLogger, bool bIsClient, bool bWithSsl);
     virtual ~SocketChannel();
     
     static int SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger);
@@ -57,16 +57,27 @@ public:
     virtual uint32 PopStepSeq(uint32 uiStreamId = 0, E_CODEC_STATUS eStatus = CODEC_STATUS_OK);
     virtual bool PipelineIsEmpty() const;
     virtual ev_tstamp GetActiveTime() const;
-    virtual ev_tstamp GetKeepAlive();
+    virtual ev_tstamp GetKeepAlive() const;
     virtual int GetErrno() const;
     virtual const std::string& GetErrMsg() const;
     virtual Codec* GetCodec() const;
+    virtual bool IsChannelVerify() const;
+    virtual bool NeedAliveCheck() const;
+    virtual uint32 GetMsgNum() const;
+    virtual uint32 GetUnitTimeMsgNum() const;
+    virtual E_CODEC_STATUS Send();
     ChannelWatcher* MutableWatcher();
 
     template <typename ...Targs>
     void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args) const;
 protected:
     virtual Labor* GetLabor();
+    virtual int16 GetRemoteWorkerIndex() const;
+    virtual void SetChannelStatus(E_CHANNEL_STATUS eStatus);
+    virtual void SetClientData(const std::string& strClientData);
+    virtual void SetIdentify(const std::string& strIdentify);
+    virtual void SetRemoteAddr(const std::string& strRemoteAddr);
+    virtual bool Close();
     bool InitImpl(std::shared_ptr<SocketChannel> pImpl);
 
 private:

@@ -543,11 +543,13 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::SendRoundRobin(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
-    pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "node_type: %s", strNodeType.c_str());
+    LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
     if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
     {
-        SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline);
+        pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
+                "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
+        SendTo(pDispatcher, 0, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline);
     }
     if (pDispatcher->m_pSessionNode->GetNode(strNodeType, strOnlineNode))
     {
@@ -600,7 +602,9 @@ bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::s
     std::string strOnlineNode;
     if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
     {
-        SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline);
+        pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
+                "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
+        SendTo(pDispatcher, 0, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline);
     }
     if (pDispatcher->m_pSessionNode->GetNode(strNodeType, uiFactor, strOnlineNode))
     {
@@ -653,7 +657,9 @@ bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::s
     std::string strOnlineNode;
     if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
     {
-        SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline);
+        pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
+                "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
+        SendTo(pDispatcher, 0, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline);
     }
     if (pDispatcher->m_pSessionNode->GetNode(strNodeType, strFactor, strOnlineNode))
     {
@@ -1018,7 +1024,8 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::OnResponse(ActorBuilder* pBuilder, std::shared_ptr<SocketChannel> pChannel, uint32 uiStreamId, E_CODEC_STATUS eCodecStatus, Targs&&... args)
 {
-    auto step_iter = pBuilder->m_mapCallbackStep.find(pChannel->PopStepSeq(uiStreamId, eCodecStatus));
+    auto uiStepSeq = pChannel->PopStepSeq(uiStreamId, eCodecStatus);
+    auto step_iter = pBuilder->m_mapCallbackStep.find(uiStepSeq);
     if (!pChannel->IsPipeline() && pChannel->PipelineIsEmpty())
     {
         pBuilder->m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel); // push back to named socket channel pool.
@@ -1027,6 +1034,8 @@ bool IO<T>::OnResponse(ActorBuilder* pBuilder, std::shared_ptr<SocketChannel> pC
     {
         pBuilder->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
                 "no callback for reply from %s!", pChannel->GetIdentify().c_str());
+        LOG4_TRACE_BUILDER("no callback for reply from %s, stream id %u, step seq %u",
+                pChannel->GetIdentify().c_str(), uiStreamId, uiStepSeq);
         return(false);
     }
     else
@@ -1113,31 +1122,13 @@ std::shared_ptr<SocketChannel> IO<T>::CreateSocketChannel(Dispatcher* pDispatche
     auto iter = pDispatcher->m_mapSocketChannel.find(iFd);
     if (iter == pDispatcher->m_mapSocketChannel.end())
     {
-        std::shared_ptr<SocketChannel> pChannel = nullptr;
-        ev_tstamp dKeepAlive = (pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection > 0)
-            ? pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection : pDispatcher->m_pLabor->GetNodeInfo().dIoTimeout;
-        (dKeepAlive > 0) ? dKeepAlive : pDispatcher->m_pLabor->GetNodeInfo().dIoTimeout;
-        try
+        auto pChannel = CodecFactory::CreateChannel(pDispatcher->m_pLabor, pDispatcher->m_pLogger, iFd, T::Type(), bIsClient, bWithSsl);
+        if (pChannel != nullptr)
         {
-            pChannel = std::make_shared<SocketChannel>(
-                    pDispatcher->m_pLabor, pDispatcher->m_pLogger, iFd,
-                    pDispatcher->m_pLabor->GetSequence(), bWithSsl, bIsClient, dKeepAlive);
-        }
-        catch(std::bad_alloc& e)
-        {
-            pDispatcher->Logger(Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                    "new channel for fd %d error: %s", e.what());
-            return(nullptr);
-        }
-        if (!SocketChannelImpl<T>::NewCodec(pChannel, pDispatcher->m_pLabor, pDispatcher->m_pLogger, T::Type()))
-        {
-            pDispatcher->Logger(Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                    "failed to new codec");
-            return(nullptr);
-        }
-        pDispatcher->m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
-        pDispatcher->Logger(Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
+            pDispatcher->m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
+            LOG4_TRACE_DISPATCH(
                 "new channel for fd %d with codec type %d", pChannel->GetFd(), pChannel->GetCodecType());
+        }
         return(pChannel);
     }
     else
