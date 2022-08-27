@@ -136,7 +136,7 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 ## 版本历史
 #### v1.7.3
    - 修复熔断节点探测导致错误回调问题
-   - 修复redis cluster执行批量写命令返回问题
+   - 修复redis cluster执行批量写命令返回和asking命令bug
    - 修改channel创建方式，改由CodecFactory创建
 #### v1.7.2
    - 修复codec bind channel循环引用问题
