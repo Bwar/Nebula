@@ -155,9 +155,9 @@ public:
     }
     std::shared_ptr<SocketChannel> CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsClient = false, bool bWithSsl = false);
     bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
-    bool CreateListenFd(const std::string& strHost, int32 iPort, int& iFd, int& iFamily);
+    bool CreateListenFd(const std::string& strHost, int32 iPort, int iBacklog, int& iFd, int& iFamily);
     std::shared_ptr<SocketChannel> GetChannel(int iFd);
-    int SendFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType);
+    int SendFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, const std::string& strRemoteAddr);
 
 protected:
     void Destroy();

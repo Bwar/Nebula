@@ -41,8 +41,10 @@ public:
     SocketChannel(std::shared_ptr<NetLogger> pLogger, bool bIsClient, bool bWithSsl);
     virtual ~SocketChannel();
     
-    static int SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger);
-    static int RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType, std::shared_ptr<NetLogger> pLogger);
+    static int SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType,
+            const std::string& strRemoteAddr, std::shared_ptr<NetLogger> pLogger);
+    static int RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType,
+            std::string& strRemoteAddr, std::shared_ptr<NetLogger> pLogger);
 
     virtual bool IsClient() const;
     virtual bool WithSsl() const;

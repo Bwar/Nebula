@@ -99,6 +99,11 @@ public:
         return(false);
     }
 
+    virtual bool DecodeWithStack() const
+    {
+        return(false);
+    }
+
     /**
      * @see CodecHttp2::ConnectionSetting()
      */

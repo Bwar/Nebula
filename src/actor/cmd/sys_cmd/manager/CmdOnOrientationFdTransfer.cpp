@@ -54,7 +54,7 @@ bool CmdOnOrientationFdTransfer::AnyMessage(
     int iErrno = GetLabor(this)->GetDispatcher()->SendFd(
             pWorkerInfo->iDataFd, pChannel->GetFd(),
             ((Manager*)GetLabor(this))->GetManagerInfo().iS2SFamily,
-            (int)pChannel->GetCodecType());
+            (int)pChannel->GetCodecType(), pChannel->GetRemoteAddr());
     if (iErrno != ERR_OK)
     {
         GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pChannel);

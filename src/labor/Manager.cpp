@@ -228,29 +228,29 @@ void Manager::StartService()
     if (m_oCurrentConf.Get("bind_ip", strBindIp) && strBindIp.length() > 0)
     {
         m_pDispatcher->CreateListenFd(strBindIp,
-                 m_stNodeInfo.iPortForServer, m_stManagerInfo.iS2SListenFd,
-                 m_stManagerInfo.iS2SFamily);
+                 m_stNodeInfo.iPortForServer, m_stNodeInfo.iBacklog,
+                 m_stManagerInfo.iS2SListenFd, m_stManagerInfo.iS2SFamily);
 
         if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
         {
             // 接入节点才需要监听客户端连接
             m_pDispatcher->CreateListenFd(strBindIp,
-                  m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd,
-                  m_stManagerInfo.iC2SFamily);
+                  m_stNodeInfo.iPortForClient, m_stNodeInfo.iBacklog,
+                  m_stManagerInfo.iC2SListenFd, m_stManagerInfo.iC2SFamily);
         }
     }
     else
     {
         m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForServer,
-              m_stNodeInfo.iPortForServer, m_stManagerInfo.iS2SListenFd,
-              m_stManagerInfo.iS2SFamily);
+              m_stNodeInfo.iPortForServer, m_stNodeInfo.iBacklog,
+              m_stManagerInfo.iS2SListenFd, m_stManagerInfo.iS2SFamily);
 
         if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
         {
             // 接入节点才需要监听客户端连接
             m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
-                    m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd,
-                    m_stManagerInfo.iC2SFamily);
+                    m_stNodeInfo.iPortForClient, m_stNodeInfo.iBacklog,
+                    m_stManagerInfo.iC2SListenFd, m_stManagerInfo.iC2SFamily);
         }
     }
 
@@ -353,6 +353,7 @@ bool Manager::GetConf()
             m_oCurrentConf.Get("gateway", m_stNodeInfo.strGateway);
             m_oCurrentConf.Get("gateway_port", m_stNodeInfo.iGatewayPort);
             m_oCurrentConf.Get("access_socket_type", strSocketType);
+            m_oCurrentConf.Get("backlog", m_stNodeInfo.iBacklog);
             if (strSocketType == "UDP" || strSocketType == "udp")
             {
                 m_stNodeInfo.iForClientSocketType = SOCK_DGRAM;

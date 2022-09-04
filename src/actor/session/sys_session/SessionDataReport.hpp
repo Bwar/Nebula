@@ -20,7 +20,7 @@ namespace neb
 {
 
 class SessionDataReport: public Timer,
-    DynamicCreator<SessionDataReport, std::string&, ev_tstamp>,
+    public DynamicCreator<SessionDataReport, std::string&, ev_tstamp>,
     public ActorSys
 {
 public:
@@ -51,7 +51,7 @@ private:
     uint32 m_uiNodeReportUpdatingIndex;
     Report* m_pReport;          ///< final report
     std::string m_strReport;    ///< m_pReport SerializeToString
-    std::unordered_map<std::string, ReportRecord*> m_mapDataCollect;   ///< report collector
+    std::unordered_map<std::string, std::unordered_map<std::string, ReportRecord*>> m_mapDataCollect;   ///< report collector
     std::vector<std::unordered_map<std::string, std::shared_ptr<Report>> > m_vecNodeReport;  ///< report data from nebula node
 };
 

@@ -466,7 +466,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
-        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
+        if (m_bIsClient)
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_UPSTREAM_SEND_BYTE);
+        }
+        else
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_DOWNSTREAM_SEND_BYTE);
+        }
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -582,7 +589,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... ar
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
-        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
+        if (m_bIsClient)
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_UPSTREAM_SEND_BYTE);
+        }
+        else
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_DOWNSTREAM_SEND_BYTE);
+        }
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -671,7 +685,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendResponse(Targs&&... args)
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
-        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
+        if (m_bIsClient)
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_UPSTREAM_SEND_BYTE);
+        }
+        else
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_DOWNSTREAM_SEND_BYTE);
+        }
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -736,7 +757,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
         }
     }
     while (iReadLen > 0);
-    m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen);
+    if (m_bIsClient)
+    {
+        m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen, IO_STAT_UPSTREAM_RECV_BYTE);
+    }
+    else
+    {
+        m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen, IO_STAT_DOWNSTREAM_RECV_BYTE);
+    }
 
     if (iReadLen == 0)
     {
@@ -796,7 +824,10 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
         }
         else
         {
-            m_pRecvBuff->SetReadIndex(uiReadIndex);
+            if (!m_pCodec->DecodeWithStack())
+            {
+                m_pRecvBuff->SetReadIndex(uiReadIndex);
+            }
             if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
             {
                 if (!IsClient())
@@ -850,7 +881,10 @@ E_CODEC_STATUS SocketChannelImpl<T>::Fetch(Targs&&... args)
     }
     else
     {
-        m_pRecvBuff->SetReadIndex(uiReadIndex);
+        if (!m_pCodec->DecodeWithStack())
+        {
+            m_pRecvBuff->SetReadIndex(uiReadIndex);
+        }
         if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
         {
             return(CODEC_STATUS_INVALID);

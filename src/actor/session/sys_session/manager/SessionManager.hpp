@@ -44,8 +44,9 @@ public:
     const WorkerInfo* GetWorkerInfo(int32 iWorkerIndex) const;
     bool SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad);
     void SetLoaderActorBuilder(ActorBuilder* pActorBuilder);
+    int GetWorkerDataFd(const char* szClientAddr, int iClientPort);
     int GetNextWorkerDataFd();
-    std::pair<int, int> GetMinLoadWorkerDataFd();
+    int GetMinLoadWorkerDataFd();
     bool CheckWorker();
     bool WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE& eLaborType);
     void SendOnlineNodesToWorker();
@@ -63,6 +64,7 @@ public:
 private:
     bool m_bDirectToLoader = false;
     int m_iLoaderDataFd = -1;
+    std::vector<int> m_vecWorkerDataFd;     ///< only for fd transfer
     std::unordered_map<int, Worker*> m_mapWorker;               ///< only thread worker
     std::unordered_map<int, WorkerInfo*> m_mapWorkerInfo;       ///< 业务逻辑工作进程及进程属性，key为pid
     std::unordered_map<int, WorkerInfo*>::iterator m_iterWorkerInfo;

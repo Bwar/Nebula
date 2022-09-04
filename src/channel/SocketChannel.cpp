@@ -325,13 +325,15 @@ Labor* SocketChannel::GetLabor()
     return(nullptr);
 }
 
-int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, std::shared_ptr<NetLogger> pLogger)
+int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType,
+        const std::string& strRemoteAddr, std::shared_ptr<NetLogger> pLogger)
 {
     ssize_t             n;
-    struct iovec        iov[1];
+    struct iovec        iov[2];
     struct msghdr       msg;
     tagChannelCtx stCh;
     int iError = 0;
+    char szAddress[64] = {0};
 
     stCh.iFd = iSendFd;
     stCh.iAiFamily = iAiFamily;
@@ -365,13 +367,16 @@ int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int 
 
     msg.msg_flags = 0;
 
-    iov[0].iov_base = (char*)&stCh;
+    snprintf(szAddress, 64, "%s", strRemoteAddr.data());
+    iov[0].iov_base = (void*)&stCh;
     iov[0].iov_len = sizeof(tagChannelCtx);
+    iov[1].iov_base = (void*)szAddress;
+    iov[1].iov_len = 64;
 
     msg.msg_name = NULL;
     msg.msg_namelen = 0;
     msg.msg_iov = iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iovlen = 2;
 
     n = sendmsg(iSocketFd, &msg, 0);
 
@@ -385,26 +390,30 @@ int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int 
     return(ERR_OK);
 }
 
-int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType, std::shared_ptr<NetLogger> pLogger)
+int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType,
+        std::string& strRemoteAddr, std::shared_ptr<NetLogger> pLogger)
 {
     ssize_t             n;
-    struct iovec        iov[1];
+    struct iovec        iov[2];
     struct msghdr       msg;
     tagChannelCtx stCh;
     int iError = 0;
+    char szAddress[64] = {0};
 
     union {
         struct cmsghdr  cm;
         char            space[CMSG_SPACE(sizeof(int))];
     } cmsg;
 
-    iov[0].iov_base = (char*)&stCh;
+    iov[0].iov_base = (void*)&stCh;
     iov[0].iov_len = sizeof(tagChannelCtx);
+    iov[1].iov_base = (void*)szAddress;
+    iov[1].iov_len = 64;
 
     msg.msg_name = NULL;
     msg.msg_namelen = 0;
     msg.msg_iov = iov;
-    msg.msg_iovlen = 1;
+    msg.msg_iovlen = 2;
 
     msg.msg_control = (caddr_t) &cmsg;
     msg.msg_controllen = sizeof(cmsg);
@@ -457,6 +466,7 @@ int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, in
     iRecvFd = stCh.iFd;
     iAiFamily = stCh.iAiFamily;
     iCodecType = stCh.iCodecType;
+    strRemoteAddr = szAddress;
 
     return(ERR_OK);
 }

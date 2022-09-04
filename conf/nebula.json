@@ -18,6 +18,7 @@
     "port": 9987,
     "//bind_ip":"绑定IP地址。当有此项配置时bind()会绑定此ip地址，否则绑定host和access_host",
     "bind_ip":"0.0.0.0",
+    "backlog":128,
     "//server_name": "异步事件驱动Server",
     "server_name": "AsyncServer",
     "//worker_num": "进程数量",

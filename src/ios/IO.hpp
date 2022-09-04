@@ -21,6 +21,7 @@
 #include "actor/ActorBuilder.hpp"
 #include "actor/chain/Chain.hpp"
 #include "codec/CodecFactory.hpp"
+#include "actor/session/sys_session/TimerAddrinfo.hpp"
 
 namespace neb
 {
@@ -137,6 +138,7 @@ protected:
     template <typename ...Targs>
     static bool AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, const std::string& strHost,
             int iPort, int iRemoteWorkerIndex, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    static in_addr_t inet_addr(const char* text, uint32 len);
 };
 
 template<typename T>
@@ -227,7 +229,14 @@ bool IO<T>::SendResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel>
         eStatus = std::static_pointer_cast<SocketChannelImpl<T>>(
                 pChannel->m_pImpl)->SendResponse(std::forward<Targs>(args)...);
     }
-    pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd());
+    if (pChannel->IsClient())
+    {
+        pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd(), IO_STAT_UPSTREAM_SEND_NUM);
+    }
+    else
+    {
+        pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd(), IO_STAT_DOWNSTREAM_SEND_NUM);
+    }
     pDispatcher->m_pLastActivityChannel = pChannel;
     switch (eStatus)
     {
@@ -318,7 +327,14 @@ bool IO<T>::SendRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_p
         eStatus = std::static_pointer_cast<SocketChannelImpl<T>>(
                 pChannel->m_pImpl)->SendRequest(uiStepSeq, std::forward<Targs>(args)...);
     }
-    pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd());
+    if (pChannel->IsClient())
+    {
+        pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd(), IO_STAT_UPSTREAM_SEND_NUM);
+    }
+    else
+    {
+        pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd(), IO_STAT_DOWNSTREAM_SEND_NUM);
+    }
     pDispatcher->m_pLastActivityChannel = pChannel;
     switch (eStatus)
     {
@@ -763,20 +779,42 @@ template<typename ...Targs>
 bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, const std::string& strHost,
         int iPort, int iRemoteWorkerIndex, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
-    pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "%s", strIdentify.c_str());
+    LOG4_TRACE_DISPATCH("%s", strIdentify.c_str());
     struct addrinfo stAddrHints;
-    struct addrinfo* pAddrResult;
-    struct addrinfo* pAddrCurrent;
-    memset(&stAddrHints, 0, sizeof(struct addrinfo));
-    stAddrHints.ai_family = AF_UNSPEC;
-    stAddrHints.ai_socktype = iSocketType;
-    stAddrHints.ai_protocol = IPPROTO_IP;
-    int iCode = getaddrinfo(strHost.c_str(), std::to_string(iPort).c_str(), &stAddrHints, &pAddrResult);
-    if (0 != iCode)
+    struct addrinfo* pAddrResult = nullptr;
+    struct addrinfo* pAddrCurrent = nullptr;
+    auto pSessionAddr = std::static_pointer_cast<TimerAddrinfo>(pDispatcher->m_pLabor->GetActorBuilder()->GetSession(strIdentify));
+    if (pSessionAddr != nullptr)
     {
-        LOG4_TRACE_DISPATCH("getaddrinfo(\"%s\", \"%d\") error %d: %s",
-                strHost.c_str(), iPort, iCode, gai_strerror(iCode));
-        return(false);
+        pAddrResult = pSessionAddr->GetAddrinfo();
+    }
+    if (pAddrResult == nullptr)
+    {
+        memset(&stAddrHints, 0, sizeof(struct addrinfo));
+        stAddrHints.ai_family = AF_UNSPEC;
+        stAddrHints.ai_socktype = iSocketType;
+        stAddrHints.ai_protocol = IPPROTO_IP;
+        if (inet_addr(strHost.data(), strHost.length()) != 0)
+        {
+            stAddrHints.ai_flags |= (AI_NUMERICHOST | AI_NUMERICSERV);
+        }
+        LOG4_TRACE_DISPATCH("get addrinfo for %s", strIdentify.c_str());
+        int iCode = getaddrinfo(strHost.c_str(), std::to_string(iPort).c_str(), &stAddrHints, &pAddrResult);
+        if (0 != iCode)
+        {
+            LOG4_TRACE_DISPATCH("getaddrinfo(\"%s\", \"%d\") error %d: %s",
+                    strHost.c_str(), iPort, iCode, gai_strerror(iCode));
+            return(false);
+        }
+        if (pSessionAddr == nullptr)
+        {
+            pSessionAddr = std::static_pointer_cast<TimerAddrinfo>(
+                    pDispatcher->m_pLabor->GetActorBuilder()->MakeSharedSession(nullptr, "neb::TimerAddrinfo", strIdentify));
+        }
+        if (pSessionAddr != nullptr)
+        {
+            pSessionAddr->MigrateAddrinfo(pAddrResult);
+        }
     }
     int iFd = -1;
     for (pAddrCurrent = pAddrResult;
@@ -790,14 +828,6 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::strin
         }
 
         break;
-    }
-
-    /* No address succeeded */
-    if (pAddrCurrent == NULL)
-    {
-        LOG4_TRACE_DISPATCH("Could not connect to \"%s:%d\"", strHost.c_str(), iPort);
-        freeaddrinfo(pAddrResult);           /* No longer needed */
-        return(false);
     }
 
     x_sock_set_block(iFd, 0);
@@ -819,7 +849,7 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::strin
     if (nullptr != pChannel)
     {
         connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
-        freeaddrinfo(pAddrResult);           /* No longer needed */
+        pDispatcher->m_pLabor->IoStatAddConnection(IO_STAT_UPSTREAM_NEW_CONNECTION);
         ev_tstamp dIoTimeout = (pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection > 0)
             ? pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection : pDispatcher->m_pLabor->GetNodeInfo().dIoTimeout;
         pDispatcher->AddIoTimeout(pChannel, dIoTimeout);
@@ -844,7 +874,14 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::strin
             eCodecStatus = std::static_pointer_cast<SocketChannelImpl<T>>(
                     pChannel->m_pImpl)->SendRequest(uiStepSeq, std::forward<Targs>(args)...);
         }
-        pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd());
+        if (pChannel->IsClient())
+        {
+            pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd(), IO_STAT_UPSTREAM_SEND_NUM);
+        }
+        else
+        {
+            pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd(), IO_STAT_DOWNSTREAM_SEND_NUM);
+        }
         pDispatcher->m_pLastActivityChannel = pChannel;
         if (CODEC_STATUS_OK != eCodecStatus
                 && CODEC_STATUS_PAUSE != eCodecStatus
@@ -868,6 +905,49 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::strin
         close(iFd);
         return(false);
     }
+}
+
+template<typename T>
+in_addr_t IO<T>::inet_addr(const char* text, uint32 len)
+{
+    const char *p;
+    unsigned char c;
+    in_addr_t    addr;
+    unsigned int   octet, n;
+
+    addr = 0;
+    octet = 0;
+    n = 0;
+
+    for (p = text; p < text + len; p++) {
+        c = *p;
+
+        if (c >= '0' && c <= '9') {
+            octet = octet * 10 + (c - '0');
+
+            if (octet > 255) {
+                return 0;
+            }
+
+            continue;
+        }
+
+        if (c == '.') {
+            addr = (addr << 8) + octet;
+            octet = 0;
+            n++;
+            continue;
+        }
+
+        return 0;
+    }
+
+    if (n == 3) {
+        addr = (addr << 8) + octet;
+        return htonl(addr);
+    }
+
+    return 0;
 }
 
 template<typename T>
@@ -904,7 +984,14 @@ E_CODEC_STATUS IO<T>::Recv(Dispatcher* pDispatcher, std::shared_ptr<SocketChanne
     }
     if (CODEC_STATUS_OK == eStatus)
     {
-        pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
+        if (pChannel->IsClient())
+        {
+            pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd(), IO_STAT_UPSTREAM_RECV_NUM);
+        }
+        else
+        {
+            pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd(), IO_STAT_DOWNSTREAM_RECV_NUM);
+        }
         pDispatcher->m_pLastActivityChannel = pChannel;
     }
     return(eStatus);
@@ -930,7 +1017,14 @@ E_CODEC_STATUS IO<T>::Fetch(Dispatcher* pDispatcher, std::shared_ptr<SocketChann
             pChannel->m_pImpl)->Fetch(std::forward<Targs>(args)...);
     if (CODEC_STATUS_OK == eStatus)
     {
-        pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd());
+        if (pChannel->IsClient())
+        {
+            pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd(), IO_STAT_UPSTREAM_RECV_NUM);
+        }
+        else
+        {
+            pDispatcher->m_pLabor->IoStatAddRecvNum(pChannel->GetFd(), IO_STAT_DOWNSTREAM_RECV_NUM);
+        }
         pDispatcher->m_pLastActivityChannel = pChannel;
     }
     return(eStatus);

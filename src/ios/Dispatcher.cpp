@@ -211,7 +211,8 @@ bool Dispatcher::FdTransfer(int iFd)
     int iAcceptFd = -1;
     int iAiFamily = AF_INET;
     int iCodec = 0;
-    int iErrno = SocketChannel::RecvChannelFd(iFd, iAcceptFd, iAiFamily, iCodec, m_pLogger);
+    std::string strRemoteAddr;
+    int iErrno = SocketChannel::RecvChannelFd(iFd, iAcceptFd, iAiFamily, iCodec, strRemoteAddr, m_pLogger);
     if (iErrno != ERR_OK)
     {
         if (iErrno == ERR_CHANNEL_EOF)
@@ -253,7 +254,7 @@ bool Dispatcher::FdTransfer(int iFd)
         }
         x_sock_set_block(iAcceptFd, 0);
         std::shared_ptr<SocketChannel> pChannel = nullptr;
-        LOG4_TRACE("fd[%d] transfer successfully.", iAcceptFd);
+        LOG4_TRACE("%s fd[%d] transfer successfully.", strRemoteAddr.c_str(), iAcceptFd);
         if ((CODEC_NEBULA != iCodec) && (CODEC_NEBULA_IN_NODE != iCodec) && m_pLabor->WithSsl())
         {
             pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), false, true);
@@ -264,42 +265,7 @@ bool Dispatcher::FdTransfer(int iFd)
         }
         if (nullptr != pChannel)
         {
-            if (AF_INET == iAiFamily)
-            {
-                char szClientAddr[64] = {0};
-                int z;                          /* status return code */
-                struct sockaddr_in stClientAddr;
-                socklen_t iClientAddrSize = sizeof(stClientAddr);
-                z = getpeername(iAcceptFd, (struct sockaddr *)&stClientAddr, &iClientAddrSize);
-                if (z == 0)
-                {
-                    inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
-                    LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
-                    pChannel->SetRemoteAddr(std::string(szClientAddr));
-                }
-                else
-                {
-                    LOG4_ERROR("getpeername error %d", errno);
-                }
-            }
-            else if (AF_INET6 == iAiFamily)  // AF_INET6
-            {
-                char szClientAddr[64] = {0};
-                int z;                          /* status return code */
-                struct sockaddr_in6 stClientAddr;
-                socklen_t iClientAddrSize = sizeof(stClientAddr);
-                z = getpeername(iAcceptFd, (struct sockaddr *)&stClientAddr, &iClientAddrSize);
-                if (z == 0)
-                {
-                    inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
-                    LOG4_TRACE("set fd %d's remote addr \"%s\"", iAcceptFd, szClientAddr);
-                    pChannel->SetRemoteAddr(std::string(szClientAddr));
-                }
-                else
-                {
-                    LOG4_ERROR("getpeername error %d", errno);
-                }
-            }
+            pChannel->SetRemoteAddr(strRemoteAddr);
             AddIoReadEvent(pChannel);
             if (CODEC_NEBULA == iCodec)
             {
@@ -325,6 +291,7 @@ bool Dispatcher::FdTransfer(int iFd)
                 pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
                 AddIoTimeout(pChannel, dIoTimeout);
             }
+            m_pLabor->IoStatAddConnection(IO_STAT_DOWNSTREAM_NEW_CONNECTION);
             return(true);
         }
         else    // 没有足够资源分配给新连接，直接close掉
@@ -609,6 +576,7 @@ std::shared_ptr<SocketChannel> Dispatcher::StressSend(const std::string& strIden
         AddIoWriteEvent(pChannel);
         pChannel->SetRemoteAddr(strHost);
         IO<CodecNebula>::SendRequest(this, 0, pChannel, iCmd, uiSeq, oMsgBody);
+        m_pLabor->IoStatAddConnection(IO_STAT_DOWNSTREAM_NEW_CONNECTION);
         return(pChannel);
     }
     else
@@ -875,14 +843,13 @@ bool Dispatcher::DelEvent(ev_timer* timer_watcher)
     return(true);
 }
 
-int Dispatcher::SendFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType)
+int Dispatcher::SendFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, const std::string& strRemoteAddr)
 {
-    return(SocketChannel::SendChannelFd(iSocketFd, iSendFd, iAiFamily, iCodecType, m_pLogger));
+    return(SocketChannel::SendChannelFd(iSocketFd, iSendFd, iAiFamily, iCodecType, strRemoteAddr, m_pLogger));
 }
 
-bool Dispatcher::CreateListenFd(const std::string& strHost, int32 iPort, int& iFd, int& iFamily)
+bool Dispatcher::CreateListenFd(const std::string& strHost, int32 iPort, int iBacklog, int& iFd, int& iFamily)
 {
-    int queueLen = 100;
     int reuse = 1;
     int timeout = 1;
 
@@ -933,7 +900,7 @@ bool Dispatcher::CreateListenFd(const std::string& strHost, int32 iPort, int& iF
             iFd = -1;
             continue;
         }
-        if (-1 == listen(iFd, queueLen))
+        if (-1 == listen(iFd, iBacklog))
         {
             close(iFd);
             iFd = -1;
@@ -1067,6 +1034,14 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
                 pChannel->GetRemoteAddr().c_str(),
                 pChannel->GetFd(), pChannel->GetSequence(),
                 pChannel->GetIdentify().c_str());
+        if (pChannel->IsClient())
+        {
+            m_pLabor->IoStatAddConnection(IO_STAT_UPSTREAM_DESTROY_CONNECTION);
+        }
+        else
+        {
+            m_pLabor->IoStatAddConnection(IO_STAT_DOWNSTREAM_DESTROY_CONNECTION);
+        }
         if (bChannelNotice)
         {
             m_pLabor->GetActorBuilder()->ChannelNotice(pChannel, pChannel->GetIdentify(), pChannel->GetClientData());
@@ -1208,6 +1183,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
 {
     char szClientAddr[64] = {0};
     int iAcceptFd = -1;
+    int iClientPort = 0;
     if (AF_INET == iFamily)
     {
         struct sockaddr_in stClientAddr;
@@ -1245,6 +1221,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
         }
         x_sock_set_block(iAcceptFd, 0);
         inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
+        iClientPort = CodecUtil::N2H(stClientAddr.sin_port);
         LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }
     else    // AF_INET6
@@ -1284,6 +1261,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
         }
         x_sock_set_block(iAcceptFd, 0);
         inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
+        iClientPort = CodecUtil::N2H(stClientAddr.sin6_port);
         LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }
 
@@ -1306,15 +1284,15 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
     }
 
     int iWorkerDataFd = -1;
-    //std::pair<int, int> worker_pid_fd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd();
-    //iWorkerDataFd = worker_pid_fd.second;
-    iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd();
+    iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd();
+    //iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd();
+    //iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetWorkerDataFd(szClientAddr, iClientPort);
     if (iWorkerDataFd > 0)
     {
         LOG4_TRACE("send new fd %d to worker communication fd %d",
                         iAcceptFd, iWorkerDataFd);
         int iCodec = m_pLabor->GetNodeInfo().eCodec;
-        int iErrno = SocketChannel::SendChannelFd(iWorkerDataFd, iAcceptFd, iFamily, iCodec, m_pLogger);
+        int iErrno = SocketChannel::SendChannelFd(iWorkerDataFd, iAcceptFd, iFamily, iCodec, szClientAddr, m_pLogger);
         if (iErrno != ERR_OK)
         {
             LOG4_ERROR("error %d: %s", iErrno, strerror_r(iErrno, m_pErrBuff, gc_iErrBuffLen));
@@ -1322,7 +1300,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
         close(iAcceptFd);
         return(true);
     }
-    LOG4_WARNING("GetMinLoadWorkerDataFd() found worker_pid_fd.second = %d", iWorkerDataFd);
+    LOG4_ERROR("no available data fd %d", iWorkerDataFd);
     close(iAcceptFd);
     return(false);
 }
@@ -1373,6 +1351,7 @@ bool Dispatcher::AcceptServerConn(int iFd)
                 ? m_pLabor->GetNodeInfo().dConnectionProtection : m_pLabor->GetNodeInfo().dIoTimeout;
             AddIoTimeout(pChannel, dIoTimeout);
             AddIoReadEvent(pChannel);
+            m_pLabor->IoStatAddConnection(IO_STAT_DOWNSTREAM_NEW_CONNECTION);
         }
     }
     return(false);
