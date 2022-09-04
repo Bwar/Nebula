@@ -15,6 +15,7 @@
 #include "pb/report.pb.h"
 #include "util/process_helper.h"
 #include "util/json/CJsonObject.hpp"
+#include "util/encrypt/city.h"
 #include "labor/NodeInfo.hpp"
 #include "labor/Manager.hpp"
 #include "labor/Worker.hpp"
@@ -69,7 +70,7 @@ E_CMD_STATUS SessionManager::Timeout()
     for (auto iter = m_mapWorkerInfo.begin(); iter != m_mapWorkerInfo.end(); ++iter)
     {
         uiLoad += iter->second->uiLoad;
-        uiConnect += iter->second->uiConnect;
+        uiConnect += iter->second->uiConnection;
     }
     pRecord = pReport->add_records();
     pRecord->set_key("load");
@@ -193,6 +194,11 @@ void SessionManager::AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, i
     {
         start_num_iter->second++;
     }
+    while ((int)m_vecWorkerDataFd.size() <= iWorkerIndex)
+    {
+        m_vecWorkerDataFd.push_back(-1);
+    }
+    m_vecWorkerDataFd[iWorkerIndex] = iDataFd;
 }
 
 void SessionManager::AddLoaderInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd)
@@ -272,11 +278,16 @@ bool SessionManager::SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad)
         if (it != m_mapWorkerInfo.end())
         {
             oJsonLoad.Get("load", it->second->uiLoad);
-            oJsonLoad.Get("connect", it->second->uiConnect);
+            oJsonLoad.Get("connect", it->second->uiConnection);
             oJsonLoad.Get("recv_num", it->second->uiRecvNum);
             oJsonLoad.Get("recv_byte", it->second->uiRecvByte);
             oJsonLoad.Get("send_num", it->second->uiSendNum);
             oJsonLoad.Get("send_byte", it->second->uiSendByte);
+            LOG4_INFO("worker %u load %u, connection %u, recv_num %u, recv_byte %u,"
+                    "send_num %u, send_byte %u", it->second->iWorkerIndex,
+                    it->second->uiLoad, it->second->uiConnection,
+                    it->second->uiRecvNum, it->second->uiRecvByte,
+                    it->second->uiSendNum, it->second->uiSendByte);
             it->second->dBeatTime = GetNowTime();
             it->second->bStartBeatCheck = true;
             return(true);
@@ -300,6 +311,78 @@ void SessionManager::SetLoaderActorBuilder(ActorBuilder* pActorBuilder)
     {
         it->second->SetLoaderActorBuilder(pActorBuilder);
     }
+}
+
+int SessionManager::GetWorkerDataFd(const char* szRemoteAddr, int iRemotePort)
+{
+    if (m_bDirectToLoader && m_iLoaderDataFd != -1)
+    {
+        return(m_iLoaderDataFd);
+    }
+    else
+    {
+        if (m_vecWorkerDataFd.empty())
+        {
+            return(-1);
+        }
+        char szIdentify[64] = {0};
+        snprintf(szIdentify, 64, "%s:%d", szRemoteAddr, iRemotePort);
+        uint32 uiKeyHash = CityHash32(szIdentify, strlen(szIdentify));
+        uint32 uiIndex = uiKeyHash % (m_vecWorkerDataFd.size() - 1);    // loader▒~Z~Dworker▒~V▒~O▒为0
+        return(m_vecWorkerDataFd[uiIndex + 1]);
+    }
+    return(-1);
+}
+
+int SessionManager::GetMinLoadWorkerDataFd()
+{
+    LOG4_TRACE(" ");
+    int iMinLoadWorkerFd = 0;
+    int iMinLoadPid = 0;
+    int iMinLoad = -1;
+    uint32 uiMinLoadConnection = 0;
+    if (m_bDirectToLoader && m_iLoaderDataFd != -1)
+    {
+        return(m_iLoaderDataFd);
+    }
+    else
+    {
+        for (auto iter = m_mapWorkerInfo.begin(); iter != m_mapWorkerInfo.end(); ++iter)
+        {
+            if (m_iLoaderDataFd == iter->second->iDataFd)
+            {
+                continue;
+            }
+            if (iMinLoad == -1)
+            {
+                iMinLoadWorkerFd = iter->second->iDataFd;
+                iMinLoadPid = iter->first;
+                iMinLoad = iter->second->uiLoad;
+                uiMinLoadConnection = iter->second->uiConnection;
+            }
+            else if ((int)iter->second->uiLoad < iMinLoad)
+            {
+                iMinLoadWorkerFd = iter->second->iDataFd;
+                iMinLoadPid = iter->first;
+                iMinLoad = iter->second->uiLoad;
+                uiMinLoadConnection = iter->second->uiConnection;
+            }
+            else if ((int)iter->second->uiLoad == iMinLoad && iter->second->uiConnection < uiMinLoadConnection)
+            {
+                iMinLoadWorkerFd = iter->second->iDataFd;
+                iMinLoadPid = iter->first;
+                iMinLoad = iter->second->uiLoad;
+                uiMinLoadConnection = iter->second->uiConnection;
+            }
+        }
+    }
+    auto iter = m_mapWorkerInfo.find(iMinLoadPid);
+    if (iter != m_mapWorkerInfo.end())
+    {
+        iter->second->uiLoad++;
+        iter->second->uiConnection++;
+    }
+    return(iMinLoadWorkerFd);
 }
 
 int SessionManager::GetNextWorkerDataFd()
@@ -333,45 +416,6 @@ int SessionManager::GetNextWorkerDataFd()
         }
         return(m_iterWorkerInfo->second->iDataFd);
     }
-}
-
-std::pair<int, int> SessionManager::GetMinLoadWorkerDataFd()
-{
-    LOG4_TRACE(" ");
-    int iMinLoadWorkerFd = 0;
-    int iMinLoad = -1;
-    std::pair<int, int> worker_pid_fd;
-    if (m_bDirectToLoader && m_iLoaderDataFd != -1)
-    {
-        auto it = m_mapWorkerFdPid.find(m_iLoaderDataFd);
-        if (it != m_mapWorkerFdPid.end())
-        {
-            worker_pid_fd = std::pair<int, int>(it->second, m_iLoaderDataFd);
-        }
-        else
-        {
-            worker_pid_fd = std::pair<int, int>(0, m_iLoaderDataFd);
-        }
-    }
-    else
-    {
-        for (auto iter = m_mapWorkerInfo.begin(); iter != m_mapWorkerInfo.end(); ++iter)
-        {
-            if (iMinLoad == -1 && iter->second->iDataFd != m_iLoaderDataFd)
-            {
-               iMinLoadWorkerFd = iter->second->iDataFd;
-               iMinLoad = iter->second->uiLoad;
-               worker_pid_fd = std::pair<int, int>(iter->first, iMinLoadWorkerFd);
-            }
-            else if ((int)iter->second->uiLoad < iMinLoad && iter->second->iDataFd != m_iLoaderDataFd)
-            {
-               iMinLoadWorkerFd = iter->second->iDataFd;
-               iMinLoad = iter->second->uiLoad;
-               worker_pid_fd = std::pair<int, int>(iter->first, iMinLoadWorkerFd);
-            }
-        }
-    }
-    return(worker_pid_fd);
 }
 
 bool SessionManager::CheckWorker()
@@ -527,14 +571,14 @@ void SessionManager::MakeReportData(CJsonObject& oReportData)
             continue;
         }
         iLoad += worker_iter->second->uiLoad;
-        iConnect += worker_iter->second->uiConnect;
+        iConnect += worker_iter->second->uiConnection;
         iRecvNum += worker_iter->second->uiRecvNum;
         iRecvByte += worker_iter->second->uiRecvByte;
         iSendNum += worker_iter->second->uiSendNum;
         iSendByte += worker_iter->second->uiSendByte;
         oMember.Clear();
         oMember.Add("load", worker_iter->second->uiLoad);
-        oMember.Add("connect", worker_iter->second->uiConnect);
+        oMember.Add("connect", worker_iter->second->uiConnection);
         oMember.Add("recv_num", worker_iter->second->uiRecvNum);
         oMember.Add("recv_byte", worker_iter->second->uiRecvByte);
         oMember.Add("send_num", worker_iter->second->uiSendNum);
@@ -570,8 +614,8 @@ bool SessionManager::NewSocketWhenWorkerCreated(int iWorkerDataFd)
     x_sock_set_block(iFds[0], 0);
     x_sock_set_block(iFds[1], 0);
     LOG4_TRACE("Transfer fd to Loader and Worker.");
-    GetLabor(this)->GetDispatcher()->SendFd(m_iLoaderDataFd, iFds[0], PF_UNIX, CODEC_NEBULA_IN_NODE);
-    GetLabor(this)->GetDispatcher()->SendFd(iWorkerDataFd, iFds[1], PF_UNIX, CODEC_NEBULA_IN_NODE);
+    GetLabor(this)->GetDispatcher()->SendFd(m_iLoaderDataFd, iFds[0], PF_UNIX, CODEC_NEBULA_IN_NODE, GetNodeInfo().strHostForServer);
+    GetLabor(this)->GetDispatcher()->SendFd(iWorkerDataFd, iFds[1], PF_UNIX, CODEC_NEBULA_IN_NODE, GetNodeInfo().strHostForServer);
     return(true);
 }
 
@@ -596,8 +640,8 @@ bool SessionManager::NewSocketWhenLoaderCreated()
         }
         x_sock_set_block(iFds[0], 0);
         x_sock_set_block(iFds[1], 0);
-        GetLabor(this)->GetDispatcher()->SendFd(m_iLoaderDataFd, iFds[0], PF_UNIX, CODEC_NEBULA_IN_NODE);
-        GetLabor(this)->GetDispatcher()->SendFd(iter->second->iDataFd, iFds[1], PF_UNIX, CODEC_NEBULA_IN_NODE);
+        GetLabor(this)->GetDispatcher()->SendFd(m_iLoaderDataFd, iFds[0], PF_UNIX, CODEC_NEBULA_IN_NODE, GetNodeInfo().strHostForServer);
+        GetLabor(this)->GetDispatcher()->SendFd(iter->second->iDataFd, iFds[1], PF_UNIX, CODEC_NEBULA_IN_NODE, GetNodeInfo().strHostForServer);
     }
     return(true);
 }

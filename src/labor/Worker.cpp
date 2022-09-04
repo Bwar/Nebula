@@ -111,11 +111,11 @@ bool Worker::CheckParent()
 
 void Worker::DataReport()
 {
-    m_stWorkerInfo.uiConnect = m_pDispatcher->GetConnectionNum();
+    m_stWorkerInfo.uiConnection = m_pDispatcher->GetConnectionNum();
     MsgBody oMsgBody;
     CJsonObject oJsonLoad;
-    oJsonLoad.Add("load", int32(m_stWorkerInfo.uiConnect + m_pActorBuilder->GetStepNum()));
-    oJsonLoad.Add("connect", m_stWorkerInfo.uiConnect);
+    oJsonLoad.Add("load", int32(m_pActorBuilder->GetStepNum()));
+    oJsonLoad.Add("connect", m_stWorkerInfo.uiConnection);
     oJsonLoad.Add("recv_num", m_stWorkerInfo.uiRecvNum);
     oJsonLoad.Add("recv_byte", m_stWorkerInfo.uiRecvByte);
     oJsonLoad.Add("send_num", m_stWorkerInfo.uiSendNum);
@@ -143,12 +143,57 @@ void Worker::DataReport()
         pRecord->set_key("send_byte");
         pRecord->set_item("nebula");
         pRecord->add_value(m_stWorkerInfo.uiSendByte);
+        pRecord = pReport->add_records();
+        pRecord->set_key("new_upstream_connection");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiNewUpStreamConnection);
+        pRecord = pReport->add_records();
+        pRecord->set_key("destroy_upstream_connection");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiDestroyUpStreamConnection);
+        pRecord = pReport->add_records();
+        pRecord->set_key("new_downstream_connection");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiNewDownStreamConnection);
+        pRecord = pReport->add_records();
+        pRecord->set_key("destroy_downstream_connection");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiDestroyDownStreamConnection);
+        pRecord = pReport->add_records();
+        pRecord->set_key("upstream_recv_num");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiUpStreamRecvNum);
+        pRecord = pReport->add_records();
+        pRecord->set_key("upstream_recv_byte");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiUpStreamRecvByte);
+        pRecord = pReport->add_records();
+        pRecord->set_key("upstream_send_num");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiUpStreamSendNum);
+        pRecord = pReport->add_records();
+        pRecord->set_key("upstream_send_byte");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiUpStreamSendByte);
+        pRecord = pReport->add_records();
+        pRecord->set_key("downstream_recv_num");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiDownStreamRecvNum);
+        pRecord = pReport->add_records();
+        pRecord->set_key("downstream_recv_byte");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiDownStreamRecvByte);
+        pRecord = pReport->add_records();
+        pRecord->set_key("downstream_send_num");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiDownStreamSendNum);
+        pRecord = pReport->add_records();
+        pRecord->set_key("downstream_send_byte");
+        pRecord->set_item("nebula");
+        pRecord->add_value(m_stWorkerInfo.uiDownStreamSendByte);
         pSessionDataReport->AddReport(pReport);
     }
-    m_stWorkerInfo.uiRecvNum = 0;
-    m_stWorkerInfo.uiRecvByte = 0;
-    m_stWorkerInfo.uiSendNum = 0;
-    m_stWorkerInfo.uiSendByte = 0;
+    m_stWorkerInfo.ResetStat();
 }
 
 bool Worker::Init(CJsonObject& oJsonConf)

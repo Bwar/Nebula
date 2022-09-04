@@ -11,6 +11,7 @@
 #include "type/Notations.hpp"
 #include "CassRequest.hpp"
 #include "CassResponse.hpp"
+#include "channel/SocketChannel.hpp"
 
 namespace neb
 {
@@ -27,6 +28,7 @@ CodecCass::~CodecCass()
 
 E_CODEC_STATUS CodecCass::Encode(CBuffer* pBuff)
 {
+    GenerateStreamId();
     return(CODEC_STATUS_OK);
 }
 
@@ -127,16 +129,16 @@ E_CODEC_STATUS CodecCass::Decode(CBuffer* pBuff, CassMessage& oCassMsg, CBuffer*
             case CASS_OP_RESULT:
                 if (!oResponse.DecodeResult(&oBuff))
                 {
-                    LOG4_ERROR("cass response decode failed.");
+                    LOG4_ERROR("cass response CASS_OP_RESULT decode failed.");
                     return(CODEC_STATUS_PART_ERR);
                 }
                 break;
             case CASS_OP_ERROR:
                 if (!oResponse.DecodeError(&oBuff))
                 {
+                    LOG4_ERROR("cass response CASS_OP_ERROR decode failed.");
                     return(CODEC_STATUS_PART_ERR);
                 }
-                LOG4_ERROR("%d: %s", oResponse.GetErrCode(), oResponse.GetErrMsg().c_str());
                 break;
             case CASS_OP_AUTHENTICATE:
                 break;
@@ -150,7 +152,7 @@ E_CODEC_STATUS CodecCass::Decode(CBuffer* pBuff, CassMessage& oCassMsg, CBuffer*
                 {
                     pReactBuff->Write(m_oReqBuff.GetRawReadBuffer(), m_oReqBuff.ReadableBytes());
                 }
-                LOG4_INFO("cass connection ready.");
+                LOG4_INFO("%s cass connection ready.", GetBindChannel()->GetRemoteAddr().c_str());
                 break;
             case CASS_OP_AUTH_CHALLENGE:
                 break;

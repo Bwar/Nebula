@@ -78,7 +78,6 @@ public:
 
     virtual bool SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg,
             bool bWithSsl, bool bPipeline, uint32 uiStepSeq) override;
-
 protected:
     bool SendTo(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg);
     bool ExtractCmd(const RedisMsg& oRedisMsg, std::string& strCmd,
@@ -93,26 +92,24 @@ protected:
     void CmdPingCallback(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const RedisReply& oRedisReply);
     bool SendCmdReadOnly(const std::string& strIdentify);
     void CmdReadOnlyCallback(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const RedisReply& oRedisReply);
-    void AskingQueueErrBack(std::shared_ptr<SocketChannel> pChannel,
-            int iErrno, const std::string& strErrMsg);
     void CmdErrBack(std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg);
     bool Dispatch(const RedisMsg& oRedisMsg, uint32 uiStepSeq);
     void SendWaittingRequest();
     void RegisterStep(uint32 uiStepSeq);
-    void AddToAskingQueue(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg);
     bool Auth(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg);
+    void HealthCheck();
 
 private:
     bool m_bWithSsl;                        ///< 是否支持SSL
     bool m_bPipeline;                       ///< 是否支持pipeline
     bool m_bEnableReadOnly;                 ///< 是否对从节点启用只读
     uint32 m_uiAddressIndex;
+    time_t m_lLastCheckTime;                ///< last helth check time
 
     std::string m_strIdentify;      ///< 地址标识，由m_vecAddress合并而成，形如 192.168.47.101:6379,198.168.47.102:6379,192.168.47.103:6379
     std::vector<std::string> m_vecAddress;  ///< 集群地址
     std::unordered_map<int, std::shared_ptr<RedisNode>> m_mapSlot2Node;    // redis cluster slot对应的节点
     std::unordered_map<std::string, std::queue<std::shared_ptr<RedisRequest>>> m_mapPipelineRequest;  ///< 等待回调的请求
-    std::unordered_map<std::string, std::queue<std::shared_ptr<RedisRequest>>> m_mapAskingRequest;  ///< 等待Asking的请求
     std::unordered_map<uint32, uint32> m_mapStepEmitNum;    // 每个step发出请求（等待响应）数量
     std::unordered_map<uint32, std::vector<RedisReply*>> m_mapReply;
     std::map<time_t, std::vector<uint32>> m_mapTimeoutStep;

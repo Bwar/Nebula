@@ -65,100 +65,100 @@ public:
     template <typename ...Targs>
     E_CODEC_STATUS Fetch(Targs&&... args);
 
-    E_CODEC_STATUS Send();
+    virtual E_CODEC_STATUS Send();
 
-    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
+    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args) const;
 
 public:
-    virtual int GetFd() const
+    virtual int GetFd() const override
     {
         return(m_iFd);
     }
 
-    virtual uint32 GetSequence() const
+    virtual uint32 GetSequence() const override
     {
         return(m_uiSeq);
     }
 
-    virtual bool IsPipeline() const
+    virtual bool IsPipeline() const override
     {
         return(m_bPipeline);
     }
 
-    virtual const std::string& GetIdentify() const
+    virtual const std::string& GetIdentify() const override
     {
         return(m_strIdentify);
     }
 
-    virtual const std::string& GetRemoteAddr() const
+    virtual const std::string& GetRemoteAddr() const override
     {
         return(m_strRemoteAddr);
     }
 
-    virtual const std::string& GetClientData() const
+    virtual const std::string& GetClientData() const override
     {
         return(m_strClientData);
     }
 
-    virtual E_CODEC_TYPE GetCodecType() const;
+    virtual E_CODEC_TYPE GetCodecType() const override;
 
-    virtual uint8 GetChannelStatus() const
+    virtual uint8 GetChannelStatus() const override
     {
         return(m_ucChannelStatus);
     }
 
-    virtual uint32 PopStepSeq(uint32 uiStreamId = 0, E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK);
+    virtual uint32 PopStepSeq(uint32 uiStreamId = 0, E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK) override;
 
-    virtual bool PipelineIsEmpty() const
+    virtual bool PipelineIsEmpty() const override
     {
         return(m_listPipelineStepSeq.empty());
     }
 
-    virtual ev_tstamp GetActiveTime() const
+    virtual ev_tstamp GetActiveTime() const override
     {
         return(m_dActiveTime);
     }
 
-    virtual ev_tstamp GetKeepAlive();
+    virtual ev_tstamp GetKeepAlive() const override;
 
-    virtual int GetErrno() const
+    virtual int GetErrno() const override
     {
         return(m_iErrno);
     }
 
-    virtual const std::string& GetErrMsg() const
+    virtual const std::string& GetErrMsg() const override
     {
         return(m_strErrMsg);
     }
 
-    virtual Codec* GetCodec() const
+    virtual Codec* GetCodec() const override
     {
         return(m_pCodec);
     }
 
-    virtual Labor* GetLabor()
+    virtual Labor* GetLabor() override
     {
         return(m_pLabor);
     }
 
-    int16 GetRemoteWorkerIndex() const
+    int16 GetRemoteWorkerIndex() const override
     {
         return(m_iRemoteWorkerIdx);
     }
 
-    bool IsChannelVerify() const
+    bool IsChannelVerify() const override
     {
         return(m_strClientData.size());
     }
 
-    bool NeedAliveCheck() const;
+    bool NeedAliveCheck() const override;
 
-    uint32 GetMsgNum() const
+    uint32 GetMsgNum() const override
     {
         return(m_uiMsgNum);
     }
 
-    uint32 GetUnitTimeMsgNum() const
+    uint32 GetUnitTimeMsgNum() const override
     {
         return(m_uiUnitTimeMsgNum);
     }
@@ -186,7 +186,7 @@ public:
         m_dKeepAlive = dTime;
     }
 
-    void SetChannelStatus(E_CHANNEL_STATUS eStatus)
+    void SetChannelStatus(E_CHANNEL_STATUS eStatus) override
     {
         m_ucChannelStatus = (uint8)eStatus;
     }
@@ -196,17 +196,17 @@ public:
         m_bPipeline = bPipeline;
     }
 
-    void SetClientData(const std::string& strClientData)
+    void SetClientData(const std::string& strClientData) override
     {
         m_strClientData = strClientData;
     }
 
-    void SetIdentify(const std::string& strIdentify)
+    void SetIdentify(const std::string& strIdentify) override
     {
         m_strIdentify = strIdentify;
     }
 
-    void SetRemoteAddr(const std::string& strRemoteAddr)
+    void SetRemoteAddr(const std::string& strRemoteAddr) override
     {
         m_strRemoteAddr = strRemoteAddr;
     }
@@ -215,7 +215,7 @@ public:
 
     void SetRemoteWorkerIndex(int16 iRemoteWorkerIndex);
 
-    virtual bool Close();
+    virtual bool Close() override;
 
 protected:
     virtual int Write(CBuffer* pBuff, int& iErrno);
@@ -313,7 +313,20 @@ E_CODEC_TYPE SocketChannelImpl<T>::GetCodecType() const
 template<typename T>
 uint32 SocketChannelImpl<T>::PopStepSeq(uint32 uiStreamId, E_CODEC_STATUS eCodecStatus)
 {
-    if (m_listPipelineStepSeq.empty())
+    if (m_mapStreamStepSeq.empty())
+    {
+        if (m_listPipelineStepSeq.empty())
+        {
+            return(0);
+        }
+        uint32 uiStepSeq = m_listPipelineStepSeq.front();
+        if (CODEC_STATUS_OK == eCodecStatus)
+        {
+            m_listPipelineStepSeq.pop_front();
+        }
+        return(uiStepSeq);
+    }
+    else
     {
         auto iter = m_mapStreamStepSeq.find(uiStreamId);
         if (iter != m_mapStreamStepSeq.end())
@@ -327,30 +340,23 @@ uint32 SocketChannelImpl<T>::PopStepSeq(uint32 uiStreamId, E_CODEC_STATUS eCodec
         }
         return(0);
     }
-    else
-    {
-        uint32 uiStepSeq = m_listPipelineStepSeq.front();
-        if (CODEC_STATUS_OK == eCodecStatus)
-        {
-            m_listPipelineStepSeq.pop_front();
-        }
-        return(uiStepSeq);
-    }
 }
 
 template<typename T>
-ev_tstamp SocketChannelImpl<T>::GetKeepAlive()
+ev_tstamp SocketChannelImpl<T>::GetKeepAlive() const
 {
     if (m_pCodec == nullptr)
     {
         LOG4_ERROR("no codec found, please check codec type is valid.");
-        return(0.0);
+        return(m_dKeepAlive);
     }
     if (CODEC_HTTP == m_pCodec->GetCodecType())
     {
-        if ((static_cast<T*>(m_pCodec))->GetKeepAlive() >= 0.0)
+        ev_tstamp dKeepAlive = (static_cast<T*>(m_pCodec))->GetKeepAlive();
+        if (dKeepAlive >= 0.0)
         {
-            return((static_cast<T*>(m_pCodec))->GetKeepAlive());
+            LOG4_INFO("CodecHttp return keep alive %f", dKeepAlive);
+            return(dKeepAlive);
         }
     }
     return(m_dKeepAlive);
@@ -370,7 +376,7 @@ bool SocketChannelImpl<T>::NeedAliveCheck() const
 
 template<typename T>
 template <typename ...Targs>
-void SocketChannelImpl<T>::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args)
+void SocketChannelImpl<T>::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args) const
 {
     m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
 }
@@ -460,7 +466,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
-        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
+        if (m_bIsClient)
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_UPSTREAM_SEND_BYTE);
+        }
+        else
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_DOWNSTREAM_SEND_BYTE);
+        }
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -495,7 +508,8 @@ template<typename T>
 template <typename ...Targs>
 E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... args)
 {
-    LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d]", m_iFd, m_uiSeq, (int)m_ucChannelStatus);
+    LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[%d], step_seq[%u]",
+            m_iFd, m_uiSeq, (int)m_ucChannelStatus, uiStepSeq);
     if (m_pCodec == nullptr)
     {
         LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
@@ -509,6 +523,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... ar
             if (CODEC_STATUS_OK == eCodecStatus && uiStepSeq > 0)
             {
                 uint32 uiStreamId = (static_cast<T*>(m_pCodec))->GetLastStreamId();
+                LOG4_TRACE("uiStreamId = %u", uiStreamId);
                 if (0 == uiStreamId)
                 {
                     m_listPipelineStepSeq.push_back(uiStepSeq);
@@ -574,7 +589,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... ar
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
-        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
+        if (m_bIsClient)
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_UPSTREAM_SEND_BYTE);
+        }
+        else
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_DOWNSTREAM_SEND_BYTE);
+        }
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -663,7 +685,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendResponse(Targs&&... args)
     LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
-        m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen);
+        if (m_bIsClient)
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_UPSTREAM_SEND_BYTE);
+        }
+        else
+        {
+            m_pLabor->IoStatAddSendBytes(m_iFd, iHadWrittenLen, IO_STAT_DOWNSTREAM_SEND_BYTE);
+        }
         if (m_pSendBuff->Capacity() > CBuffer::BUFFER_MAX_READ
             && (m_pSendBuff->ReadableBytes() < m_pSendBuff->Capacity() / 2))
         {
@@ -728,7 +757,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
         }
     }
     while (iReadLen > 0);
-    m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen);
+    if (m_bIsClient)
+    {
+        m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen, IO_STAT_UPSTREAM_RECV_BYTE);
+    }
+    else
+    {
+        m_pLabor->IoStatAddRecvBytes(m_iFd, iHadReadLen, IO_STAT_DOWNSTREAM_RECV_BYTE);
+    }
 
     if (iReadLen == 0)
     {
@@ -788,7 +824,10 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
         }
         else
         {
-            m_pRecvBuff->SetReadIndex(uiReadIndex);
+            if (!m_pCodec->DecodeWithStack())
+            {
+                m_pRecvBuff->SetReadIndex(uiReadIndex);
+            }
             if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
             {
                 if (!IsClient())
@@ -842,7 +881,10 @@ E_CODEC_STATUS SocketChannelImpl<T>::Fetch(Targs&&... args)
     }
     else
     {
-        m_pRecvBuff->SetReadIndex(uiReadIndex);
+        if (!m_pCodec->DecodeWithStack())
+        {
+            m_pRecvBuff->SetReadIndex(uiReadIndex);
+        }
         if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
         {
             return(CODEC_STATUS_INVALID);

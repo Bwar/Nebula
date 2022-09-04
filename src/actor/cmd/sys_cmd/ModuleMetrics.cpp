@@ -64,13 +64,13 @@ bool ModuleMetrics::AnyMessage(std::shared_ptr<SocketChannel> pChannel, const Ht
             {
                 if (m_strApp.empty())
                 {
-                    oss << "nebula{key=\"}" << pReport->records(i).key()
+                    oss << "nebula{key=\"" << pReport->records(i).key()
                         << "\"}" << pReport->records(i).value(0) << "\n";
                 }
                 else
                 {
                     oss << "nebula{app=\"" << m_strApp
-                        << "\", key=\"}" << pReport->records(i).key()
+                        << "\", key=\"" << pReport->records(i).key()
                         << "\"}" << pReport->records(i).value(0) << "\n";
                 }
             }

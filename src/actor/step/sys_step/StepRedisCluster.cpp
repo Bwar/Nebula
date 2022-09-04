@@ -87,7 +87,7 @@ const std::unordered_set<std::string> StepRedisCluster::s_setWriteCmd =
     "ZADD","ZINCRBY","ZPOPMAX","ZPOPMIN",
     "ZREM","ZREMRANGEBYLEX","ZREMRANGEBYRANK","ZREMRANGEBYSCORE",
     // keys
-    "DEL","EXPIREAT","MOVE","PERSIST","PEXPIRE","PEXPIREAT",
+    "DEL","EXPIRE","EXPIREAT","MOVE","PERSIST","PEXPIRE","PEXPIREAT",
     "RESTORE","SORT","TOUCH","UNLINK"
 };
 
@@ -103,8 +103,9 @@ const std::unordered_set<std::string> StepRedisCluster::s_setMultipleKeyValueCmd
 
 StepRedisCluster::StepRedisCluster(
         const std::string& strIdentify,  bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
-    : m_bWithSsl(bWithSsl), m_bPipeline(bPipeline), m_bEnableReadOnly(bEnableReadOnly),
-      m_uiAddressIndex(0),
+    : RedisStep(30.0),
+      m_bWithSsl(bWithSsl), m_bPipeline(bPipeline), m_bEnableReadOnly(bEnableReadOnly),
+      m_uiAddressIndex(0), m_lLastCheckTime(0),
       m_strIdentify(strIdentify)
 {
     Split(strIdentify, ",", m_vecAddress);
@@ -202,8 +203,8 @@ E_CMD_STATUS StepRedisCluster::Callback(
                     }
                     if (vecMsg[0] == "ASK")
                     {
-                        AddToAskingQueue(vecMsg[2], pRedisRequest);
                         SendCmdAsking(vecMsg[2]);
+                        SendTo(vecMsg[2], pRedisRequest);
                         return(CMD_STATUS_RUNNING);
                     }
                     if (vecMsg[0] == "NOAUTH")
@@ -284,8 +285,8 @@ E_CMD_STATUS StepRedisCluster::Callback(
                         }
                         if (vecMsg[0] == "ASK")
                         {
-                            AddToAskingQueue(vecMsg[2], pRedisRequest);
                             SendCmdAsking(vecMsg[2]);
+                            SendTo(vecMsg[2], pRedisRequest);
                             return(CMD_STATUS_RUNNING);
                         }
                         if (vecMsg[0] == "CROSSSLOT")
@@ -300,40 +301,11 @@ E_CMD_STATUS StepRedisCluster::Callback(
                     LOG4_ERROR("no m_mapReply found for step %u", uiRealStepSeq);
                     return(CMD_STATUS_RUNNING);
                 }
-                std::vector<uint32> vecElementIndex;
-                for (int i = 1; i < pRedisRequest->element_size(); ++i)  // element(0).str() is cmd
-                {
-                    if (pRedisRequest->element(i).integer() > 0 || i == 1)
-                    {
-                        vecElementIndex.push_back((uint32)pRedisRequest->element(i).integer());
-                    }
-                }
-                for (uint32 j = 0; j < vecElementIndex.size(); ++j)
-                {
-                    if (vecElementIndex[j] < reply_iter->second.size())
-                    {
-                        if (reply_iter->second[vecElementIndex[j]] == nullptr)
-                        {
-                            reply_iter->second[vecElementIndex[j]] = new RedisReply();
-                        }
-                        reply_iter->second[vecElementIndex[j]]->CopyFrom(oRedisReply);
-                    }
-                    else
-                    {
-                        LOG4_ERROR("element index %u larger than reply size %u", vecElementIndex[j], reply_iter->second.size());
-                    }
-                }
+                // error or write cmd callback
                 num_iter->second--;
                 if (num_iter->second == 0)
                 {
-                    RedisReply oFinalReply;
-                    oFinalReply.set_type(oRedisReply.type());
-                    for (size_t k = 0; k < reply_iter->second.size(); ++k)
-                    {
-                        oFinalReply.mutable_element()->AddAllocated(reply_iter->second[k]);
-                        reply_iter->second[k] = nullptr;
-                    }
-                    IO<RedisStep>::OnResponse(GetLabor(this)->GetActorBuilder(), pChannel, uiRealStepSeq, oFinalReply);
+                    IO<RedisStep>::OnResponse(GetLabor(this)->GetActorBuilder(), pChannel, uiRealStepSeq, oRedisReply);
                     m_mapStepEmitNum.erase(num_iter);
                     m_mapReply.erase(reply_iter);
                 }
@@ -345,57 +317,16 @@ E_CMD_STATUS StepRedisCluster::Callback(
 
 E_CMD_STATUS StepRedisCluster::Timeout()
 {
-    if (m_setFailedNode.size() > 0)
-    {
-        SendCmdClusterSlots();
-    }
-    for (auto iter = m_setFailedNode.begin(); iter != m_setFailedNode.end(); ++iter)
-    {
-        if (m_setAllNode.find(*iter) == m_setAllNode.end())
-        {
-            m_setFailedNode.erase(iter);
-            iter = m_setFailedNode.begin();
-        }
-        else
-        {
-            SendCmdPing(*iter);
-        }
-    }
-    for (auto timeout_iter = m_mapTimeoutStep.begin(); timeout_iter != m_mapTimeoutStep.end(); )
-    {
-        if (GetNowTime() - timeout_iter->first >= GetTimeout())
-        {
-            for (uint32 i = 0; i < timeout_iter->second.size(); ++i)
-            {
-                auto reply_iter = m_mapReply.find(timeout_iter->second[i]);
-                if (reply_iter != m_mapReply.end())
-                {
-                    m_mapReply.erase(reply_iter);
-                }
-                auto num_iter = m_mapStepEmitNum.find(timeout_iter->second[i]);
-                if (num_iter != m_mapStepEmitNum.end())
-                {
-                    m_mapStepEmitNum.erase(num_iter);
-                }
-            }
-            timeout_iter->second.clear();
-            m_mapTimeoutStep.erase(timeout_iter);
-            timeout_iter = m_mapTimeoutStep.begin();
-        }
-        else
-        {
-            break;
-        }
-    }
+    HealthCheck();
     return(CMD_STATUS_RUNNING);
 }
 
 E_CMD_STATUS StepRedisCluster::ErrBack(
         std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg)
 {
-    LOG4_ERROR("error %d: %s", iErrno, strErrMsg.c_str());
+    LOG4_ERROR("step %u: channel %s error %d: %s", GetSequence(), pChannel->GetIdentify().c_str(), iErrno, strErrMsg.c_str());
     m_setFailedNode.insert(pChannel->GetIdentify());
-    SendCmdClusterSlots();
+    HealthCheck();
     CmdErrBack(pChannel, iErrno, strErrMsg);
     return(CMD_STATUS_RUNNING);
 }
@@ -477,7 +408,6 @@ void StepRedisCluster::CmdErrBack(
                 }
             }
         }
-        AskingQueueErrBack(pChannel, iErrno, strErrMsg);
     }
 }
 
@@ -497,7 +427,7 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, const RedisMsg& oR
 
 bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg)
 {
-    LOG4_TRACE("%s", pRedisMsg->DebugString().c_str());
+    LOG4_TRACE("%s: %s", strIdentify.c_str(), pRedisMsg->DebugString().c_str());
     bool bResult = IO<CodecResp>::SendTo(this, strIdentify,
             SOCKET_STREAM, m_bWithSsl, m_bPipeline, (*pRedisMsg.get()));
     if (bResult)
@@ -734,7 +664,7 @@ bool StepRedisCluster::SendCmdClusterSlots()
         m_uiAddressIndex = 0;
     }
     bool bResult = SendTo(m_vecAddress[m_uiAddressIndex++], pRedisRequest);
-    m_uiAddressIndex++;
+    ++m_uiAddressIndex;
     return(bResult);
 }
 
@@ -837,39 +767,14 @@ void StepRedisCluster::CmdAskingCallback(std::shared_ptr<SocketChannel> pChannel
     {
         if ("OK" == oRedisReply.str())
         {
-            auto step_iter = m_mapAskingRequest.find(strIdentify);
-            if (step_iter == m_mapAskingRequest.end() || step_iter->second.size() == 0)
-            {
-                LOG4_INFO("no \"%s\" found in m_mapPipelineStep", strIdentify.c_str());
-            }
-            while (step_iter->second.size() > 0)
-            {
-                auto& oRedisRequest = step_iter->second.front();
-                uint32 uiRealStepSeq = (uint32)oRedisRequest->integer();
-                step_iter->second.pop();
-                if (uiRealStepSeq == GetSequence())
-                {
-                    ;
-                }
-                else
-                {
-                    SendTo(strIdentify, oRedisRequest);
-                }
-            }
+            ;
         }
-        else
-        {
-            AskingQueueErrBack(pChannel, oRedisReply.type(), "unexpected asking error");
-        }
-    }
-    else if (REDIS_REPLY_ERROR == oRedisReply.type())
-    {
-        AskingQueueErrBack(pChannel, oRedisReply.type(), oRedisReply.str());
     }
     else
     {
-        AskingQueueErrBack(pChannel, oRedisReply.type(), oRedisReply.str());
+        LOG4_ERROR("%s unexpected asking errmsg: %s", strIdentify.c_str(), oRedisReply.str().c_str());
     }
+    LOG4_ERROR("%s unexpected error type %d: %s", strIdentify.c_str(), oRedisReply.type(), oRedisReply.str().c_str());
 }
 
 void StepRedisCluster::CmdPingCallback(std::shared_ptr<SocketChannel> pChannel,
@@ -914,87 +819,6 @@ void StepRedisCluster::CmdReadOnlyCallback(std::shared_ptr<SocketChannel> pChann
     else
     {
         LOG4_ERROR("set %s read only failed: unexpected reply type %d", pChannel->GetIdentify().c_str(), oRedisReply.type());
-    }
-}
-
-void StepRedisCluster::AskingQueueErrBack(
-        std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg)
-{
-    LOG4_ERROR("error %d: %s", iErrno, strErrMsg.c_str());
-    auto step_iter = m_mapAskingRequest.find(pChannel->GetIdentify());
-    if (step_iter == m_mapAskingRequest.end())
-    {
-        LOG4_TRACE("no \"%s\" found in m_mapPipelineStep", pChannel->GetIdentify().c_str());
-    }
-    else
-    {
-        while (step_iter->second.size() > 0)
-        {
-            auto pRedisRequest = step_iter->second.front();
-            uint32 uiRealStepSeq = (uint32)pRedisRequest->integer();
-            step_iter->second.pop();
-            if (uiRealStepSeq == GetSequence())
-            {
-                SendCmdClusterSlots();
-            }
-            else
-            {
-                auto num_iter = m_mapStepEmitNum.find(uiRealStepSeq);
-                if (num_iter == m_mapStepEmitNum.end()) // 单key请求的响应
-                {
-                    GetLabor(this)->GetActorBuilder()->OnError(pChannel, uiRealStepSeq, iErrno, strErrMsg);
-                }
-                else
-                {
-                    auto reply_iter = m_mapReply.find(uiRealStepSeq);
-                    if (reply_iter == m_mapReply.end())
-                    {
-                        LOG4_ERROR("no m_mapReply found for step %u", uiRealStepSeq);
-                        continue;
-                    }
-                    std::vector<uint32> vecElementIndex;
-                    for (int i = 1; i < pRedisRequest->element_size(); ++i)  // element(0).str() is cmd
-                    {
-                        if (pRedisRequest->element(i).integer() > 0 || i == 1)
-                        {
-                            vecElementIndex.push_back((uint32)pRedisRequest->element(i).integer());
-                        }
-                    }
-                    RedisReply oRedisReply;
-                    oRedisReply.set_type(REDIS_REPLY_ERROR);
-                    oRedisReply.set_str(strErrMsg);
-                    for (uint32 j = 0; j < vecElementIndex.size(); ++j)
-                    {
-                        if (vecElementIndex[j] < reply_iter->second.size())
-                        {
-                            if (reply_iter->second[vecElementIndex[j]] == nullptr)
-                            {
-                                reply_iter->second[vecElementIndex[j]] = new RedisReply();
-                            }
-                            reply_iter->second[vecElementIndex[j]]->CopyFrom(oRedisReply);
-                        }
-                        else
-                        {
-                            LOG4_ERROR("element index %u larger than reply size %u", vecElementIndex[j], reply_iter->second.size());
-                        }
-                    }
-                    num_iter->second--;
-                    if (num_iter->second == 0)
-                    {
-                        RedisReply oFinalReply;
-                        oFinalReply.set_type(REDIS_REPLY_ARRAY);
-                        for (size_t k = 0; k < reply_iter->second.size(); ++k)
-                        {
-                            oFinalReply.mutable_element()->AddAllocated(reply_iter->second[k]);
-                            reply_iter->second[k] = nullptr;
-                        }
-                        IO<RedisStep>::OnResponse(GetLabor(this)->GetActorBuilder(), pChannel, uiRealStepSeq, oFinalReply);
-                        m_mapStepEmitNum.erase(num_iter);
-                        m_mapReply.erase(reply_iter);
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -1120,21 +944,6 @@ void StepRedisCluster::RegisterStep(uint32 uiStepSeq)
     }
 }
 
-void StepRedisCluster::AddToAskingQueue(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg)
-{
-    auto iter = m_mapAskingRequest.find(strIdentify);
-    if (iter == m_mapAskingRequest.end())
-    {
-        std::queue<std::shared_ptr<RedisMsg>> queStep;
-        queStep.push(pRedisMsg);
-        m_mapAskingRequest.insert(std::make_pair(strIdentify, std::move(queStep)));
-    }
-    else
-    {
-        iter->second.push(pRedisMsg);
-    }
-}
-
 bool StepRedisCluster::Auth(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg)
 {
     std::string strAuth;
@@ -1152,6 +961,60 @@ bool StepRedisCluster::Auth(const std::string& strIdentify, std::shared_ptr<Redi
     {
         SendTo(strIdentify, pRedisRequest);
         return(SendTo(strIdentify, pRedisMsg));
+    }
+}
+
+void StepRedisCluster::HealthCheck()
+{
+    time_t lNowTime = GetNowTime();
+    if (lNowTime - m_lLastCheckTime < 2)
+    {
+        return;
+    }
+    m_lLastCheckTime = lNowTime;
+
+    if (m_setFailedNode.size() > 0)
+    {
+        SendCmdClusterSlots();
+    }
+    for (auto iter = m_setFailedNode.begin(); iter != m_setFailedNode.end(); )
+    {
+        if (m_setAllNode.find(*iter) == m_setAllNode.end())
+        {
+            m_setFailedNode.erase(iter);
+            iter = m_setFailedNode.begin();
+        }
+        else
+        {
+            SendCmdPing(*iter);
+            ++iter;
+        }
+    }
+    for (auto timeout_iter = m_mapTimeoutStep.begin(); timeout_iter != m_mapTimeoutStep.end(); )
+    {
+        if (GetNowTime() - timeout_iter->first >= GetTimeout())
+        {
+            for (uint32 i = 0; i < timeout_iter->second.size(); ++i)
+            {
+                auto reply_iter = m_mapReply.find(timeout_iter->second[i]);
+                if (reply_iter != m_mapReply.end())
+                {
+                    m_mapReply.erase(reply_iter);
+                }
+                auto num_iter = m_mapStepEmitNum.find(timeout_iter->second[i]);
+                if (num_iter != m_mapStepEmitNum.end())
+                {
+                    m_mapStepEmitNum.erase(num_iter);
+                }
+            }
+            timeout_iter->second.clear();
+            m_mapTimeoutStep.erase(timeout_iter);
+            timeout_iter = m_mapTimeoutStep.begin();
+        }
+        else
+        {
+            break;
+        }
     }
 }
 

@@ -101,7 +101,7 @@ public:     // about worker
     const WorkerInfo& GetWorkerInfo() const;
     std::shared_ptr<SocketChannel> GetManagerControlChannel();
     bool SetCustomConf(const CJsonObject& oJsonConf);
-    virtual void IoStatAddRecvNum(int iFd)
+    virtual void IoStatAddRecvNum(int iFd, uint32 uiIoType)
     {
         if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
         {
@@ -113,8 +113,16 @@ public:     // about worker
             return;
         }
         ++m_stWorkerInfo.uiRecvNum;
+        if (IO_STAT_UPSTREAM_RECV_NUM & uiIoType)
+        {
+            ++m_stWorkerInfo.uiUpStreamRecvNum;
+        }
+        if (IO_STAT_DOWNSTREAM_RECV_NUM & uiIoType)
+        {
+            ++m_stWorkerInfo.uiDownStreamRecvNum;
+        }
     }
-    virtual void IoStatAddRecvBytes(int iFd, uint32 uiBytes)
+    virtual void IoStatAddRecvBytes(int iFd, uint32 uiBytes, uint32 uiIoType)
     {
         if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
         {
@@ -126,8 +134,16 @@ public:     // about worker
             return;
         }
         m_stWorkerInfo.uiRecvByte += uiBytes;
+        if (IO_STAT_UPSTREAM_RECV_BYTE & uiIoType)
+        {
+            ++m_stWorkerInfo.uiUpStreamRecvByte;
+        }
+        if (IO_STAT_DOWNSTREAM_RECV_BYTE & uiIoType)
+        {
+            ++m_stWorkerInfo.uiDownStreamRecvByte;
+        }
     }
-    virtual void IoStatAddSendNum(int iFd)
+    virtual void IoStatAddSendNum(int iFd, uint32 uiIoType)
     {
         if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
         {
@@ -139,8 +155,16 @@ public:     // about worker
             return;
         }
         ++m_stWorkerInfo.uiSendNum;
+        if (IO_STAT_UPSTREAM_SEND_NUM & uiIoType)
+        {
+            ++m_stWorkerInfo.uiUpStreamSendNum;
+        }
+        if (IO_STAT_DOWNSTREAM_SEND_NUM & uiIoType)
+        {
+            ++m_stWorkerInfo.uiDownStreamSendNum;
+        }
     }
-    virtual void IoStatAddSendBytes(int iFd, uint32 uiBytes)
+    virtual void IoStatAddSendBytes(int iFd, uint32 uiBytes, uint32 uiIoType)
     {
         if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
         {
@@ -152,6 +176,34 @@ public:     // about worker
             return;
         }
         m_stWorkerInfo.uiSendByte += uiBytes;
+        if (IO_STAT_UPSTREAM_SEND_BYTE & uiIoType)
+        {
+            ++m_stWorkerInfo.uiUpStreamSendByte;
+        }
+        if (IO_STAT_DOWNSTREAM_SEND_BYTE & uiIoType)
+        {
+            ++m_stWorkerInfo.uiDownStreamSendByte;
+        }
+    }
+
+    virtual void IoStatAddConnection(uint32 uiIoType)
+    {
+        if (IO_STAT_DOWNSTREAM_NEW_CONNECTION & uiIoType)
+        {
+            ++m_stWorkerInfo.uiNewDownStreamConnection;
+        }
+        else if (IO_STAT_DOWNSTREAM_DESTROY_CONNECTION & uiIoType)
+        {
+            ++m_stWorkerInfo.uiDestroyDownStreamConnection;
+        }
+        else if (IO_STAT_UPSTREAM_NEW_CONNECTION & uiIoType)
+        {
+            ++m_stWorkerInfo.uiNewUpStreamConnection;
+        }
+        else if (IO_STAT_UPSTREAM_DESTROY_CONNECTION & uiIoType)
+        {
+            ++m_stWorkerInfo.uiDestroyUpStreamConnection;
+        }
     }
 
     template <typename ...Targs>

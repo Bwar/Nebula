@@ -129,6 +129,18 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v1.7.3
+   - error callback caused by fuse node detection bug fixed
+   - redis cluster returns when executing batch write commands and asking bug fixed
+   - the channel creation method and use CodecFactory instead
+   - Add connection backlog configuration
+   - Optimize worker mini load forwarding
+   - add dns cache
+   - add upstream and downstren monitor
+#### v1.7.2
+   - codec bind channel circular reference bug fixed
+   - CodecProto no packet communication bug fixed
+   - enable connection protection configuration
 #### v1.7.1
    - async logger optimization
    - add selfchannel sequence

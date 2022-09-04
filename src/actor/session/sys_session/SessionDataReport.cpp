@@ -30,12 +30,15 @@ SessionDataReport::~SessionDataReport()
         delete m_pReport;
         m_pReport = nullptr;
     }
-    for (auto iter = m_mapDataCollect.begin(); iter != m_mapDataCollect.end(); ++iter)
+    for (auto data_iter = m_mapDataCollect.begin(); data_iter != m_mapDataCollect.end(); ++data_iter)
     {
-        if (iter->second != nullptr)
+        for (auto iter = data_iter->second.begin(); iter != data_iter->second.end(); ++iter)
         {
-            delete iter->second;
-            iter->second = nullptr;
+            if (iter->second != nullptr)
+            {
+                delete iter->second;
+                iter->second = nullptr;
+            }
         }
     }
     m_mapDataCollect.clear();
@@ -67,10 +70,13 @@ E_CMD_STATUS SessionDataReport::Timeout()
         LOG4_ERROR("failed to new Report!");
         return(CMD_STATUS_FAULT);
     }
-    for (auto iter = m_mapDataCollect.begin(); iter != m_mapDataCollect.end(); ++iter)
+    for (auto data_iter = m_mapDataCollect.begin(); data_iter != m_mapDataCollect.end(); ++data_iter)
     {
-        m_pReport->mutable_records()->AddAllocated(iter->second);
-        iter->second = nullptr;
+        for (auto iter = data_iter->second.begin(); iter != data_iter->second.end(); ++iter)
+        {
+            m_pReport->mutable_records()->AddAllocated(iter->second);
+            iter->second = nullptr;
+        }
     }
     MsgBody oMsgBody;
     m_pReport->SerializeToString(&m_strReport);
@@ -85,11 +91,12 @@ E_CMD_STATUS SessionDataReport::Timeout()
 void SessionDataReport::AddReport(const std::shared_ptr<Report> pReport)
 {
     LOG4_TRACE("");
+    std::unordered_map<std::string, std::unordered_map<std::string, ReportRecord*>>::iterator data_iter;
     std::unordered_map<std::string, ReportRecord*>::iterator iter;
     for (int i = 0; i < pReport->records_size(); ++i)
     {
-        iter = m_mapDataCollect.find(pReport->records(i).key());
-        if (iter == m_mapDataCollect.end())
+        data_iter = m_mapDataCollect.find(pReport->records(i).item());
+        if (data_iter == m_mapDataCollect.end())
         {
             ReportRecord* pRecord = nullptr;
             try
@@ -106,26 +113,51 @@ void SessionDataReport::AddReport(const std::shared_ptr<Report> pReport)
             {
                 pRecord->add_value(pReport->records(i).value(j));
             }
-            m_mapDataCollect.insert(std::make_pair(pReport->records(i).key(), pRecord));
+            std::unordered_map<std::string, ReportRecord*> mapKeyRecord;
+            mapKeyRecord.insert(std::make_pair(pReport->records(i).key(), pRecord));
+            m_mapDataCollect.insert(std::make_pair(pReport->records(i).item(), std::move(mapKeyRecord)));
         }
         else
         {
-            for (int j = 0; j < pReport->records(i).value_size(); ++j)
+            iter = data_iter->second.find(pReport->records(i).key());
+            if (iter == data_iter->second.end())
             {
-                if (j < iter->second->value_size())
+                ReportRecord* pRecord = nullptr;
+                try
                 {
-                    if (pReport->records(i).value_type() == ReportRecord::VALUE_ACC)
+                    pRecord = new ReportRecord();
+                }
+                catch (std::bad_alloc& e)
+                {
+                    return;
+                }
+                pRecord->set_key(pReport->records(i).key());
+                pRecord->set_item(pReport->records(i).item());
+                for (int j = 0; j < pReport->records(i).value_size(); ++j)
+                {
+                    pRecord->add_value(pReport->records(i).value(j));
+                }
+                data_iter->second.insert(std::make_pair(pReport->records(i).key(), pRecord));
+            }
+            else
+            {
+                for (int j = 0; j < pReport->records(i).value_size(); ++j)
+                {
+                    if (j < iter->second->value_size())
                     {
-                        iter->second->set_value(j, iter->second->value(j) + pReport->records(i).value(j));
+                        if (pReport->records(i).value_type() == ReportRecord::VALUE_ACC)
+                        {
+                            iter->second->set_value(j, iter->second->value(j) + pReport->records(i).value(j));
+                        }
+                        else
+                        {
+                            iter->second->set_value(j, pReport->records(i).value(j));
+                        }
                     }
                     else
                     {
-                        iter->second->set_value(j, pReport->records(i).value(j));
+                        iter->second->add_value(pReport->records(i).value(j));
                     }
-                }
-                else
-                {
-                    iter->second->add_value(pReport->records(i).value(j));
                 }
             }
         }

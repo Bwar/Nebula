@@ -10,6 +10,7 @@
 #ifndef SRC_CODEC_CODECRESP_HPP_
 #define SRC_CODEC_CODECRESP_HPP_
 
+#include <memory>
 #include "Codec.hpp"
 #include "pb/redis.pb.h"
 
@@ -17,6 +18,29 @@ namespace neb
 {
 
 class RedisStep;
+
+struct CodecRespReadTask
+{
+    int iType;
+    int iElements;                  ///< number of elements in multibulk container
+    int iIndex;                     ///< index in parent (array) object
+    RedisReply* pReply;             ///<  holds user-generated value for a read task
+    CodecRespReadTask *pParent;     ///<  parent task
+
+    CodecRespReadTask()
+        : iType(-1), iElements(-1), iIndex(-1), pReply(nullptr), pParent(nullptr)
+    {
+    }
+
+    void Reset()
+    {
+        iType = -1;
+        iElements = -1;
+        iIndex = -1;
+        pReply = nullptr;
+        pParent = nullptr;
+    }
+};
 
 class CodecResp: public neb::Codec
 {
@@ -28,6 +52,11 @@ public:
     static E_CODEC_TYPE Type()
     {
         return(CODEC_RESP);
+    }
+
+    virtual bool DecodeWithStack() const
+    {
+        return(m_bDecodeWithStack);
     }
 
     E_CODEC_STATUS Encode(CBuffer* pBuff);
@@ -42,13 +71,32 @@ protected:
     E_CODEC_STATUS EncodeBulkString(const RedisReply& oReply, CBuffer* pBuff);
     E_CODEC_STATUS EncodeArray(const RedisReply& oReply, CBuffer* pBuff);
     E_CODEC_STATUS EncodeNull(const RedisReply& oReply, CBuffer* pBuff);
+    
+    E_CODEC_STATUS DecodeRecursive(CBuffer* pBuff, RedisReply& oReply);
     E_CODEC_STATUS DecodeSimpleString(CBuffer* pBuff, RedisReply& oReply);
     E_CODEC_STATUS DecodeError(CBuffer* pBuff, RedisReply& oReply);
     E_CODEC_STATUS DecodeInteger(CBuffer* pBuff, RedisReply& oReply);
     E_CODEC_STATUS DecodeBulkString(CBuffer* pBuff, RedisReply& oReply);
     E_CODEC_STATUS DecodeArray(CBuffer* pBuff, RedisReply& oReply);
 
+    E_CODEC_STATUS DecodeWithStack(CBuffer* pBuff, RedisReply& oReply);
+    E_CODEC_STATUS DecodeWithStack(CBuffer* pBuff);
+    E_CODEC_STATUS DecodeLineItem(CBuffer* pBuff);
+    E_CODEC_STATUS DecodeBulkItem(CBuffer* pBuff);
+    E_CODEC_STATUS DecodeArray(CBuffer* pBuff);
+    void MoveToNextTask();
+    RedisReply* NewReply(CodecRespReadTask *pParent);
+
 private:
+    bool m_bDecodeWithStack = false;
+    unsigned int m_uiDecodedNum = 0;
+    unsigned int m_uiIncompleteDecodeNum = 0;
+    int m_iErrno    = 0;               /* Error flags, 0 when there is no error */
+    char m_szErrMsg[128] = {0};       /* String representation of error when applicable */
+    int m_iCurrentReadTaskIndex = -1;
+    CodecRespReadTask m_oReadStack[9];
+    RedisReply m_oReply;                 ///< Temporary reply pointer
+
     static const char RESP_SIMPLE_STRING;
     static const char RESP_ERROR;
     static const char RESP_INTEGER;
