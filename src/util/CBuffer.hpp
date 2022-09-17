@@ -40,6 +40,7 @@ class CBuffer
 {
     private:
         char *m_buffer; //raw buffer
+        char *m_external_readonly_buffer; //readonly raw buffer
         /** total allocation available in the buffer field. */
         size_t m_buffer_len; //raw buffer length
 
@@ -49,8 +50,15 @@ class CBuffer
         static const size_t BUFFER_MAX_READ = 8192;
         static const size_t DEFAULT_BUFFER_SIZE = 32;
         inline CBuffer() :
-            m_buffer(NULL), m_buffer_len(0), m_write_idx(0),
-                    m_read_idx(0)
+            m_buffer(NULL), m_external_readonly_buffer(NULL),
+            m_buffer_len(0), m_write_idx(0), m_read_idx(0)
+        {
+        }
+        //readonly
+        inline CBuffer(const char* data, size_t len) :
+            m_buffer(const_cast<char*>(data)),
+            m_external_readonly_buffer(const_cast<char*>(data)),
+            m_buffer_len(0), m_write_idx(0), m_read_idx(0)
         {
         }
         inline size_t GetReadIndex()
@@ -96,6 +104,10 @@ class CBuffer
 
         inline size_t Compact(size_t leastLength)
         {
+            if (m_external_readonly_buffer != NULL)
+            {
+                return 0;
+            }
             uint32_t writableBytes = WriteableBytes();
             if (writableBytes < leastLength)
             {
@@ -126,6 +138,10 @@ class CBuffer
 
         inline bool EnsureWritableBytes(size_t minWritableBytes)
         {
+            if (m_external_readonly_buffer != NULL)
+            {
+                return false;
+            }
             if (WriteableBytes() >= minWritableBytes)
             {
                 return true;
@@ -338,11 +354,14 @@ class CBuffer
         }
         inline ~CBuffer()
         {
-            if (m_buffer != NULL)
+            if (m_external_readonly_buffer == NULL)
             {
-                free(m_buffer);
+                if (m_buffer != NULL)
+                {
+                    free(m_buffer);
+                }
+                m_buffer = NULL;
             }
-            m_buffer = NULL;
         }
 
 };

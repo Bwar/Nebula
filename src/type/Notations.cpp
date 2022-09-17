@@ -57,6 +57,20 @@ bool Notations::EncodeString(const std::string& strValue, CBuffer* pBuff)
     }
 }
 
+bool Notations::EncodeString(const char* szValue, uint32 uiSize, CBuffer* pBuff)
+{
+    if (uiSize > 65535)
+    {
+        return(false);
+    }
+    else
+    {
+        EncodeShort((uint16)uiSize, pBuff);
+        pBuff->Write(szValue, uiSize);
+        return(true);
+    }
+}
+
 bool Notations::EncodeLongString(const std::string& strValue, CBuffer* pBuff)
 {
     if (strValue.size() > 2147483647)
@@ -67,6 +81,20 @@ bool Notations::EncodeLongString(const std::string& strValue, CBuffer* pBuff)
     {
         EncodeInt((int32)strValue.size(), pBuff);
         pBuff->Write(strValue.data(), strValue.size());
+        return(true);
+    }
+}
+
+bool Notations::EncodeLongString(const char* szValue, uint32 uiSize, CBuffer* pBuff)
+{
+    if (uiSize > 2147483647)
+    {
+        return(false);
+    }
+    else
+    {
+        EncodeInt((int32)uiSize, pBuff);
+        pBuff->Write(szValue, uiSize);
         return(true);
     }
 }
@@ -113,6 +141,25 @@ bool Notations::EncodeBytes(const Bytes& stValue, CBuffer* pBuff)
     {
         EncodeInt(stValue.iLength, pBuff);
         pBuff->Write(stValue.pData, stValue.iLength);
+        return(true);
+    }
+}
+
+bool Notations::EncodeBytes(const char* szValue, int32 iSize, CBuffer* pBuff)
+{
+    if (iSize < 0)
+    {
+        EncodeInt(iSize, pBuff);
+        return(true);
+    }
+    else if (iSize > 2147483647)
+    {
+        return(false);
+    }
+    else
+    {
+        EncodeInt(iSize, pBuff);
+        pBuff->Write(szValue, iSize);
         return(true);
     }
 }

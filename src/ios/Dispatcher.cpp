@@ -1183,7 +1183,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
 {
     char szClientAddr[64] = {0};
     int iAcceptFd = -1;
-    int iClientPort = 0;
+    //int iClientPort = 0;
     if (AF_INET == iFamily)
     {
         struct sockaddr_in stClientAddr;
@@ -1221,7 +1221,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
         }
         x_sock_set_block(iAcceptFd, 0);
         inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
-        iClientPort = CodecUtil::N2H(stClientAddr.sin_port);
+        //iClientPort = CodecUtil::N2H(stClientAddr.sin_port);
         LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }
     else    // AF_INET6
@@ -1261,7 +1261,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
         }
         x_sock_set_block(iAcceptFd, 0);
         inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
-        iClientPort = CodecUtil::N2H(stClientAddr.sin6_port);
+        //iClientPort = CodecUtil::N2H(stClientAddr.sin6_port);
         LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }
 
