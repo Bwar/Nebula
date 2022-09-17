@@ -145,10 +145,13 @@ public:
     static void EncodeByte(uint8 ucValue, CBuffer* pBuff);
     static void EncodeShort(uint16 unValue, CBuffer* pBuff);
     static bool EncodeString(const std::string& strValue, CBuffer* pBuff);
+    static bool EncodeString(const char* szValue, uint32 uiSize, CBuffer* pBuff);
     static bool EncodeLongString(const std::string& strValue, CBuffer* pBuff);
+    static bool EncodeLongString(const char* szValue, uint32 uiSize, CBuffer* pBuff);
     static bool EncodeUuid(const std::string& strValue, CBuffer* pBuff);
     static bool EncodeStringList(const std::vector<std::string>& vecValue, CBuffer* pBuff);
     static bool EncodeBytes(const Bytes& stValue, CBuffer* pBuff);
+    static bool EncodeBytes(const char* szValue, int32 iSize, CBuffer* pBuff);
     static bool EncodeValue(const Value& stValue, CBuffer* pBuff);
     static bool EncodeShortBytes(const Bytes& stValue, CBuffer* pBuff);
     static bool EncodeOption(uint16 unId, const Value& stValue, std::function<bool(uint16)> WithOptionValue, CBuffer* pBuff);
