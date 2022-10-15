@@ -25,7 +25,7 @@ CodecRaw::~CodecRaw()
 {
 }
 
-E_CODEC_STATUS CodecRaw::Encode(CBuffer* pBuff)
+E_CODEC_STATUS CodecRaw::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
     return(CODEC_STATUS_OK);
 }
@@ -38,6 +38,11 @@ E_CODEC_STATUS CodecRaw::Encode(const char* pRaw, uint32 uiRawSize, CBuffer* pBu
     }
     pBuff->Write(pRaw, uiRawSize);
     return(CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecRaw::Encode(const char* pRaw, uint32 uiRawSize, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    return(Encode(pRaw, uiRawSize, pBuff));
 }
 
 E_CODEC_STATUS CodecRaw::Decode(CBuffer* pBuff, CBuffer& oBuff)

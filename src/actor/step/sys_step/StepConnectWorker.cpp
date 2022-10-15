@@ -30,7 +30,8 @@ E_CMD_STATUS StepConnectWorker::Emit(
     MsgHead oMsgHead;
     MsgBody oMsgBody;
     oMsgBody.set_data(std::to_string((int)m_iRemoteWorkerIndex));
-    SendTo(m_pChannel, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
+    oMsgBody.set_trace_id(GetTraceId());
+    IO<CodecNebula>::SendRequest(this, m_pChannel, CMD_REQ_CONNECT_TO_WORKER, GetSequence(), oMsgBody);
     return(CMD_STATUS_COMPLETED);
 }
 

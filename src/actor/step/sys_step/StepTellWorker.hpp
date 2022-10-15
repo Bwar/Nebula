@@ -13,12 +13,13 @@
 #include "actor/ActorSys.hpp"
 #include "actor/step/PbStep.hpp"
 #include "pb/neb_sys.pb.h"
+#include "ios/IO.hpp"
 
 namespace neb
 {
 
 class StepTellWorker: public PbStep,
-    public DynamicCreator<StepTellWorker, std::shared_ptr<SocketChannel> >,
+    public DynamicCreator<StepTellWorker, std::shared_ptr<SocketChannel>& >,
     public ActorSys
 {
 public:

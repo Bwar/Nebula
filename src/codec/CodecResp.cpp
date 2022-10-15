@@ -29,7 +29,7 @@ CodecResp::~CodecResp()
 {
 }
 
-E_CODEC_STATUS CodecResp::Encode(CBuffer* pBuff)
+E_CODEC_STATUS CodecResp::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
     return(CODEC_STATUS_OK);
 }
@@ -67,6 +67,11 @@ E_CODEC_STATUS CodecResp::Encode(const RedisReply& oReply, CBuffer* pBuff)
         pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadWriteLen);
     }
     return(eStatus);
+}
+
+E_CODEC_STATUS CodecResp::Encode(const RedisReply& oReply, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    return(Encode(oReply, pBuff));
 }
 
 E_CODEC_STATUS CodecResp::Decode(CBuffer* pBuff, RedisReply& oReply)

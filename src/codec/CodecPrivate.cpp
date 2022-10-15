@@ -25,7 +25,7 @@ CodecPrivate::~CodecPrivate()
 {
 }
 
-E_CODEC_STATUS CodecPrivate::Encode(CBuffer* pBuff)
+E_CODEC_STATUS CodecPrivate::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
     return(CODEC_STATUS_OK);
 }
@@ -193,6 +193,12 @@ E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead, const MsgBody& oMsg
     }
     LOG4_TRACE("oMsgBody.ByteSize() = %d, iWriteLen = %d(compress or encrypt maybe)", oMsgBody.ByteSize(), iWriteLen);
     return(CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecPrivate::Encode(const MsgHead& oMsgHead,
+        const MsgBody& oMsgBody, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    return(Encode(oMsgHead, oMsgBody, pBuff));
 }
 
 E_CODEC_STATUS CodecPrivate::Decode(CBuffer* pBuff, MsgHead& oMsgHead, MsgBody& oMsgBody)

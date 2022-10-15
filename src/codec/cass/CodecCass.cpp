@@ -26,7 +26,7 @@ CodecCass::~CodecCass()
 {
 }
 
-E_CODEC_STATUS CodecCass::Encode(CBuffer* pBuff)
+E_CODEC_STATUS CodecCass::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
     GenerateStreamId();
     return(CODEC_STATUS_OK);
@@ -86,6 +86,11 @@ E_CODEC_STATUS CodecCass::Encode(const CassMessage& oCassMsg, CBuffer* pBuff)
         }
         return(CODEC_STATUS_OK);
     }
+}
+
+E_CODEC_STATUS CodecCass::Encode(const CassMessage& oCassMsg, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    return(Encode(oCassMsg, pBuff));
 }
 
 E_CODEC_STATUS CodecCass::Decode(CBuffer* pBuff, CassMessage& oCassMsg)

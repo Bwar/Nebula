@@ -31,6 +31,9 @@
     "new_client_to_loader":false,
     "//cpu_affinity":"是否设置进程CPU亲和度（绑定CPU）",
     "cpu_affinity":false,
+    "connection_dispatcher":{"round_robin":0, "min_load":1, "client_addr_hash":2},
+    "connection_dispatch":0,
+    "daemonize":true,
     "//worker_capacity": "子进程最大工作负荷",
     "worker_capacity": 1000000,
     "//config_path": "配置文件路径（相对路径）",
@@ -64,6 +67,7 @@
     "log_levels": { "FATAL": 0, "CRITICAL": 1, "ERROR": 2, "NOTICE": 3, "WARNING": 4, "INFO": 5, "DEBUG": 6, "TRACE": 7 },
     "log_level": 7,
     "net_log_level": 6,
+    "console_log":false,
     "//with_ssl": "SSL配置（可为空），路径为相对${WorkPath}的相对路径，公钥文件和私钥文件均为PEM格式",
     "with_ssl": {
         "config_path": "conf/ssl",
@@ -72,6 +76,8 @@
     },
     "//data_report": "数据上报时间间隔，无统计数据时不上报",
     "data_report": 60,
+    "//service_start_notice":"是否需要通知每个worker服务已就绪",
+    "service_start_notice":false,
     "//refresh_interval": "刷新Server配置，检查、加载插件动态库时间周期",
     "refresh_interval": 60,
     "load_config":{

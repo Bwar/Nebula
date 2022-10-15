@@ -22,6 +22,7 @@ TimerAddrinfo::~TimerAddrinfo()
     if (m_pAddrInfo != nullptr)
     {
         freeaddrinfo(m_pAddrInfo);
+        m_pAddrInfo = nullptr;
     }
     m_pAddrInfo = nullptr;
 }
@@ -31,6 +32,7 @@ E_CMD_STATUS TimerAddrinfo::Timeout()
     if (m_pAddrInfo != nullptr)
     {
         freeaddrinfo(m_pAddrInfo);
+        m_pAddrInfo = nullptr;
     }
     m_pAddrInfo = nullptr;
     return(CMD_STATUS_RUNNING);

@@ -31,6 +31,7 @@ public:
         unsigned int uiMaxFileSize = gc_uiMaxLogFileSize,
         unsigned int uiMaxRollFileIndex = gc_uiMaxRollLogFileIndex,
         bool bAlwaysFlush = true,
+        bool bConsoleLog = false,
         Labor* pLabor = nullptr);
     NetLogger(
         int iWorkerIndex,

@@ -30,7 +30,7 @@ public:
             int iLogLev = Logger::INFO,
             unsigned int uiMaxFileSize = neb::gc_uiMaxLogFileSize,
             unsigned int uiMaxRollFileIndex = neb::gc_uiMaxRollLogFileIndex,
-            bool bAlwaysFlush = true);
+            bool bAlwaysFlush = true, bool bConsoleLog = false);
     virtual ~FileLogger();
 
     static FileLogger* Instance(const std::string& strLogFile = "../log/default.log",
@@ -90,6 +90,7 @@ private:
     unsigned int m_uiMaxFileSize;       // 日志文件大小
     unsigned int m_uiMaxRollFileIndex;  // 滚动日志文件数量
     bool m_bAlwaysFlush;
+    bool m_bConsoleLog;
     time_t m_lTimeSec;
     std::string m_strLogFileBase;       // 日志文件基本名（如 log/program_name.log）
     std::string m_strLogFormatTime;
@@ -112,13 +113,17 @@ int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLi
     }
     if(!m_fout.good())
     {
-        std::cerr << "Write log error: no log file handle." << std::endl;
+        std::cerr << __FILE__ << ":" << __LINE__ << " Write log error: no log file handle." << std::endl;
         return -1;
     }
 
     AppendLogPattern(iLev, szFileName, uiFileLine, szFunction);
     Append(szLogFormat, std::forward<Targs>(args)...);
     m_fout << "\n";
+    if (m_bConsoleLog)
+    {
+        std::cout << std::endl;
+    }
 
     if (m_bAlwaysFlush)
     {
@@ -145,13 +150,17 @@ int FileLogger::WriteLog(const std::string& strTraceId, int iLev,
     }
     if(!m_fout.good())
     {
-        std::cerr << "Write log error: no log file handle." << std::endl;
+        std::cerr << __FILE__ << ":" << __LINE__ << " Write log error: no log file handle." << std::endl;
         return -1;
     }
 
     AppendLogPattern(strTraceId, iLev, szFileName, uiFileLine, szFunction);
     Append(szLogFormat, std::forward<Targs>(args)...);
     m_fout << "\n";
+    if (m_bConsoleLog)
+    {
+        std::cout << std::endl;
+    }
 
     if (m_bAlwaysFlush)
     {
@@ -177,13 +186,17 @@ int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLi
     }
     if(!m_fout.good())
     {
-        std::cerr << "Write log error: no log file handle." << std::endl;
+        std::cerr << __FILE__ << ":" << __LINE__ << " Write log error: no log file handle." << std::endl;
         return -1;
     }
 
     AppendLogPattern(iLev, szFileName, uiFileLine, szFunction);
     Append(std::forward<Targs>(args)...);
     m_fout << "\n";
+    if (m_bConsoleLog)
+    {
+        std::cout << std::endl;
+    }
 
     if (m_bAlwaysFlush)
     {
@@ -210,13 +223,17 @@ int FileLogger::WriteLog(const std::string& strTraceId, int iLev,
     }
     if(!m_fout.good())
     {
-        std::cerr << "Write log error: no log file handle." << std::endl;
+        std::cerr << __FILE__ << ":" << __LINE__ << " Write log error: no log file handle." << std::endl;
         return -1;
     }
 
     AppendLogPattern(strTraceId, iLev, szFileName, uiFileLine, szFunction);
     Append(std::forward<Targs>(args)...);
     m_fout << "\n";
+    if (m_bConsoleLog)
+    {
+        std::cout << std::endl;
+    }
 
     if (m_bAlwaysFlush)
     {
@@ -238,6 +255,10 @@ template<typename T>
 void FileLogger::Append(T&& arg)
 {
     m_fout << arg;
+    if (m_bConsoleLog)
+    {
+        std::cout << arg;
+    }
 }
 
 template<typename T, typename ...Targs>
@@ -279,8 +300,16 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                 {
                     m_strOutStr.assign(szFormat, i);
                     m_fout << m_strOutStr;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                    }
                 }
                 m_fout << arg;
+                if (m_bConsoleLog)
+                {
+                    std::cout << arg;
+                }
                 return(nullptr);
             case '%':
                 if (bPlaceholder)
@@ -288,6 +317,10 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     m_strOutStr.append("%");
                     pPos = szFormat + i + 1;
                     m_fout << m_strOutStr;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                    }
                     return(PrintfAppend(pPos, std::forward<T>(arg)));
                 }
                 else
@@ -302,6 +335,11 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     pPos = szFormat + i + 1;
                     m_fout << m_strOutStr;
                     m_fout << std::fixed << arg;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                        std::cout << std::fixed << arg;
+                    }
                     return(pPos);
                 }
                 break;
@@ -317,6 +355,11 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     pPos = szFormat + i + 1;
                     m_fout << m_strOutStr;
                     m_fout << arg;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                        std::cout << arg;
+                    }
                     return(pPos);
                 }
                 break;
@@ -328,6 +371,11 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     pPos = szFormat + i + 1;
                     m_fout << m_strOutStr;
                     m_fout << std::dec << arg;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                        std::cout << std::dec << arg;
+                    }
                     return(pPos);
                 }
                 break;
@@ -337,6 +385,11 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     pPos = szFormat + i + 1;
                     m_fout << m_strOutStr;
                     m_fout << std::hex << std::nouppercase << arg;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                        std::cout << std::hex << std::nouppercase << arg;
+                    }
                     return(pPos);
                 }
                 break;
@@ -346,6 +399,11 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     pPos = szFormat + i + 1;
                     m_fout << m_strOutStr;
                     m_fout << std::hex << std::uppercase << arg;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                        std::cout << std::hex << std::uppercase << arg;
+                    }
                     return(pPos);
                 }
                 break;
@@ -355,6 +413,11 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     pPos = szFormat + i + 1;
                     m_fout << m_strOutStr;
                     m_fout << std::oct << arg;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                        std::cout << std::oct << arg;
+                    }
                     return(pPos);
                 }
                 break;
@@ -365,6 +428,11 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     pPos = szFormat + i + 1;
                     m_fout << m_strOutStr;
                     m_fout << std::scientific << std::nouppercase << arg;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                        std::cout << std::scientific << std::nouppercase << arg;
+                    }
                     return(pPos);
                 }
                 break;
@@ -375,6 +443,11 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
                     pPos = szFormat + i + 1;
                     m_fout << m_strOutStr;
                     m_fout << std::scientific << std::uppercase << arg;
+                    if (m_bConsoleLog)
+                    {
+                        std::cout << m_strOutStr;
+                        std::cout << std::scientific << std::uppercase << arg;
+                    }
                     return(pPos);
                 }
                 break;
@@ -384,6 +457,10 @@ const char* FileLogger::PrintfAppend(const char* szFormat, T&& arg)
     }
     m_strOutStr.assign(szFormat, i);
     m_fout << m_strOutStr;
+    if (m_bConsoleLog)
+    {
+        std::cout << m_strOutStr;
+    }
     return(nullptr);
 }
 

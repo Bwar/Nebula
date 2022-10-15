@@ -779,7 +779,8 @@ template<typename ...Targs>
 bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, const std::string& strHost,
         int iPort, int iRemoteWorkerIndex, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args)
 {
-    LOG4_TRACE_DISPATCH("%s", strIdentify.c_str());
+    LOG4_TRACE_DISPATCH("identify %s, host %s port %d, remote_worker_index %d",
+            strIdentify.c_str(), strHost.c_str(), iPort, iRemoteWorkerIndex);
     struct addrinfo stAddrHints;
     struct addrinfo* pAddrResult = nullptr;
     struct addrinfo* pAddrCurrent = nullptr;
@@ -849,6 +850,10 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::strin
     if (nullptr != pChannel)
     {
         connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
+        if (pSessionAddr != nullptr && pAddrResult != pSessionAddr->GetAddrinfo())
+        {
+            freeaddrinfo(pAddrResult);
+        }
         pDispatcher->m_pLabor->IoStatAddConnection(IO_STAT_UPSTREAM_NEW_CONNECTION);
         ev_tstamp dIoTimeout = (pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection > 0)
             ? pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection : pDispatcher->m_pLabor->GetNodeInfo().dIoTimeout;

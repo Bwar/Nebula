@@ -91,7 +91,7 @@ CodecHttp::~CodecHttp()
 {
 }
 
-E_CODEC_STATUS CodecHttp::Encode(CBuffer* pBuff)
+E_CODEC_STATUS CodecHttp::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
     return(CODEC_STATUS_OK);
 }
@@ -490,6 +490,11 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
     return(CODEC_STATUS_OK);
 }
 
+E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    return(Encode(oHttpMsg, pBuff));
+}
+
 E_CODEC_STATUS CodecHttp::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)
 {
     LOG4_TRACE(" ");
@@ -597,8 +602,8 @@ const std::string& CodecHttp::ToString(const HttpMsg& oHttpMsg)
         m_strHttpString += prover;
         if (oHttpMsg.status_code() > 0)
         {
-            char tmp[10];
-            snprintf(tmp, 10, " %d\r\n", oHttpMsg.status_code());
+            char tmp[32];
+            snprintf(tmp, 32, " %d\r\n", oHttpMsg.status_code());
             m_strHttpString += tmp;
         }
     }

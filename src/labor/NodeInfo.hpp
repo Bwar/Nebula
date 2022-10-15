@@ -33,6 +33,7 @@ struct NodeInfo
     int32 iForClientSocketType      = 0;            ///< 对Client通信的socket类型
     int32 iGatewayPort              = 0;            ///< 对Client服务的真实端口
     int32 iBacklog                  = 100;          ///< 监听队列长度
+    int32 iConnectionDispatch       = 0;            ///< 新建连接分发方式
     bool bThreadMode                = false;        ///< 是否线程模型
     bool bAsyncLogger               = false;        ///< 是否启用异步文件日志
     bool bIsAccess                  = false;        ///< 是否接入Server

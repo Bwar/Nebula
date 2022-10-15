@@ -1183,7 +1183,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
 {
     char szClientAddr[64] = {0};
     int iAcceptFd = -1;
-    //int iClientPort = 0;
+    int iClientPort = 0;
     if (AF_INET == iFamily)
     {
         struct sockaddr_in stClientAddr;
@@ -1221,7 +1221,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
         }
         x_sock_set_block(iAcceptFd, 0);
         inet_ntop(AF_INET, &stClientAddr.sin_addr, szClientAddr, sizeof(szClientAddr));
-        //iClientPort = CodecUtil::N2H(stClientAddr.sin_port);
+        iClientPort = CodecUtil::N2H(stClientAddr.sin_port);
         LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }
     else    // AF_INET6
@@ -1261,7 +1261,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
         }
         x_sock_set_block(iAcceptFd, 0);
         inet_ntop(AF_INET6, &stClientAddr.sin6_addr, szClientAddr, sizeof(szClientAddr));
-        //iClientPort = CodecUtil::N2H(stClientAddr.sin6_port);
+        iClientPort = CodecUtil::N2H(stClientAddr.sin6_port);
         LOG4_TRACE("accept connect from \"%s\"", szClientAddr);
     }
 
@@ -1284,9 +1284,20 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
     }
 
     int iWorkerDataFd = -1;
-    iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd();
-    //iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd();
-    //iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetWorkerDataFd(szClientAddr, iClientPort);
+    switch (m_pLabor->GetNodeInfo().iConnectionDispatch)
+    {
+        case DISPATCH_ROUND_ROBIN:
+            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd();
+            break;
+        case DISPATCH_MIN_LOAD:
+            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd();
+            break;
+        case DISPATCH_CLIENT_ADDR_HASH:
+            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetWorkerDataFd(szClientAddr, iClientPort);
+            break;
+        default:
+            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd();
+    }
     if (iWorkerDataFd > 0)
     {
         LOG4_TRACE("send new fd %d to worker communication fd %d",

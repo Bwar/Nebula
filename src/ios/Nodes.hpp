@@ -12,6 +12,7 @@
 #define SRC_IOS_NODES_HPP_
 
 #include <memory>
+#include <string>
 #include <vector>
 #include <map>
 #include <unordered_map>

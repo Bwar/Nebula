@@ -26,9 +26,9 @@ namespace neb
 FileLogger* FileLogger::s_pInstance = nullptr;
 
 FileLogger::FileLogger(const std::string& strLogFile, int iLogLev,
-        unsigned int uiMaxFileSize, unsigned int uiMaxRollFileIndex, bool bAlwaysFlush)
+        unsigned int uiMaxFileSize, unsigned int uiMaxRollFileIndex, bool bAlwaysFlush, bool bConsoleLog)
     : m_iLogLevel(iLogLev), m_uiLogNum(0), m_uiMaxFileSize(uiMaxFileSize),
-      m_uiMaxRollFileIndex(uiMaxRollFileIndex), m_bAlwaysFlush(bAlwaysFlush),
+      m_uiMaxRollFileIndex(uiMaxRollFileIndex), m_bAlwaysFlush(bAlwaysFlush), m_bConsoleLog(bConsoleLog),
       m_lTimeSec(0), m_strLogFileBase(strLogFile)
 {
 #if __GNUC__ < 5
@@ -60,13 +60,17 @@ int FileLogger::WriteLog(int iLev, const char* szFileName, unsigned int uiFileLi
     }
     if(!m_fout.good())
     {
-        std::cerr << "Write log error: no log file handle." << std::endl;
+        std::cerr <<__FILE__ << ":" << __LINE__ << " Write log error: no log file handle." << std::endl;
         return -1;
     }
 
     AppendLogPattern(iLev, szFileName, uiFileLine, szFunction);
     Append(strContent);
     m_fout << "\n";
+    if (m_bConsoleLog)
+    {
+        std::cout << std::endl;
+    }
 
     if (m_bAlwaysFlush)
     {
@@ -91,13 +95,17 @@ int FileLogger::WriteLog(const std::string& strTraceId, int iLev, const char* sz
     }
     if(!m_fout.good())
     {
-        std::cerr << "Write log error: no log file handle." << std::endl;
+        std::cerr <<__FILE__ << ":" << __LINE__ << " Write log error: no log file handle." << std::endl;
         return -1;
     }
 
     AppendLogPattern(strTraceId, iLev, szFileName, uiFileLine, szFunction);
     Append(strContent);
     m_fout << "\n";
+    if (m_bConsoleLog)
+    {
+        std::cout << std::endl;
+    }
 
     if (m_bAlwaysFlush)
     {

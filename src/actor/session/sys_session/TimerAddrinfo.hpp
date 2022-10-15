@@ -22,7 +22,7 @@ namespace neb
 {
 
 class TimerAddrinfo: public neb::Timer,
-    public DynamicCreator<TimerAddrinfo, std::string&>,
+    public DynamicCreator<TimerAddrinfo, const std::string&>,
     public ActorSys
 {
 public:
