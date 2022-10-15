@@ -135,13 +135,15 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 <a name="ChangeLog"></a>
 ## 版本历史
 #### v1.7.3
-   - 修复熔断节点探测导致错误回调问题
-   - 修复redis cluster执行批量写命令返回、集群主从节点切换和asking命令bug
-   - 修改channel创建方式，改由CodecFactory创建
    - 增加连接队列配置
-   - 优化worker最小负载转发
    - 增加dns cache
    - 增加上下游连接和数据包监控
+   - 增加后台运行开关和控制台日志开关
+   - 修改channel创建方式，改由CodecFactory创建
+   - 优化worker最小负载转发
+   - 修复熔断节点探测导致错误回调问题
+   - 修复redis cluster执行批量写命令返回、集群主从节点切换和asking命令bug
+   - 修复集群内部服务间连接初始化
 #### v1.7.2
    - 修复codec bind channel循环引用问题
    - 修复CodecProto无包体通信问题

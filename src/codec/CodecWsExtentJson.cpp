@@ -25,7 +25,7 @@ CodecWsExtentJson::~CodecWsExtentJson()
 {
 }
 
-E_CODEC_STATUS CodecWsExtentJson::Encode(CBuffer* pBuff)
+E_CODEC_STATUS CodecWsExtentJson::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
     return(CODEC_STATUS_OK);
 }
@@ -210,6 +210,12 @@ E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
     LOG4_TRACE("oMsgBody.ByteSize() = %d, iWriteLen = %d(compress or encrypt maybe)",
             oMsgBody.ByteSize(), iWriteLen);
     return (CODEC_STATUS_OK);
+}
+
+E_CODEC_STATUS CodecWsExtentJson::Encode(const MsgHead& oMsgHead,
+        const MsgBody& oMsgBody, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    return(Encode(oMsgHead, oMsgBody, pBuff));
 }
 
 E_CODEC_STATUS CodecWsExtentJson::Decode(CBuffer* pBuff,

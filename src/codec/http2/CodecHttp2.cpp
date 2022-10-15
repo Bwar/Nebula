@@ -106,7 +106,7 @@ void CodecHttp2::ConnectionSetting(CBuffer* pBuff)
     }
 }
 
-E_CODEC_STATUS CodecHttp2::Encode(CBuffer* pBuff)
+E_CODEC_STATUS CodecHttp2::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
     return(CODEC_STATUS_OK);
 }
@@ -190,6 +190,11 @@ E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         }
     }
     return(eCodecStatus);
+}
+
+E_CODEC_STATUS CodecHttp2::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    return(Encode(oHttpMsg, pBuff));
 }
 
 E_CODEC_STATUS CodecHttp2::Decode(CBuffer* pBuff, HttpMsg& oHttpMsg)

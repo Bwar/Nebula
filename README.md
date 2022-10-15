@@ -137,6 +137,7 @@ A simple testing can be start with a NebulaInterface only, and also can be start
    - Optimize worker mini load forwarding
    - add dns cache
    - add upstream and downstren monitor
+   - add console log
 #### v1.7.2
    - codec bind channel circular reference bug fixed
    - CodecProto no packet communication bug fixed

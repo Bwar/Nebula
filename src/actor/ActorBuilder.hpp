@@ -149,10 +149,10 @@ public:
     bool ReloadCmdConf();
     bool AddNetLogMsg(const MsgBody& oMsgBody);
     void AddChainConf(const std::string& strChainKey, std::queue<std::vector<std::string> >&& queChainBlocks);
+    void RemoveSession(std::shared_ptr<Session> pSession);
 
 protected:
     void RemoveStep(std::shared_ptr<Step> pStep);
-    void RemoveSession(std::shared_ptr<Session> pSession);
     void RemoveChain(uint32 uiChainId);
     void ChannelNotice(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const std::string& strClientData);
 

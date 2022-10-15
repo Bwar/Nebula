@@ -59,8 +59,9 @@ public:
         return(m_bDecodeWithStack);
     }
 
-    E_CODEC_STATUS Encode(CBuffer* pBuff);
+    E_CODEC_STATUS Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff = nullptr);
     E_CODEC_STATUS Encode(const RedisReply& oReply, CBuffer* pBuff);
+    E_CODEC_STATUS Encode(const RedisReply& oReply, CBuffer* pBuff, CBuffer* pSecondlyBuff);
     E_CODEC_STATUS Decode(CBuffer* pBuff, RedisReply& oReply);
     E_CODEC_STATUS Decode(CBuffer* pBuff, RedisReply& oReply, CBuffer* pReactBuff);
 

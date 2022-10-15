@@ -26,7 +26,8 @@ E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
         void* data)
 {
     MsgBody oOutMsgBody;
-    if (SendTo(m_pChannel, CMD_REQ_BEAT, GetSequence(), oOutMsgBody))
+    oOutMsgBody.set_trace_id(GetTraceId());
+    if (IO<CodecNebula>::SendRequest(this, m_pChannel, CMD_REQ_BEAT, GetSequence(), oOutMsgBody))
     {
         return(CMD_STATUS_RUNNING);
     }

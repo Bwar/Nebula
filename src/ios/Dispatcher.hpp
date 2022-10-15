@@ -71,6 +71,13 @@ typedef void (*signal_callback)(struct ev_loop*,ev_signal*,int);
 typedef void (*timer_callback)(struct ev_loop*,ev_timer*,int);
 typedef void (*idle_callback)(struct ev_loop*,ev_idle*,int);
 
+enum E_DISPATCHER
+{
+    DISPATCH_ROUND_ROBIN = 0,
+    DISPATCH_MIN_LOAD = 1,
+    DISPATCH_CLIENT_ADDR_HASH = 2,
+};
+
 class Dispatcher
 {
 public:

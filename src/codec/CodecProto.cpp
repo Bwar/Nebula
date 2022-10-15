@@ -26,7 +26,7 @@ CodecProto::~CodecProto()
 {
 }
 
-E_CODEC_STATUS CodecProto::Encode(CBuffer* pBuff)
+E_CODEC_STATUS CodecProto::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
     return(CODEC_STATUS_OK);
 }
@@ -67,6 +67,24 @@ E_CODEC_STATUS CodecProto::Encode(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgB
         LOG4_ERROR("buff write body iWriteLen != iNeedWriteLen!");
         pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadWriteLen);
         return(CODEC_STATUS_ERR);
+    }
+}
+
+E_CODEC_STATUS CodecProto::Encode(int32 iCmd, uint32 uiSeq,
+        const MsgBody& oMsgBody, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    switch (iCmd)
+    {
+        case CMD_RSP_TELL_WORKER:
+            return(Encode(iCmd, uiSeq, oMsgBody, pBuff));
+        case CMD_REQ_TELL_WORKER:
+            return(Encode(iCmd, uiSeq, oMsgBody, pBuff));
+        case CMD_RSP_CONNECT_TO_WORKER:
+            return(Encode(iCmd, uiSeq, oMsgBody, pBuff));
+        case CMD_REQ_CONNECT_TO_WORKER:
+            return(Encode(iCmd, uiSeq, oMsgBody, pBuff));
+        default:
+            return(Encode(iCmd, uiSeq, oMsgBody, pSecondlyBuff));
     }
 }
 
@@ -166,10 +184,13 @@ E_CODEC_STATUS CodecProto::ChannelSticky(const MsgHead& oMsgHead, const MsgBody&
                     pChannelImpl->SetChannelStatus(CHANNEL_STATUS_TRANSFER_TO_WORKER);
                     break;
                 default:
-                    LOG4_TRACE("channel_fd[%d], channel_seq[%d], channel_status[from %d to %d] may be a fault.",
-                            pChannelImpl->GetFd(), pChannelImpl->GetSequence(),
-                            (int)pChannelImpl->GetChannelStatus(), CHANNEL_STATUS_ESTABLISHED);
-                    pChannelImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+                    if (CODEC_PROTO == GetCodecType())
+                    {
+                        LOG4_TRACE("cmd[%d] channel_fd[%d], channel_seq[%d], channel_status[from %d to %d] may be a fault.",
+                                oMsgHead.cmd(), pChannelImpl->GetFd(), pChannelImpl->GetSequence(),
+                                (int)pChannelImpl->GetChannelStatus(), CHANNEL_STATUS_ESTABLISHED);
+                        pChannelImpl->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
+                    }
                     break;
             }
         }

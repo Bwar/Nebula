@@ -27,8 +27,9 @@ public:
         return(CODEC_RAW);
     }
 
-    E_CODEC_STATUS Encode(CBuffer* pBuff);
+    E_CODEC_STATUS Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff = nullptr);
     E_CODEC_STATUS Encode(const char* pRaw, uint32 uiRawSize, CBuffer* pBuff);
+    E_CODEC_STATUS Encode(const char* pRaw, uint32 uiRawSize, CBuffer* pBuff, CBuffer* pSecondlyBuff);
     E_CODEC_STATUS Decode(CBuffer* pBuff, CBuffer& oBuff);
     E_CODEC_STATUS Decode(CBuffer* pBuff, CBuffer& oBuff, CBuffer* pReactBuff);
 };

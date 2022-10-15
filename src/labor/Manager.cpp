@@ -48,8 +48,13 @@ Manager::Manager(const std::string& strConfFile)
         std::cerr << "GetConf() error!" << std::endl;
         exit(2);
     }
-    ngx_setproctitle(m_oCurrentConf("server_name").c_str());
-    daemonize(m_oCurrentConf("server_name").c_str());
+    bool bDaemonize = true;
+    m_oCurrentConf.Get("daemonize", bDaemonize);
+    if (bDaemonize)
+    {
+        ngx_setproctitle(m_oCurrentConf("server_name").c_str());
+        daemonize(m_oCurrentConf("server_name").c_str());
+    }
     if (!Init())
     {
         exit(3);
@@ -138,25 +143,26 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         std::string strLoggingHost;
         std::string strLogPath;
         std::string strLogname;
+        std::string strProtitle = m_oCurrentConf("server_name");
         if (oJsonConf.Get("log_path", strLogPath))
         {
             if (strLogPath[0] == '/')
             {
-                strLogname = strLogPath + std::string("/") + getproctitle() + std::string(".log");
+                strLogname = strLogPath + std::string("/") + strProtitle + std::string(".log");
             }
             else
             {
                 strLogname = m_stNodeInfo.strWorkPath + std::string("/")
-                        + strLogPath + std::string("/") + getproctitle() + std::string(".log");
+                        + strLogPath + std::string("/") + strProtitle + std::string(".log");
             }
         }
         else
         {
-            strLogname = m_stNodeInfo.strWorkPath + std::string("/logs/") + getproctitle() + std::string(".log");
+            strLogname = m_stNodeInfo.strWorkPath + std::string("/logs/") + strProtitle + std::string(".log");
         }
         std::string strParttern = "[%D,%d{%q}][%p] [%l] %m%n";
         std::ostringstream ssServerName;
-        ssServerName << getproctitle() << " " << m_stNodeInfo.strHostForServer << ":" << m_stNodeInfo.iPortForServer;
+        ssServerName << strProtitle << " " << m_stNodeInfo.strHostForServer << ":" << m_stNodeInfo.iPortForServer;
         oJsonConf.Get("max_log_file_size", iMaxLogFileSize);
         oJsonConf.Get("max_log_file_num", iMaxLogFileNum);
         oJsonConf.Get("log_max_line_len", iMaxLogLineLen);
@@ -174,6 +180,8 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         }
         else
         {
+            bool bConsoleLog = false;
+            m_oCurrentConf.Get("console_log", bConsoleLog);
             m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, bAlwaysFlushLog, this);
         }
         m_pLogger->SetNetLogLevel(iNetLogLevel);
@@ -267,6 +275,14 @@ void Manager::StartService()
     m_pDispatcher->SetChannelStatus(pChannelListen, CHANNEL_STATUS_ESTABLISHED);
     m_pDispatcher->AddIoReadEvent(pChannelListen);
 
+    bool bServiceStartNotice = false;
+    m_oCurrentConf.Get("service_start_notice", bServiceStartNotice);
+    if (bServiceStartNotice)
+    {
+        MsgBody oMsgBody;
+        m_pSessionManager->SendToChild(CMD_REQ_START_SERVICE, GetSequence(), oMsgBody);
+    }
+
     // 创建到beacon的连接信息
     for (int i = 0; i < m_oCurrentConf["beacon"].GetArraySize(); ++i)
     {
@@ -354,6 +370,7 @@ bool Manager::GetConf()
             m_oCurrentConf.Get("gateway_port", m_stNodeInfo.iGatewayPort);
             m_oCurrentConf.Get("access_socket_type", strSocketType);
             m_oCurrentConf.Get("backlog", m_stNodeInfo.iBacklog);
+            m_oCurrentConf.Get("connection_dispatch", m_stNodeInfo.iConnectionDispatch);
             if (strSocketType == "UDP" || strSocketType == "udp")
             {
                 m_stNodeInfo.iForClientSocketType = SOCK_DGRAM;

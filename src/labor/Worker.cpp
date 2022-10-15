@@ -367,7 +367,9 @@ bool Worker::InitLogger(const CJsonObject& oJsonConf, const std::string& strLogN
         }
         else
         {
-            m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, bAlwaysFlushLog, this);
+            bool bConsoleLog = false;
+            oJsonConf.Get("console_log", bConsoleLog);
+            m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, bAlwaysFlushLog, bConsoleLog, this);
         }
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_NOTICE("%s program begin...", getproctitle());

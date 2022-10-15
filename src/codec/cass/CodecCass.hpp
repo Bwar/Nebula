@@ -53,8 +53,9 @@ public:
         return(true);
     }
 
-    E_CODEC_STATUS Encode(CBuffer* pBuff);
+    E_CODEC_STATUS Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff = nullptr);
     E_CODEC_STATUS Encode(const CassMessage& oCassMsg, CBuffer* pBuff);
+    E_CODEC_STATUS Encode(const CassMessage& oCassMsg, CBuffer* pBuff, CBuffer* pSecondlyBuff);
     E_CODEC_STATUS Decode(CBuffer* pBuff, CassMessage& oCassMsg);
     E_CODEC_STATUS Decode(CBuffer* pBuff, CassMessage& oCassMsg, CBuffer* pReactBuff);
 

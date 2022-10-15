@@ -544,7 +544,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... ar
         case CHANNEL_STATUS_CONNECTED:
         case CHANNEL_STATUS_TRY_CONNECT:
         case CHANNEL_STATUS_INIT:
-            eCodecStatus = (static_cast<T*>(m_pCodec))->Encode(std::forward<Targs>(args)..., m_pWaitForSendBuff);
+            eCodecStatus = (static_cast<T*>(m_pCodec))->Encode(std::forward<Targs>(args)..., m_pSendBuff, m_pWaitForSendBuff);
             if (CODEC_STATUS_OK == eCodecStatus && uiStepSeq > 0)
             {
                 eCodecStatus = CODEC_STATUS_PAUSE;
@@ -705,6 +705,10 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendResponse(Targs&&... args)
                     && (static_cast<T*>(m_pCodec))->GetKeepAlive() == 0.0)
             {
                 return(CODEC_STATUS_EOF);
+            }
+            if (m_pWaitForSendBuff->ReadableBytes() > 0)
+            {
+                return(CODEC_STATUS_PAUSE);
             }
             return(eCodecStatus);
         }
