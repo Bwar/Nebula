@@ -51,13 +51,12 @@ std::shared_ptr<SocketChannel> CodecFactory::CreateChannel(Labor* pLabor, std::s
             {
 #ifdef WITH_OPENSSL
                 auto pImpl = std::make_shared<SocketChannelSslImpl<CodecProto>>(
-                        pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
-                pImpl->Init(bIsClient);
+                        pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
                 pImpl->SetCodec(pCodec);
                 pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
 #else
                 auto pImpl = std::make_shared<SocketChannelImpl<CodecProto>>(
-                        pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
+                        pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
                 pImpl->SetCodec(pCodec);
                 pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
 #endif
@@ -65,7 +64,7 @@ std::shared_ptr<SocketChannel> CodecFactory::CreateChannel(Labor* pLabor, std::s
             else
             {
                 auto pImpl = std::make_shared<SocketChannelImpl<CodecProto>>(
-                        pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
+                        pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
                 pImpl->SetCodec(pCodec);
                 pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
             }
@@ -76,13 +75,12 @@ std::shared_ptr<SocketChannel> CodecFactory::CreateChannel(Labor* pLabor, std::s
             {
 #ifdef WITH_OPENSSL
                 auto pImpl = std::make_shared<SocketChannelSslImpl<CodecHttp>>(
-                        pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
-                pImpl->Init(bIsClient);
+                        pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
                 pImpl->SetCodec(pCodec);
                 pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
 #else
                 auto pImpl = std::make_shared<SocketChannelImpl<CodecHttp>>(
-                        pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
+                        pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
                 pImpl->SetCodec(pCodec);
                 pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
 #endif
@@ -90,7 +88,7 @@ std::shared_ptr<SocketChannel> CodecFactory::CreateChannel(Labor* pLabor, std::s
             else
             {
                 auto pImpl = std::make_shared<SocketChannelImpl<CodecHttp>>(
-                        pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
+                        pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
                 pImpl->SetCodec(pCodec);
                 pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
             }
@@ -99,7 +97,7 @@ std::shared_ptr<SocketChannel> CodecFactory::CreateChannel(Labor* pLabor, std::s
         {
             pCodec = new CodecHttp2(pLogger, eCodecType, pChannel);
             auto pImpl = std::make_shared<SocketChannelImpl<CodecHttp2>>(
-                    pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
+                    pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
             pImpl->SetCodec(pCodec);
             pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
         }
@@ -108,7 +106,7 @@ std::shared_ptr<SocketChannel> CodecFactory::CreateChannel(Labor* pLabor, std::s
         {
             pCodec = new CodecResp(pLogger, eCodecType, pChannel);
             auto pImpl = std::make_shared<SocketChannelImpl<CodecResp>>(
-                    pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
+                    pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
             pImpl->SetCodec(pCodec);
             pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
         }
@@ -117,7 +115,7 @@ std::shared_ptr<SocketChannel> CodecFactory::CreateChannel(Labor* pLabor, std::s
         {
             pCodec = new CodecPrivate(pLogger, eCodecType, pChannel);
             auto pImpl = std::make_shared<SocketChannelImpl<CodecPrivate>>(
-                    pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
+                    pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
             pImpl->SetCodec(pCodec);
             pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
         }
@@ -126,7 +124,7 @@ std::shared_ptr<SocketChannel> CodecFactory::CreateChannel(Labor* pLabor, std::s
         {
             pCodec = new CodecCass(pLogger, eCodecType, pChannel);
             auto pImpl = std::make_shared<SocketChannelImpl<CodecCass>>(
-                    pLabor, pLogger, iFd, pLabor->GetSequence(), dKeepAlive);
+                    pLabor, pLogger, bIsClient, bWithSsl, iFd, pLabor->GetSequence(), dKeepAlive);
             pImpl->SetCodec(pCodec);
             pChannel->m_pImpl = std::dynamic_pointer_cast<SocketChannel>(pImpl);
         }

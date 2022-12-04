@@ -15,9 +15,10 @@ namespace neb
 
 template <typename T>
 SocketChannelSslImpl<T>::SocketChannelSslImpl(
-    Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
-    : SocketChannelImpl<T>(pLabor, pLogger, iFd, ulSeq, dKeepAlive),
-      m_eSslChannelStatus(SSL_CHANNEL_INIT), m_bIsClientConnection(false), m_pSslConnection(NULL)
+    Labor* pLabor, std::shared_ptr<NetLogger> pLogger,
+    bool bIsClient, bool bWithSsl, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
+    : SocketChannelImpl<T>(pLabor, pLogger, bIsClient, bWithSsl, iFd, ulSeq, dKeepAlive),
+      m_eSslChannelStatus(SSL_CHANNEL_INIT), m_pSslConnection(NULL)
 {
 }
 
@@ -31,7 +32,7 @@ SocketChannelSslImpl<T>::~SocketChannelSslImpl()
 template <typename T>
 int SocketChannelSslImpl<T>::SslCreateConnection()
 {
-    if (m_bIsClientConnection)
+    if (SocketChannelImpl<T>::IsClient())
     {
         m_pSslConnection = SSL_new(SslContext::ClientSslCtx());
     }
@@ -52,7 +53,7 @@ int SocketChannelSslImpl<T>::SslCreateConnection()
         return(ERR_SSL_NEW_CONNECTION);
     }
 
-    if (m_bIsClientConnection)
+    if (SocketChannelImpl<T>::IsClient())
     {
         SSL_set_connect_state(m_pSslConnection);
     }
@@ -234,7 +235,7 @@ int SocketChannelSslImpl<T>::SslShutdown()
         m_eSslChannelStatus = SSL_CHANNEL_SHUTDOWN;
     }
 
-    if (m_bIsClientConnection)
+    if (SocketChannelImpl<T>::IsClient())
     {
         SSL_CTX_remove_session(SslContext::ClientSslCtx(), SSL_get0_session(m_pSslConnection));
     }
@@ -256,18 +257,6 @@ int SocketChannelSslImpl<T>::SslShutdown()
 #endif
 
     return(ERR_OK);
-}
-
-template <typename T>
-bool SocketChannelSslImpl<T>::Init(bool bIsClient)
-{
-    m_bIsClientConnection = bIsClient;
-    if (ERR_OK != SslCreateConnection())
-    {
-        return(false);
-    }
-    LOG4_TRACE("SslCreateConnection() successfully.");
-    return(true);
 }
 
 template <typename T>
@@ -428,7 +417,7 @@ E_CODEC_STATUS SocketChannelSslImpl<T>::Recv(Targs&& ...args)
             {
                 if (m_eSslChannelStatus == SSL_CHANNEL_ESTABLISHED)
                 {
-                    if (m_bIsClientConnection)
+                    if (SocketChannelImpl<T>::IsClient())
                     {
                         return(CODEC_STATUS_WANT_WRITE);
                     }
