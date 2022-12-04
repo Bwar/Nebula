@@ -81,7 +81,7 @@ public:
 protected:
     bool SendTo(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg);
     bool ExtractCmd(const RedisMsg& oRedisMsg, std::string& strCmd,
-            std::vector<std::string>& vecHashKeys, int& iReadOrWrite, int& iKeyInterval);
+            std::vector<uint16>& vecSlotId, int& iReadOrWrite, int& iKeyInterval);
     bool GetRedisNode(int iSlotId, int iReadOrWrite, std::string& strNodeIdentify, bool& bIsMaster) const;
     bool NeedSetReadOnly(const std::string& strNode) const;
     bool SendCmdClusterSlots();
@@ -93,6 +93,8 @@ protected:
     bool SendCmdReadOnly(const std::string& strIdentify);
     void CmdReadOnlyCallback(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify, const RedisReply& oRedisReply);
     void CmdErrBack(std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg);
+    void CmdErrBack(std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg,
+            uint32 uiRealStepSeq, std::shared_ptr<RedisRequest> pRequest);
     bool Dispatch(const RedisMsg& oRedisMsg, uint32 uiStepSeq);
     void SendWaittingRequest();
     void RegisterStep(uint32 uiStepSeq);
@@ -110,6 +112,7 @@ private:
     std::vector<std::string> m_vecAddress;  ///< 集群地址
     std::unordered_map<int, std::shared_ptr<RedisNode>> m_mapSlot2Node;    // redis cluster slot对应的节点
     std::unordered_map<std::string, std::queue<std::shared_ptr<RedisRequest>>> m_mapPipelineRequest;  ///< 等待回调的请求
+    std::unordered_map<uint32, std::shared_ptr<RedisRequest>> m_mapRequest;  ///< 等待回调的请求
     std::unordered_map<uint32, uint32> m_mapStepEmitNum;    // 每个step发出请求（等待响应）数量
     std::unordered_map<uint32, std::vector<RedisReply*>> m_mapReply;
     std::map<time_t, std::vector<uint32>> m_mapTimeoutStep;

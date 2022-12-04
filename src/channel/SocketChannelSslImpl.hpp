@@ -32,7 +32,8 @@ template<typename T>
 class SocketChannelSslImpl : public SocketChannelImpl<T>
 {
 public:
-    SocketChannelSslImpl(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive = 0.0);
+    SocketChannelSslImpl(Labor* pLabor, std::shared_ptr<NetLogger> pLogger,
+            bool bIsClient, bool bWithSsl, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive = 0.0);
     virtual ~SocketChannelSslImpl();
 
     int SslClientCtxCreate();
@@ -40,7 +41,6 @@ public:
     int SslHandshake();
     int SslShutdown();
 
-    bool Init(bool bIsClient = false);
     template<typename ...Targs>
     E_CODEC_STATUS SendRequest(uint32 uiStepSeq, Targs&&... args);
     template<typename ...Targs>
@@ -58,7 +58,6 @@ protected:
 
 private: 
     E_SSL_CHANNEL_STATUS m_eSslChannelStatus;
-    bool m_bIsClientConnection;
     SSL* m_pSslConnection;
 };
 

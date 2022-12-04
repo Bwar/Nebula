@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include "StringCoder.hpp"
+#include <cstring>
 
 namespace neb
 {
@@ -183,21 +184,14 @@ void DecodeParameter(const std::string& strParameter, std::map<std::string, std:
 void Split(const std::string& strSrc, const std::string& strPattern, std::vector<std::string>& vecDest)
 {
     vecDest.clear();
-    size_t uiBegin = 0;
-    size_t uiEnd = 0;
-    std::string strSub;
-    while (uiBegin < strSrc.size())
+    char* p;
+    char* buff = const_cast<char*>(strSrc.data());
+    p = strsep(&buff, strPattern.data());
+    while (p != NULL)
     {
-        uiEnd = strSrc.find_first_of(strPattern, uiBegin);
-        if (std::string::npos == uiEnd)
-        {
-            strSub = strSrc.substr(uiBegin);
-            vecDest.push_back(strSub);
-            break;
-        }
-        strSub = strSrc.substr(uiBegin, uiEnd - uiBegin);
-        vecDest.push_back(strSub);
-        uiBegin = uiEnd + 1;
+        printf("%s\n", p);
+        vecDest.push_back(p);
+        p = strsep(&buff, strPattern.data());
     }
 }
 

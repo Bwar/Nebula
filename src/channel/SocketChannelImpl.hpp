@@ -48,7 +48,8 @@ template<typename T>
 class SocketChannelImpl: public SocketChannel
 {
 public:
-    SocketChannelImpl(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive = 0.0);
+    SocketChannelImpl(Labor* pLabor, std::shared_ptr<NetLogger> pLogger,
+            bool bIsClient, bool bWithSsl, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive = 0.0);
     virtual ~SocketChannelImpl();
 
     static bool NewCodec(std::shared_ptr<SocketChannel> pChannel, Labor* pLabor, std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType);
@@ -66,8 +67,6 @@ public:
     E_CODEC_STATUS Fetch(Targs&&... args);
 
     virtual E_CODEC_STATUS Send();
-
-    template <typename ...Targs> void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args) const;
 
 public:
     virtual int GetFd() const override
@@ -251,7 +250,6 @@ private:
     std::unordered_map<uint32, uint32> m_mapStreamStepSeq;      ///< 等待回调的http2 step seq
     std::set<E_CODEC_TYPE> m_setSkipCodecType;  ///< Codec转换需跳过的CodecType
     Labor* m_pLabor;
-    std::shared_ptr<NetLogger> m_pLogger;
 
     friend class CodecFactory;
     friend class Dispatcher;
@@ -259,14 +257,14 @@ private:
 
 template<typename T>
 SocketChannelImpl<T>::SocketChannelImpl(Labor* pLabor, std::shared_ptr<NetLogger> pLogger,
-        int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
-    : m_ucChannelStatus(CHANNEL_STATUS_INIT),m_eLastCodecStatus(CODEC_STATUS_OK),
+        bool bIsClient, bool bWithSsl, int iFd, uint32 ulSeq, ev_tstamp dKeepAlive)
+    : SocketChannel(pLogger, bIsClient, bWithSsl),
+      m_ucChannelStatus(CHANNEL_STATUS_INIT),m_eLastCodecStatus(CODEC_STATUS_OK),
       m_iRemoteWorkerIdx(-1), m_iFd(iFd), m_uiSeq(ulSeq), m_bPipeline(true),
       m_uiUnitTimeMsgNum(0), m_uiMsgNum(0),
       m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
       m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
-      m_pCodec(nullptr), m_pHoldingHttpMsg(nullptr), m_iErrno(0), m_pLabor(pLabor),
-      m_pLogger(pLogger)
+      m_pCodec(nullptr), m_pHoldingHttpMsg(nullptr), m_iErrno(0), m_pLabor(pLabor)
 {
     try
     {
@@ -375,13 +373,6 @@ bool SocketChannelImpl<T>::NeedAliveCheck() const
 }
 
 template<typename T>
-template <typename ...Targs>
-void SocketChannelImpl<T>::Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args) const
-{
-    m_pLogger->WriteLog(iLogLevel, szFileName, uiFileLine, szFunction, std::forward<Targs>(args)...);
-}
-
-template<typename T>
 bool SocketChannelImpl<T>::NewCodec(std::shared_ptr<SocketChannel> pChannel, Labor* pLabor, std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType)
 {
     if (T::Type() != eCodecType)
@@ -402,7 +393,7 @@ bool SocketChannelImpl<T>::NewCodec(std::shared_ptr<SocketChannel> pChannel, Lab
     }
     if (pChannel->m_pImpl == nullptr)
     {
-        auto pImpl = std::make_shared<SocketChannelImpl<T>>(pLabor, pLogger, pChannel->GetFd(), eCodecType);
+        auto pImpl = std::make_shared<SocketChannelImpl<T>>(pLabor, pLogger, pChannel->IsClient(), pChannel->WithSsl(), pChannel->GetFd(), eCodecType);
         pImpl->SetCodec(pCodec);
         pChannel->InitImpl(std::static_pointer_cast<SocketChannel>(pImpl));
     }

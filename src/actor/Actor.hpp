@@ -124,7 +124,7 @@ public:
 
     uint32 GetSequence();
 
-protected:
+public:
     uint32 GetNodeId() const;
     uint32 GetWorkerIndex() const;
     const std::string& GetNodeType() const;

@@ -142,7 +142,7 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
    - 修改channel创建方式，改由CodecFactory创建
    - 优化worker最小负载转发
    - 修复熔断节点探测导致错误回调问题
-   - 修复redis cluster执行批量写命令返回、集群主从节点切换和asking命令bug
+   - 修复redis cluster执行批量写命令返回、集群主从节点切换和asking命令、tag路由bug
    - 修复集群内部服务间连接初始化
 #### v1.7.2
    - 修复codec bind channel循环引用问题
