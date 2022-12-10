@@ -124,7 +124,6 @@ E_CMD_STATUS StepRedisCluster::Emit(int iErrno, const std::string& strErrMsg, vo
 E_CMD_STATUS StepRedisCluster::Callback(
         std::shared_ptr<SocketChannel> pChannel, const RedisReply& oRedisReply)
 {
-    LOG4_TRACE("callback from %s:\n%s", pChannel->GetIdentify().c_str(), oRedisReply.DebugString().c_str());
     std::shared_ptr<RedisRequest> pRedisRequest = nullptr;
     uint32 uiRealStepSeq = 0;
     if (m_bPipeline)
@@ -475,7 +474,6 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, const RedisMsg& oR
 
 bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg)
 {
-    LOG4_TRACE("%s: %s", strIdentify.c_str(), pRedisMsg->DebugString().c_str());
     bool bResult = IO<CodecResp>::SendTo(this, strIdentify,
             SOCKET_STREAM, m_bWithSsl, m_bPipeline, (*pRedisMsg.get()));
     if (bResult)
