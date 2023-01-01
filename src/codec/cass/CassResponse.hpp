@@ -23,8 +23,10 @@ class CassResponse: public CassMessage
 public:
     CassResponse();
     CassResponse(const CassResponse&) = delete;
+    CassResponse(CassResponse&&);
     virtual ~CassResponse();
     CassResponse& operator=(const CassResponse&) = delete;
+    CassResponse& operator=(CassResponse&&);
 
     bool IsSuccess() const
     {

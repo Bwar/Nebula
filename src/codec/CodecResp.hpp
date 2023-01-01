@@ -13,6 +13,8 @@
 #include <memory>
 #include "Codec.hpp"
 #include "pb/redis.pb.h"
+#include "channel/SpecChannel.hpp"
+#include "labor/LaborShared.hpp"
 
 namespace neb
 {
@@ -53,6 +55,14 @@ public:
     {
         return(CODEC_RESP);
     }
+
+    // request
+    template<typename ...Targs>
+    static int Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const RedisReply& oReply);
+
+    // response
+    template<typename ...Targs>
+    static int Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, const RedisReply& oReply);
 
     virtual bool DecodeWithStack() const
     {
@@ -104,6 +114,61 @@ private:
     static const char RESP_BULK_STRING;
     static const char RESP_ARRAY;
 };
+
+// request
+template<typename ...Targs>
+int CodecResp::Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const RedisReply& oReply)
+{
+    if (uiFromLabor == uiToLabor)
+    {
+        return(ERR_SPEC_CHANNEL_TARGET);
+    }
+    std::shared_ptr<SpecChannel<RedisReply>> pSpecChannel = nullptr;
+    auto pLaborShared = LaborShared::Instance();
+    auto pChannel = pLaborShared->GetSpecChannel(Type(), uiFromLabor, uiToLabor);
+    if (pChannel == nullptr)
+    {
+        pSpecChannel = std::make_shared<SpecChannel<RedisReply>>(
+                uiFromLabor, uiToLabor, pLaborShared->GetSpecChannelQueueSize(), true);
+        if (pSpecChannel == nullptr)
+        {
+            return(ERR_SPEC_CHANNEL_CREATE);
+        }
+        pChannel = std::dynamic_pointer_cast<SocketChannel>(pSpecChannel);
+        auto pWatcher = pSpecChannel->MutableWatcher();
+        pWatcher->Set(pChannel, Type());
+        int iResult = pSpecChannel->Write(uiFlags, uiStepSeq, std::move(const_cast<RedisReply&>(oReply)));
+        if (iResult == ERR_OK)
+        {
+            return(pLaborShared->AddSpecChannel(Type(), uiFromLabor, uiToLabor, pChannel));
+        }
+        return(iResult);
+    }
+    else
+    {
+        pSpecChannel = std::static_pointer_cast<SpecChannel<RedisReply>>(pChannel);
+        if (pSpecChannel == nullptr)
+        {
+            return(ERR_SPEC_CHANNEL_CAST);
+        }
+        int iResult = pSpecChannel->Write(uiFlags, uiStepSeq, std::move(const_cast<RedisReply&>(oReply)));
+        if (iResult == ERR_OK)
+        {
+            pLaborShared->GetDispatcher(uiToLabor)->AsyncSend(pSpecChannel->MutableWatcher()->MutableAsyncWatcher());
+        }
+        return(iResult);
+    }
+}
+
+// response
+template<typename ...Targs>
+int CodecResp::Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, const RedisReply& oReply)
+{
+    uint32 uiFrom;
+    uint32 uiTo;
+    std::static_pointer_cast<SpecChannel<RedisReply>>(pChannel)->GetEnds(uiFrom, uiTo);
+    return(Write(uiTo, uiFrom, uiFlags, uiStepSeq, oReply));
+}
 
 } /* namespace neb */
 

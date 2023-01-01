@@ -68,6 +68,7 @@ public:
     virtual uint32 GetMsgNum() const;
     virtual uint32 GetUnitTimeMsgNum() const;
     virtual E_CODEC_STATUS Send();
+    virtual uint32 GetPeerStepSeq() const;
     ChannelWatcher* MutableWatcher();
 
     template <typename ...Targs>

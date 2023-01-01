@@ -283,7 +283,10 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
     }
     else    // 回调
     {
-        pChannel->m_pImpl->PopStepSeq();
+        if (pChannel->GetCodecType() != CODEC_TRANSFER)
+        {
+            pChannel->m_pImpl->PopStepSeq();
+        }
         auto step_iter = m_mapCallbackStep.find(oMsgHead.seq());
         if (step_iter != m_mapCallbackStep.end())   // 步骤回调
         {
@@ -457,6 +460,7 @@ void ActorBuilder::LoadSysCmd()
         MakeSharedCmd(nullptr, "neb::CmdOnGetCustomConf", (int)CMD_REQ_GET_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdOnStartService", (int)CMD_REQ_START_SERVICE);
         MakeSharedCmd(nullptr, "neb::CmdDataReport", (int)CMD_REQ_DATA_REPORT);
+        MakeSharedCmd(nullptr, "neb::CmdSpecChannelCreated", (int)CMD_REQ_SPEC_CHANNEL);
         std::string strModulePath = "/healthy";
         MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
         strModulePath = "/health";
@@ -474,6 +478,7 @@ void ActorBuilder::LoadSysCmd()
         MakeSharedCmd(nullptr, "neb::CmdSetNodeConf", (int)CMD_REQ_SET_NODE_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdSetNodeCustomConf", (int)CMD_REQ_SET_NODE_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdReloadCustomConf", (int)CMD_REQ_RELOAD_CUSTOM_CONFIG);
+        MakeSharedCmd(nullptr, "neb::CmdSpecChannelCreated", (int)CMD_REQ_SPEC_CHANNEL);
         std::string strModulePath = "/healthy";
         MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
         strModulePath = "/health";

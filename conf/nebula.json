@@ -5,6 +5,7 @@
     "access_host": "192.168.18.81",
     "//access_port": "对系统外提供服务监听的端口",
     "access_port": 9988,
+    "access_ports":[],
     "//access_codec": "接入端编解码器，见codec/Codec.hpp中E_CODEC_TYPE枚举定义"
     "access_codec": 4,
     "access_socket_type":"TCP",
@@ -33,6 +34,8 @@
     "cpu_affinity":false,
     "connection_dispatcher":{"round_robin":0, "min_load":1, "client_addr_hash":2},
     "connection_dispatch":0,
+    "//dispatch_with_port":"根据接入端口（奇偶）进行连接到worker的转发",
+    "dispatch_with_port":false,
     "daemonize":true,
     "//worker_capacity": "子进程最大工作负荷",
     "worker_capacity": 1000000,

@@ -26,14 +26,6 @@ namespace neb
 
 class SocketChannel;
 
-enum class ACTOR_CB_TYPE
-{
-    ACTOR_CB_NONE           = 0x00,     ///< 未定义回调
-    ACTOR_CB_TIMER          = 0x01,     ///< 定时器回调
-    ACTOR_CB_IO_SEQ         = 0x02,     ///< IO seq回调
-    ACTOR_CB_IO_POINTER     = 0x04,     ///< IO 指针回调
-};
-
 class ChannelWatcher
 {
 public:

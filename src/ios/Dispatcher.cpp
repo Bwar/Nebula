@@ -113,6 +113,16 @@ void Dispatcher::SignalCallback(struct ev_loop* loop, struct ev_signal* watcher,
     }
 }
 
+void Dispatcher::AsyncCallback(struct ev_loop* loop, struct ev_async* watcher, int revents)
+{
+    if (watcher->data != NULL)
+    {
+        auto pWatcher = static_cast<SpecChannelWatcher*>(watcher->data);
+        auto pChannel = pWatcher->GetSocketChannel();
+        CodecFactory::OnEvent(pWatcher, pChannel);
+    }
+}
+
 void Dispatcher::ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
 {
     if (watcher->data != NULL)
@@ -128,6 +138,7 @@ bool Dispatcher::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
     m_pLastActivityChannel = pChannel;
     if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
     {
+        auto& setAccessFd = ((Manager*)m_pLabor)->GetManagerInfo().setAccessFd;
         if (pChannel->GetFd() == ((Manager*)m_pLabor)->GetManagerInfo().iS2SListenFd)
         {
             return(AcceptServerConn(pChannel->GetFd()));
@@ -136,7 +147,12 @@ bool Dispatcher::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
                 && pChannel->GetFd() == ((Manager*)m_pLabor)->GetManagerInfo().iC2SListenFd)
         {
             return(AcceptFdAndTransfer(((Manager*)m_pLabor)->GetManagerInfo().iC2SListenFd,
-                    ((Manager*)m_pLabor)->GetManagerInfo().iC2SFamily));
+                    ((Manager*)m_pLabor)->GetManagerInfo().iC2SFamily, 1));
+        }
+        else if (setAccessFd.find(pChannel->GetFd()) != setAccessFd.end())
+        {
+            return(AcceptFdAndTransfer(pChannel->GetFd(),
+                    ((Manager*)m_pLabor)->GetManagerInfo().iC2SFamily, 0));
         }
         else
         {
@@ -811,6 +827,17 @@ bool Dispatcher::AddEvent(ev_idle* idle_watcher, idle_callback pFunc)
     return(true);
 }
 
+bool Dispatcher::AddEvent(ev_async* async_watcher, async_callback pFunc)
+{
+    if (NULL == async_watcher)
+    {
+        return(false);
+    }
+    ev_async_init(async_watcher, pFunc);
+    ev_async_start(m_loop, async_watcher);
+    return(true);
+}
+
 bool Dispatcher::RefreshEvent(ev_timer* timer_watcher, ev_tstamp dTimeout)
 {
     if (NULL == timer_watcher)
@@ -947,6 +974,11 @@ bool Dispatcher::Init()
     m_pSessionNode = std::unique_ptr<Nodes>(new Nodes());
 #endif
     return(true);
+}
+
+void Dispatcher::AsyncSend(ev_async* pWatcher)
+{
+    ev_async_send(m_loop, pWatcher);
 }
 
 void Dispatcher::Destroy()
@@ -1179,7 +1211,7 @@ bool Dispatcher::AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTim
     return(true);
 }
 
-bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
+bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily, int iBonding)
 {
     char szClientAddr[64] = {0};
     int iAcceptFd = -1;
@@ -1287,16 +1319,16 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily)
     switch (m_pLabor->GetNodeInfo().iConnectionDispatch)
     {
         case DISPATCH_ROUND_ROBIN:
-            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd();
+            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd(iBonding);
             break;
         case DISPATCH_MIN_LOAD:
-            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd();
+            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd(iBonding);
             break;
         case DISPATCH_CLIENT_ADDR_HASH:
-            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetWorkerDataFd(szClientAddr, iClientPort);
+            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetWorkerDataFd(szClientAddr, iClientPort, iBonding);
             break;
         default:
-            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd();
+            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd(iBonding);
     }
     if (iWorkerDataFd > 0)
     {

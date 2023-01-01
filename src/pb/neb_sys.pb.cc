@@ -36,6 +36,9 @@ const ::google::protobuf::internal::GeneratedMessageReflection*
 const ::google::protobuf::Descriptor* TraceLog_descriptor_ = NULL;
 const ::google::protobuf::internal::GeneratedMessageReflection*
   TraceLog_reflection_ = NULL;
+const ::google::protobuf::Descriptor* SpecChannelInfo_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  SpecChannelInfo_reflection_ = NULL;
 
 }  // namespace
 
@@ -134,6 +137,23 @@ void protobuf_AssignDesc_neb_5fsys_2eproto() {
       sizeof(TraceLog),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, _internal_metadata_),
       GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(TraceLog, _is_default_instance_));
+  SpecChannelInfo_descriptor_ = file->message_type(5);
+  static const int SpecChannelInfo_offsets_[3] = {
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpecChannelInfo, codec_type_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpecChannelInfo, from_labor_),
+    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpecChannelInfo, to_labor_),
+  };
+  SpecChannelInfo_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      SpecChannelInfo_descriptor_,
+      SpecChannelInfo::default_instance_,
+      SpecChannelInfo_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(SpecChannelInfo),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpecChannelInfo, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(SpecChannelInfo, _is_default_instance_));
 }
 
 namespace {
@@ -157,6 +177,8 @@ void protobuf_RegisterTypes(const ::std::string&) {
       LogLevel_descriptor_, &LogLevel::default_instance());
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
       TraceLog_descriptor_, &TraceLog::default_instance());
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      SpecChannelInfo_descriptor_, &SpecChannelInfo::default_instance());
 }
 
 }  // namespace
@@ -172,6 +194,8 @@ void protobuf_ShutdownFile_neb_5fsys_2eproto() {
   delete LogLevel_reflection_;
   delete TraceLog::default_instance_;
   delete TraceLog_reflection_;
+  delete SpecChannelInfo::default_instance_;
+  delete SpecChannelInfo_reflection_;
 }
 
 void protobuf_AddDesc_neb_5fsys_2eproto() GOOGLE_ATTRIBUTE_COLD;
@@ -192,8 +216,9 @@ void protobuf_AddDesc_neb_5fsys_2eproto() {
     "\022\021\n\tnode_type\030\002 \001(\t\022\025\n\rnode_identify\030\003 \001"
     "(\t\022\021\n\tlog_level\030\004 \001(\t\022\026\n\016code_file_name\030"
     "\005 \001(\t\022\026\n\016code_file_line\030\006 \001(\r\022\025\n\rcode_fu"
-    "nction\030\007 \001(\t\022\023\n\013log_content\030\010 \001(\014b\006proto"
-    "3", 441);
+    "nction\030\007 \001(\t\022\023\n\013log_content\030\010 \001(\014\"K\n\017Spe"
+    "cChannelInfo\022\022\n\ncodec_type\030\001 \001(\r\022\022\n\nfrom"
+    "_labor\030\002 \001(\r\022\020\n\010to_labor\030\003 \001(\rb\006proto3", 518);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "neb_sys.proto", &protobuf_RegisterTypes);
   ConfigInfo::default_instance_ = new ConfigInfo();
@@ -201,11 +226,13 @@ void protobuf_AddDesc_neb_5fsys_2eproto() {
   TargetWorker::default_instance_ = new TargetWorker();
   LogLevel::default_instance_ = new LogLevel();
   TraceLog::default_instance_ = new TraceLog();
+  SpecChannelInfo::default_instance_ = new SpecChannelInfo();
   ConfigInfo::default_instance_->InitAsDefaultInstance();
   WorkerLoad::default_instance_->InitAsDefaultInstance();
   TargetWorker::default_instance_->InitAsDefaultInstance();
   LogLevel::default_instance_->InitAsDefaultInstance();
   TraceLog::default_instance_->InitAsDefaultInstance();
+  SpecChannelInfo::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_neb_5fsys_2eproto);
 }
 
@@ -2607,6 +2634,368 @@ void TraceLog::clear_log_content() {
   }
   log_content_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), log_content);
   // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.log_content)
+}
+
+#endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
+
+// ===================================================================
+
+#if !defined(_MSC_VER) || _MSC_VER >= 1900
+const int SpecChannelInfo::kCodecTypeFieldNumber;
+const int SpecChannelInfo::kFromLaborFieldNumber;
+const int SpecChannelInfo::kToLaborFieldNumber;
+#endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
+
+SpecChannelInfo::SpecChannelInfo()
+  : ::google::protobuf::Message(), _internal_metadata_(NULL) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:neb.SpecChannelInfo)
+}
+
+void SpecChannelInfo::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+}
+
+SpecChannelInfo::SpecChannelInfo(const SpecChannelInfo& from)
+  : ::google::protobuf::Message(),
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
+  // @@protoc_insertion_point(copy_constructor:neb.SpecChannelInfo)
+}
+
+void SpecChannelInfo::SharedCtor() {
+    _is_default_instance_ = false;
+  _cached_size_ = 0;
+  codec_type_ = 0u;
+  from_labor_ = 0u;
+  to_labor_ = 0u;
+}
+
+SpecChannelInfo::~SpecChannelInfo() {
+  // @@protoc_insertion_point(destructor:neb.SpecChannelInfo)
+  SharedDtor();
+}
+
+void SpecChannelInfo::SharedDtor() {
+  if (this != default_instance_) {
+  }
+}
+
+void SpecChannelInfo::SetCachedSize(int size) const {
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+}
+const ::google::protobuf::Descriptor* SpecChannelInfo::descriptor() {
+  protobuf_AssignDescriptorsOnce();
+  return SpecChannelInfo_descriptor_;
+}
+
+const SpecChannelInfo& SpecChannelInfo::default_instance() {
+  if (default_instance_ == NULL) protobuf_AddDesc_neb_5fsys_2eproto();
+  return *default_instance_;
+}
+
+SpecChannelInfo* SpecChannelInfo::default_instance_ = NULL;
+
+SpecChannelInfo* SpecChannelInfo::New(::google::protobuf::Arena* arena) const {
+  SpecChannelInfo* n = new SpecChannelInfo;
+  if (arena != NULL) {
+    arena->Own(n);
+  }
+  return n;
+}
+
+void SpecChannelInfo::Clear() {
+// @@protoc_insertion_point(message_clear_start:neb.SpecChannelInfo)
+#if defined(__clang__)
+#define ZR_HELPER_(f) \
+  _Pragma("clang diagnostic push") \
+  _Pragma("clang diagnostic ignored \"-Winvalid-offsetof\"") \
+  __builtin_offsetof(SpecChannelInfo, f) \
+  _Pragma("clang diagnostic pop")
+#else
+#define ZR_HELPER_(f) reinterpret_cast<char*>(\
+  &reinterpret_cast<SpecChannelInfo*>(16)->f)
+#endif
+
+#define ZR_(first, last) do {\
+  ::memset(&first, 0,\
+           ZR_HELPER_(last) - ZR_HELPER_(first) + sizeof(last));\
+} while (0)
+
+  ZR_(codec_type_, to_labor_);
+
+#undef ZR_HELPER_
+#undef ZR_
+
+}
+
+bool SpecChannelInfo::MergePartialFromCodedStream(
+    ::google::protobuf::io::CodedInputStream* input) {
+#define DO_(EXPRESSION) if (!GOOGLE_PREDICT_TRUE(EXPRESSION)) goto failure
+  ::google::protobuf::uint32 tag;
+  // @@protoc_insertion_point(parse_start:neb.SpecChannelInfo)
+  for (;;) {
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
+    tag = p.first;
+    if (!p.second) goto handle_unusual;
+    switch (::google::protobuf::internal::WireFormatLite::GetTagFieldNumber(tag)) {
+      // optional uint32 codec_type = 1;
+      case 1: {
+        if (tag == 8) {
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &codec_type_)));
+
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(16)) goto parse_from_labor;
+        break;
+      }
+
+      // optional uint32 from_labor = 2;
+      case 2: {
+        if (tag == 16) {
+         parse_from_labor:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &from_labor_)));
+
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectTag(24)) goto parse_to_labor;
+        break;
+      }
+
+      // optional uint32 to_labor = 3;
+      case 3: {
+        if (tag == 24) {
+         parse_to_labor:
+          DO_((::google::protobuf::internal::WireFormatLite::ReadPrimitive<
+                   ::google::protobuf::uint32, ::google::protobuf::internal::WireFormatLite::TYPE_UINT32>(
+                 input, &to_labor_)));
+
+        } else {
+          goto handle_unusual;
+        }
+        if (input->ExpectAtEnd()) goto success;
+        break;
+      }
+
+      default: {
+      handle_unusual:
+        if (tag == 0 ||
+            ::google::protobuf::internal::WireFormatLite::GetTagWireType(tag) ==
+            ::google::protobuf::internal::WireFormatLite::WIRETYPE_END_GROUP) {
+          goto success;
+        }
+        DO_(::google::protobuf::internal::WireFormatLite::SkipField(input, tag));
+        break;
+      }
+    }
+  }
+success:
+  // @@protoc_insertion_point(parse_success:neb.SpecChannelInfo)
+  return true;
+failure:
+  // @@protoc_insertion_point(parse_failure:neb.SpecChannelInfo)
+  return false;
+#undef DO_
+}
+
+void SpecChannelInfo::SerializeWithCachedSizes(
+    ::google::protobuf::io::CodedOutputStream* output) const {
+  // @@protoc_insertion_point(serialize_start:neb.SpecChannelInfo)
+  // optional uint32 codec_type = 1;
+  if (this->codec_type() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(1, this->codec_type(), output);
+  }
+
+  // optional uint32 from_labor = 2;
+  if (this->from_labor() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(2, this->from_labor(), output);
+  }
+
+  // optional uint32 to_labor = 3;
+  if (this->to_labor() != 0) {
+    ::google::protobuf::internal::WireFormatLite::WriteUInt32(3, this->to_labor(), output);
+  }
+
+  // @@protoc_insertion_point(serialize_end:neb.SpecChannelInfo)
+}
+
+::google::protobuf::uint8* SpecChannelInfo::InternalSerializeWithCachedSizesToArray(
+    bool deterministic, ::google::protobuf::uint8* target) const {
+  // @@protoc_insertion_point(serialize_to_array_start:neb.SpecChannelInfo)
+  // optional uint32 codec_type = 1;
+  if (this->codec_type() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(1, this->codec_type(), target);
+  }
+
+  // optional uint32 from_labor = 2;
+  if (this->from_labor() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(2, this->from_labor(), target);
+  }
+
+  // optional uint32 to_labor = 3;
+  if (this->to_labor() != 0) {
+    target = ::google::protobuf::internal::WireFormatLite::WriteUInt32ToArray(3, this->to_labor(), target);
+  }
+
+  // @@protoc_insertion_point(serialize_to_array_end:neb.SpecChannelInfo)
+  return target;
+}
+
+int SpecChannelInfo::ByteSize() const {
+// @@protoc_insertion_point(message_byte_size_start:neb.SpecChannelInfo)
+  int total_size = 0;
+
+  // optional uint32 codec_type = 1;
+  if (this->codec_type() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->codec_type());
+  }
+
+  // optional uint32 from_labor = 2;
+  if (this->from_labor() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->from_labor());
+  }
+
+  // optional uint32 to_labor = 3;
+  if (this->to_labor() != 0) {
+    total_size += 1 +
+      ::google::protobuf::internal::WireFormatLite::UInt32Size(
+        this->to_labor());
+  }
+
+  GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
+  _cached_size_ = total_size;
+  GOOGLE_SAFE_CONCURRENT_WRITES_END();
+  return total_size;
+}
+
+void SpecChannelInfo::MergeFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:neb.SpecChannelInfo)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  const SpecChannelInfo* source = 
+      ::google::protobuf::internal::DynamicCastToGenerated<const SpecChannelInfo>(
+          &from);
+  if (source == NULL) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:neb.SpecChannelInfo)
+    ::google::protobuf::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:neb.SpecChannelInfo)
+    MergeFrom(*source);
+  }
+}
+
+void SpecChannelInfo::MergeFrom(const SpecChannelInfo& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:neb.SpecChannelInfo)
+  if (GOOGLE_PREDICT_FALSE(&from == this)) {
+    ::google::protobuf::internal::MergeFromFail(__FILE__, __LINE__);
+  }
+  if (from.codec_type() != 0) {
+    set_codec_type(from.codec_type());
+  }
+  if (from.from_labor() != 0) {
+    set_from_labor(from.from_labor());
+  }
+  if (from.to_labor() != 0) {
+    set_to_labor(from.to_labor());
+  }
+}
+
+void SpecChannelInfo::CopyFrom(const ::google::protobuf::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:neb.SpecChannelInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void SpecChannelInfo::CopyFrom(const SpecChannelInfo& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:neb.SpecChannelInfo)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool SpecChannelInfo::IsInitialized() const {
+
+  return true;
+}
+
+void SpecChannelInfo::Swap(SpecChannelInfo* other) {
+  if (other == this) return;
+  InternalSwap(other);
+}
+void SpecChannelInfo::InternalSwap(SpecChannelInfo* other) {
+  std::swap(codec_type_, other->codec_type_);
+  std::swap(from_labor_, other->from_labor_);
+  std::swap(to_labor_, other->to_labor_);
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  std::swap(_cached_size_, other->_cached_size_);
+}
+
+::google::protobuf::Metadata SpecChannelInfo::GetMetadata() const {
+  protobuf_AssignDescriptorsOnce();
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = SpecChannelInfo_descriptor_;
+  metadata.reflection = SpecChannelInfo_reflection_;
+  return metadata;
+}
+
+#if PROTOBUF_INLINE_NOT_IN_HEADERS
+// SpecChannelInfo
+
+// optional uint32 codec_type = 1;
+void SpecChannelInfo::clear_codec_type() {
+  codec_type_ = 0u;
+}
+ ::google::protobuf::uint32 SpecChannelInfo::codec_type() const {
+  // @@protoc_insertion_point(field_get:neb.SpecChannelInfo.codec_type)
+  return codec_type_;
+}
+ void SpecChannelInfo::set_codec_type(::google::protobuf::uint32 value) {
+  
+  codec_type_ = value;
+  // @@protoc_insertion_point(field_set:neb.SpecChannelInfo.codec_type)
+}
+
+// optional uint32 from_labor = 2;
+void SpecChannelInfo::clear_from_labor() {
+  from_labor_ = 0u;
+}
+ ::google::protobuf::uint32 SpecChannelInfo::from_labor() const {
+  // @@protoc_insertion_point(field_get:neb.SpecChannelInfo.from_labor)
+  return from_labor_;
+}
+ void SpecChannelInfo::set_from_labor(::google::protobuf::uint32 value) {
+  
+  from_labor_ = value;
+  // @@protoc_insertion_point(field_set:neb.SpecChannelInfo.from_labor)
+}
+
+// optional uint32 to_labor = 3;
+void SpecChannelInfo::clear_to_labor() {
+  to_labor_ = 0u;
+}
+ ::google::protobuf::uint32 SpecChannelInfo::to_labor() const {
+  // @@protoc_insertion_point(field_get:neb.SpecChannelInfo.to_labor)
+  return to_labor_;
+}
+ void SpecChannelInfo::set_to_labor(::google::protobuf::uint32 value) {
+  
+  to_labor_ = value;
+  // @@protoc_insertion_point(field_set:neb.SpecChannelInfo.to_labor)
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS

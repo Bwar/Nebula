@@ -22,6 +22,23 @@ CassResponse::~CassResponse()
 {
 }
 
+CassResponse::CassResponse(CassResponse&& oMessage)
+{
+    m_bCassOk = oMessage.m_bCassOk;
+    m_iErrCode = oMessage.m_iErrCode;
+    m_strErrMsg = std::move(oMessage.m_strErrMsg);
+    m_oResult = std::move(oMessage.m_oResult);
+}
+
+CassResponse& CassResponse::operator=(CassResponse&& oMessage)
+{
+    m_bCassOk = oMessage.m_bCassOk;
+    m_iErrCode = oMessage.m_iErrCode;
+    m_strErrMsg = std::move(oMessage.m_strErrMsg);
+    m_oResult = std::move(oMessage.m_oResult);
+    return(*this);
+}
+
 bool CassResponse::DecodeError(CBuffer* pBuff)
 {
     m_bCassOk = false;

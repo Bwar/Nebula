@@ -22,7 +22,7 @@ namespace neb
 
 Actor::Actor(ACTOR_TYPE eActorType, ev_tstamp dTimeout)
     : m_eActorType(eActorType), m_uiActorStatus(ACT_STATUS_UNREGISTER),
-      m_uiSequence(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
+      m_uiSequence(0), m_uiPeerStepSeq(0), m_dActiveTime(0.0), m_dTimeout(dTimeout),
       m_pLabor(nullptr), m_pWatcher(nullptr), m_pContext(nullptr)
 {
 }
@@ -63,6 +63,18 @@ uint32 Actor::GetNodeId() const
 uint32 Actor::GetWorkerIndex() const
 {
     return(((Worker*)m_pLabor)->GetWorkerInfo().iWorkerIndex);
+}
+
+uint32 Actor::GetLaborId() const
+{
+    if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
+    {
+        return(m_pLabor->GetNodeInfo().uiWorkerNum + 1);
+    }
+    else
+    {
+        return(((Worker*)m_pLabor)->GetWorkerInfo().iWorkerIndex);
+    }
 }
 
 const std::string& Actor::GetNodeType() const
@@ -151,6 +163,16 @@ std::shared_ptr<Context> Actor::GetContext()
 void Actor::SetContext(std::shared_ptr<Context> pContext)
 {
     m_pContext = pContext;
+}
+
+uint32 Actor::GetPeerStepSeq() const
+{
+    return(m_uiPeerStepSeq);
+}
+
+void Actor::SetPeerStepSeq(uint32 uiPeerStepSeq)
+{
+    m_uiPeerStepSeq = uiPeerStepSeq;
 }
 
 bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel)

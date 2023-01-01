@@ -51,6 +51,7 @@ public:
         int iS2SFamily      = 0;   ///<
         int iC2SListenFd    = -1;  ///< Client to Server监听文件描述符（Client与Server之间的连接较多，但每个Client只需连接某个Server的某个Worker）
         int iC2SFamily      = 0;   ///<
+        std::unordered_set<int> setAccessFd;    ///< the same as iC2SListenFd
     };
 
 public:

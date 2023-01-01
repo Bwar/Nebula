@@ -127,6 +127,7 @@ public:
 public:
     uint32 GetNodeId() const;
     uint32 GetWorkerIndex() const;
+    uint32 GetLaborId() const;
     const std::string& GetNodeType() const;
     const std::string& GetWorkPath() const;
     const std::string& GetNodeIdentify() const;
@@ -147,6 +148,8 @@ public:
     std::shared_ptr<Operator> GetOperator(const std::string& strOperatorName);
     std::shared_ptr<Context> GetContext();
     void SetContext(std::shared_ptr<Context> pContext);
+    uint32 GetPeerStepSeq() const;
+    void SetPeerStepSeq(uint32 uiPeerStepSeq);
     void AddAssemblyLine(std::shared_ptr<Session> pSession);
 
 protected:
@@ -349,6 +352,7 @@ private:
     ACTOR_TYPE m_eActorType;
     uint32 m_uiActorStatus;
     uint32 m_uiSequence;
+    uint32 m_uiPeerStepSeq;
     ev_tstamp m_dActiveTime;
     ev_tstamp m_dTimeout;
     Labor* m_pLabor;

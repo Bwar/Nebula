@@ -40,6 +40,8 @@ enum E_CMD
     CMD_RSP_UPDATE_WORKER_LOAD          = 14,   ///< 更新Worker进程负载信息应答（一般无须应答）
     CMD_REQ_START_SERVICE               = 15,   ///< 服务就绪请求
     CMD_RSP_START_SERVICE               = 16,   ///< 服务就绪响应（无须响应）
+    CMD_REQ_SPEC_CHANNEL                = 17,   ///< 创建SpecChannel请求
+    CMD_RSP_SPEC_CHANNEL                = 18,   ///< 创建SpecChannel响应（无须响应）
 
     CMD_REQ_NODE_STATUS_REPORT          = 101,  ///< 节点Server状态上报请求（各节点向控制中心上报自身状态信息）
     CMD_RSP_NODE_STATUS_REPORT          = 102,  ///< 节点Server状态上报应答

@@ -19,6 +19,7 @@ extern "C" {
 }
 #endif
 #include "Worker.hpp"
+#include "LaborShared.hpp"
 #include "ios/Dispatcher.hpp"
 #include "ios/IO.hpp"
 #include "actor/ActorBuilder.hpp"
@@ -408,6 +409,7 @@ bool Worker::NewDispatcher()
         LOG4_ERROR("new Dispatcher error: %s", e.what());
         return(false);
     }
+    LaborShared::Instance(m_stNodeInfo.uiWorkerNum + 2)->AddDispatcher(m_stWorkerInfo.iWorkerIndex, m_pDispatcher);
     return(true);
 }
 

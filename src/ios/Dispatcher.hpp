@@ -70,6 +70,7 @@ template<typename T> class IO;
 typedef void (*signal_callback)(struct ev_loop*,ev_signal*,int);
 typedef void (*timer_callback)(struct ev_loop*,ev_timer*,int);
 typedef void (*idle_callback)(struct ev_loop*,ev_idle*,int);
+typedef void (*async_callback)(struct ev_loop*,ev_async*,int);
 
 enum E_DISPATCHER
 {
@@ -107,6 +108,7 @@ public:
     static void IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void SignalCallback(struct ev_loop* loop, struct ev_signal* watcher, int revents);
+    static void AsyncCallback(struct ev_loop* loop, struct ev_async* watcher, int revents);
     static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
 
     bool OnIoRead(std::shared_ptr<SocketChannel> pChannel);
@@ -165,6 +167,7 @@ public:
     bool CreateListenFd(const std::string& strHost, int32 iPort, int iBacklog, int& iFd, int& iFamily);
     std::shared_ptr<SocketChannel> GetChannel(int iFd);
     int SendFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, const std::string& strRemoteAddr);
+    void AsyncSend(ev_async* pWatcher);
 
 protected:
     void Destroy();
@@ -174,13 +177,14 @@ protected:
     bool AddEvent(ev_signal* signal_watcher, signal_callback pFunc, int iSignum);
     bool AddEvent(ev_timer* timer_watcher, timer_callback pFunc, ev_tstamp dTimeout);
     bool AddEvent(ev_idle* idle_watcher, idle_callback pFunc);
+    bool AddEvent(ev_async* async_watcher, async_callback pFunc);
     bool RefreshEvent(ev_timer* timer_watcher, ev_tstamp dTimeout);
     bool DelEvent(ev_io* io_watcher);
     bool DelEvent(ev_timer* timer_watcher);
     int32 GetConnectionNum() const;
     void SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus);
     bool AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout = 60.0);
-    bool AcceptFdAndTransfer(int iFd, int iFamily = AF_INET);
+    bool AcceptFdAndTransfer(int iFd, int iFamily = AF_INET, int iBonding = 0);
     bool AcceptServerConn(int iFd);
     void CheckFailedNode();
     void EvBreak();

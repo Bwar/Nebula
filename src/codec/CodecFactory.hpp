@@ -36,6 +36,7 @@ namespace neb
 class Dispatcher;
 class SocketChannel;
 class SelfChannel;
+class SpecChannelWatcher;
 
 class CodecFactory
 {
@@ -46,7 +47,9 @@ public:
     static std::shared_ptr<SocketChannel> CreateChannel(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, E_CODEC_TYPE eCodecType, bool bIsClient, bool bWithSsl);
     static Codec* CreateCodec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, std::shared_ptr<SocketChannel> pBindChannel);
 
+    static E_CODEC_STATUS OnEvent(SpecChannelWatcher* pAsyncWatcher, std::shared_ptr<SocketChannel> pChannel);
     static E_CODEC_STATUS OnEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel);
+    static bool OnSpecChannelCreated(uint32 uiCodecType, uint32 uiFromLabor, uint32 uiToLabor);
 
     static bool OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SelfChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     static bool OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);

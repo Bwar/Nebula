@@ -23,11 +23,11 @@ namespace neb
 class Loader;
 
 class SessionManager : public Session,
-    public DynamicCreator<SessionManager, bool&, ev_tstamp&>,
+    public DynamicCreator<SessionManager, bool&, bool&, ev_tstamp&>,
     public ActorSys
 {
 public:
-    SessionManager(bool bDirectToLoader, ev_tstamp dStatInterval);
+    SessionManager(bool bDirectToLoader, bool bDispatchWithPort, ev_tstamp dStatInterval);
     virtual ~SessionManager();
 
     virtual E_CMD_STATUS Timeout();
@@ -44,9 +44,9 @@ public:
     const WorkerInfo* GetWorkerInfo(int32 iWorkerIndex) const;
     bool SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad);
     void SetLoaderActorBuilder(ActorBuilder* pActorBuilder);
-    int GetWorkerDataFd(const char* szClientAddr, int iClientPort);
-    int GetNextWorkerDataFd();
-    int GetMinLoadWorkerDataFd();
+    int GetWorkerDataFd(const char* szClientAddr, int iClientPort, int iBonding);
+    int GetNextWorkerDataFd(int iBonding);
+    int GetMinLoadWorkerDataFd(int iBonding);
     bool CheckWorker();
     bool WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE& eLaborType);
     void SendOnlineNodesToWorker();
@@ -63,11 +63,12 @@ public:
 
 private:
     bool m_bDirectToLoader = false;
+    bool m_bDispatchWithPort = false;
     int m_iLoaderDataFd = -1;
+    uint32 m_uiWorkerDataFdIndex[2] = {0};  ///< for round robin fd transfer
     std::vector<int> m_vecWorkerDataFd;     ///< only for fd transfer
     std::unordered_map<int, Worker*> m_mapWorker;               ///< only thread worker
     std::unordered_map<int, WorkerInfo*> m_mapWorkerInfo;       ///< 业务逻辑工作进程及进程属性，key为pid
-    std::unordered_map<int, WorkerInfo*>::iterator m_iterWorkerInfo;
     std::unordered_map<int, int> m_mapWorkerStartNum;       ///< 进程被启动次数，key为WorkerIdx
     std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
     std::unordered_map<std::string, std::string> m_mapOnlineNodes;     ///< 订阅的节点在线信息

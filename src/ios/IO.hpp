@@ -17,6 +17,7 @@
 #include "ios/ActorWatcher.hpp"
 #include "ios/Dispatcher.hpp"
 #include "labor/Labor.hpp"
+#include "labor/LaborShared.hpp"
 #include "actor/Actor.hpp"
 #include "actor/ActorBuilder.hpp"
 #include "actor/chain/Chain.hpp"
@@ -50,6 +51,10 @@ public:
     template<typename ...Targs>
     static bool SendRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SocketChannel> pChannel, Targs&&... args);
 
+    // for spec channel
+    template <typename ...Targs>
+    static bool TransmitTo(Actor* pActor, uint32 uiTargetLaborId, uint32 uiCallbackStepSeq, Targs&&... args);
+    
     template <typename ...Targs>
     static bool SendTo(Actor* pActor, const std::string& strIdentify, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args);
 
@@ -111,7 +116,7 @@ public:
     template<typename ...Targs>
     static bool OnResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, uint32 uiStreamId, E_CODEC_STATUS eCodecStatus, Targs&&... args);
 
-    // SelfChannel response
+    // SelfChannel response, SpecChannel response
     template<typename ...Targs>
     static bool OnResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, Targs&&... args);
 
@@ -173,6 +178,24 @@ bool IO<T>::SendResponse(Actor* pActor, std::shared_ptr<SocketChannel> pChannel,
     }
     else
     {
+        if (pChannel->GetCodecType() == CODEC_TRANSFER) // spec channel
+        {
+            uint32 uiPeerStepSeq = pActor->GetPeerStepSeq();
+            if (uiPeerStepSeq == 0)
+            {
+                pActor->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
+                        "no peer step seq for response");
+                return(false);
+            }
+            int iResult = T::Write(pChannel, 0, uiPeerStepSeq, std::forward<Targs>(args)...);
+            if (ERR_OK == iResult)
+            {
+                return(true);
+            }
+            pActor->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
+                    "spec channel error %d", iResult);
+            return(false);
+        }
         return(SendResponse(pActor->m_pLabor->GetDispatcher(), pChannel, std::forward<Targs>(args)...));
     }
 }
@@ -186,7 +209,7 @@ bool IO<T>::SendResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel>
         LOG4_TRACE_DISPATCH("CODEC_UNKNOW is invalid, channel had not been init?");
         return(false);
     }
-    if (pChannel->GetCodecType() == CODEC_DIRECT)
+    if (pChannel->GetCodecType() == CODEC_DIRECT) // self channel
     {
         auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
         if (pSelfChannel == nullptr)
@@ -359,6 +382,20 @@ bool IO<T>::SendRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_p
             pDispatcher->DiscardSocketChannel(pChannel);
             return(false);
     }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::TransmitTo(Actor* pActor, uint32 uiTargetLaborId, uint32 uiCallbackStepSeq, Targs&&... args)
+{
+    int iResult = T::Write(pActor->GetLaborId(), uiTargetLaborId, gc_uiCmdReq, uiCallbackStepSeq, std::forward<Targs>(args)...);
+    if (ERR_OK == iResult)
+    {
+        return(true);
+    }
+    pActor->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
+            "spec channel error %d", iResult);
+    return(false);
 }
 
 template<typename T>

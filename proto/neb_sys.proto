@@ -55,3 +55,10 @@ message TraceLog
     bytes log_content = 8;
 }
 
+message SpecChannelInfo
+{
+    uint32 codec_type = 1;
+    uint32 from_labor = 2;
+    uint32 to_labor = 3;
+}
+

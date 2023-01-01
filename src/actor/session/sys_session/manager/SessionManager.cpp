@@ -30,10 +30,10 @@ namespace neb
 std::mutex SessionManager::s_mutexWorker;
 std::vector<uint64> SessionManager::s_vecWorkerThreadId;
 
-SessionManager::SessionManager(bool bDirectToLoader, ev_tstamp dStatInterval)
-    : Session("neb::SessionManager", dStatInterval), m_bDirectToLoader(bDirectToLoader)
+SessionManager::SessionManager(bool bDirectToLoader, bool bDispatchWithPort, ev_tstamp dStatInterval)
+    : Session("neb::SessionManager", dStatInterval),
+      m_bDirectToLoader(bDirectToLoader), m_bDispatchWithPort(bDispatchWithPort)
 {
-    m_iterWorkerInfo = m_mapWorkerInfo.begin();
 }
 
 SessionManager::~SessionManager()
@@ -50,7 +50,6 @@ SessionManager::~SessionManager()
         it->second = nullptr;
     }
     m_mapWorkerInfo.clear();
-    m_iterWorkerInfo = m_mapWorkerInfo.begin();
     m_mapWorkerStartNum.clear();
     m_mapWorkerFdPid.clear();
     m_mapOnlineNodes.clear();
@@ -67,10 +66,35 @@ E_CMD_STATUS SessionManager::Timeout()
     neb::ReportRecord* pRecord = nullptr;
     uint32 uiLoad = 0;
     uint32 uiConnect = 0;
+    char szKey[256] = {0};
     for (auto iter = m_mapWorkerInfo.begin(); iter != m_mapWorkerInfo.end(); ++iter)
     {
         uiLoad += iter->second->uiLoad;
         uiConnect += iter->second->uiConnection;
+        pRecord = pReport->add_records();
+        snprintf(szKey, 256, "W%u-recv_num", iter->first);
+        pRecord->set_key(szKey);
+        pRecord->set_item("nebula");
+        pRecord->add_value(iter->second->uiRecvNum);
+        pRecord->set_value_type(ReportRecord::VALUE_ACC);
+        pRecord = pReport->add_records();
+        snprintf(szKey, 256, "W%u-recv_bytes", iter->first);
+        pRecord->set_key(szKey);
+        pRecord->set_item("nebula");
+        pRecord->add_value(iter->second->uiRecvByte);
+        pRecord->set_value_type(ReportRecord::VALUE_ACC);
+        pRecord = pReport->add_records();
+        snprintf(szKey, 256, "W%u-send_num", iter->first);
+        pRecord->set_key(szKey);
+        pRecord->set_item("nebula");
+        pRecord->add_value(iter->second->uiSendNum);
+        pRecord->set_value_type(ReportRecord::VALUE_ACC);
+        pRecord = pReport->add_records();
+        snprintf(szKey, 256, "W%u-send_bytes", iter->first);
+        pRecord->set_key(szKey);
+        pRecord->set_item("nebula");
+        pRecord->add_value(iter->second->uiSendByte);
+        pRecord->set_value_type(ReportRecord::VALUE_ACC);
     }
     pRecord = pReport->add_records();
     pRecord->set_key("load");
@@ -174,14 +198,12 @@ void SessionManager::AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, i
     if (GetLabor(this)->GetNodeInfo().bThreadMode)
     {
         m_mapWorkerInfo.insert(std::make_pair(iWorkerIndex, pWorkerAttr));
-        m_iterWorkerInfo = m_mapWorkerInfo.begin();
         m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFd, iWorkerIndex));
         m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFd, iWorkerIndex));
     }
     else
     {
         m_mapWorkerInfo.insert(std::make_pair(iPid, pWorkerAttr));
-        m_iterWorkerInfo = m_mapWorkerInfo.begin();
         m_mapWorkerFdPid.insert(std::pair<int, int>(iControlFd, iPid));
         m_mapWorkerFdPid.insert(std::pair<int, int>(iDataFd, iPid));
     }
@@ -313,7 +335,7 @@ void SessionManager::SetLoaderActorBuilder(ActorBuilder* pActorBuilder)
     }
 }
 
-int SessionManager::GetWorkerDataFd(const char* szRemoteAddr, int iRemotePort)
+int SessionManager::GetWorkerDataFd(const char* szRemoteAddr, int iRemotePort, int iBonding)
 {
     if (m_bDirectToLoader && m_iLoaderDataFd != -1)
     {
@@ -328,13 +350,67 @@ int SessionManager::GetWorkerDataFd(const char* szRemoteAddr, int iRemotePort)
         char szIdentify[64] = {0};
         snprintf(szIdentify, 64, "%s:%d", szRemoteAddr, iRemotePort);
         uint32 uiKeyHash = CityHash32(szIdentify, strlen(szIdentify));
-        uint32 uiIndex = uiKeyHash % (m_vecWorkerDataFd.size() - 1);    // loader▒~Z~Dworker▒~V▒~O▒为0
+        uint32 uiIndex = uiKeyHash % (m_vecWorkerDataFd.size() - 1) + 1;
+        if (m_bDispatchWithPort && m_vecWorkerDataFd.size() > 2
+                && (0x00000001 & iBonding) != (0x00000001 & uiIndex))
+        {
+            if (uiIndex > 1)
+            {
+                uiIndex -= 1;
+            }
+            else
+            {
+                uiIndex = m_vecWorkerDataFd.size() - 1;
+                if ((0x00000001 & iBonding) != (0x00000001 & uiIndex))
+                {
+                    uiIndex -= 1;
+                }
+            }
+        }
         return(m_vecWorkerDataFd[uiIndex + 1]);
     }
     return(-1);
 }
 
-int SessionManager::GetMinLoadWorkerDataFd()
+int SessionManager::GetNextWorkerDataFd(int iBonding)
+{
+    if (m_bDirectToLoader && m_iLoaderDataFd != -1)
+    {
+        return(m_iLoaderDataFd);
+    }
+    else
+    {
+        if (m_mapWorkerInfo.empty())
+        {
+            return(-1);
+        }
+        if (m_bDispatchWithPort && m_vecWorkerDataFd.size() > 2)
+        {
+            uint32 i = 0x00000001 & iBonding;
+            do
+            {
+                m_uiWorkerDataFdIndex[i]++;
+                if (m_uiWorkerDataFdIndex[i] >= m_vecWorkerDataFd.size())
+                {
+                    m_uiWorkerDataFdIndex[i] = 1;
+                }
+            }
+            while ((0x00000001 & iBonding) != (0x00000001 & m_uiWorkerDataFdIndex[i]));
+            return(m_vecWorkerDataFd[m_uiWorkerDataFdIndex[i]]);
+        }
+        else
+        {
+            m_uiWorkerDataFdIndex[0]++;
+            if (m_uiWorkerDataFdIndex[0] >= m_vecWorkerDataFd.size())
+            {
+                m_uiWorkerDataFdIndex[0] = 1;
+            }
+            return(m_vecWorkerDataFd[m_uiWorkerDataFdIndex[0]]);
+        }
+    }
+}
+
+int SessionManager::GetMinLoadWorkerDataFd(int iBonding)
 {
     LOG4_TRACE(" ");
     int iMinLoadWorkerFd = 0;
@@ -350,6 +426,11 @@ int SessionManager::GetMinLoadWorkerDataFd()
         for (auto iter = m_mapWorkerInfo.begin(); iter != m_mapWorkerInfo.end(); ++iter)
         {
             if (m_iLoaderDataFd == iter->second->iDataFd)
+            {
+                continue;
+            }
+            if (m_bDispatchWithPort && m_vecWorkerDataFd.size() > 2
+                    && (0x00000001 & iBonding) != (0x00000001 & iter->second->iWorkerIndex))
             {
                 continue;
             }
@@ -383,39 +464,6 @@ int SessionManager::GetMinLoadWorkerDataFd()
         iter->second->uiConnection++;
     }
     return(iMinLoadWorkerFd);
-}
-
-int SessionManager::GetNextWorkerDataFd()
-{
-    if (m_bDirectToLoader && m_iLoaderDataFd != -1)
-    {
-        return(m_iLoaderDataFd);
-    }
-    else
-    {
-        if (m_mapWorkerInfo.empty())
-        {
-            return(-1);
-        }
-        ++m_iterWorkerInfo;
-        if (m_iterWorkerInfo == m_mapWorkerInfo.end())
-        {
-            m_iterWorkerInfo = m_mapWorkerInfo.begin();
-        }
-        if (m_iterWorkerInfo->second->iDataFd == m_iLoaderDataFd)
-        {
-            ++m_iterWorkerInfo;
-            if (m_iterWorkerInfo == m_mapWorkerInfo.end())
-            {
-                if (m_mapWorkerInfo.size() == 1)
-                {
-                    return(-1);
-                }
-                m_iterWorkerInfo = m_mapWorkerInfo.begin();
-            }
-        }
-        return(m_iterWorkerInfo->second->iDataFd);
-    }
 }
 
 bool SessionManager::CheckWorker()
@@ -471,7 +519,6 @@ bool SessionManager::WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE&
         GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pDataChannel);
         delete worker_iter->second;
         m_mapWorkerInfo.erase(worker_iter);
-        m_iterWorkerInfo = m_mapWorkerInfo.begin();
 
         auto restart_num_iter = m_mapWorkerStartNum.find(iWorkerIndex);
         if (restart_num_iter != m_mapWorkerStartNum.end())

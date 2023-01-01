@@ -22,7 +22,9 @@ extern "C" {
 #include "Manager.hpp"
 #include "Worker.hpp"
 #include "Loader.hpp"
+#include "LaborShared.hpp"
 #include "channel/SocketChannel.hpp"
+#include "channel/SpecChannel.hpp"
 #include "ios/Dispatcher.hpp"
 #include "actor/ActorBuilder.hpp"
 #include "actor/step/Step.hpp"
@@ -201,6 +203,7 @@ bool Manager::InitDispatcher()
         LOG4_ERROR("new Dispatcher error: %s", e.what());
         return(false);
     }
+    LaborShared::Instance(m_stNodeInfo.uiWorkerNum + 2)->AddDispatcher(m_stNodeInfo.uiWorkerNum + 1, m_pDispatcher);
     return(m_pDispatcher->Init());
 }
 
@@ -239,12 +242,35 @@ void Manager::StartService()
                  m_stNodeInfo.iPortForServer, m_stNodeInfo.iBacklog,
                  m_stManagerInfo.iS2SListenFd, m_stManagerInfo.iS2SFamily);
 
-        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
+        if (m_stNodeInfo.strHostForClient.size() > 0)
         {
             // 接入节点才需要监听客户端连接
-            m_pDispatcher->CreateListenFd(strBindIp,
-                  m_stNodeInfo.iPortForClient, m_stNodeInfo.iBacklog,
-                  m_stManagerInfo.iC2SListenFd, m_stManagerInfo.iC2SFamily);
+            if (m_stNodeInfo.iPortForClient > 0)
+            {
+                m_pDispatcher->CreateListenFd(strBindIp,
+                    m_stNodeInfo.iPortForClient, m_stNodeInfo.iBacklog,
+                    m_stManagerInfo.iC2SListenFd, m_stManagerInfo.iC2SFamily);
+                int iPort = 0;
+                int iListenFd = 0;
+                std::unordered_set<int> setPort;
+                for (int i = 0; i < m_oCurrentConf["access_ports"].GetArraySize(); ++i)
+                {
+                    if (m_oCurrentConf["access_ports"].Get(i, iPort) && iPort > 0)
+                    {
+                        if (m_stNodeInfo.iPortForClient != iPort)
+                        {
+                            setPort.insert(iPort);
+                        }
+                    }
+                }
+                for (auto it = setPort.begin(); it != setPort.end(); ++it)
+                {
+                    m_pDispatcher->CreateListenFd(strBindIp,
+                        *it, m_stNodeInfo.iBacklog,
+                        iListenFd, m_stManagerInfo.iC2SFamily);
+                    m_stManagerInfo.setAccessFd.insert(iListenFd);
+                }
+            }
         }
     }
     else
@@ -253,12 +279,35 @@ void Manager::StartService()
               m_stNodeInfo.iPortForServer, m_stNodeInfo.iBacklog,
               m_stManagerInfo.iS2SListenFd, m_stManagerInfo.iS2SFamily);
 
-        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
+        if (m_stNodeInfo.strHostForClient.size() > 0)
         {
             // 接入节点才需要监听客户端连接
-            m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
+            if (m_stNodeInfo.iPortForClient > 0)
+            {
+                m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
                     m_stNodeInfo.iPortForClient, m_stNodeInfo.iBacklog,
                     m_stManagerInfo.iC2SListenFd, m_stManagerInfo.iC2SFamily);
+                int iPort = 0;
+                int iListenFd = 0;
+                std::unordered_set<int> setPort;
+                for (int i = 0; i < m_oCurrentConf["access_ports"].GetArraySize(); ++i)
+                {
+                    if (m_oCurrentConf["access_ports"].Get(i, iPort) && iPort > 0)
+                    {
+                        if (m_stNodeInfo.iPortForClient != iPort)
+                        {
+                            setPort.insert(iPort);
+                        }
+                    }
+                }
+                for (auto it = setPort.begin(); it != setPort.end(); ++it)
+                {
+                    m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
+                        *it, m_stNodeInfo.iBacklog,
+                        iListenFd, m_stManagerInfo.iC2SFamily);
+                    m_stManagerInfo.setAccessFd.insert(iListenFd);
+                }
+            }
         }
     }
 
@@ -269,6 +318,12 @@ void Manager::StartService()
         pChannelListen = m_pDispatcher->CreateSocketChannel(m_stManagerInfo.iC2SListenFd, m_stNodeInfo.eCodec);
         m_pDispatcher->SetChannelStatus(pChannelListen, CHANNEL_STATUS_ESTABLISHED);
         m_pDispatcher->AddIoReadEvent(pChannelListen);
+        for (auto it = m_stManagerInfo.setAccessFd.begin(); it != m_stManagerInfo.setAccessFd.end(); ++it)
+        {
+            pChannelListen = m_pDispatcher->CreateSocketChannel(*it, m_stNodeInfo.eCodec);
+            m_pDispatcher->SetChannelStatus(pChannelListen, CHANNEL_STATUS_ESTABLISHED);
+            m_pDispatcher->AddIoReadEvent(pChannelListen);
+        }
     }
     LOG4_TRACE("S2SListenFd[%d]", m_stManagerInfo.iS2SListenFd);
     pChannelListen = m_pDispatcher->CreateSocketChannel(m_stManagerInfo.iS2SListenFd, CODEC_NEBULA);
@@ -397,6 +452,9 @@ bool Manager::Init()
     m_oCurrentConf.Get("thread_mode", m_stNodeInfo.bThreadMode);
     if (m_stNodeInfo.bThreadMode)
     {
+        uint32 uiSpecChannelQueueSize = 128;
+        m_oCurrentConf.Get("spec_channel_queue_size", uiSpecChannelQueueSize);
+        LaborShared::Instance(m_stNodeInfo.uiWorkerNum + 2)->SetSpecChannelQueueSize(uiSpecChannelQueueSize);
         m_oCurrentConf.Get("async_logger", m_stNodeInfo.bAsyncLogger);
     }
     if (!InitLogger(m_oCurrentConf) || !InitDispatcher() || !InitActorBuilder())
@@ -453,10 +511,12 @@ bool Manager::CreateEvents()
     m_pDispatcher->AddEvent(fpe_signal_watcher, Dispatcher::SignalCallback, SIGFPE);
 
     bool bDirectToLoader = false;
+    bool bDispatchWithPort = false;
     m_oCurrentConf.Get("new_client_to_loader", bDirectToLoader);
+    m_oCurrentConf.Get("dispatch_with_port", bDispatchWithPort);
     m_pSessionManager = std::dynamic_pointer_cast<SessionManager>(
             m_pActorBuilder->MakeSharedSession(nullptr, "neb::SessionManager",
-                bDirectToLoader, m_stNodeInfo.dDataReportInterval));
+                bDirectToLoader, bDispatchWithPort, m_stNodeInfo.dDataReportInterval));
     AddPeriodicTaskEvent();
 
     return(true);
@@ -559,6 +619,14 @@ void Manager::CreateLoaderThread()
         return;
     }
     m_pLoaderActorBuilder = pWorker->GetActorBuilder();
+    auto pManagerToLoaderSpecChannel = LaborShared::Instance(
+            m_stNodeInfo.uiWorkerNum + 2)->CreateInternalSpecChannel(m_stNodeInfo.uiWorkerNum + 1, 0);
+    auto pDispatcher = LaborShared::Instance()->GetDispatcher(pManagerToLoaderSpecChannel->GetOwnerId());
+    pDispatcher->AddEvent(pManagerToLoaderSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+    LOG4_TRACE("spec channel from %u to %u has been created.", m_stNodeInfo.uiWorkerNum + 1, 0);
+    auto pLoaderToManagerSpecChannel = LaborShared::Instance()->CreateInternalSpecChannel(0, m_stNodeInfo.uiWorkerNum + 1);
+    m_pDispatcher->AddEvent(pLoaderToManagerSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+    LOG4_TRACE("spec channel from %u to %u has been created.", 0, m_stNodeInfo.uiWorkerNum + 1);
     std::thread t(&Worker::Run, pWorker);
     t.detach();
     m_stNodeInfo.uiLoaderNum = 1;
@@ -665,6 +733,14 @@ void Manager::CreateWorkerThread()
             continue;
         }
         pWorker->SetLoaderActorBuilder(m_pLoaderActorBuilder);
+        auto pManagerToWorkerSpecChannel = LaborShared::Instance(
+                m_stNodeInfo.uiWorkerNum + 2)->CreateInternalSpecChannel(m_stNodeInfo.uiWorkerNum + 1, i);
+        auto pDispatcher = LaborShared::Instance()->GetDispatcher(pManagerToWorkerSpecChannel->GetOwnerId());
+        pDispatcher->AddEvent(pManagerToWorkerSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+        LOG4_TRACE("spec channel from %u to %u has been created.", m_stNodeInfo.uiWorkerNum + 1, i);
+        auto pWorkerToManagerSpecChannel = LaborShared::Instance()->CreateInternalSpecChannel(i, m_stNodeInfo.uiWorkerNum + 1);
+        m_pDispatcher->AddEvent(pWorkerToManagerSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+        LOG4_TRACE("spec channel from %u to %u has been created.", i, m_stNodeInfo.uiWorkerNum + 1);
         std::thread t(&Worker::Run, pWorker);
         t.detach();
         m_pSessionManager->AddWorkerInfo(i, getpid(), iControlFds[0], iDataFds[0]);

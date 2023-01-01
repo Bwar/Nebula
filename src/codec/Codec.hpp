@@ -48,6 +48,7 @@ enum E_CODEC_TYPE
     CODEC_DIRECT            = 11,       ///< 虚拟编解码类型，用于SelfChannel，以参数方式直接传递数据包
     CODEC_CASS              = 12,       ///< cassandra scylladb
     CODEC_RAW               = 13,       ///< 裸数据传输
+    CODEC_TRANSFER          = 14,       ///< 虚拟编解码类型，用于SpecChannel
 };
 
 /**

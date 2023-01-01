@@ -471,6 +471,11 @@ int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, in
     return(ERR_OK);
 }
 
+uint32 SocketChannel::GetPeerStepSeq() const
+{
+    return(0);
+}
+
 ChannelWatcher* SocketChannel::MutableWatcher()
 {
     if (nullptr == m_pWatcher)
