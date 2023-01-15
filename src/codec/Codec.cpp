@@ -25,6 +25,12 @@ Codec::~Codec()
     LOG4_TRACE("codec_type %d", m_eCodecType);
 }
 
+void Codec::SetBonding(std::shared_ptr<NetLogger> pLogger, std::shared_ptr<SocketChannel> pBindChannel)
+{
+    m_pLogger = pLogger;
+    m_pBindChannel = pBindChannel;
+}
+
 bool Codec::Zip(const std::string& strSrc, std::string& strDest)
 {
     /*

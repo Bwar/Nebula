@@ -34,7 +34,7 @@ public:
     template<typename ...Targs>
     static int Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
     {
-        return(CodecProto::Write(Type(), uiToLabor, uiFlags, uiStepSeq,
+        return(CodecProto::Write(Type(), uiFromLabor, uiToLabor, uiFlags, uiStepSeq,
                 std::move(const_cast<MsgHead&>(oMsgHead)), std::move(const_cast<MsgBody&>(oMsgBody))));
     }
 
@@ -86,7 +86,7 @@ public:
     template<typename ...Targs>
     static int Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
     {
-        return(CodecProto::Write(Type(), uiToLabor, uiFlags, uiStepSeq,
+        return(CodecProto::Write(Type(), uiFromLabor, uiToLabor, uiFlags, uiStepSeq,
                 std::move(const_cast<MsgHead&>(oMsgHead)), std::move(const_cast<MsgBody&>(oMsgBody))));
     }
 
@@ -119,7 +119,7 @@ public:
     template<typename ...Targs>
     static int Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
     {
-        return(CodecProto::Write(Type(), uiToLabor, uiFlags, uiStepSeq,
+        return(CodecProto::Write(Type(), uiFromLabor, uiToLabor, uiFlags, uiStepSeq,
                 std::move(const_cast<MsgHead&>(oMsgHead)), std::move(const_cast<MsgBody&>(oMsgBody))));
     }
 

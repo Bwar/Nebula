@@ -21,6 +21,8 @@
 #include "actor/session/sys_session/manager/SessionManager.hpp"
 #include "codec/CodecFactory.hpp"
 #include "channel/SocketChannelImpl.hpp"
+#include "channel/migrate/SocketChannelMigrate.hpp"
+#include "pb/neb_sys.pb.h"
 
 namespace neb
 {
@@ -86,10 +88,6 @@ void Dispatcher::PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, i
             ((Manager*)(pDispatcher->m_pLabor))->GetSessionManager()->CheckWorker();
             ((Manager*)(pDispatcher->m_pLabor))->RefreshServer();
         }
-        else
-        {
-            ((Worker*)(pDispatcher->m_pLabor))->CheckParent();
-        }
         pDispatcher->CheckFailedNode();
     }
     ev_timer_stop (loop, watcher);
@@ -102,14 +100,7 @@ void Dispatcher::SignalCallback(struct ev_loop* loop, struct ev_signal* watcher,
     if (watcher->data != NULL)
     {
         Labor* pLabor = (Labor*)watcher->data;
-        if (SIGCHLD == watcher->signum)
-        {
-            ((Manager*)pLabor)->OnChildTerminated(watcher);
-        }
-        else
-        {
-            pLabor->OnTerminated(watcher);
-        }
+        pLabor->OnTerminated(watcher);
     }
 }
 
@@ -153,17 +144,6 @@ bool Dispatcher::OnIoRead(std::shared_ptr<SocketChannel> pChannel)
         {
             return(AcceptFdAndTransfer(pChannel->GetFd(),
                     ((Manager*)m_pLabor)->GetManagerInfo().iC2SFamily, 0));
-        }
-        else
-        {
-            return(DataRecvAndHandle(pChannel));
-        }
-    }
-    else if (Labor::LABOR_WORKER == m_pLabor->GetLaborType() || Labor::LABOR_LOADER == m_pLabor->GetLaborType())
-    {
-        if (pChannel->GetFd() == ((Worker*)m_pLabor)->GetWorkerInfo().iDataFd)
-        {
-            return(FdTransfer(pChannel->GetFd()));
         }
         else
         {
@@ -219,103 +199,6 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             DiscardSocketChannel(pChannel);
             return(false);
     }
-}
-
-bool Dispatcher::FdTransfer(int iFd)
-{
-    LOG4_TRACE(" ");
-    int iAcceptFd = -1;
-    int iAiFamily = AF_INET;
-    int iCodec = 0;
-    std::string strRemoteAddr;
-    int iErrno = SocketChannel::RecvChannelFd(iFd, iAcceptFd, iAiFamily, iCodec, strRemoteAddr, m_pLogger);
-    if (iErrno != ERR_OK)
-    {
-        if (iErrno == ERR_CHANNEL_EOF)
-        {
-            LOG4_WARNING("recv_fd from fd %d error %d", iFd, errno);
-            Destroy();
-            exit(2); // manager与worker通信fd已关闭，worker进程退出
-        }
-    }
-    else
-    {
-        if (iAiFamily != PF_UNIX)
-        {
-            int iKeepAlive = 1;
-            int iKeepIdle = 60;
-            int iKeepInterval = 5;
-            int iKeepCount = 3;
-            int iTcpNoDelay = 1;
-            if (setsockopt(iAcceptFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive)) < 0)
-            {
-                LOG4_WARNING("fail to set SO_KEEPALIVE");
-            }
-            if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle)) < 0)
-            {
-                LOG4_WARNING("fail to set TCP_KEEPIDLE");
-            }
-            if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval)) < 0)
-            {
-                LOG4_WARNING("fail to set TCP_KEEPINTVL");
-            }
-            if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount)) < 0)
-            {
-                LOG4_WARNING("fail to set TCP_KEEPCNT");
-            }
-            if (setsockopt(iAcceptFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay)) < 0)
-            {
-                LOG4_WARNING("fail to set TCP_NODELAY");
-            }
-        }
-        x_sock_set_block(iAcceptFd, 0);
-        std::shared_ptr<SocketChannel> pChannel = nullptr;
-        LOG4_TRACE("%s fd[%d] transfer successfully.", strRemoteAddr.c_str(), iAcceptFd);
-        if ((CODEC_NEBULA != iCodec) && (CODEC_NEBULA_IN_NODE != iCodec) && m_pLabor->WithSsl())
-        {
-            pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), false, true);
-        }
-        else
-        {
-            pChannel = CreateSocketChannel(iAcceptFd, E_CODEC_TYPE(iCodec), false, false);
-        }
-        if (nullptr != pChannel)
-        {
-            pChannel->SetRemoteAddr(strRemoteAddr);
-            AddIoReadEvent(pChannel);
-            if (CODEC_NEBULA == iCodec)
-            {
-                AddIoTimeout(pChannel, m_pLabor->GetNodeInfo().dIoTimeout);
-                std::shared_ptr<Step> pStepTellWorker
-                    = m_pLabor->GetActorBuilder()->MakeSharedStep(nullptr, "neb::StepTellWorker", pChannel);
-                if (nullptr == pStepTellWorker)
-                {
-                    return(false);
-                }
-                pStepTellWorker->Emit(ERR_OK);
-            }
-            else if (CODEC_NEBULA_IN_NODE == iCodec)
-            {
-                pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
-                m_mapLoaderAndWorkerChannel.insert(std::make_pair(pChannel->GetFd(), pChannel));
-                m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
-            }
-            else
-            {
-                ev_tstamp dIoTimeout = (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
-                    ? m_pLabor->GetNodeInfo().dConnectionProtection : m_pLabor->GetNodeInfo().dIoTimeout;
-                pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
-                AddIoTimeout(pChannel, dIoTimeout);
-            }
-            m_pLabor->IoStatAddConnection(IO_STAT_DOWNSTREAM_NEW_CONNECTION);
-            return(true);
-        }
-        else    // 没有足够资源分配给新连接，直接close掉
-        {
-            close(iAcceptFd);
-        }
-    }
-    return(false);
 }
 
 bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
@@ -504,13 +387,21 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
     }
     else
     {
-        auto pChannel = ((Worker*)m_pLabor)->GetManagerControlChannel();
-        if (pChannel == nullptr)
+        MsgHead oMsgHead;
+        oMsgHead.set_cmd(iCmd);
+        oMsgHead.set_seq(uiSeq);
+        uint32 uiManagerLaborId = LaborShared::Instance()->GetManagerLaborId();
+        int iResult = CodecNebulaInNode::Write(((Worker*)m_pLabor)->GetWorkerInfo().iWorkerIndex,
+                uiManagerLaborId, gc_uiCmdReq, m_pLabor->GetSequence(), oMsgHead, oMsgBody);
+        if (ERR_OK == iResult)
         {
-            LOG4_ERROR("no connected channel to manager!");
+            return(true);
+        }
+        else
+        {
+            LOG4_ERROR("send data report to manager error %d", iResult);
             return(false);
         }
-        return(IO<CodecNebulaInNode>::SendRequest(this, 0, pChannel, iCmd, uiSeq, oMsgBody));
     }
 }
 
@@ -870,9 +761,19 @@ bool Dispatcher::DelEvent(ev_timer* timer_watcher)
     return(true);
 }
 
-int Dispatcher::SendFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, const std::string& strRemoteAddr)
+void Dispatcher::AddChannelToLoop(std::shared_ptr<SocketChannel> pChannel)
 {
-    return(SocketChannel::SendChannelFd(iSocketFd, iSendFd, iAiFamily, iCodecType, strRemoteAddr, m_pLogger));
+    auto iter = m_mapSocketChannel.find(pChannel->GetFd());
+    if (iter == m_mapSocketChannel.end())
+    {
+        pChannel->SetBonding(m_pLabor, GetLogger(), pChannel);
+        pChannel->MutableWatcher()->Set(pChannel);
+        ev_tstamp dIoTimeout = (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
+            ? m_pLabor->GetNodeInfo().dConnectionProtection : m_pLabor->GetNodeInfo().dIoTimeout;
+        AddIoTimeout(pChannel, dIoTimeout);
+        AddIoReadEvent(pChannel);
+        m_mapSocketChannel.insert(std::make_pair(pChannel->GetFd(), pChannel));
+    }
 }
 
 bool Dispatcher::CreateListenFd(const std::string& strHost, int32 iPort, int iBacklog, int& iFd, int& iFamily)
@@ -1110,6 +1011,68 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
     }
 }
 
+bool Dispatcher::MigrateSocketChannel(uint32 uiFromLabor, uint32 uiToLabor, std::shared_ptr<SocketChannel> pChannel)
+{
+    if (pChannel == nullptr)
+    {
+        LOG4_TRACE("pChannel not exist!");
+        return(false);
+    }
+    if (pChannel->IsClient())
+    {
+        LOG4_ERROR("client channel can not be migrate.");
+        return(false);
+    }
+
+    auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
+    if (named_iter != m_mapNamedSocketChannel.end())
+    {
+       for (auto it = named_iter->second.begin();
+           it != named_iter->second.end(); ++it)
+       {
+           if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
+           {
+               named_iter->second.erase(it);
+               LOG4_TRACE("erase channel %d from m_mapNamedSocketChannel.", pChannel->GetFd());
+               break;
+           }
+       }
+       if (0 == named_iter->second.size())
+       {
+           m_mapNamedSocketChannel.erase(named_iter);
+       }
+    }
+
+    ev_io_stop (m_loop, pChannel->MutableWatcher()->MutableIoWatcher());
+    if (nullptr != pChannel->MutableWatcher()->MutableTimerWatcher())
+    {
+        ev_timer_stop (m_loop, pChannel->MutableWatcher()->MutableTimerWatcher());
+    }
+
+    auto channel_iter = m_mapSocketChannel.find(pChannel->GetFd());
+    if (channel_iter != m_mapSocketChannel.end())
+    {
+        m_mapSocketChannel.erase(channel_iter);
+        LOG4_TRACE("erase channel %d channel_seq %u from m_mapSocketChannel.",
+                pChannel->GetFd(), pChannel->GetSequence());
+    }
+    int iResult = SocketChannelMigrate::Write(uiFromLabor, uiToLabor, gc_uiCmdReq, m_pLabor->GetSequence(), pChannel);
+    if (ERR_OK == iResult)
+    {
+        return(true);
+    }
+    LOG4_WARNING("failed to migrate channel");
+    // recover from migration failed
+    pChannel->SetBonding(m_pLabor, GetLogger(), pChannel);
+    pChannel->MutableWatcher()->Set(pChannel);
+    m_mapSocketChannel.insert(std::make_pair(pChannel->GetFd(), pChannel));
+    ev_tstamp dIoTimeout = (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
+            ? m_pLabor->GetNodeInfo().dConnectionProtection : m_pLabor->GetNodeInfo().dIoTimeout;
+    AddIoTimeout(pChannel, dIoTimeout);
+    AddIoReadEvent(pChannel);
+    return(false);
+}
+
 bool Dispatcher::AddIoReadEvent(std::shared_ptr<SocketChannel> pChannel)
 {
     LOG4_TRACE("fd[%d], seq[%u]", pChannel->GetFd(), pChannel->GetSequence());
@@ -1315,35 +1278,45 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily, int iBonding)
         }
     }
 
-    int iWorkerDataFd = -1;
+    int iWorkerId = -1;
     switch (m_pLabor->GetNodeInfo().iConnectionDispatch)
     {
         case DISPATCH_ROUND_ROBIN:
-            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd(iBonding);
-            break;
-        case DISPATCH_MIN_LOAD:
-            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetMinLoadWorkerDataFd(iBonding);
+            iWorkerId = ((Manager*)m_pLabor)->GetSessionManager()->GetDispatchWorkerId(iFd);
             break;
         case DISPATCH_CLIENT_ADDR_HASH:
-            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetWorkerDataFd(szClientAddr, iClientPort, iBonding);
+            iWorkerId = ((Manager*)m_pLabor)->GetSessionManager()->GetDispatchWorkerId(iFd, szClientAddr, iClientPort);
             break;
         default:
-            iWorkerDataFd = ((Manager*)m_pLabor)->GetSessionManager()->GetNextWorkerDataFd(iBonding);
+            iWorkerId = ((Manager*)m_pLabor)->GetSessionManager()->GetDispatchWorkerId(iFd);
     }
-    if (iWorkerDataFd > 0)
+    if (iWorkerId > 0)
     {
-        LOG4_TRACE("send new fd %d to worker communication fd %d",
-                        iAcceptFd, iWorkerDataFd);
-        int iCodec = m_pLabor->GetNodeInfo().eCodec;
-        int iErrno = SocketChannel::SendChannelFd(iWorkerDataFd, iAcceptFd, iFamily, iCodec, szClientAddr, m_pLogger);
-        if (iErrno != ERR_OK)
+        MsgHead oMsgHead;
+        MsgBody oMsgBody;
+        FdTransfer oFdTransferInfo;
+        std::string strFdTransferInfo;
+        oFdTransferInfo.set_fd(iAcceptFd);
+        oFdTransferInfo.set_addr_family(iFamily);
+        oFdTransferInfo.set_client_addr(szClientAddr);
+        oFdTransferInfo.set_client_port(iClientPort);
+        oFdTransferInfo.set_codec_type(m_pLabor->GetNodeInfo().eCodec);
+        oFdTransferInfo.SerializeToString(&strFdTransferInfo);
+        oMsgBody.set_data(strFdTransferInfo);
+        oMsgHead.set_cmd(CMD_REQ_FD_TRANSFER);
+        uint32 uiManagerLaborId = m_pLabor->GetNodeInfo().uiWorkerNum + 1;
+        int iResult = CodecNebulaInNode::Write(uiManagerLaborId, iWorkerId, gc_uiCmdReq, m_pLabor->GetSequence(), oMsgHead, oMsgBody);
+        if (ERR_OK == iResult)
         {
-            LOG4_ERROR("error %d: %s", iErrno, strerror_r(iErrno, m_pErrBuff, gc_iErrBuffLen));
+            return(true);
         }
-        close(iAcceptFd);
-        return(true);
+        else
+        {
+            LOG4_ERROR("transfer fd %d to worker %d error %d", iAcceptFd, iWorkerId, iResult);
+            return(false);
+        }
     }
-    LOG4_ERROR("no available data fd %d", iWorkerDataFd);
+    LOG4_ERROR("no available worker");
     close(iAcceptFd);
     return(false);
 }

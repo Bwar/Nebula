@@ -50,6 +50,8 @@ enum E_ERROR_NO
     ERR_SPEC_CHANNEL_TARGET             = 10103,    ///< spec channel源和目标相同
     ERR_SPEC_CHANNEL_LABOR_ID           = 10104,    ///< labor id 超出labor数量
     ERR_SPEC_CHANNEL_MANAGER            = 10105,    ///< manager to worker或worker to manager spec channel不存在
+    ERR_SPEC_CHANNEL_CALL               = 10106,    ///< inappropriate call
+    ERR_SPEC_CHANNEL_MIGRATE            = 10107,    ///< channel migrate failed
 
     /* 存储代理错误码段  11000~11999 */
     ERR_INCOMPLET_DATAPROXY_DATA        = 11001,    ///< DataProxy请求数据包不完整

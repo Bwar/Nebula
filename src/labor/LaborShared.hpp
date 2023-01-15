@@ -51,6 +51,16 @@ public:
     int AddSpecChannel(uint32 uiCodecType, uint32 uiFrom, uint32 uiTo, std::shared_ptr<SocketChannel> pChannel);
     std::shared_ptr<SpecChannel<MsgBody, MsgHead>> CreateInternalSpecChannel(uint32 uiFrom, uint32 uiTo);
 
+    uint32 GetLaborNum() const
+    {
+        return(m_uiLaborNum);
+    }
+
+    uint32 GetManagerLaborId() const
+    {
+        return(m_uiLaborNum - 1);
+    }
+    
     uint32 GetSpecChannelQueueSize() const
     {
         return(m_uiSpecChannelQueueSize);
@@ -60,6 +70,12 @@ public:
     {
         m_uiSpecChannelQueueSize = uiSize;
     }
+
+    const std::vector<uint64>& GetWorkerThreadId()
+    {
+        return(m_vecWorkerThreadId);
+    }
+    void AddWorkerThreadId(uint64 ullThreadId);
 
 private:
     explicit LaborShared(uint32 uiLaborNum);
@@ -72,6 +88,7 @@ private:
     std::atomic<uint32> m_uiCodecSize;
     std::vector<Dispatcher*> m_vecDispatcher;
     T_VECCHANNEL_CODEC_TYPE m_vecSpecChannel;
+    std::vector<uint64> m_vecWorkerThreadId;
 };
 
 } /* namespace neb */

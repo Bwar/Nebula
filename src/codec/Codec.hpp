@@ -49,6 +49,9 @@ enum E_CODEC_TYPE
     CODEC_CASS              = 12,       ///< cassandra scylladb
     CODEC_RAW               = 13,       ///< 裸数据传输
     CODEC_TRANSFER          = 14,       ///< 虚拟编解码类型，用于SpecChannel
+    CODEC_CHANNEL_MIGRATE   = 15,       ///< 虚拟编解码类型，用于SocketChannel迁移
+
+    CODEC_MAX
 };
 
 /**
@@ -134,6 +137,7 @@ public:
         m_iErrno = iErrno;
     }
 protected:
+    void SetBonding(std::shared_ptr<NetLogger> pLogger, std::shared_ptr<SocketChannel> pBindChannel);
     const std::string& GetKey() const
     {
         return(m_strKey);

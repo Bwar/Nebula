@@ -461,6 +461,7 @@ void ActorBuilder::LoadSysCmd()
         MakeSharedCmd(nullptr, "neb::CmdOnStartService", (int)CMD_REQ_START_SERVICE);
         MakeSharedCmd(nullptr, "neb::CmdDataReport", (int)CMD_REQ_DATA_REPORT);
         MakeSharedCmd(nullptr, "neb::CmdSpecChannelCreated", (int)CMD_REQ_SPEC_CHANNEL);
+        MakeSharedCmd(nullptr, "neb::CmdChannelMigrate", (int)CMD_REQ_CHANNEL_MIGRATE);
         std::string strModulePath = "/healthy";
         MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
         strModulePath = "/health";
@@ -479,6 +480,8 @@ void ActorBuilder::LoadSysCmd()
         MakeSharedCmd(nullptr, "neb::CmdSetNodeCustomConf", (int)CMD_REQ_SET_NODE_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdReloadCustomConf", (int)CMD_REQ_RELOAD_CUSTOM_CONFIG);
         MakeSharedCmd(nullptr, "neb::CmdSpecChannelCreated", (int)CMD_REQ_SPEC_CHANNEL);
+        MakeSharedCmd(nullptr, "neb::CmdFdTransfer", (int)CMD_REQ_FD_TRANSFER);
+        MakeSharedCmd(nullptr, "neb::CmdChannelMigrate", (int)CMD_REQ_CHANNEL_MIGRATE);
         std::string strModulePath = "/healthy";
         MakeSharedModule(nullptr, "neb::ModuleHealth", strModulePath);
         strModulePath = "/health";

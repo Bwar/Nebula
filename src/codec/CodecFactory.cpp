@@ -13,7 +13,10 @@
 #include "channel/SocketChannelImpl.hpp"
 #include "channel/SocketChannelSslImpl.hpp"
 #include "channel/SpecChannel.hpp"
+#include "channel/migrate/SocketChannelPack.hpp"
+#include "channel/migrate/SocketChannelMigrate.hpp"
 #include "labor/LaborShared.hpp"
+#include "actor/cmd/sys_cmd/CmdChannelMigrate.hpp"
 
 namespace neb
 {
@@ -253,6 +256,25 @@ E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::sha
         }
             break;
         case CODEC_PRIVATE:
+            break;
+        case CODEC_CHANNEL_MIGRATE:
+        {
+            SocketChannelPack oPack;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<SocketChannelPack>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oPack))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<CmdChannelMigrate>::OnRequest(pDispatcher, pChannel, (int32)CMD_REQ_CHANNEL_MIGRATE, oPack);
+                }
+                else
+                {
+                    ;   // no response
+                }
+            }
+        }
             break;
         case CODEC_UNKNOW:
             break;

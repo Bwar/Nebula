@@ -204,6 +204,12 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::SendResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, Targs&&... args)
 {
+    if (pChannel->m_pImpl == nullptr)
+    {
+        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
+                "no channel impl");
+        return(false);
+    }
     if (CODEC_UNKNOW == pChannel->GetCodecType())
     {
         LOG4_TRACE_DISPATCH("CODEC_UNKNOW is invalid, channel had not been init?");
@@ -313,6 +319,12 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::SendRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SocketChannel> pChannel, Targs&&... args)
 {
+    if (pChannel->m_pImpl == nullptr)
+    {
+        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
+                "no channel impl");
+        return(false);
+    }
     if (CODEC_UNKNOW == pChannel->GetCodecType())
     {
         LOG4_TRACE_DISPATCH("CODEC_UNKNOW is invalid, channel had not been init?");

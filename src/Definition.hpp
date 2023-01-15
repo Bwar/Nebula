@@ -216,8 +216,9 @@ enum E_CHANNEL_STATUS
     CHANNEL_STATUS_WORKER               = 4,    ///< 连接成功从Manager传送给Worker
     CHANNEL_STATUS_TELL_WORKER          = 5,    ///< 将本Worker信息告知对端Worker
     CHANNEL_STATUS_ESTABLISHED          = 6,    ///< 与对端Worker的连接就绪（可以正常收发消息）
-    CHANNEL_STATUS_BROKEN               = 7,    ///< 连接已断开，待回收处理
-    CHANNEL_STATUS_CLOSED               = 8,    ///< 被丢弃待回收
+    CHANNEL_STATUS_MIGRATED             = 7,    ///< channel迁移到其他labor
+    CHANNEL_STATUS_BROKEN               = 8,    ///< 连接已断开，待回收处理
+    CHANNEL_STATUS_CLOSED               = 9,    ///< 被丢弃待回收
 };
 
 }

@@ -44,7 +44,7 @@ class ActorBuilder;
 class Worker: public Labor
 {
 public:
-    Worker(const std::string& strWorkPath, int iControlFd, int iDataFd,
+    Worker(const std::string& strWorkPath,
             int iWorkerIndex, Labor::LABOR_TYPE eLaborType = Labor::LABOR_WORKER);
     Worker(const Worker&) = delete;
     Worker& operator=(const Worker&) = delete;
@@ -52,7 +52,6 @@ public:
 
     // timeout，worker进程无响应或与Manager通信通道异常，被manager进程终止时返回
     void OnTerminated(struct ev_signal* watcher);
-    bool CheckParent();
     void DataReport();
 
     virtual bool Init(CJsonObject& oJsonConf);
@@ -99,19 +98,9 @@ public:     // about worker
     virtual const CJsonObject& GetCustomConf() const;
     bool WithSsl();
     const WorkerInfo& GetWorkerInfo() const;
-    std::shared_ptr<SocketChannel> GetManagerControlChannel();
     bool SetCustomConf(const CJsonObject& oJsonConf);
     virtual void IoStatAddRecvNum(int iFd, uint32 uiIoType)
     {
-        if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
-        {
-            return;
-        }
-        if (iFd == m_pManagerControlChannel->GetFd()
-                || iFd == m_pManagerDataChannel->GetFd())
-        {
-            return;
-        }
         ++m_stWorkerInfo.uiRecvNum;
         if (IO_STAT_UPSTREAM_RECV_NUM & uiIoType)
         {
@@ -124,15 +113,6 @@ public:     // about worker
     }
     virtual void IoStatAddRecvBytes(int iFd, uint32 uiBytes, uint32 uiIoType)
     {
-        if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
-        {
-            return;
-        }
-        if (iFd == m_pManagerControlChannel->GetFd()
-                || iFd == m_pManagerDataChannel->GetFd())
-        {
-            return;
-        }
         m_stWorkerInfo.uiRecvByte += uiBytes;
         if (IO_STAT_UPSTREAM_RECV_BYTE & uiIoType)
         {
@@ -145,15 +125,6 @@ public:     // about worker
     }
     virtual void IoStatAddSendNum(int iFd, uint32 uiIoType)
     {
-        if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
-        {
-            return;
-        }
-        if (iFd == m_pManagerControlChannel->GetFd()
-                || iFd == m_pManagerDataChannel->GetFd())
-        {
-            return;
-        }
         ++m_stWorkerInfo.uiSendNum;
         if (IO_STAT_UPSTREAM_SEND_NUM & uiIoType)
         {
@@ -166,15 +137,6 @@ public:     // about worker
     }
     virtual void IoStatAddSendBytes(int iFd, uint32 uiBytes, uint32 uiIoType)
     {
-        if (m_pManagerControlChannel == nullptr || m_pManagerDataChannel == nullptr)
-        {
-            return;
-        }
-        if (iFd == m_pManagerControlChannel->GetFd()
-                || iFd == m_pManagerDataChannel->GetFd())
-        {
-            return;
-        }
         m_stWorkerInfo.uiSendByte += uiBytes;
         if (IO_STAT_UPSTREAM_SEND_BYTE & uiIoType)
         {
@@ -233,8 +195,6 @@ private:
     WorkerInfo m_stWorkerInfo;
 
     std::shared_ptr<NetLogger> m_pLogger = nullptr;
-    std::shared_ptr<SocketChannel> m_pManagerControlChannel = nullptr;
-    std::shared_ptr<SocketChannel> m_pManagerDataChannel = nullptr;
 };
 
 template <typename ...Targs>

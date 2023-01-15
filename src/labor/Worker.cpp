@@ -30,12 +30,10 @@ extern "C" {
 namespace neb
 {
 
-Worker::Worker(const std::string& strWorkPath, int iControlFd, int iDataFd,
+Worker::Worker(const std::string& strWorkPath,
         int iWorkerIndex, Labor::LABOR_TYPE eLaborType)
     : Labor(eLaborType)
 {
-    m_stWorkerInfo.iControlFd = iControlFd;
-    m_stWorkerInfo.iDataFd = iDataFd;
     m_stWorkerInfo.iWorkerIndex = iWorkerIndex;
     m_stWorkerInfo.iWorkerPid = getpid();
     m_stNodeInfo.strWorkPath = strWorkPath;
@@ -55,7 +53,7 @@ void Worker::Run()
         char szThreadName[64] = {0};
         snprintf(szThreadName, sizeof(szThreadName), "%s_W%d", m_oNodeConf("server_name").c_str(), m_stWorkerInfo.iWorkerIndex);
         pthread_setname_np(pthread_self(), szThreadName);
-        SessionManager::AddWorkerThreadId(gettid());
+        LaborShared::Instance()->AddWorkerThreadId(gettid());
     }
 
     if (!CreateEvents())
@@ -95,35 +93,24 @@ void Worker::OnTerminated(struct ev_signal* watcher)
     exit(iSignum);
 }
 
-bool Worker::CheckParent()
-{
-    if (!m_stNodeInfo.bThreadMode)
-    {
-        pid_t iParentPid = getppid();
-        if (iParentPid == 1)    // manager进程已不存在
-        {
-            LOG4_INFO("no manager process exist, worker %d exit.", m_stWorkerInfo.iWorkerIndex);
-            Destroy();
-            exit(0);
-        }
-    }
-    return(true);
-}
-
 void Worker::DataReport()
 {
     m_stWorkerInfo.uiConnection = m_pDispatcher->GetConnectionNum();
+    MsgHead oMsgHead;
     MsgBody oMsgBody;
-    CJsonObject oJsonLoad;
-    oJsonLoad.Add("load", int32(m_pActorBuilder->GetStepNum()));
-    oJsonLoad.Add("connect", m_stWorkerInfo.uiConnection);
-    oJsonLoad.Add("recv_num", m_stWorkerInfo.uiRecvNum);
-    oJsonLoad.Add("recv_byte", m_stWorkerInfo.uiRecvByte);
-    oJsonLoad.Add("send_num", m_stWorkerInfo.uiSendNum);
-    oJsonLoad.Add("send_byte", m_stWorkerInfo.uiSendByte);
-    oMsgBody.set_data(oJsonLoad.ToString());
-    LOG4_TRACE("%s", oJsonLoad.ToString().c_str());
-    IO<CodecNebulaInNode>::SendRequest(m_pDispatcher, 0, m_pManagerControlChannel, CMD_REQ_UPDATE_WORKER_LOAD, GetSequence(), oMsgBody);
+    ReportRecord oWorkerStatus;
+    std::string strWorkerStatus;
+    oWorkerStatus.add_value(m_pActorBuilder->GetStepNum()); // load
+    oWorkerStatus.add_value(m_stWorkerInfo.uiConnection);  // conection
+    oWorkerStatus.add_value(m_stWorkerInfo.uiRecvNum);
+    oWorkerStatus.add_value(m_stWorkerInfo.uiRecvByte);
+    oWorkerStatus.add_value(m_stWorkerInfo.uiSendNum);
+    oWorkerStatus.add_value(m_stWorkerInfo.uiSendByte);
+    oWorkerStatus.SerializeToString(&strWorkerStatus);
+    oMsgBody.set_data(strWorkerStatus);
+    oMsgHead.set_cmd(CMD_REQ_UPDATE_WORKER_LOAD);
+    uint32 uiManagerLaborId = LaborShared::Instance()->GetManagerLaborId();
+    CodecNebulaInNode::Write(m_stWorkerInfo.iWorkerIndex, uiManagerLaborId, gc_uiCmdReq, 0, oMsgHead, oMsgBody);
     auto pSessionDataReport = std::dynamic_pointer_cast<SessionDataReport>(m_pActorBuilder->GetSession("neb::SessionDataReport"));
     if (pSessionDataReport != nullptr)
     {
@@ -438,22 +425,21 @@ bool Worker::CreateEvents()
         m_pDispatcher->AddEvent(signal_watcher, Dispatcher::SignalCallback, SIGINT);
     }
     AddPeriodicTaskEvent();
-
-    // 注册网络IO事件
-    m_pManagerDataChannel = m_pDispatcher->CreateSocketChannel(m_stWorkerInfo.iDataFd, CODEC_NEBULA_IN_NODE);
-    m_pDispatcher->SetChannelStatus(m_pManagerDataChannel, CHANNEL_STATUS_ESTABLISHED);
-    m_pManagerControlChannel = m_pDispatcher->CreateSocketChannel(m_stWorkerInfo.iControlFd, CODEC_NEBULA_IN_NODE);
-    m_pDispatcher->SetChannelStatus(m_pManagerControlChannel, CHANNEL_STATUS_ESTABLISHED);
-    m_pDispatcher->AddIoReadEvent(m_pManagerDataChannel);
-    m_pDispatcher->AddIoReadEvent(m_pManagerControlChannel);
     return(true);
 }
 
 void Worker::StartService()
 {
+    MsgHead oMsgHead;
     MsgBody oMsgBody;
+    oMsgHead.set_cmd(CMD_REQ_START_SERVICE);
     oMsgBody.set_data(std::to_string(m_stWorkerInfo.iWorkerIndex));
-    IO<CodecNebulaInNode>::SendRequest(m_pDispatcher, 0, m_pManagerControlChannel, CMD_REQ_START_SERVICE, GetSequence(), oMsgBody);
+    uint32 uiManagerLaborId = LaborShared::Instance()->GetManagerLaborId();
+    int iResult = CodecNebulaInNode::Write(m_stWorkerInfo.iWorkerIndex, uiManagerLaborId, gc_uiCmdReq, GetSequence(), oMsgHead, oMsgBody);
+    if (ERR_OK != iResult)
+    {
+        LOG4_ERROR("send to manager error %d", iResult);
+    }
 }
 
 void Worker::Destroy()
@@ -539,11 +525,6 @@ const WorkerInfo& Worker::GetWorkerInfo() const
 const CJsonObject& Worker::GetCustomConf() const
 {
     return(m_oCustomConf);
-}
-
-std::shared_ptr<SocketChannel> Worker::GetManagerControlChannel()
-{
-    return(m_pManagerControlChannel);
 }
 
 bool Worker::SetCustomConf(const CJsonObject& oJsonConf)

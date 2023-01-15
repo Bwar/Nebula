@@ -118,6 +118,16 @@ public:
         return(m_dActiveTime);
     }
 
+    virtual ev_tstamp GetPenultimateActiveTime() const override
+    {
+        return(m_dPenultimateActiveTime);
+    }
+
+    virtual ev_tstamp GetLastRecvTime() const override
+    {
+        return(m_dLastRecvTime);
+    }
+
     virtual ev_tstamp GetKeepAlive() const override;
 
     virtual int GetErrno() const override
@@ -215,6 +225,7 @@ public:
     void SetRemoteWorkerIndex(int16 iRemoteWorkerIndex);
 
     virtual bool Close() override;
+    virtual void SetBonding(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, std::shared_ptr<SocketChannel> pBindChannel);
 
 protected:
     virtual int Write(CBuffer* pBuff, int& iErrno);
@@ -234,6 +245,8 @@ private:
     uint32 m_uiUnitTimeMsgNum;            ///< 统计单位时间内接收消息数量
     uint32 m_uiMsgNum;                    ///< 接收消息数量
     ev_tstamp m_dActiveTime;              ///< 最后一次访问时间
+    ev_tstamp m_dPenultimateActiveTime;   ///< 倒数第二次访问时间
+    ev_tstamp m_dLastRecvTime;            ///< 最后一次接收消息时间
     ev_tstamp m_dKeepAlive;               ///< 连接保持时间
     CBuffer* m_pRecvBuff;
     CBuffer* m_pSendBuff;
@@ -262,7 +275,7 @@ SocketChannelImpl<T>::SocketChannelImpl(Labor* pLabor, std::shared_ptr<NetLogger
       m_ucChannelStatus(CHANNEL_STATUS_INIT),m_eLastCodecStatus(CODEC_STATUS_OK),
       m_iRemoteWorkerIdx(-1), m_iFd(iFd), m_uiSeq(ulSeq), m_bPipeline(true),
       m_uiUnitTimeMsgNum(0), m_uiMsgNum(0),
-      m_dActiveTime(0.0), m_dKeepAlive(dKeepAlive),
+      m_dActiveTime(0.0), m_dPenultimateActiveTime(0.0), m_dLastRecvTime(0.0), m_dKeepAlive(dKeepAlive),
       m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
       m_pCodec(nullptr), m_pHoldingHttpMsg(nullptr), m_iErrno(0), m_pLabor(pLabor)
 {
@@ -442,6 +455,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
     {
         m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
     }
+    m_dPenultimateActiveTime = m_dActiveTime;
     m_dActiveTime = m_pLabor->GetNowTime();
     int iHadWrittenLen = 0;
     int iWrittenLen = 0;
@@ -470,6 +484,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
         {
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
         }
+        m_dPenultimateActiveTime = m_dActiveTime;
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iHadWrittenLen && 0 == m_pWaitForSendBuff->ReadableBytes())
         {
@@ -484,6 +499,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
     {
         if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
         {
+            m_dPenultimateActiveTime = m_dActiveTime;
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
@@ -593,6 +609,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... ar
         {
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
         }
+        m_dPenultimateActiveTime = m_dActiveTime;
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iHadWrittenLen)
         {
@@ -607,6 +624,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... ar
     {
         if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
         {
+            m_dPenultimateActiveTime = m_dActiveTime;
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
@@ -689,6 +707,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendResponse(Targs&&... args)
         {
             m_pSendBuff->Compact(m_pSendBuff->ReadableBytes() * 2);
         }
+        m_dPenultimateActiveTime = m_dActiveTime;
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iHadWrittenLen)
         {
@@ -712,6 +731,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendResponse(Targs&&... args)
     {
         if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
         {
+            m_dPenultimateActiveTime = m_dActiveTime;
             m_dActiveTime = m_pLabor->GetNowTime();
             return(CODEC_STATUS_PAUSE);
         }
@@ -769,6 +789,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
     {
         if (EAGAIN == m_iErrno || EINTR == m_iErrno)    // 对非阻塞socket而言，EAGAIN不是一种错误;EINTR即errno为4，错误描述Interrupted system call，操作也应该继续。
         {
+            m_dPenultimateActiveTime = m_dActiveTime;
             m_dActiveTime = m_pLabor->GetNowTime();
             m_eLastCodecStatus = CODEC_STATUS_PAUSE;
         }
@@ -790,7 +811,9 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
         {
             m_pRecvBuff->Compact(m_pRecvBuff->ReadableBytes() * 2);
         }
+        m_dPenultimateActiveTime = m_dActiveTime;
         m_dActiveTime = m_pLabor->GetNowTime();
+        m_dLastRecvTime = m_dActiveTime;
         auto uiReadIndex = m_pRecvBuff->GetReadIndex();
         E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
         if (m_pCodec->DecodeWithReactor())
@@ -935,6 +958,17 @@ bool SocketChannelImpl<T>::Close()
     {
         LOG4_TRACE("channel(fd %d, seq %u) had been closed before.", m_iFd, GetSequence());
         return(false);
+    }
+}
+
+template<typename T>
+void SocketChannelImpl<T>::SetBonding(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, std::shared_ptr<SocketChannel> pBindChannel)
+{
+    m_pLabor = pLabor;
+    m_pLogger = pLogger;
+    if (m_pCodec != nullptr)
+    {
+        m_pCodec->SetBonding(pLogger, pBindChannel);
     }
 }
 

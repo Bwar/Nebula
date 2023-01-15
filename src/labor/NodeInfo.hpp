@@ -81,8 +81,6 @@ struct WorkerInfo
 {
     int32 iWorkerPid        = 0;
     int iWorkerIndex        = 0;                    ///< 工作进程序号
-    int iControlFd          = -1;                   ///< 与Manager进程通信的文件描述符（控制流）
-    int iDataFd             = -1;                   ///< 与Manager进程通信的文件描述符（数据流）
     uint32 uiLoad             = 0;                    ///< 负载
     uint32 uiConnection       = 0;                    ///< 连接数量
     uint32 uiRecvNum          = 0;                    ///< 接收数据包数量

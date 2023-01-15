@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include "LaborShared.hpp"
+#include <algorithm>
 #include "pb/neb_sys.pb.h"
 #include "codec/CodecProto.hpp"
 #include "channel/SpecChannel.hpp"
@@ -21,6 +22,8 @@ std::mutex LaborShared::s_mutex;
 LaborShared::LaborShared(uint32 uiLaborNum)
     : m_uiLaborNum(uiLaborNum), m_uiSpecChannelQueueSize(128), m_uiCodecSize(0)
 {
+    m_vecDispatcher.reserve(uiLaborNum);
+    m_vecSpecChannel.reserve(CODEC_MAX + 1);
 }
 
 LaborShared::~LaborShared()
@@ -41,6 +44,10 @@ Dispatcher* LaborShared::GetDispatcher(uint32 uiLaborId)
 
 void LaborShared::AddDispatcher(uint32 uiLaborId, Dispatcher* pDispatcher)
 {
+    if (uiLaborId >= m_uiLaborNum)
+    {
+        return;
+    }
     if (uiLaborId < m_vecDispatcher.size())
     {
         m_vecDispatcher[uiLaborId] = pDispatcher;
@@ -88,6 +95,7 @@ int LaborShared::AddSpecChannel(uint32 uiCodecType, uint32 uiFrom, uint32 uiTo, 
         for (uint32 i = m_vecSpecChannel.size(); i <= uiCodecType; ++i)
         {
             T_VEC_CHANNEL_FROM vecFrom;
+            vecFrom.reserve(m_uiLaborNum);
             for (uint32 j = 0; j < m_uiLaborNum; ++j)
             {
                 auto pTo = std::make_shared<T_VEC_CHANNEL_TO>();
@@ -191,6 +199,16 @@ std::shared_ptr<SpecChannel<MsgBody, MsgHead>> LaborShared::CreateInternalSpecCh
         m_uiCodecSize.store(m_vecSpecChannel.size(), std::memory_order_release);
     }
     return(pSpecChannel);
+}
+
+void LaborShared::AddWorkerThreadId(uint64 ullThreadId)
+{
+    std::lock_guard<std::mutex> guard(s_mutex);
+    if (std::find(m_vecWorkerThreadId.begin(), m_vecWorkerThreadId.end(), ullThreadId)
+            == m_vecWorkerThreadId.end())
+    {
+        m_vecWorkerThreadId.push_back(ullThreadId);
+    }
 }
 
 } /* namespace neb */

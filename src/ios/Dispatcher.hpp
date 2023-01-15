@@ -64,6 +64,7 @@ class CodecFactory;
 class LoadStress;  // not in Nebula project
 class Actor;
 class ActorBuilder;
+class CmdFdTransfer;
 struct tagClientConnWatcherData;
 template<typename T> class IO;
 
@@ -75,8 +76,7 @@ typedef void (*async_callback)(struct ev_loop*,ev_async*,int);
 enum E_DISPATCHER
 {
     DISPATCH_ROUND_ROBIN = 0,
-    DISPATCH_MIN_LOAD = 1,
-    DISPATCH_CLIENT_ADDR_HASH = 2,
+    DISPATCH_CLIENT_ADDR_HASH = 1,
 };
 
 class Dispatcher
@@ -113,7 +113,6 @@ public:
 
     bool OnIoRead(std::shared_ptr<SocketChannel> pChannel);
     bool DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
-    bool FdTransfer(int iFd);
     bool OnIoWrite(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoError(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoTimeout(std::shared_ptr<SocketChannel> pChannel);
@@ -164,9 +163,17 @@ public:
     }
     std::shared_ptr<SocketChannel> CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsClient = false, bool bWithSsl = false);
     bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
+    /**
+     * @brief migrate socket channel
+     * @note
+     * 1. only server side socket channel can be migrate. 只有服务端的socket channel才可以迁移。
+     * 2. make sure the socket channel that is moved out will no longer send response from outgoing side.
+     * 确保不再有来自迁出线程的响应包发送到迁出的socket channel，否则该响应将无法送达。
+     */
+    bool MigrateSocketChannel(uint32 uiFromLabor, uint32 uiToLabor, std::shared_ptr<SocketChannel> pChannel);
     bool CreateListenFd(const std::string& strHost, int32 iPort, int iBacklog, int& iFd, int& iFamily);
     std::shared_ptr<SocketChannel> GetChannel(int iFd);
-    int SendFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, const std::string& strRemoteAddr);
+    void AddChannelToLoop(std::shared_ptr<SocketChannel> pChannel);
     void AsyncSend(ev_async* pWatcher);
 
 protected:
@@ -213,6 +220,7 @@ private:
     friend class ActorBuilder;
     friend class LoadStress;
     friend class CodecFactory;
+    friend class CmdFdTransfer;
     template<typename T> friend class IO;
 };
 

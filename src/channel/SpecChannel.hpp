@@ -83,6 +83,16 @@ public:
         return(m_uiReadLaborIndex);
     }
 
+    uint32 GetFromLaborId() const
+    {
+        return(m_uiWriteLaborIndex);
+    }
+
+    uint32 GetToLaborId() const
+    {
+        return(m_uiReadLaborIndex);
+    }
+
     SpecChannelWatcher* MutableWatcher();
 
 protected:

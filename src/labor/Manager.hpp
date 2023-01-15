@@ -60,7 +60,6 @@ public:
 
     void Run();
     void OnTerminated(struct ev_signal* watcher);
-    void OnChildTerminated(struct ev_signal* watcher);
 
     template <typename ...Targs>
         void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
@@ -113,11 +112,8 @@ protected:
     void Destroy();
 
     bool CreateEvents();
-    void CreateLoader();
     void CreateLoaderThread();
-    void CreateWorker();       //muti process
     void CreateWorkerThread(); //muti thread
-    bool RestartWorker(int iDeathPid);
     bool AddPeriodicTaskEvent();
 
 private:
