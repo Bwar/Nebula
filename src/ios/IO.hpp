@@ -1109,7 +1109,7 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::OnRequest(ActorBuilder* pBuilder, std::shared_ptr<SocketChannel> pChannel, int32 iCmd, Targs&&... args)
 {
-    auto cmd_iter = pBuilder->m_mapCmd.find(CMD_REQ_REDIS_PROXY);
+    auto cmd_iter = pBuilder->m_mapCmd.find(iCmd);
     if (cmd_iter != pBuilder->m_mapCmd.end() && cmd_iter->second != nullptr)
     {
         auto pCmd = std::static_pointer_cast<T>(cmd_iter->second);

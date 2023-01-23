@@ -112,11 +112,12 @@ public:
     static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
 
     bool OnIoRead(std::shared_ptr<SocketChannel> pChannel);
-    bool DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoWrite(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoError(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoTimeout(std::shared_ptr<SocketChannel> pChannel);
     bool OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher);
+    bool DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
+    bool MigrateChannelRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
 
     template <typename ...Targs>
     void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);

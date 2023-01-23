@@ -46,6 +46,7 @@ E_CMD_STATUS StepReportToBeacon::Emit(
     }
     m_pSessionManager->MakeReportData(oReportData);
     oMsgBody.set_data(oReportData.ToString());
+    LOG4_TRACE("report to beacon, cmd %d", CMD_REQ_NODE_STATUS_REPORT);
     IO<CodecNebula>::Broadcast(this, "BEACON", false, true,
             (int32)CMD_REQ_NODE_STATUS_REPORT, GetSequence(), oMsgBody);
     return(CMD_STATUS_RUNNING);

@@ -72,6 +72,11 @@ public:
     virtual void SetClientData(const std::string& strClientData);
     virtual void SetIdentify(const std::string& strIdentify);
     virtual void SetRemoteAddr(const std::string& strRemoteAddr);
+
+    bool IsMigrated() const
+    {
+        return(m_bMigrated);
+    }
     ChannelWatcher* MutableWatcher();
 
     template <typename ...Targs>
@@ -81,11 +86,13 @@ protected:
     virtual int16 GetRemoteWorkerIndex() const;
     virtual bool Close();
     virtual void SetBonding(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, std::shared_ptr<SocketChannel> pBindChannel);
+    void SetMigrated(bool bMigrated);
     bool InitImpl(std::shared_ptr<SocketChannel> pImpl);
 
 private:
     bool m_bIsClient;
     bool m_bWithSsl;
+    bool m_bMigrated;
     std::string m_strEmpty;
     // Hide most of the channel implementation for Actors
     std::shared_ptr<SocketChannel> m_pImpl;

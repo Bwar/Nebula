@@ -82,6 +82,8 @@ protected:
 
 private:
     static std::vector<E_CODEC_TYPE> s_vecAutoSwitchCodec;
+
+    friend class Dispatcher;
 };
 
 /*

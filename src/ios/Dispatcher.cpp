@@ -180,21 +180,47 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
                     LOG4_INFO("NodeFailed(%s)", pChannel->GetIdentify().c_str());
                     m_pSessionNode->NodeFailed(pChannel->GetIdentify());
                 }
-                auto& listUncompletedStep = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetPipelineStepSeq();
-                for (auto it = listUncompletedStep.begin();
-                        it != listUncompletedStep.end(); ++it)
+                if (pChannel->m_pImpl != nullptr)
                 {
-                    m_pLabor->GetActorBuilder()->OnError(pChannel, *it,
-                            pChannel->GetErrno(), pChannel->GetErrMsg());
-                }
-                auto& mapUncompletedStep = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetStreamStepSeq();
-                for (auto it = mapUncompletedStep.begin();
-                    it != mapUncompletedStep.end(); ++it)
-                {
-                    m_pLabor->GetActorBuilder()->OnError(pChannel, it->second,
-                            pChannel->GetErrno(), pChannel->GetErrMsg());
+                    auto& listUncompletedStep = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetPipelineStepSeq();
+                    for (auto it = listUncompletedStep.begin();
+                           it != listUncompletedStep.end(); ++it)
+                    {
+                        m_pLabor->GetActorBuilder()->OnError(pChannel, *it,
+                                pChannel->GetErrno(), pChannel->GetErrMsg());
+                    }
+                    auto& mapUncompletedStep = std::static_pointer_cast<SocketChannelImpl<CodecNebula>>(pChannel->m_pImpl)->GetStreamStepSeq();
+                    for (auto it = mapUncompletedStep.begin();
+                        it != mapUncompletedStep.end(); ++it)
+                    {
+                        m_pLabor->GetActorBuilder()->OnError(pChannel, it->second,
+                                pChannel->GetErrno(), pChannel->GetErrMsg());
+                    }
                 }
             }
+            LOG4_INFO("eCodecStatus = %d", eCodecStatus);
+            DiscardSocketChannel(pChannel);
+            return(false);
+    }
+}
+
+bool Dispatcher::MigrateChannelRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
+{
+    LOG4_TRACE("codec type %d", pChannel->GetCodecType());
+    E_CODEC_STATUS eCodecStatus = CodecFactory::OnEvent(this, pChannel, CODEC_STATUS_INVALID);
+
+    switch (eCodecStatus)
+    {
+        case CODEC_STATUS_PAUSE:
+        case CODEC_STATUS_PART_OK:
+        case CODEC_STATUS_PART_ERR:
+            return(true);
+        case CODEC_STATUS_WANT_WRITE:
+            return(true);
+        case CODEC_STATUS_WANT_READ:
+            RemoveIoWriteEvent(pChannel);
+            return(true);
+        default:
             LOG4_INFO("eCodecStatus = %d", eCodecStatus);
             DiscardSocketChannel(pChannel);
             return(false);
@@ -929,13 +955,13 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
         return(false);
     }
 
-    auto named_iter = m_mapNamedSocketChannel.find(pChannel->m_pImpl->GetIdentify());
+    auto named_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
     if (named_iter != m_mapNamedSocketChannel.end())
     {
        for (auto it = named_iter->second.begin();
            it != named_iter->second.end(); ++it)
        {
-           if ((*it)->m_pImpl->GetSequence() == pChannel->m_pImpl->GetSequence())
+           if ((*it)->GetSequence() == pChannel->GetSequence())
            {
                named_iter->second.erase(it);
                LOG4_TRACE("erase channel %d from m_mapNamedSocketChannel.", pChannel->GetFd());
@@ -1056,6 +1082,8 @@ bool Dispatcher::MigrateSocketChannel(uint32 uiFromLabor, uint32 uiToLabor, std:
         LOG4_TRACE("erase channel %d channel_seq %u from m_mapSocketChannel.",
                 pChannel->GetFd(), pChannel->GetSequence());
     }
+    LOG4_INFO("migrate channel[%d] with codec_type %d from labor %u to labor %u",
+            pChannel->GetFd(), pChannel->GetCodecType(), uiFromLabor, uiToLabor);
     int iResult = SocketChannelMigrate::Write(uiFromLabor, uiToLabor, gc_uiCmdReq, m_pLabor->GetSequence(), pChannel);
     if (ERR_OK == iResult)
     {
@@ -1064,6 +1092,7 @@ bool Dispatcher::MigrateSocketChannel(uint32 uiFromLabor, uint32 uiToLabor, std:
     LOG4_WARNING("failed to migrate channel");
     // recover from migration failed
     pChannel->SetBonding(m_pLabor, GetLogger(), pChannel);
+    pChannel->SetMigrated(false);
     pChannel->MutableWatcher()->Set(pChannel);
     m_mapSocketChannel.insert(std::make_pair(pChannel->GetFd(), pChannel));
     ev_tstamp dIoTimeout = (m_pLabor->GetNodeInfo().dConnectionProtection > 0)
@@ -1305,6 +1334,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily, int iBonding)
         oMsgBody.set_data(strFdTransferInfo);
         oMsgHead.set_cmd(CMD_REQ_FD_TRANSFER);
         uint32 uiManagerLaborId = m_pLabor->GetNodeInfo().uiWorkerNum + 1;
+        LOG4_INFO("transfer fd %d from labor %u to labor %u", iAcceptFd, uiManagerLaborId, iWorkerId);
         int iResult = CodecNebulaInNode::Write(uiManagerLaborId, iWorkerId, gc_uiCmdReq, m_pLabor->GetSequence(), oMsgHead, oMsgBody);
         if (ERR_OK == iResult)
         {

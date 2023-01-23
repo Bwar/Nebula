@@ -418,6 +418,25 @@ bool CodecFactory::OnSpecChannelCreated(uint32 uiCodecType, uint32 uiFromLabor, 
             break;
         case CODEC_PRIVATE:
             break;
+        case CODEC_CHANNEL_MIGRATE:
+        {
+            SocketChannelPack oPack;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<SocketChannelPack>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oPack))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<CmdChannelMigrate>::OnRequest(pDispatcher, pChannel, (int32)CMD_REQ_CHANNEL_MIGRATE, oPack);
+                }
+                else
+                {
+                    ;   // no response
+                }
+            }
+        }
+            break;
         case CODEC_UNKNOW:
             break;
         default:
@@ -503,10 +522,14 @@ bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfC
 
 E_CODEC_STATUS CodecFactory::OnNebulaEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, int iStart)
 {
-    E_CODEC_STATUS eCodecStatus;
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int i = iStart;
     for (; ; ++i)
     {
+        if (pChannel->IsMigrated())
+        {
+            break;
+        }
         MsgHead oMsgHead;
         MsgBody oMsgBody;
         if (0 == i)
@@ -554,10 +577,14 @@ E_CODEC_STATUS CodecFactory::OnNebulaEvent(Dispatcher* pDispatcher, std::shared_
 
 E_CODEC_STATUS CodecFactory::OnHttpEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, int iStart)
 {
-    E_CODEC_STATUS eCodecStatus;
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int i = iStart;
     for (; ; ++i)
     {
+        if (pChannel->IsMigrated())
+        {
+            break;
+        }
         HttpMsg oHttpMsg;
         if (0 == i)
         {
@@ -643,10 +670,14 @@ E_CODEC_STATUS CodecFactory::OnHttpEvent(Dispatcher* pDispatcher, std::shared_pt
 
 E_CODEC_STATUS CodecFactory::OnRedisEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, int iStart)
 {
-    E_CODEC_STATUS eCodecStatus;
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int i = iStart;
     for (; ; ++i)
     {
+        if (pChannel->IsMigrated())
+        {
+            break;
+        }
         RedisMsg oRedisMsg;
         if (0 == i)
         {
@@ -678,10 +709,14 @@ E_CODEC_STATUS CodecFactory::OnRedisEvent(Dispatcher* pDispatcher, std::shared_p
 
 E_CODEC_STATUS CodecFactory::OnCassEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, int iStart)
 {
-    E_CODEC_STATUS eCodecStatus;
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int i = iStart;
     for (; ; ++i)
     {
+        if (pChannel->IsMigrated())
+        {
+            break;
+        }
         CassResponse oCassResponse;
         if (0 == i)
         {

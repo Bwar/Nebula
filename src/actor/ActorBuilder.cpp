@@ -179,7 +179,7 @@ bool ActorBuilder::OnChainTimeout(std::shared_ptr<Chain> pChain)
 
 bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
 {
-    LOG4_DEBUG("cmd %u, seq %u", oMsgHead.cmd(), oMsgHead.seq());
+    LOG4_TRACE("cmd %u, seq %u", oMsgHead.cmd(), oMsgHead.seq());
     if (gc_uiCmdReq & oMsgHead.cmd())    // 新请求
     {
         MsgHead oOutMsgHead;

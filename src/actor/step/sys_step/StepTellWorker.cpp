@@ -33,6 +33,7 @@ E_CMD_STATUS StepTellWorker::Emit(
     oTargetWorker.set_node_type(GetNodeType());
     oOutMsgBody.set_data(oTargetWorker.SerializeAsString());
     oOutMsgBody.set_trace_id(GetTraceId());
+    LOG4_TRACE("send cmd %d to channel[%d]", CMD_REQ_TELL_WORKER, m_pChannel->GetFd());
     IO<CodecNebula>::SendRequest(this, m_pChannel, CMD_REQ_TELL_WORKER, GetSequence(), oOutMsgBody);
     return(CMD_STATUS_RUNNING);
 }

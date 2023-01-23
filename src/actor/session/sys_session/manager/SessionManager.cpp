@@ -396,6 +396,10 @@ bool SessionManager::CheckWorker()
     LOG4_TRACE(" ");
     for (uint32 i = 0; i < m_vecWorkerInfo.size(); ++i)
     {
+        if (m_vecWorkerInfo[i] == nullptr)
+        {
+            continue;
+        }
         if (m_vecWorkerInfo[i]->bStartBeatCheck)
         {
             LOG4_TRACE("now %lf, worker_beat_time %lf, worker_beat %d",

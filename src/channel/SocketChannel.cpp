@@ -25,12 +25,12 @@ namespace neb
 {
 
 SocketChannel::SocketChannel()
-    : m_bIsClient(false), m_bWithSsl(false), m_pImpl(nullptr), m_pLogger(nullptr), m_pWatcher(nullptr)
+    : m_bIsClient(false), m_bWithSsl(false), m_bMigrated(false), m_pImpl(nullptr), m_pLogger(nullptr), m_pWatcher(nullptr)
 {
 }
 
 SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, bool bIsClient, bool bWithSsl)
-    : m_bIsClient(bIsClient), m_bWithSsl(bWithSsl), m_pImpl(nullptr), m_pLogger(pLogger), m_pWatcher(nullptr)
+    : m_bIsClient(bIsClient), m_bWithSsl(bWithSsl), m_bMigrated(false), m_pImpl(nullptr), m_pLogger(pLogger), m_pWatcher(nullptr)
 {
 }
 
@@ -336,6 +336,11 @@ void SocketChannel::SetBonding(Labor* pLabor, std::shared_ptr<NetLogger> pLogger
         m_pImpl->SetBonding(pLabor, pLogger, pBindChannel);
     }
     m_pLogger = pLogger;
+}
+
+void SocketChannel::SetMigrated(bool bMigrated)
+{
+    m_bMigrated = bMigrated;
 }
 
 bool SocketChannel::InitImpl(std::shared_ptr<SocketChannel> pImpl)

@@ -37,7 +37,7 @@ bool CmdFdTransfer::AnyMessage(
         LOG4_ERROR("SpecChannelInfo ParseFromString failed.");
         return(false);
     }
-    LOG4_INFO("%s:%d fd[%d] addr_family %d with codec_type %d",
+    LOG4_INFO("%s:%d fd[%d] transfer, addr_family %d with codec_type %d",
             oFdTransferInfo.client_addr().c_str(),
             oFdTransferInfo.client_port(), oFdTransferInfo.fd(),
             oFdTransferInfo.addr_family(), oFdTransferInfo.codec_type());

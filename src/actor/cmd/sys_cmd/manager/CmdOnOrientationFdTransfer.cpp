@@ -52,6 +52,7 @@ bool CmdOnOrientationFdTransfer::AnyMessage(
         return(false);
     }
     uint32 uiManagerLaborId = GetLabor(this)->GetNodeInfo().uiWorkerNum + 1;
+    LOG4_TRACE("channel[%d] migrate to worker %d", pChannel->GetFd(), iWorkerIndex);
     bool bResult = GetLabor(this)->GetDispatcher()->MigrateSocketChannel(uiManagerLaborId, iWorkerIndex, pChannel);
     if (bResult)
     {

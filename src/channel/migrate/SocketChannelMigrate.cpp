@@ -28,8 +28,9 @@ bool SocketChannelMigrate::MigrateChannel(std::shared_ptr<SocketChannel> pSocket
     pNewChannel->m_pImpl = pSocketChannel->m_pImpl;
     pSocketChannel->m_pImpl = nullptr;
     pNewChannel->m_pWatcher = pSocketChannel->m_pWatcher;
-    pNewChannel->m_pWatcher->Set(nullptr);
+    pNewChannel->m_pWatcher->Reset();
     pSocketChannel->m_pWatcher = nullptr;
+    pSocketChannel->SetMigrated(true);
     pNewChannel->SetBonding(nullptr, nullptr, nullptr);  // remove the current relationship before migration
     oPack.PackChannel(pNewChannel);
     return(true);
