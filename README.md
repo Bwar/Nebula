@@ -129,6 +129,11 @@ A simple testing can be start with a NebulaInterface only, and also can be start
 
 <a name="ChangeLog"></a>
 ## Change log 
+#### v2.0.0
+   - add spec channel
+   - use SpecChannel instead of unix socket to transfer file descriptors
+   - add SocketChannel migration between threads
+   - remove process mode
 #### v1.7.3
    - error callback caused by fuse node detection bug fixed
    - redis cluster returns when executing batch write commands and asking bug fixed

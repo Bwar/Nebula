@@ -134,6 +134,11 @@ Nebula 完成的文档在 [Nebula参考手册](https://bwar.gitee.io/nebula)。
 
 <a name="ChangeLog"></a>
 ## 版本历史
+#### v2.0.0
+   - 增加线程间无锁通信队列通道SpecChannel
+   - 使用SpecChannel替代Unix Socket传送文件描述符
+   - 增加SocketChannel在线程间迁移功能
+   - 移除进程模式，只支持线程模式
 #### v1.7.3
    - 增加连接队列配置
    - 增加dns cache
