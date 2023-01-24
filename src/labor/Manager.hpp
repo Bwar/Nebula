@@ -51,6 +51,7 @@ public:
         int iS2SFamily      = 0;   ///<
         int iC2SListenFd    = -1;  ///< Client to Server监听文件描述符（Client与Server之间的连接较多，但每个Client只需连接某个Server的某个Worker）
         int iC2SFamily      = 0;   ///<
+        std::unordered_set<int> setAccessFd;    ///< the same as iC2SListenFd
     };
 
 public:
@@ -59,7 +60,6 @@ public:
 
     void Run();
     void OnTerminated(struct ev_signal* watcher);
-    void OnChildTerminated(struct ev_signal* watcher);
 
     template <typename ...Targs>
         void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
@@ -112,11 +112,8 @@ protected:
     void Destroy();
 
     bool CreateEvents();
-    void CreateLoader();
     void CreateLoaderThread();
-    void CreateWorker();       //muti process
     void CreateWorkerThread(); //muti thread
-    bool RestartWorker(int iDeathPid);
     bool AddPeriodicTaskEvent();
 
 private:

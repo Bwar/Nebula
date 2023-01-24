@@ -19,7 +19,7 @@ namespace neb
 class Loader: public Worker
 {
 public:
-    Loader(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex);
+    Loader(const std::string& strWorkPath, int iWorkerIndex);
     virtual ~Loader();
 
 protected:

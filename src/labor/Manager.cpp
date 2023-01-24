@@ -22,7 +22,9 @@ extern "C" {
 #include "Manager.hpp"
 #include "Worker.hpp"
 #include "Loader.hpp"
+#include "LaborShared.hpp"
 #include "channel/SocketChannel.hpp"
+#include "channel/SpecChannel.hpp"
 #include "ios/Dispatcher.hpp"
 #include "actor/ActorBuilder.hpp"
 #include "actor/step/Step.hpp"
@@ -60,17 +62,9 @@ Manager::Manager(const std::string& strConfFile)
         exit(3);
     }
     CreateEvents();
-    if (m_stNodeInfo.bThreadMode)
-    {
-        CreateWorkerThread();   // Loader可能需要用到Worker线程ID，故先创建Worker
-        usleep(1000);
-        CreateLoaderThread();
-    }
-    else
-    {
-        CreateLoader();
-        CreateWorker();
-    }
+    CreateWorkerThread();   // Loader可能需要用到Worker线程ID，故先创建Worker
+    usleep(1000);
+    CreateLoaderThread();
 }
 
 Manager::~Manager()
@@ -87,33 +81,6 @@ void Manager::OnTerminated(struct ev_signal* watcher)
     m_pDispatcher->EvBreak();
     Destroy();
     exit(iSignum);
-}
-
-void Manager::OnChildTerminated(struct ev_signal* watcher)
-{
-    pid_t   iPid = 0;
-    int     iStatus = 0;
-    int     iReturnCode = 0;
-    //WUNTRACED
-    while((iPid = waitpid(-1, &iStatus, WNOHANG)) > 0)
-    {
-        if (WIFEXITED(iStatus))
-        {
-            iReturnCode = WEXITSTATUS(iStatus);
-        }
-        else if (WIFSIGNALED(iStatus))
-        {
-            iReturnCode = WTERMSIG(iStatus);
-        }
-        else if (WIFSTOPPED(iStatus))
-        {
-            iReturnCode = WSTOPSIG(iStatus);
-        }
-
-        LOG4_FATAL("error %d: process %d exit and sent signal %d with code %d!",
-                        iStatus, iPid, watcher->signum, iReturnCode);
-        RestartWorker(iPid);
-    }
 }
 
 void Manager::Run()
@@ -201,6 +168,7 @@ bool Manager::InitDispatcher()
         LOG4_ERROR("new Dispatcher error: %s", e.what());
         return(false);
     }
+    LaborShared::Instance(m_stNodeInfo.uiWorkerNum + 2)->AddDispatcher(m_stNodeInfo.uiWorkerNum + 1, m_pDispatcher);
     return(m_pDispatcher->Init());
 }
 
@@ -232,6 +200,7 @@ bool Manager::InitActorBuilder()
 
 void Manager::StartService()
 {
+    m_pSessionManager->AddPort2WorkerInfo(m_stNodeInfo.uiWorkerNum, m_stNodeInfo.uiLoaderNum, m_oCurrentConf["access_port_to_worker"]);
     std::string strBindIp;
     if (m_oCurrentConf.Get("bind_ip", strBindIp) && strBindIp.length() > 0)
     {
@@ -239,12 +208,37 @@ void Manager::StartService()
                  m_stNodeInfo.iPortForServer, m_stNodeInfo.iBacklog,
                  m_stManagerInfo.iS2SListenFd, m_stManagerInfo.iS2SFamily);
 
-        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
+        if (m_stNodeInfo.strHostForClient.size() > 0)
         {
             // 接入节点才需要监听客户端连接
-            m_pDispatcher->CreateListenFd(strBindIp,
-                  m_stNodeInfo.iPortForClient, m_stNodeInfo.iBacklog,
-                  m_stManagerInfo.iC2SListenFd, m_stManagerInfo.iC2SFamily);
+            if (m_stNodeInfo.iPortForClient > 0)
+            {
+                m_pDispatcher->CreateListenFd(strBindIp,
+                    m_stNodeInfo.iPortForClient, m_stNodeInfo.iBacklog,
+                    m_stManagerInfo.iC2SListenFd, m_stManagerInfo.iC2SFamily);
+                m_pSessionManager->AddPortListenFd(m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd);
+                int iPort = 0;
+                int iListenFd = 0;
+                std::unordered_set<int> setPort;
+                for (int i = 0; i < m_oCurrentConf["access_ports"].GetArraySize(); ++i)
+                {
+                    if (m_oCurrentConf["access_ports"].Get(i, iPort) && iPort > 0)
+                    {
+                        if (m_stNodeInfo.iPortForClient != iPort)
+                        {
+                            setPort.insert(iPort);
+                        }
+                    }
+                }
+                for (auto it = setPort.begin(); it != setPort.end(); ++it)
+                {
+                    m_pDispatcher->CreateListenFd(strBindIp,
+                        *it, m_stNodeInfo.iBacklog,
+                        iListenFd, m_stManagerInfo.iC2SFamily);
+                    m_stManagerInfo.setAccessFd.insert(iListenFd);
+                    m_pSessionManager->AddPortListenFd(*it, iListenFd);
+                }
+            }
         }
     }
     else
@@ -253,12 +247,37 @@ void Manager::StartService()
               m_stNodeInfo.iPortForServer, m_stNodeInfo.iBacklog,
               m_stManagerInfo.iS2SListenFd, m_stManagerInfo.iS2SFamily);
 
-        if (m_stNodeInfo.strHostForClient.size() > 0 && m_stNodeInfo.iPortForClient > 0)
+        if (m_stNodeInfo.strHostForClient.size() > 0)
         {
             // 接入节点才需要监听客户端连接
-            m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
+            if (m_stNodeInfo.iPortForClient > 0)
+            {
+                m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
                     m_stNodeInfo.iPortForClient, m_stNodeInfo.iBacklog,
                     m_stManagerInfo.iC2SListenFd, m_stManagerInfo.iC2SFamily);
+                m_pSessionManager->AddPortListenFd(m_stNodeInfo.iPortForClient, m_stManagerInfo.iC2SListenFd);
+                int iPort = 0;
+                int iListenFd = 0;
+                std::unordered_set<int> setPort;
+                for (int i = 0; i < m_oCurrentConf["access_ports"].GetArraySize(); ++i)
+                {
+                    if (m_oCurrentConf["access_ports"].Get(i, iPort) && iPort > 0)
+                    {
+                        if (m_stNodeInfo.iPortForClient != iPort)
+                        {
+                            setPort.insert(iPort);
+                        }
+                    }
+                }
+                for (auto it = setPort.begin(); it != setPort.end(); ++it)
+                {
+                    m_pDispatcher->CreateListenFd(m_stNodeInfo.strHostForClient,
+                        *it, m_stNodeInfo.iBacklog,
+                        iListenFd, m_stManagerInfo.iC2SFamily);
+                    m_stManagerInfo.setAccessFd.insert(iListenFd);
+                    m_pSessionManager->AddPortListenFd(*it, iListenFd);
+                }
+            }
         }
     }
 
@@ -269,6 +288,12 @@ void Manager::StartService()
         pChannelListen = m_pDispatcher->CreateSocketChannel(m_stManagerInfo.iC2SListenFd, m_stNodeInfo.eCodec);
         m_pDispatcher->SetChannelStatus(pChannelListen, CHANNEL_STATUS_ESTABLISHED);
         m_pDispatcher->AddIoReadEvent(pChannelListen);
+        for (auto it = m_stManagerInfo.setAccessFd.begin(); it != m_stManagerInfo.setAccessFd.end(); ++it)
+        {
+            pChannelListen = m_pDispatcher->CreateSocketChannel(*it, m_stNodeInfo.eCodec);
+            m_pDispatcher->SetChannelStatus(pChannelListen, CHANNEL_STATUS_ESTABLISHED);
+            m_pDispatcher->AddIoReadEvent(pChannelListen);
+        }
     }
     LOG4_TRACE("S2SListenFd[%d]", m_stManagerInfo.iS2SListenFd);
     pChannelListen = m_pDispatcher->CreateSocketChannel(m_stManagerInfo.iS2SListenFd, CODEC_NEBULA);
@@ -397,6 +422,9 @@ bool Manager::Init()
     m_oCurrentConf.Get("thread_mode", m_stNodeInfo.bThreadMode);
     if (m_stNodeInfo.bThreadMode)
     {
+        uint32 uiSpecChannelQueueSize = 128;
+        m_oCurrentConf.Get("spec_channel_queue_size", uiSpecChannelQueueSize);
+        LaborShared::Instance(m_stNodeInfo.uiWorkerNum + 2)->SetSpecChannelQueueSize(uiSpecChannelQueueSize);
         m_oCurrentConf.Get("async_logger", m_stNodeInfo.bAsyncLogger);
     }
     if (!InitLogger(m_oCurrentConf) || !InitDispatcher() || !InitActorBuilder())
@@ -452,77 +480,11 @@ bool Manager::CreateEvents()
     fpe_signal_watcher->data = (void*)this;
     m_pDispatcher->AddEvent(fpe_signal_watcher, Dispatcher::SignalCallback, SIGFPE);
 
-    bool bDirectToLoader = false;
-    m_oCurrentConf.Get("new_client_to_loader", bDirectToLoader);
     m_pSessionManager = std::dynamic_pointer_cast<SessionManager>(
-            m_pActorBuilder->MakeSharedSession(nullptr, "neb::SessionManager",
-                bDirectToLoader, m_stNodeInfo.dDataReportInterval));
+            m_pActorBuilder->MakeSharedSession(nullptr, "neb::SessionManager", m_stNodeInfo.dDataReportInterval));
     AddPeriodicTaskEvent();
 
     return(true);
-}
-
-void Manager::CreateLoader()
-{
-    bool bWithLoader = false;
-    m_oCurrentConf.Get("with_loader", bWithLoader);
-    if (!bWithLoader)
-    {
-        return;
-    }
-    LOG4_TRACE(" ");
-    int iControlFds[2];
-    int iDataFds[2];
-    if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
-    {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-    }
-    if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
-    {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-    }
-
-    int iPid = fork();
-    if (iPid == 0)   // 子进程
-    {
-        close(m_stManagerInfo.iS2SListenFd);
-        if (m_stManagerInfo.iC2SListenFd > 2)
-        {
-            close(m_stManagerInfo.iC2SListenFd);
-        }
-        close(iControlFds[0]);
-        close(iDataFds[0]);
-        x_sock_set_block(iControlFds[1], 0);
-        x_sock_set_block(iDataFds[1], 0);
-        Loader oLoader(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], 0);
-        if (!oLoader.Init(m_oCurrentConf))
-        {
-            exit(3);
-        }
-        oLoader.Run();
-        exit(-2);
-    }
-    else if (iPid > 0)   // 父进程
-    {
-        close(iControlFds[1]);
-        close(iDataFds[1]);
-        x_sock_set_block(iControlFds[0], 0);
-        x_sock_set_block(iDataFds[0], 0);
-        m_stNodeInfo.uiLoaderNum = 1;
-        m_pSessionManager->AddLoaderInfo(0, iPid, iControlFds[0], iDataFds[0]);
-        std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
-        std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
-        m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
-        m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
-        m_pDispatcher->AddIoReadEvent(pChannelData);
-        m_pDispatcher->AddIoReadEvent(pChannelControl);
-        m_pSessionManager->SendOnlineNodesToWorker();
-        m_pSessionManager->NewSocketWhenLoaderCreated();
-    }
-    else
-    {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-    }
 }
 
 void Manager::CreateLoaderThread()
@@ -534,22 +496,7 @@ void Manager::CreateLoaderThread()
         return;
     }
     LOG4_TRACE(" ");
-    int iControlFds[2];
-    int iDataFds[2];
-    if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
-    {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-    }
-    if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
-    {
-        LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-    }
-
-    x_sock_set_block(iControlFds[0], 0);
-    x_sock_set_block(iDataFds[0], 0);
-    x_sock_set_block(iControlFds[1], 0);
-    x_sock_set_block(iDataFds[1], 0);
-    Worker* pWorker = m_pSessionManager->MutableLoader(0, m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1]);
+    Worker* pWorker = m_pSessionManager->MutableLoader(0, m_stNodeInfo.strWorkPath);
     if (pWorker == nullptr)
     {
         return;
@@ -559,80 +506,20 @@ void Manager::CreateLoaderThread()
         return;
     }
     m_pLoaderActorBuilder = pWorker->GetActorBuilder();
+    auto pManagerToLoaderSpecChannel = LaborShared::Instance(
+            m_stNodeInfo.uiWorkerNum + 2)->CreateInternalSpecChannel(m_stNodeInfo.uiWorkerNum + 1, 0);
+    auto pDispatcher = LaborShared::Instance()->GetDispatcher(pManagerToLoaderSpecChannel->GetOwnerId());
+    pDispatcher->AddEvent(pManagerToLoaderSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+    LOG4_TRACE("spec channel from %u to %u has been created.", m_stNodeInfo.uiWorkerNum + 1, 0);
+    auto pLoaderToManagerSpecChannel = LaborShared::Instance()->CreateInternalSpecChannel(0, m_stNodeInfo.uiWorkerNum + 1);
+    m_pDispatcher->AddEvent(pLoaderToManagerSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+    LOG4_TRACE("spec channel from %u to %u has been created.", 0, m_stNodeInfo.uiWorkerNum + 1);
     std::thread t(&Worker::Run, pWorker);
     t.detach();
     m_stNodeInfo.uiLoaderNum = 1;
-    m_pSessionManager->AddLoaderInfo(0, getpid(), iControlFds[0], iDataFds[0]);
-    std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
-    std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
-    m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
-    m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
-    m_pDispatcher->AddIoReadEvent(pChannelData);
-    m_pDispatcher->AddIoReadEvent(pChannelControl);
+    m_pSessionManager->AddWorkerInfo(0, getpid());
     m_pSessionManager->SetLoaderActorBuilder(m_pLoaderActorBuilder);
     m_pSessionManager->SendOnlineNodesToWorker();
-    m_pSessionManager->NewSocketWhenLoaderCreated();
-}
-
-void Manager::CreateWorker()
-{
-    LOG4_TRACE(" ");
-    int iPid = 0;
-
-    for (unsigned int i = 1; i <= m_stNodeInfo.uiWorkerNum; ++i)
-    {
-        int iControlFds[2];
-        int iDataFds[2];
-        if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
-        {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-        }
-        if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
-        {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-        }
-
-        iPid = fork();
-        if (iPid == 0)   // 子进程
-        {
-            close(m_stManagerInfo.iS2SListenFd);
-            if (m_stManagerInfo.iC2SListenFd > 2)
-            {
-                close(m_stManagerInfo.iC2SListenFd);
-            }
-            close(iControlFds[0]);
-            close(iDataFds[0]);
-            x_sock_set_block(iControlFds[1], 0);
-            x_sock_set_block(iDataFds[1], 0);
-            Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], i);
-            if (!oWorker.Init(m_oCurrentConf))
-            {
-                exit(3);
-            }
-            oWorker.Run();
-            exit(-2);
-        }
-        else if (iPid > 0)   // 父进程
-        {
-            close(iControlFds[1]);
-            close(iDataFds[1]);
-            x_sock_set_block(iControlFds[0], 0);
-            x_sock_set_block(iDataFds[0], 0);
-            m_pSessionManager->AddWorkerInfo(i, iPid, iControlFds[0], iDataFds[0]);
-            std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
-            std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
-            m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
-            m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
-            m_pDispatcher->AddIoReadEvent(pChannelData);
-            m_pDispatcher->AddIoReadEvent(pChannelControl);
-            m_pSessionManager->NewSocketWhenWorkerCreated(iDataFds[0]);
-            m_pSessionManager->SendOnlineNodesToWorker();    // optional
-        }
-        else
-        {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-        }
-    }
 }
 
 void Manager::CreateWorkerThread()
@@ -640,22 +527,7 @@ void Manager::CreateWorkerThread()
     LOG4_TRACE(" ");
     for (unsigned int i = 1; i <= m_stNodeInfo.uiWorkerNum; ++i)
     {
-        int iControlFds[2];
-        int iDataFds[2];
-        if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
-        {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-        }
-        if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
-        {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-        }
-
-        x_sock_set_block(iControlFds[0], 0);
-        x_sock_set_block(iDataFds[0], 0);
-        x_sock_set_block(iControlFds[1], 0);
-        x_sock_set_block(iDataFds[1], 0);
-        Worker* pWorker = m_pSessionManager->MutableWorker(i, m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1]);
+        Worker* pWorker = m_pSessionManager->MutableWorker(i, m_stNodeInfo.strWorkPath);
         if (pWorker == nullptr)
         {
             continue;
@@ -665,103 +537,19 @@ void Manager::CreateWorkerThread()
             continue;
         }
         pWorker->SetLoaderActorBuilder(m_pLoaderActorBuilder);
+        auto pManagerToWorkerSpecChannel = LaborShared::Instance(
+                m_stNodeInfo.uiWorkerNum + 2)->CreateInternalSpecChannel(m_stNodeInfo.uiWorkerNum + 1, i);
+        auto pDispatcher = LaborShared::Instance()->GetDispatcher(pManagerToWorkerSpecChannel->GetOwnerId());
+        pDispatcher->AddEvent(pManagerToWorkerSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+        LOG4_TRACE("spec channel from %u to %u has been created.", m_stNodeInfo.uiWorkerNum + 1, i);
+        auto pWorkerToManagerSpecChannel = LaborShared::Instance()->CreateInternalSpecChannel(i, m_stNodeInfo.uiWorkerNum + 1);
+        m_pDispatcher->AddEvent(pWorkerToManagerSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+        LOG4_TRACE("spec channel from %u to %u has been created.", i, m_stNodeInfo.uiWorkerNum + 1);
         std::thread t(&Worker::Run, pWorker);
         t.detach();
-        m_pSessionManager->AddWorkerInfo(i, getpid(), iControlFds[0], iDataFds[0]);
-        std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
-        std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
-        m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
-        m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
-        m_pDispatcher->AddIoReadEvent(pChannelData);
-        m_pDispatcher->AddIoReadEvent(pChannelControl);
+        m_pSessionManager->AddWorkerInfo(i, getpid());
         m_pSessionManager->SendOnlineNodesToWorker();  // optional
-        m_pSessionManager->NewSocketWhenWorkerCreated(iDataFds[0]);
     }
-}
-
-bool Manager::RestartWorker(int iDeathPid)
-{
-    LOG4_DEBUG("%d", iDeathPid);
-    int iWorkerIndex = 0;
-    int iNewPid = 0;
-    Labor::LABOR_TYPE eLaborType;
-    if (m_pSessionManager->WorkerDeath(iDeathPid, iWorkerIndex, eLaborType))
-    {
-        int iControlFds[2];
-        int iDataFds[2];
-        if (socketpair(PF_UNIX, SOCK_STREAM, 0, iControlFds) < 0)
-        {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-        }
-        if (socketpair(PF_UNIX, SOCK_STREAM, 0, iDataFds) < 0)
-        {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-        }
-
-        iNewPid = fork();
-        if (iNewPid == 0)   // 子进程
-        {
-            close(m_stManagerInfo.iS2SListenFd);
-            if (m_stManagerInfo.iC2SListenFd > 2)
-            {
-                close(m_stManagerInfo.iC2SListenFd);
-            }
-            close(iControlFds[0]);
-            close(iDataFds[0]);
-            x_sock_set_block(iControlFds[1], 0);
-            x_sock_set_block(iDataFds[1], 0);
-            if (Labor::LABOR_LOADER == eLaborType)
-            {
-                Loader oLoader(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], 0);
-                if (!oLoader.Init(m_oCurrentConf))
-                {
-                    exit(-1);
-                }
-                oLoader.Run();
-            }
-            else
-            {
-                Worker oWorker(m_stNodeInfo.strWorkPath, iControlFds[1], iDataFds[1], iWorkerIndex);
-                if (!oWorker.Init(m_oCurrentConf))
-                {
-                    exit(-1);
-                }
-                oWorker.Run();
-            }
-            exit(-2);   // 子进程worker没有正常运行
-        }
-        else if (iNewPid > 0)   // 父进程
-        {
-            LOG4_INFO("worker %d restart successfully", iWorkerIndex);
-            close(iControlFds[1]);
-            close(iDataFds[1]);
-            x_sock_set_block(iControlFds[0], 0);
-            x_sock_set_block(iDataFds[0], 0);
-            m_pSessionManager->AddWorkerInfo(iWorkerIndex, iNewPid, iControlFds[0], iDataFds[0]);
-            std::shared_ptr<SocketChannel> pChannelData = m_pDispatcher->CreateSocketChannel(iControlFds[0], CODEC_NEBULA_IN_NODE);
-            std::shared_ptr<SocketChannel> pChannelControl = m_pDispatcher->CreateSocketChannel(iDataFds[0], CODEC_NEBULA_IN_NODE);
-            m_pDispatcher->SetChannelStatus(pChannelData, CHANNEL_STATUS_ESTABLISHED);
-            m_pDispatcher->SetChannelStatus(pChannelControl, CHANNEL_STATUS_ESTABLISHED);
-            m_pDispatcher->AddIoReadEvent(pChannelData);
-            m_pDispatcher->AddIoReadEvent(pChannelControl);
-            m_pSessionManager->SendOnlineNodesToWorker();
-            if (Labor::LABOR_LOADER == eLaborType)
-            {
-                m_pSessionManager->AddLoaderInfo(iWorkerIndex, iNewPid, iControlFds[0], iDataFds[0]);
-                m_pSessionManager->NewSocketWhenLoaderCreated();
-            }
-            else
-            {
-                m_pSessionManager->AddWorkerInfo(iWorkerIndex, iNewPid, iControlFds[0], iDataFds[0]);
-                m_pSessionManager->NewSocketWhenWorkerCreated(iDataFds[0]);
-            }
-        }
-        else
-        {
-            LOG4_ERROR("error %d: %s", errno, strerror_r(errno, m_pErrBuff, gc_iErrBuffLen));
-        }
-    }
-    return(false);
 }
 
 void Manager::RefreshServer()

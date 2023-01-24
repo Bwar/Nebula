@@ -12,6 +12,7 @@
 #include "labor/Manager.hpp"
 #include "ios/Dispatcher.hpp"
 #include "actor/session/sys_session/manager/SessionManager.hpp"
+#include "codec/CodecProto.hpp"
 
 namespace neb
 {
@@ -50,25 +51,20 @@ bool CmdOnOrientationFdTransfer::AnyMessage(
         SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
         return(false);
     }
-    std::unordered_map<int, WorkerInfo>::iterator worker_iter;
-    int iErrno = GetLabor(this)->GetDispatcher()->SendFd(
-            pWorkerInfo->iDataFd, pChannel->GetFd(),
-            ((Manager*)GetLabor(this))->GetManagerInfo().iS2SFamily,
-            (int)pChannel->GetCodecType(), pChannel->GetRemoteAddr());
-    if (iErrno != ERR_OK)
+    uint32 uiManagerLaborId = GetLabor(this)->GetNodeInfo().uiWorkerNum + 1;
+    LOG4_TRACE("channel[%d] migrate to worker %d", pChannel->GetFd(), iWorkerIndex);
+    bool bResult = GetLabor(this)->GetDispatcher()->MigrateSocketChannel(uiManagerLaborId, iWorkerIndex, pChannel);
+    if (bResult)
     {
-        GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pChannel);
+        return(true);
+    }
+    else
+    {
         oOutMsgBody.mutable_rsp_result()->set_code(ERR_TRANSFER_FD);
-        oOutMsgBody.mutable_rsp_result()->set_msg("send fd error!");
+        oOutMsgBody.mutable_rsp_result()->set_msg("channel migration error");
         SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
         return(false);
     }
-
-    GetLabor(this)->GetDispatcher()->DiscardSocketChannel(pChannel);
-    oOutMsgBody.mutable_rsp_result()->set_code(ERR_OK);
-    oOutMsgBody.mutable_rsp_result()->set_msg("success");
-    SendTo(pChannel, oInMsgHead.cmd() + 1, oInMsgHead.seq(), oOutMsgBody);
-    return(true);
 }
 
 } /* namespace neb */

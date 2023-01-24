@@ -64,18 +64,19 @@ class CodecFactory;
 class LoadStress;  // not in Nebula project
 class Actor;
 class ActorBuilder;
+class CmdFdTransfer;
 struct tagClientConnWatcherData;
 template<typename T> class IO;
 
 typedef void (*signal_callback)(struct ev_loop*,ev_signal*,int);
 typedef void (*timer_callback)(struct ev_loop*,ev_timer*,int);
 typedef void (*idle_callback)(struct ev_loop*,ev_idle*,int);
+typedef void (*async_callback)(struct ev_loop*,ev_async*,int);
 
 enum E_DISPATCHER
 {
     DISPATCH_ROUND_ROBIN = 0,
-    DISPATCH_MIN_LOAD = 1,
-    DISPATCH_CLIENT_ADDR_HASH = 2,
+    DISPATCH_CLIENT_ADDR_HASH = 1,
 };
 
 class Dispatcher
@@ -107,15 +108,16 @@ public:
     static void IoTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void SignalCallback(struct ev_loop* loop, struct ev_signal* watcher, int revents);
+    static void AsyncCallback(struct ev_loop* loop, struct ev_async* watcher, int revents);
     static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
 
     bool OnIoRead(std::shared_ptr<SocketChannel> pChannel);
-    bool DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
-    bool FdTransfer(int iFd);
     bool OnIoWrite(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoError(std::shared_ptr<SocketChannel> pChannel);
     bool OnIoTimeout(std::shared_ptr<SocketChannel> pChannel);
     bool OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher);
+    bool DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
+    bool MigrateChannelRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
 
     template <typename ...Targs>
     void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
@@ -162,9 +164,18 @@ public:
     }
     std::shared_ptr<SocketChannel> CreateSocketChannel(int iFd, E_CODEC_TYPE eCodecType, bool bIsClient = false, bool bWithSsl = false);
     bool DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
+    /**
+     * @brief migrate socket channel
+     * @note
+     * 1. only server side socket channel can be migrate. 只有服务端的socket channel才可以迁移。
+     * 2. make sure the socket channel that is moved out will no longer send response from outgoing side.
+     * 确保不再有来自迁出线程的响应包发送到迁出的socket channel，否则该响应将无法送达。
+     */
+    bool MigrateSocketChannel(uint32 uiFromLabor, uint32 uiToLabor, std::shared_ptr<SocketChannel> pChannel);
     bool CreateListenFd(const std::string& strHost, int32 iPort, int iBacklog, int& iFd, int& iFamily);
     std::shared_ptr<SocketChannel> GetChannel(int iFd);
-    int SendFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType, const std::string& strRemoteAddr);
+    void AddChannelToLoop(std::shared_ptr<SocketChannel> pChannel);
+    void AsyncSend(ev_async* pWatcher);
 
 protected:
     void Destroy();
@@ -174,13 +185,14 @@ protected:
     bool AddEvent(ev_signal* signal_watcher, signal_callback pFunc, int iSignum);
     bool AddEvent(ev_timer* timer_watcher, timer_callback pFunc, ev_tstamp dTimeout);
     bool AddEvent(ev_idle* idle_watcher, idle_callback pFunc);
+    bool AddEvent(ev_async* async_watcher, async_callback pFunc);
     bool RefreshEvent(ev_timer* timer_watcher, ev_tstamp dTimeout);
     bool DelEvent(ev_io* io_watcher);
     bool DelEvent(ev_timer* timer_watcher);
     int32 GetConnectionNum() const;
     void SetChannelStatus(std::shared_ptr<SocketChannel> pChannel, E_CHANNEL_STATUS eStatus);
     bool AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout = 60.0);
-    bool AcceptFdAndTransfer(int iFd, int iFamily = AF_INET);
+    bool AcceptFdAndTransfer(int iFd, int iFamily = AF_INET, int iBonding = 0);
     bool AcceptServerConn(int iFd);
     void CheckFailedNode();
     void EvBreak();
@@ -209,6 +221,7 @@ private:
     friend class ActorBuilder;
     friend class LoadStress;
     friend class CodecFactory;
+    friend class CmdFdTransfer;
     template<typename T> friend class IO;
 };
 

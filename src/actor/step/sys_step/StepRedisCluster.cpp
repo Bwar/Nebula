@@ -134,6 +134,11 @@ E_CMD_STATUS StepRedisCluster::Callback(
             LOG4_ERROR("no \"%s\" found in m_mapPipelineRequest", pChannel->GetIdentify().c_str());
             return(CMD_STATUS_FAULT);
         }
+        if (step_iter->second.empty())
+        {
+            LOG4_ERROR("channel \"%s\"'s m_mapPipelineRequest is empty", pChannel->GetIdentify().c_str());
+            return(CMD_STATUS_FAULT);
+        }
         pRedisRequest = step_iter->second.front();
         uiRealStepSeq = (uint32)pRedisRequest->integer();
         step_iter->second.pop();
@@ -478,6 +483,21 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<Re
             SOCKET_STREAM, m_bWithSsl, m_bPipeline, (*pRedisMsg.get()));
     if (bResult)
     {
+        auto pChannel = GetLastActivityChannel();
+        auto dPenultimateActiveTime = pChannel->GetPenultimateActiveTime();
+        auto dLastRecvTime = pChannel->GetLastRecvTime();
+        auto dCheckTime = GetNowTime() - GetTimeout();
+        if (dPenultimateActiveTime > dCheckTime
+                && (dLastRecvTime > 0 && dLastRecvTime < dCheckTime)) // 有请求但长时间未收到响应包
+        {
+            LOG4_ERROR("%s channel[%d] may be a death connection, last_active_time = %lf,"
+                    "last_recv_time = %lf, redis_cluster_check_time = %lf, close it",
+                    strIdentify.c_str(), pChannel->GetFd(),
+                    dPenultimateActiveTime, dLastRecvTime, GetTimeout());
+            CmdErrBack(pChannel, ERR_DISCONNECT, "death connection closed");
+            GetLabor(this)->GetDispatcher()->Disconnect(pChannel);
+            return(false);
+        }
         if (m_bPipeline)
         {
             auto iter = m_mapPipelineRequest.find(strIdentify);
@@ -494,7 +514,7 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<Re
         }
         else
         {
-            uint32 uiChannelSeq = GetLastActivityChannel()->GetSequence();
+            uint32 uiChannelSeq = pChannel->GetSequence();
             auto iter = m_mapRequest.find(uiChannelSeq);
             if (iter == m_mapRequest.end())
             {

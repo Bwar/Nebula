@@ -55,3 +55,19 @@ message TraceLog
     bytes log_content = 8;
 }
 
+message SpecChannelInfo
+{
+    uint32 codec_type = 1;
+    uint32 from_labor = 2;
+    uint32 to_labor = 3;
+}
+
+message FdTransfer
+{
+    int32 fd                = 1;
+    int32 addr_family       = 2;
+    string client_addr      = 3;
+    int32 client_port       = 4;
+    int32 codec_type        = 5;
+}
+

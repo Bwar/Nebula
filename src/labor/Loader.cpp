@@ -15,8 +15,8 @@
 namespace neb
 {
 
-Loader::Loader(const std::string& strWorkPath, int iControlFd, int iDataFd, int iWorkerIndex)
-    : Worker(strWorkPath, iControlFd, iDataFd, iWorkerIndex, Labor::LABOR_LOADER)
+Loader::Loader(const std::string& strWorkPath, int iWorkerIndex)
+    : Worker(strWorkPath, iWorkerIndex, Labor::LABOR_LOADER)
 {
 }
 

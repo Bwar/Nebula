@@ -9,9 +9,9 @@
  ******************************************************************************/
 
 #include "CmdOnWorkerLoad.hpp"
-
-#include "util/json/CJsonObject.hpp"
+#include "pb/report.pb.h"
 #include "channel/SocketChannel.hpp"
+#include "channel/SpecChannel.hpp"
 #include "actor/session/sys_session/manager/SessionManager.hpp"
 
 namespace neb
@@ -41,10 +41,11 @@ bool CmdOnWorkerLoad::AnyMessage(
             return(false);
         }
     }
-    CJsonObject oJsonLoad;
-    if (oJsonLoad.Parse(oInMsgBody.data()))
+    ReportRecord oWorkerStatus;
+    if (oWorkerStatus.ParseFromString(oInMsgBody.data()))
     {
-        return(m_pSessionManager->SetWorkerLoad(pChannel->GetFd(), oJsonLoad));
+        auto pSpecChannel = std::static_pointer_cast<SpecChannel<MsgBody, MsgHead>>(pChannel);
+        return(m_pSessionManager->SetWorkerLoad(pSpecChannel->GetFromLaborId(), oWorkerStatus));
     }
     else
     {

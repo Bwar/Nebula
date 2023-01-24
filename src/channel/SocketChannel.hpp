@@ -20,6 +20,8 @@ namespace neb
 
 class Dispatcher;
 class ChannelWatcher;
+class SocketChannelMigrate;
+class CmdChannelMigrate;
 class Labor;
 class CodecFactory;
 class CodecProto;
@@ -41,11 +43,6 @@ public:
     SocketChannel(std::shared_ptr<NetLogger> pLogger, bool bIsClient, bool bWithSsl);
     virtual ~SocketChannel();
     
-    static int SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType,
-            const std::string& strRemoteAddr, std::shared_ptr<NetLogger> pLogger);
-    static int RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType,
-            std::string& strRemoteAddr, std::shared_ptr<NetLogger> pLogger);
-
     virtual bool IsClient() const;
     virtual bool WithSsl() const;
     virtual int GetFd() const;
@@ -59,6 +56,8 @@ public:
     virtual uint32 PopStepSeq(uint32 uiStreamId = 0, E_CODEC_STATUS eStatus = CODEC_STATUS_OK);
     virtual bool PipelineIsEmpty() const;
     virtual ev_tstamp GetActiveTime() const;
+    virtual ev_tstamp GetPenultimateActiveTime() const;
+    virtual ev_tstamp GetLastRecvTime() const;
     virtual ev_tstamp GetKeepAlive() const;
     virtual int GetErrno() const;
     virtual const std::string& GetErrMsg() const;
@@ -68,6 +67,16 @@ public:
     virtual uint32 GetMsgNum() const;
     virtual uint32 GetUnitTimeMsgNum() const;
     virtual E_CODEC_STATUS Send();
+    virtual uint32 GetPeerStepSeq() const;
+    virtual void SetChannelStatus(E_CHANNEL_STATUS eStatus);
+    virtual void SetClientData(const std::string& strClientData);
+    virtual void SetIdentify(const std::string& strIdentify);
+    virtual void SetRemoteAddr(const std::string& strRemoteAddr);
+
+    bool IsMigrated() const
+    {
+        return(m_bMigrated);
+    }
     ChannelWatcher* MutableWatcher();
 
     template <typename ...Targs>
@@ -75,22 +84,23 @@ public:
 protected:
     virtual Labor* GetLabor();
     virtual int16 GetRemoteWorkerIndex() const;
-    virtual void SetChannelStatus(E_CHANNEL_STATUS eStatus);
-    virtual void SetClientData(const std::string& strClientData);
-    virtual void SetIdentify(const std::string& strIdentify);
-    virtual void SetRemoteAddr(const std::string& strRemoteAddr);
     virtual bool Close();
+    virtual void SetBonding(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, std::shared_ptr<SocketChannel> pBindChannel);
+    void SetMigrated(bool bMigrated);
     bool InitImpl(std::shared_ptr<SocketChannel> pImpl);
 
 private:
     bool m_bIsClient;
     bool m_bWithSsl;
+    bool m_bMigrated;
     std::string m_strEmpty;
     // Hide most of the channel implementation for Actors
     std::shared_ptr<SocketChannel> m_pImpl;
     std::shared_ptr<NetLogger> m_pLogger;
     ChannelWatcher* m_pWatcher;
     
+    friend class SocketChannelMigrate;
+    friend class CmdChannelMigrate;
     friend class Dispatcher;
     friend class ActorBuilder;
     friend class CodecFactory;

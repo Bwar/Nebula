@@ -11,11 +11,10 @@
 #ifndef SRC_ACTOR_SESSION_SYS_SESSION_MANAGER_SESSIONMANAGER_HPP_
 #define SRC_ACTOR_SESSION_SYS_SESSION_MANAGER_SESSIONMANAGER_HPP_
 
-#include <thread>
-#include <mutex>
 #include "actor/ActorSys.hpp"
 #include "labor/NodeInfo.hpp"
 #include "actor/session/Session.hpp"
+#include "pb/report.pb.h"
 
 namespace neb
 {
@@ -23,57 +22,43 @@ namespace neb
 class Loader;
 
 class SessionManager : public Session,
-    public DynamicCreator<SessionManager, bool&, ev_tstamp&>,
+    public DynamicCreator<SessionManager, ev_tstamp&>,
     public ActorSys
 {
 public:
-    SessionManager(bool bDirectToLoader, ev_tstamp dStatInterval);
+    SessionManager(ev_tstamp dStatInterval);
     virtual ~SessionManager();
 
     virtual E_CMD_STATUS Timeout();
 
+    void AddPort2WorkerInfo(uint32 uiWorkerNum, uint32 uiLoaderNum, CJsonObject& oPort2WorkerJson);
+    void AddPortListenFd(int32 iPort, int32 iFd);
     void AddOnlineNode(const std::string& strNodeIdentify, const std::string& strNodeInfo);
     void DelOnlineNode(const std::string& strNodeIdentify);
     bool SendToChild(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);    // 向Worker和Loader发送数据
     bool SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     bool SendToLoader(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    void AddWorkerInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
-    void AddLoaderInfo(int iWorkerIndex, int iPid, int iControlFd, int iDataFd);
-    Worker* MutableWorker(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd);
-    Loader* MutableLoader(int iWorkerIndex, const std::string& strWorkPath, int iControlFd, int iDataFd);
-    const WorkerInfo* GetWorkerInfo(int32 iWorkerIndex) const;
-    bool SetWorkerLoad(int iWorkerFd, CJsonObject& oJsonLoad);
+    void AddWorkerInfo(int iWorkerIndex, int iPid);
+    Worker* MutableWorker(int iWorkerIndex, const std::string& strWorkPath);
+    Loader* MutableLoader(int iWorkerIndex, const std::string& strWorkPath);
+    std::shared_ptr<WorkerInfo> GetWorkerInfo(int32 iWorkerIndex) const;
+    bool SetWorkerLoad(uint32 uiWorkerIndex, const ReportRecord& oWorkerStatus);
     void SetLoaderActorBuilder(ActorBuilder* pActorBuilder);
-    int GetWorkerDataFd(const char* szClientAddr, int iClientPort);
-    int GetNextWorkerDataFd();
-    int GetMinLoadWorkerDataFd();
+    int32 GetDispatchWorkerId(int32 iListenFd);
+    int32 GetDispatchWorkerId(int32 iListenFd, const char* szRemoteAddr, int iRemotePort);
     bool CheckWorker();
-    bool WorkerDeath(int iPid, int& iWorkerIndex, Labor::LABOR_TYPE& eLaborType);
     void SendOnlineNodesToWorker();
     void MakeReportData(CJsonObject& oReportJson);
-    int GetLoaderDataFd() const;
-    bool NewSocketWhenWorkerCreated(int iWorkerDataFd);
-    bool NewSocketWhenLoaderCreated();
-
-    static const std::vector<uint64>& GetWorkerThreadId()
-    {
-        return(s_vecWorkerThreadId);
-    }
-    static void AddWorkerThreadId(uint64 ullThreadId);
 
 private:
-    bool m_bDirectToLoader = false;
-    int m_iLoaderDataFd = -1;
-    std::vector<int> m_vecWorkerDataFd;     ///< only for fd transfer
-    std::unordered_map<int, Worker*> m_mapWorker;               ///< only thread worker
-    std::unordered_map<int, WorkerInfo*> m_mapWorkerInfo;       ///< 业务逻辑工作进程及进程属性，key为pid
-    std::unordered_map<int, WorkerInfo*>::iterator m_iterWorkerInfo;
-    std::unordered_map<int, int> m_mapWorkerStartNum;       ///< 进程被启动次数，key为WorkerIdx
-    std::unordered_map<int, int> m_mapWorkerFdPid;            ///< 工作进程通信FD对应的进程号
-    std::unordered_map<std::string, std::string> m_mapOnlineNodes;     ///< 订阅的节点在线信息
+    uint32 m_uiRoundRobin = 0;
+    std::vector<std::shared_ptr<WorkerInfo>> m_vecWorkerInfo;
+    std::unordered_map<int, std::pair<uint32, std::vector<uint32>>> m_mapListenFd2Worker;
 
-    static std::mutex s_mutexWorker;
-    static std::vector<uint64> s_vecWorkerThreadId;
+    std::unordered_map<int, Worker*> m_mapWorker;
+
+    std::map<int32, std::vector<uint32>> m_mapPort2Worker;
+    std::unordered_map<std::string, std::string> m_mapOnlineNodes;     ///< 订阅的节点在线信息
 };
 
 } /* namespace neb */

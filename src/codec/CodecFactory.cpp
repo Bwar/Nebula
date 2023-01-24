@@ -12,6 +12,11 @@
 #include "channel/SocketChannel.hpp"
 #include "channel/SocketChannelImpl.hpp"
 #include "channel/SocketChannelSslImpl.hpp"
+#include "channel/SpecChannel.hpp"
+#include "channel/migrate/SocketChannelPack.hpp"
+#include "channel/migrate/SocketChannelMigrate.hpp"
+#include "labor/LaborShared.hpp"
+#include "actor/cmd/sys_cmd/CmdChannelMigrate.hpp"
 
 namespace neb
 {
@@ -171,6 +176,114 @@ Codec* CodecFactory::CreateCodec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYP
     return(pCodec);
 }
 
+E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::shared_ptr<SocketChannel> pChannel)
+{
+    uint32 uiFlags = 0;
+    uint32 uiStepSeq = 0;
+    switch (pAsyncWatcher->GetCodecType())
+    {
+        case CODEC_PROTO:
+        case CODEC_NEBULA:
+        case CODEC_NEBULA_IN_NODE:
+        {
+            MsgHead oMsgHead;
+            MsgBody oMsgBody;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<MsgBody, MsgHead>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oMsgHead, oMsgBody))
+            {
+                if (gc_uiCmdReq & oMsgHead.cmd())
+                {
+                    IO<Cmd>::OnMessage(pDispatcher, pChannel, oMsgHead, oMsgBody);
+                }
+                else
+                {
+                    IO<PbStep>::OnMessage(pDispatcher, pChannel, oMsgHead, oMsgBody);
+                }
+            }
+        }
+            break;
+        case CODEC_HTTP:
+        case CODEC_HTTP2:
+        {
+            HttpMsg oHttpMsg;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<HttpMsg>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oHttpMsg))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<Module>::OnRequest(pDispatcher, pChannel, oHttpMsg.path(), oHttpMsg);
+                }
+                else
+                {
+                    IO<HttpStep>::OnResponse(pDispatcher, pChannel, uiStepSeq, oHttpMsg);
+                }
+            }
+        }
+            break;
+        case CODEC_RESP:
+        {
+            RedisMsg oRedisMsg;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<RedisMsg>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oRedisMsg))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<RedisCmd>::OnRequest(pDispatcher, pChannel, (int32)CMD_REQ_REDIS_PROXY, oRedisMsg);
+                }
+                else
+                {
+                    IO<RedisStep>::OnResponse(pDispatcher, pChannel, uiStepSeq, oRedisMsg);
+                }
+            }
+        }
+            break;
+        case CODEC_CASS:
+        {
+            CassResponse oCassResponse;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<CassResponse>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oCassResponse))
+            {
+                IO<CassStep>::OnResponse(pDispatcher, pChannel, uiStepSeq, oCassResponse);
+            }
+        }
+            break;
+        case CODEC_PRIVATE:
+            break;
+        case CODEC_CHANNEL_MIGRATE:
+        {
+            SocketChannelPack oPack;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<SocketChannelPack>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oPack))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<CmdChannelMigrate>::OnRequest(pDispatcher, pChannel, (int32)CMD_REQ_CHANNEL_MIGRATE, oPack);
+                }
+                else
+                {
+                    ;   // no response
+                }
+            }
+        }
+            break;
+        case CODEC_UNKNOW:
+            break;
+        default:
+            ;
+    }
+    return(CODEC_STATUS_OK);
+}
+
 E_CODEC_STATUS CodecFactory::OnEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel)
 {
     uint32 uiLastCodecPos = 0;
@@ -221,6 +334,115 @@ E_CODEC_STATUS CodecFactory::OnEvent(Dispatcher* pDispatcher, std::shared_ptr<So
             ;
     }
     return(eCodecStatus);
+}
+
+bool CodecFactory::OnSpecChannelCreated(uint32 uiCodecType, uint32 uiFromLabor, uint32 uiToLabor)
+{
+    auto pChannel = LaborShared::Instance()->GetSpecChannel(uiCodecType, uiFromLabor, uiToLabor);
+    uint32 uiFlags = 0;
+    uint32 uiStepSeq = 0;
+    switch (uiCodecType)
+    {
+        case CODEC_PROTO:
+        case CODEC_NEBULA:
+        case CODEC_NEBULA_IN_NODE:
+        {
+            MsgHead oMsgHead;
+            MsgBody oMsgBody;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<MsgBody, MsgHead>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->AddEvent(pSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oMsgHead, oMsgBody))
+            {
+                if (gc_uiCmdReq & oMsgHead.cmd())
+                {
+                    IO<Cmd>::OnMessage(pDispatcher, pChannel, oMsgHead, oMsgBody);
+                }
+                else
+                {
+                    IO<PbStep>::OnMessage(pDispatcher, pChannel, oMsgHead, oMsgBody);
+                }
+            }
+        }
+            break;
+        case CODEC_HTTP:
+        case CODEC_HTTP2:
+        {
+            HttpMsg oHttpMsg;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<HttpMsg>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->AddEvent(pSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oHttpMsg))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<Module>::OnRequest(pDispatcher, pChannel, oHttpMsg.path(), oHttpMsg);
+                }
+                else
+                {
+                    IO<HttpStep>::OnResponse(pDispatcher, pChannel, uiStepSeq, oHttpMsg);
+                }
+            }
+        }
+            break;
+        case CODEC_RESP:
+        {
+            RedisMsg oRedisMsg;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<RedisMsg>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->AddEvent(pSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oRedisMsg))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<RedisCmd>::OnRequest(pDispatcher, pChannel, (int32)CMD_REQ_REDIS_PROXY, oRedisMsg);
+                }
+                else
+                {
+                    IO<RedisStep>::OnResponse(pDispatcher, pChannel, uiStepSeq, oRedisMsg);
+                }
+            }
+        }
+            break;
+        case CODEC_CASS:
+        {
+            CassResponse oCassResponse;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<CassResponse>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->AddEvent(pSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oCassResponse))
+            {
+                IO<CassStep>::OnResponse(pDispatcher, pChannel, uiStepSeq, oCassResponse);
+            }
+        }
+            break;
+        case CODEC_PRIVATE:
+            break;
+        case CODEC_CHANNEL_MIGRATE:
+        {
+            SocketChannelPack oPack;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<SocketChannelPack>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oPack))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<CmdChannelMigrate>::OnRequest(pDispatcher, pChannel, (int32)CMD_REQ_CHANNEL_MIGRATE, oPack);
+                }
+                else
+                {
+                    ;   // no response
+                }
+            }
+        }
+            break;
+        case CODEC_UNKNOW:
+            break;
+        default:
+            ;
+    }
+    return(CODEC_STATUS_OK);
 }
 
 bool CodecFactory::OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SelfChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
@@ -300,10 +522,14 @@ bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfC
 
 E_CODEC_STATUS CodecFactory::OnNebulaEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, int iStart)
 {
-    E_CODEC_STATUS eCodecStatus;
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int i = iStart;
     for (; ; ++i)
     {
+        if (pChannel->IsMigrated())
+        {
+            break;
+        }
         MsgHead oMsgHead;
         MsgBody oMsgBody;
         if (0 == i)
@@ -351,10 +577,14 @@ E_CODEC_STATUS CodecFactory::OnNebulaEvent(Dispatcher* pDispatcher, std::shared_
 
 E_CODEC_STATUS CodecFactory::OnHttpEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, int iStart)
 {
-    E_CODEC_STATUS eCodecStatus;
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int i = iStart;
     for (; ; ++i)
     {
+        if (pChannel->IsMigrated())
+        {
+            break;
+        }
         HttpMsg oHttpMsg;
         if (0 == i)
         {
@@ -440,10 +670,14 @@ E_CODEC_STATUS CodecFactory::OnHttpEvent(Dispatcher* pDispatcher, std::shared_pt
 
 E_CODEC_STATUS CodecFactory::OnRedisEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, int iStart)
 {
-    E_CODEC_STATUS eCodecStatus;
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int i = iStart;
     for (; ; ++i)
     {
+        if (pChannel->IsMigrated())
+        {
+            break;
+        }
         RedisMsg oRedisMsg;
         if (0 == i)
         {
@@ -475,10 +709,14 @@ E_CODEC_STATUS CodecFactory::OnRedisEvent(Dispatcher* pDispatcher, std::shared_p
 
 E_CODEC_STATUS CodecFactory::OnCassEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, int iStart)
 {
-    E_CODEC_STATUS eCodecStatus;
+    E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     int i = iStart;
     for (; ; ++i)
     {
+        if (pChannel->IsMigrated())
+        {
+            break;
+        }
         CassResponse oCassResponse;
         if (0 == i)
         {

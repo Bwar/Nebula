@@ -37,7 +37,9 @@ void protobuf_AssignDesc_neb_5fsys_2eproto();
 void protobuf_ShutdownFile_neb_5fsys_2eproto();
 
 class ConfigInfo;
+class FdTransfer;
 class LogLevel;
+class SpecChannelInfo;
 class TargetWorker;
 class TraceLog;
 class WorkerLoad;
@@ -595,6 +597,217 @@ class TraceLog : public ::google::protobuf::Message /* @@protoc_insertion_point(
 
   void InitAsDefaultInstance();
   static TraceLog* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class SpecChannelInfo : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:neb.SpecChannelInfo) */ {
+ public:
+  SpecChannelInfo();
+  virtual ~SpecChannelInfo();
+
+  SpecChannelInfo(const SpecChannelInfo& from);
+
+  inline SpecChannelInfo& operator=(const SpecChannelInfo& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const SpecChannelInfo& default_instance();
+
+  void Swap(SpecChannelInfo* other);
+
+  // implements Message ----------------------------------------------
+
+  inline SpecChannelInfo* New() const { return New(NULL); }
+
+  SpecChannelInfo* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const SpecChannelInfo& from);
+  void MergeFrom(const SpecChannelInfo& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(SpecChannelInfo* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional uint32 codec_type = 1;
+  void clear_codec_type();
+  static const int kCodecTypeFieldNumber = 1;
+  ::google::protobuf::uint32 codec_type() const;
+  void set_codec_type(::google::protobuf::uint32 value);
+
+  // optional uint32 from_labor = 2;
+  void clear_from_labor();
+  static const int kFromLaborFieldNumber = 2;
+  ::google::protobuf::uint32 from_labor() const;
+  void set_from_labor(::google::protobuf::uint32 value);
+
+  // optional uint32 to_labor = 3;
+  void clear_to_labor();
+  static const int kToLaborFieldNumber = 3;
+  ::google::protobuf::uint32 to_labor() const;
+  void set_to_labor(::google::protobuf::uint32 value);
+
+  // @@protoc_insertion_point(class_scope:neb.SpecChannelInfo)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::uint32 codec_type_;
+  ::google::protobuf::uint32 from_labor_;
+  ::google::protobuf::uint32 to_labor_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_neb_5fsys_2eproto();
+  friend void protobuf_AssignDesc_neb_5fsys_2eproto();
+  friend void protobuf_ShutdownFile_neb_5fsys_2eproto();
+
+  void InitAsDefaultInstance();
+  static SpecChannelInfo* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class FdTransfer : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:neb.FdTransfer) */ {
+ public:
+  FdTransfer();
+  virtual ~FdTransfer();
+
+  FdTransfer(const FdTransfer& from);
+
+  inline FdTransfer& operator=(const FdTransfer& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const FdTransfer& default_instance();
+
+  void Swap(FdTransfer* other);
+
+  // implements Message ----------------------------------------------
+
+  inline FdTransfer* New() const { return New(NULL); }
+
+  FdTransfer* New(::google::protobuf::Arena* arena) const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const FdTransfer& from);
+  void MergeFrom(const FdTransfer& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* InternalSerializeWithCachedSizesToArray(
+      bool deterministic, ::google::protobuf::uint8* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const {
+    return InternalSerializeWithCachedSizesToArray(false, output);
+  }
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  void InternalSwap(FdTransfer* other);
+  private:
+  inline ::google::protobuf::Arena* GetArenaNoVirtual() const {
+    return _internal_metadata_.arena();
+  }
+  inline void* MaybeArenaPtr() const {
+    return _internal_metadata_.raw_arena_ptr();
+  }
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // optional int32 fd = 1;
+  void clear_fd();
+  static const int kFdFieldNumber = 1;
+  ::google::protobuf::int32 fd() const;
+  void set_fd(::google::protobuf::int32 value);
+
+  // optional int32 addr_family = 2;
+  void clear_addr_family();
+  static const int kAddrFamilyFieldNumber = 2;
+  ::google::protobuf::int32 addr_family() const;
+  void set_addr_family(::google::protobuf::int32 value);
+
+  // optional string client_addr = 3;
+  void clear_client_addr();
+  static const int kClientAddrFieldNumber = 3;
+  const ::std::string& client_addr() const;
+  void set_client_addr(const ::std::string& value);
+  void set_client_addr(const char* value);
+  void set_client_addr(const char* value, size_t size);
+  ::std::string* mutable_client_addr();
+  ::std::string* release_client_addr();
+  void set_allocated_client_addr(::std::string* client_addr);
+
+  // optional int32 client_port = 4;
+  void clear_client_port();
+  static const int kClientPortFieldNumber = 4;
+  ::google::protobuf::int32 client_port() const;
+  void set_client_port(::google::protobuf::int32 value);
+
+  // optional int32 codec_type = 5;
+  void clear_codec_type();
+  static const int kCodecTypeFieldNumber = 5;
+  ::google::protobuf::int32 codec_type() const;
+  void set_codec_type(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:neb.FdTransfer)
+ private:
+
+  ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
+  bool _is_default_instance_;
+  ::google::protobuf::int32 fd_;
+  ::google::protobuf::int32 addr_family_;
+  ::google::protobuf::internal::ArenaStringPtr client_addr_;
+  ::google::protobuf::int32 client_port_;
+  ::google::protobuf::int32 codec_type_;
+  mutable int _cached_size_;
+  friend void  protobuf_AddDesc_neb_5fsys_2eproto();
+  friend void protobuf_AssignDesc_neb_5fsys_2eproto();
+  friend void protobuf_ShutdownFile_neb_5fsys_2eproto();
+
+  void InitAsDefaultInstance();
+  static FdTransfer* default_instance_;
 };
 // ===================================================================
 
@@ -1218,7 +1431,161 @@ inline void TraceLog::set_allocated_log_content(::std::string* log_content) {
   // @@protoc_insertion_point(field_set_allocated:neb.TraceLog.log_content)
 }
 
+// -------------------------------------------------------------------
+
+// SpecChannelInfo
+
+// optional uint32 codec_type = 1;
+inline void SpecChannelInfo::clear_codec_type() {
+  codec_type_ = 0u;
+}
+inline ::google::protobuf::uint32 SpecChannelInfo::codec_type() const {
+  // @@protoc_insertion_point(field_get:neb.SpecChannelInfo.codec_type)
+  return codec_type_;
+}
+inline void SpecChannelInfo::set_codec_type(::google::protobuf::uint32 value) {
+  
+  codec_type_ = value;
+  // @@protoc_insertion_point(field_set:neb.SpecChannelInfo.codec_type)
+}
+
+// optional uint32 from_labor = 2;
+inline void SpecChannelInfo::clear_from_labor() {
+  from_labor_ = 0u;
+}
+inline ::google::protobuf::uint32 SpecChannelInfo::from_labor() const {
+  // @@protoc_insertion_point(field_get:neb.SpecChannelInfo.from_labor)
+  return from_labor_;
+}
+inline void SpecChannelInfo::set_from_labor(::google::protobuf::uint32 value) {
+  
+  from_labor_ = value;
+  // @@protoc_insertion_point(field_set:neb.SpecChannelInfo.from_labor)
+}
+
+// optional uint32 to_labor = 3;
+inline void SpecChannelInfo::clear_to_labor() {
+  to_labor_ = 0u;
+}
+inline ::google::protobuf::uint32 SpecChannelInfo::to_labor() const {
+  // @@protoc_insertion_point(field_get:neb.SpecChannelInfo.to_labor)
+  return to_labor_;
+}
+inline void SpecChannelInfo::set_to_labor(::google::protobuf::uint32 value) {
+  
+  to_labor_ = value;
+  // @@protoc_insertion_point(field_set:neb.SpecChannelInfo.to_labor)
+}
+
+// -------------------------------------------------------------------
+
+// FdTransfer
+
+// optional int32 fd = 1;
+inline void FdTransfer::clear_fd() {
+  fd_ = 0;
+}
+inline ::google::protobuf::int32 FdTransfer::fd() const {
+  // @@protoc_insertion_point(field_get:neb.FdTransfer.fd)
+  return fd_;
+}
+inline void FdTransfer::set_fd(::google::protobuf::int32 value) {
+  
+  fd_ = value;
+  // @@protoc_insertion_point(field_set:neb.FdTransfer.fd)
+}
+
+// optional int32 addr_family = 2;
+inline void FdTransfer::clear_addr_family() {
+  addr_family_ = 0;
+}
+inline ::google::protobuf::int32 FdTransfer::addr_family() const {
+  // @@protoc_insertion_point(field_get:neb.FdTransfer.addr_family)
+  return addr_family_;
+}
+inline void FdTransfer::set_addr_family(::google::protobuf::int32 value) {
+  
+  addr_family_ = value;
+  // @@protoc_insertion_point(field_set:neb.FdTransfer.addr_family)
+}
+
+// optional string client_addr = 3;
+inline void FdTransfer::clear_client_addr() {
+  client_addr_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline const ::std::string& FdTransfer::client_addr() const {
+  // @@protoc_insertion_point(field_get:neb.FdTransfer.client_addr)
+  return client_addr_.GetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FdTransfer::set_client_addr(const ::std::string& value) {
+  
+  client_addr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
+  // @@protoc_insertion_point(field_set:neb.FdTransfer.client_addr)
+}
+inline void FdTransfer::set_client_addr(const char* value) {
+  
+  client_addr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
+  // @@protoc_insertion_point(field_set_char:neb.FdTransfer.client_addr)
+}
+inline void FdTransfer::set_client_addr(const char* value, size_t size) {
+  
+  client_addr_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
+      ::std::string(reinterpret_cast<const char*>(value), size));
+  // @@protoc_insertion_point(field_set_pointer:neb.FdTransfer.client_addr)
+}
+inline ::std::string* FdTransfer::mutable_client_addr() {
+  
+  // @@protoc_insertion_point(field_mutable:neb.FdTransfer.client_addr)
+  return client_addr_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline ::std::string* FdTransfer::release_client_addr() {
+  // @@protoc_insertion_point(field_release:neb.FdTransfer.client_addr)
+  
+  return client_addr_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
+}
+inline void FdTransfer::set_allocated_client_addr(::std::string* client_addr) {
+  if (client_addr != NULL) {
+    
+  } else {
+    
+  }
+  client_addr_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), client_addr);
+  // @@protoc_insertion_point(field_set_allocated:neb.FdTransfer.client_addr)
+}
+
+// optional int32 client_port = 4;
+inline void FdTransfer::clear_client_port() {
+  client_port_ = 0;
+}
+inline ::google::protobuf::int32 FdTransfer::client_port() const {
+  // @@protoc_insertion_point(field_get:neb.FdTransfer.client_port)
+  return client_port_;
+}
+inline void FdTransfer::set_client_port(::google::protobuf::int32 value) {
+  
+  client_port_ = value;
+  // @@protoc_insertion_point(field_set:neb.FdTransfer.client_port)
+}
+
+// optional int32 codec_type = 5;
+inline void FdTransfer::clear_codec_type() {
+  codec_type_ = 0;
+}
+inline ::google::protobuf::int32 FdTransfer::codec_type() const {
+  // @@protoc_insertion_point(field_get:neb.FdTransfer.codec_type)
+  return codec_type_;
+}
+inline void FdTransfer::set_codec_type(::google::protobuf::int32 value) {
+  
+  codec_type_ = value;
+  // @@protoc_insertion_point(field_set:neb.FdTransfer.codec_type)
+}
+
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

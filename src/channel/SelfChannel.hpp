@@ -41,21 +41,6 @@ public:
         return(false);
     }
 
-    virtual const std::string& GetIdentify() const override
-    {
-        return(strEmpty);
-    }
-
-    virtual const std::string& GetRemoteAddr() const override
-    {
-        return(strEmpty);
-    }
-
-    virtual const std::string& GetClientData() const override
-    {
-        return(strEmpty);
-    }
-
     virtual E_CODEC_TYPE GetCodecType() const override
     {
         return(CODEC_DIRECT);
@@ -85,7 +70,6 @@ private:
     bool m_bIsResponse;
     uint32 m_uiChannelSeq;
     uint32 m_uiStepSeq;
-    std::string strEmpty;
 };
 
 } /* namespace neb */

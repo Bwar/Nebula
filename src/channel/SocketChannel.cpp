@@ -25,12 +25,12 @@ namespace neb
 {
 
 SocketChannel::SocketChannel()
-    : m_bIsClient(false), m_bWithSsl(false), m_pImpl(nullptr), m_pLogger(nullptr), m_pWatcher(nullptr)
+    : m_bIsClient(false), m_bWithSsl(false), m_bMigrated(false), m_pImpl(nullptr), m_pLogger(nullptr), m_pWatcher(nullptr)
 {
 }
 
 SocketChannel::SocketChannel(std::shared_ptr<NetLogger> pLogger, bool bIsClient, bool bWithSsl)
-    : m_bIsClient(bIsClient), m_bWithSsl(bWithSsl), m_pImpl(nullptr), m_pLogger(pLogger), m_pWatcher(nullptr)
+    : m_bIsClient(bIsClient), m_bWithSsl(bWithSsl), m_bMigrated(false), m_pImpl(nullptr), m_pLogger(pLogger), m_pWatcher(nullptr)
 {
 }
 
@@ -161,6 +161,26 @@ ev_tstamp SocketChannel::GetActiveTime() const
         return(0.0);
     }
     return(m_pImpl->GetActiveTime());
+}
+
+ev_tstamp SocketChannel::GetPenultimateActiveTime() const
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+        return(0.0);
+    }
+    return(m_pImpl->GetPenultimateActiveTime());
+}
+
+ev_tstamp SocketChannel::GetLastRecvTime() const
+{
+    if (m_pImpl == nullptr)
+    {
+        LOG4_TRACE("m_pImpl is nullptr");
+        return(0.0);
+    }
+    return(m_pImpl->GetLastRecvTime());
 }
 
 ev_tstamp SocketChannel::GetKeepAlive() const
@@ -309,6 +329,20 @@ bool SocketChannel::Close()
     return(m_pImpl->Close());
 }
 
+void SocketChannel::SetBonding(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, std::shared_ptr<SocketChannel> pBindChannel)
+{
+    if (m_pImpl != nullptr)
+    {
+        m_pImpl->SetBonding(pLabor, pLogger, pBindChannel);
+    }
+    m_pLogger = pLogger;
+}
+
+void SocketChannel::SetMigrated(bool bMigrated)
+{
+    m_bMigrated = bMigrated;
+}
+
 bool SocketChannel::InitImpl(std::shared_ptr<SocketChannel> pImpl)
 {
     if (pImpl == nullptr)
@@ -325,150 +359,9 @@ Labor* SocketChannel::GetLabor()
     return(nullptr);
 }
 
-int SocketChannel::SendChannelFd(int iSocketFd, int iSendFd, int iAiFamily, int iCodecType,
-        const std::string& strRemoteAddr, std::shared_ptr<NetLogger> pLogger)
+uint32 SocketChannel::GetPeerStepSeq() const
 {
-    ssize_t             n;
-    struct iovec        iov[2];
-    struct msghdr       msg;
-    tagChannelCtx stCh;
-    int iError = 0;
-    char szAddress[64] = {0};
-
-    stCh.iFd = iSendFd;
-    stCh.iAiFamily = iAiFamily;
-    stCh.iCodecType = iCodecType;
-
-    union
-    {
-        struct cmsghdr  cm;
-        char            space[CMSG_SPACE(sizeof(int))];
-    } cmsg;
-
-    if (stCh.iFd == -1)
-    {
-        msg.msg_control = NULL;
-        msg.msg_controllen = 0;
-
-    }
-    else
-    {
-        msg.msg_control = (caddr_t) &cmsg;
-        msg.msg_controllen = sizeof(cmsg);
-
-        memset(&cmsg, 0, sizeof(cmsg));
-
-        cmsg.cm.cmsg_len = CMSG_LEN(sizeof(int));
-        cmsg.cm.cmsg_level = SOL_SOCKET;
-        cmsg.cm.cmsg_type = SCM_RIGHTS;
-
-        *(int *) CMSG_DATA(&cmsg.cm) = stCh.iFd;
-    }
-
-    msg.msg_flags = 0;
-
-    snprintf(szAddress, 64, "%s", strRemoteAddr.data());
-    iov[0].iov_base = (void*)&stCh;
-    iov[0].iov_len = sizeof(tagChannelCtx);
-    iov[1].iov_base = (void*)szAddress;
-    iov[1].iov_len = 64;
-
-    msg.msg_name = NULL;
-    msg.msg_namelen = 0;
-    msg.msg_iov = iov;
-    msg.msg_iovlen = 2;
-
-    n = sendmsg(iSocketFd, &msg, 0);
-
-    if (n == -1)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "sendmsg() failed, errno %d", errno);
-        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
-        return(iError);
-    }
-
-    return(ERR_OK);
-}
-
-int SocketChannel::RecvChannelFd(int iSocketFd, int& iRecvFd, int& iAiFamily, int& iCodecType,
-        std::string& strRemoteAddr, std::shared_ptr<NetLogger> pLogger)
-{
-    ssize_t             n;
-    struct iovec        iov[2];
-    struct msghdr       msg;
-    tagChannelCtx stCh;
-    int iError = 0;
-    char szAddress[64] = {0};
-
-    union {
-        struct cmsghdr  cm;
-        char            space[CMSG_SPACE(sizeof(int))];
-    } cmsg;
-
-    iov[0].iov_base = (void*)&stCh;
-    iov[0].iov_len = sizeof(tagChannelCtx);
-    iov[1].iov_base = (void*)szAddress;
-    iov[1].iov_len = 64;
-
-    msg.msg_name = NULL;
-    msg.msg_namelen = 0;
-    msg.msg_iov = iov;
-    msg.msg_iovlen = 2;
-
-    msg.msg_control = (caddr_t) &cmsg;
-    msg.msg_controllen = sizeof(cmsg);
-
-    n = recvmsg(iSocketFd, &msg, 0);
-
-    if (n == -1) {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "recvmsg() failed, errno %d", errno);
-        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
-        return(iError);
-    }
-
-    if (n == 0) {
-        pLogger->WriteLog(neb::Logger::WARNING, __FILE__, __LINE__, __FUNCTION__, "recvmsg() return zero, errno %d", errno);
-        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
-        return(ERR_CHANNEL_EOF);
-    }
-
-    if ((size_t) n < sizeof(tagChannelCtx))
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "rrecvmsg() returned not enough data: %z, errno %d", n, errno);
-        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
-        return(iError);
-    }
-
-    if (cmsg.cm.cmsg_len < (socklen_t) CMSG_LEN(sizeof(int)))
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "recvmsg() returned too small ancillary data");
-        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
-        return(iError);
-    }
-
-    if (cmsg.cm.cmsg_level != SOL_SOCKET || cmsg.cm.cmsg_type != SCM_RIGHTS)
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
-                        "recvmsg() returned invalid ancillary data level %d or type %d", cmsg.cm.cmsg_level, cmsg.cm.cmsg_type);
-        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
-        return(iError);
-    }
-
-    stCh.iFd = *(int *) CMSG_DATA(&cmsg.cm);
-
-    if (msg.msg_flags & (MSG_TRUNC|MSG_CTRUNC))
-    {
-        pLogger->WriteLog(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "recvmsg() truncated data");
-        iError = (errno == 0) ? ERR_TRANSFER_FD : errno;
-        return(iError);
-    }
-
-    iRecvFd = stCh.iFd;
-    iAiFamily = stCh.iAiFamily;
-    iCodecType = stCh.iCodecType;
-    strRemoteAddr = szAddress;
-
-    return(ERR_OK);
+    return(0);
 }
 
 ChannelWatcher* SocketChannel::MutableWatcher()
