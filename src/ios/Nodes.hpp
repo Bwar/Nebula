@@ -18,6 +18,7 @@
 #include <unordered_map>
 #include <set>
 #include "Definition.hpp"
+#include "channel/Channel.hpp"
 
 //#define ROT32(x, y) ((x << y) | (x >> (32 - y))) // avoid effort
 
@@ -58,8 +59,6 @@ public:
     {
         bool bCheckFailedNode = false;
         std::string strNodeType;
-        std::string strAuth;
-        std::string strPassword;
         T_NODE2HASH_MAP mapNode2Hash;
         T_NODE2HASH_MAP::iterator itPollingNode;
         std::map<uint32, std::string> mapHash2Node;
@@ -114,9 +113,11 @@ public:
      */
     bool SplitAddAndGetNode(const std::string& strNodeType, std::string& strNodeIdentify);
 
-    bool GetAuth(const std::string& strNodeType, std::string& strAuth, std::string& strPassword);
+    bool GetAuth(const std::string& strIdentify, std::string& strAuth, std::string& strPassword);
 
-    void SetAuth(const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword);
+    std::shared_ptr<ChannelOption> GetChannelOption(const std::string& strIdentify);
+
+    void SetChannelOption(const std::string& strIdentify, const ChannelOption& stOption);
 
     /**
      * @brief 删除节点
@@ -154,6 +155,7 @@ private:
 
     std::unordered_map<std::string, std::shared_ptr<tagNode> > m_mapNode;
     std::unordered_map<std::string, std::set<std::string>> m_mapNodeType;  // key为节点标识
+    std::unordered_map<std::string, std::shared_ptr<ChannelOption>> m_mapChannelOption;  // key为节点标识
 };
 
 } /* namespace neb */

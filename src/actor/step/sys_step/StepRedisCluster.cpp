@@ -472,6 +472,11 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, const RedisMsg& oR
     }
     else
     {
+        ChannelOption stOption;
+        stOption.bWithSsl = bWithSsl;
+        stOption.bPipeline = bPipeline;
+        stOption.dKeepAlive = GetTimeout();
+        GetLabor(this)->GetDispatcher()->SetChannelOption(strIdentify, stOption);
         m_vecWaittingRequest.push_back(std::make_pair(uiStepSeq, oRedisMsg));
         return(SendCmdClusterSlots());
     }
@@ -479,8 +484,7 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, const RedisMsg& oR
 
 bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg)
 {
-    bool bResult = IO<CodecResp>::SendTo(this, strIdentify,
-            SOCKET_STREAM, m_bWithSsl, m_bPipeline, (*pRedisMsg.get()));
+    bool bResult = IO<CodecResp>::SendWithoutOption(this, strIdentify, (*pRedisMsg.get()));
     if (bResult)
     {
         auto pChannel = GetLastActivityChannel();
@@ -1020,7 +1024,7 @@ bool StepRedisCluster::Auth(const std::string& strIdentify, std::shared_ptr<Redi
 {
     std::string strAuth;
     std::string strPassword;
-    GetLabor(this)->GetDispatcher()->GetAuth(strIdentify, strAuth, strPassword);
+    GetLabor(this)->GetDispatcher()->GetAuth(m_strIdentify, strAuth, strPassword);
     SetCmd("AUTH");
     Append(strPassword);
     auto pRedisRequest = MutableRedisRequest();

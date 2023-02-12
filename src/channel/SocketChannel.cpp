@@ -319,6 +319,14 @@ void SocketChannel::SetRemoteAddr(const std::string& strRemoteAddr)
     return(m_pImpl->SetRemoteAddr(strRemoteAddr));
 }
 
+void SocketChannel::SetKeepAlive(ev_tstamp dTime)
+{
+    if (m_pImpl != nullptr)
+    {
+        m_pImpl->SetKeepAlive(dTime);
+    }
+}
+
 bool SocketChannel::Close()
 {
     if (m_pImpl == nullptr)

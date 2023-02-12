@@ -304,7 +304,7 @@ bool Dispatcher::OnIoError(std::shared_ptr<SocketChannel> pChannel)
 
 bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
 {
-    ev_tstamp after = pChannel->GetActiveTime() - ev_now(m_loop) + pChannel->GetKeepAlive();
+    ev_tstamp after = pChannel->GetLastRecvTime() - ev_now(m_loop) + pChannel->GetKeepAlive();
     if (after > 0)    // IO在定时时间内被重新刷新过，重新设置定时器
     {
         ev_timer_stop (m_loop, pChannel->MutableWatcher()->MutableTimerWatcher());
@@ -313,34 +313,21 @@ bool Dispatcher::OnIoTimeout(std::shared_ptr<SocketChannel> pChannel)
         return(true);
     }
 
-    LOG4_TRACE("fd %d, seq %u, active time %f, now time %f, keep alive %f",
-            pChannel->GetFd(), pChannel->GetSequence(), pChannel->GetActiveTime(),
+    LOG4_TRACE("fd %d, seq %u, last recv time %f, now time %f, keep alive %f",
+            pChannel->GetFd(), pChannel->GetSequence(), pChannel->GetLastRecvTime(),
             ev_now(m_loop), pChannel->GetKeepAlive());
-    if (CODEC_PROTO == pChannel->GetCodecType() && pChannel->NeedAliveCheck())     // 需要发送心跳检查
+    if (pChannel->IsClient() && pChannel->NeedAliveCheck())     // 需要发送心跳检查
     {
-        std::shared_ptr<Step> pStepIoTimeout = m_pLabor->GetActorBuilder()->MakeSharedStep(
-                nullptr, "neb::StepIoTimeout", pChannel);
-        if (nullptr == pStepIoTimeout)
+        if (!PingChannel(pChannel))
         {
-            LOG4_ERROR("new StepIoTimeout error!");
+            LOG4_TRACE("channel timeout!");
             DiscardSocketChannel(pChannel);
-        }
-        E_CMD_STATUS eStatus = pStepIoTimeout->Emit();
-        if (CMD_STATUS_RUNNING != eStatus)
-        {
-            // 若返回非running状态，则表明发包时已出错，
-            // 销毁连接过程在SendTo里已经完成，这里不需要再销毁连接
-            m_pLabor->GetActorBuilder()->RemoveStep(pStepIoTimeout);
         }
     }
     else        // 关闭文件描述符并清理相关资源
     {
-        if ((CODEC_NEBULA != pChannel->GetCodecType())
-            && (CODEC_NEBULA_IN_NODE != pChannel->GetCodecType()))   // 非内部服务器间的连接才会在超时中关闭
-        {
-            LOG4_TRACE("io timeout!");
-            DiscardSocketChannel(pChannel);
-        }
+        LOG4_TRACE("io timeout!");
+        DiscardSocketChannel(pChannel);
     }
     return(true);
 }
@@ -409,7 +396,9 @@ bool Dispatcher::SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBod
 {
     if (m_pLabor->GetLaborType() == Labor::LABOR_MANAGER)
     {
-        return(IO<CodecNebula>::Broadcast(this, 0, "BEACON", false, true, iCmd, uiSeq, oMsgBody));
+        ChannelOption stOption;
+        stOption.bPipeline = true;
+        return(IO<CodecNebula>::Broadcast(this, 0, "BEACON", stOption, iCmd, uiSeq, oMsgBody));
     }
     else
     {
@@ -518,54 +507,6 @@ std::shared_ptr<SocketChannel> Dispatcher::StressSend(const std::string& strIden
         close(iFd);
         return(nullptr);
     }
-}
-
-bool Dispatcher::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
-{
-    if (m_pLabor->GetLaborType() == Labor::LABOR_MANAGER)
-    {
-        LOG4_ERROR("this function can not be called by manager process!");
-        return(false);
-    }
-    if (m_iterLoaderAndWorkerChannel == m_mapLoaderAndWorkerChannel.end())
-    {
-        m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
-        if (m_iterLoaderAndWorkerChannel == m_mapLoaderAndWorkerChannel.end())
-        {
-            LOG4_ERROR("no channel for loader!");
-            return(false);
-        }
-    }
-    bool bRes = false;
-    if (gc_uiCmdReq & iCmd)
-    {
-        bRes = IO<CodecNebulaInNode>::SendRequest(this, 0, m_iterLoaderAndWorkerChannel->second, iCmd, uiSeq, oMsgBody);
-    }
-    else
-    {
-        bRes = IO<CodecNebulaInNode>::SendResponse(this, m_iterLoaderAndWorkerChannel->second, iCmd, uiSeq, oMsgBody);
-    }
-    m_iterLoaderAndWorkerChannel++;
-    return(bRes);
-}
-
-bool Dispatcher::SendTo(int iFd, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
-{
-    auto iter = m_mapSocketChannel.find(iFd);
-    if (iter != m_mapSocketChannel.end())
-    {
-        bool bRes = false;
-        if (gc_uiCmdReq & iCmd)
-        {
-            bRes = IO<CodecNebulaInNode>::SendRequest(this, 0, iter->second, iCmd, uiSeq, oMsgBody);
-        }
-        else
-        {
-            bRes = IO<CodecNebulaInNode>::SendResponse(this, iter->second, iCmd, uiSeq, oMsgBody);
-        }
-        return(bRes);
-    }
-    return(false);
 }
 
 std::shared_ptr<SocketChannel> Dispatcher::GetLastActivityChannel()
@@ -691,6 +632,15 @@ void Dispatcher::CircuitBreak(const std::string& strIdentify)
     m_pSessionNode->NodeFailed(strIdentify);
 }
 
+void Dispatcher::SetChannelPingStep(int iCodec, const std::string& strStepName)
+{
+    auto iter = m_mapChannelPingStepName.find(iCodec);
+    if (iter == m_mapChannelPingStepName.end())
+    {
+        m_mapChannelPingStepName.insert(std::make_pair(iCodec, strStepName));
+    }
+}
+
 void Dispatcher::SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData)
 {
     pChannel->SetClientData(strClientData);
@@ -701,14 +651,19 @@ bool Dispatcher::IsNodeType(const std::string& strNodeIdentify, const std::strin
     return(m_pSessionNode->IsNodeType(strNodeIdentify, strNodeType));
 }
 
-bool Dispatcher::GetAuth(const std::string& strNodeType, std::string& strAuth, std::string& strPassword)
+bool Dispatcher::GetAuth(const std::string& strIdentify, std::string& strAuth, std::string& strPassword)
 {
-    return(m_pSessionNode->GetAuth(strNodeType, strAuth, strPassword));
+    return(m_pSessionNode->GetAuth(strIdentify, strAuth, strPassword));
 }
 
-void Dispatcher::SetAuth(const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword)
+std::shared_ptr<ChannelOption> Dispatcher::GetChannelOption(const std::string& strIdentify)
 {
-    m_pSessionNode->SetAuth(strNodeType, strAuth, strPassword);
+    return(m_pSessionNode->GetChannelOption(strIdentify));
+}
+
+void Dispatcher::SetChannelOption(const std::string& strIdentify, const ChannelOption& stOption)
+{
+    m_pSessionNode->SetChannelOption(strIdentify, stOption);
 }
 
 bool Dispatcher::AddEvent(ev_signal* signal_watcher, signal_callback pFunc, int iSignum)
@@ -900,6 +855,9 @@ bool Dispatcher::Init()
 #else
     m_pSessionNode = std::unique_ptr<Nodes>(new Nodes());
 #endif
+    SetChannelPingStep(CODEC_PROTO, "neb::StepNebulaChannelPing");
+    SetChannelPingStep(CODEC_NEBULA, "neb::StepNebulaChannelPing");
+    SetChannelPingStep(CODEC_RESP, "neb::StepRedisChannelPing");
     return(true);
 }
 
@@ -1011,16 +969,6 @@ bool Dispatcher::DiscardSocketChannel(std::shared_ptr<SocketChannel> pChannel, b
             ev_timer_stop (m_loop, pChannel->MutableWatcher()->MutableTimerWatcher());
         }
         pChannel->MutableWatcher()->Reset();
-
-        if (CODEC_NEBULA_IN_NODE == pChannel->GetCodecType())
-        {
-            auto inner_channel_iter = m_mapLoaderAndWorkerChannel.find(pChannel->GetFd());
-            if (inner_channel_iter != m_mapLoaderAndWorkerChannel.end())
-            {
-                m_mapLoaderAndWorkerChannel.erase(inner_channel_iter);
-            }
-            m_iterLoaderAndWorkerChannel = m_mapLoaderAndWorkerChannel.begin();
-        }
 
         auto channel_iter = m_mapSocketChannel.find(pChannel->GetFd());
         if (channel_iter != m_mapSocketChannel.end())
@@ -1401,6 +1349,34 @@ bool Dispatcher::AcceptServerConn(int iFd)
         }
     }
     return(false);
+}
+
+bool Dispatcher::PingChannel(std::shared_ptr<SocketChannel> pChannel)
+{
+    auto iter = m_mapChannelPingStepName.find(pChannel->GetCodecType());
+    if (iter == m_mapChannelPingStepName.end())
+    {
+        return(false);
+    }
+    else
+    {
+        auto pStep = m_pLabor->GetActorBuilder()->MakeSharedStep(nullptr, iter->second, pChannel);
+        if (nullptr == pStep)
+        {
+            LOG4_ERROR("failed to ping channel.");
+            return(false);
+        }
+        else
+        {
+            E_CMD_STATUS eStatus = pStep->Emit();
+            if (CMD_STATUS_RUNNING != eStatus)
+            {
+                m_pLabor->GetActorBuilder()->RemoveStep(pStep);
+                return(false);
+            }
+            return(true);
+        }
+    }
 }
 
 void Dispatcher::CheckFailedNode()

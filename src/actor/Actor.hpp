@@ -261,15 +261,6 @@ protected:
     virtual bool SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = false);
 
     /**
-     * @brief 从worker发送到loader或从loader发送到worker
-     * @param iCmd 发送的命令字
-     * @param uiSeq 发送的数据包seq
-     * @param oMsgBody 数据包体
-     * @return 是否发送成功
-     */
-    virtual bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-
-    /**
      * @brief 发送到下一个同一类型的节点
      * @note 发送到下一个同一类型的节点，适用于对同一类型节点做轮询方式发送以达到简单的负载均衡。
      * @param strNodeType 节点类型

@@ -204,41 +204,45 @@ bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const char* pRawData
 
 bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
+    ChannelOption stOption;
+    stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(IO<CodecNebula>::SendTo(this, strIdentify, SOCKET_STREAM, false, true, iCmd, uiSeq, oMsgBody)); 
+    return(IO<CodecNebula>::SendTo(this, strIdentify, stOption, iCmd, uiSeq, oMsgBody)); 
 }
 
 bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq)
 {
-    bool bWithSsl = false;
-    bool bPipeline = false;
+    ChannelOption stOption;
     if (oHttpMsg.headers().find("x-trace-id") == oHttpMsg.headers().end())
     {
         (const_cast<HttpMsg&>(oHttpMsg)).mutable_headers()->insert({"x-trace-id", GetTraceId()});
     }
     if (oHttpMsg.http_major() >= 2)
     {
-        bPipeline = true;
+        stOption.bPipeline = true;
     }
     std::string strSchema = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(":"));
     std::transform(strSchema.begin(), strSchema.end(), strSchema.begin(), [](unsigned char c)->unsigned char {return std::tolower(c);});
     if (strSchema == std::string("https"))
     {
-        bWithSsl = true;
+        stOption.bWithSsl = true;
     }
     if (oHttpMsg.http_major() == 2)
     {
-        return(IO<CodecHttp2>::SendTo(this, strHost, iPort, SOCKET_STREAM, bWithSsl, bPipeline, oHttpMsg));
+        return(IO<CodecHttp2>::SendTo(this, strHost, iPort, stOption, oHttpMsg));
     }
     else
     {
-        return(IO<CodecHttp>::SendTo(this, strHost, iPort, SOCKET_STREAM, bWithSsl, bPipeline, oHttpMsg));
+        return(IO<CodecHttp>::SendTo(this, strHost, iPort, stOption, oHttpMsg));
     }
 }
 
 bool Actor::SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
-    return(IO<CodecResp>::SendTo(this, strIdentify, SOCKET_STREAM, bWithSsl, bPipeline, oRedisMsg));
+    ChannelOption stOption;
+    stOption.bPipeline = bPipeline;
+    stOption.bWithSsl = bWithSsl;
+    return(IO<CodecResp>::SendTo(this, strIdentify, stOption, oRedisMsg));
 }
 
 bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
@@ -248,29 +252,32 @@ bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedis
 
 bool Actor::SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline)
 {
-    return(IO<CodecResp>::SendRoundRobin(this, strIdentify, bWithSsl, bPipeline, oRedisMsg));
-}
-
-bool Actor::SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
-{
-    (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(m_pLabor->GetDispatcher()->SendTo(iCmd, uiSeq, oMsgBody));
+    ChannelOption stOption;
+    stOption.bPipeline = bPipeline;
+    stOption.bWithSsl = bWithSsl;
+    return(IO<CodecResp>::SendRoundRobin(this, strIdentify, stOption, oRedisMsg));
 }
 
 bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
+    ChannelOption stOption;
+    stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(IO<CodecNebula>::SendRoundRobin(this, strNodeType, false, true, iCmd, uiSeq, oMsgBody));
+    return(IO<CodecNebula>::SendRoundRobin(this, strNodeType, stOption, iCmd, uiSeq, oMsgBody));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
+    ChannelOption stOption;
+    stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
-    return(IO<CodecNebula>::SendOriented(this, strNodeType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
+    return(IO<CodecNebula>::SendOriented(this, strNodeType, uiFactor, stOption, iCmd, uiSeq, oMsgBody));
 }
 
 bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
+    ChannelOption stOption;
+    stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
     if (oMsgBody.has_req_target())
     {
@@ -280,7 +287,7 @@ bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSe
         }
         else if (oMsgBody.req_target().route().length() > 0)
         {
-            return(IO<CodecNebula>::SendOriented(this, strNodeType, false, true, oMsgBody.req_target().route(), iCmd, uiSeq, oMsgBody));
+            return(IO<CodecNebula>::SendOriented(this, strNodeType, oMsgBody.req_target().route(), stOption, iCmd, uiSeq, oMsgBody));
         }
         else
         {

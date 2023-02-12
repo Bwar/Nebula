@@ -29,6 +29,59 @@ CodecResp::~CodecResp()
 {
 }
 
+// request
+int CodecResp::Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const RedisReply& oReply)
+{
+    if (uiFromLabor == uiToLabor)
+    {
+        return(ERR_SPEC_CHANNEL_TARGET);
+    }
+    std::shared_ptr<SpecChannel<RedisReply>> pSpecChannel = nullptr;
+    auto pLaborShared = LaborShared::Instance();
+    auto pChannel = pLaborShared->GetSpecChannel(Type(), uiFromLabor, uiToLabor);
+    if (pChannel == nullptr)
+    {
+        pSpecChannel = std::make_shared<SpecChannel<RedisReply>>(
+                uiFromLabor, uiToLabor, pLaborShared->GetSpecChannelQueueSize(), true);
+        if (pSpecChannel == nullptr)
+        {
+            return(ERR_SPEC_CHANNEL_CREATE);
+        }
+        pChannel = std::dynamic_pointer_cast<SocketChannel>(pSpecChannel);
+        auto pWatcher = pSpecChannel->MutableWatcher();
+        pWatcher->Set(pChannel, Type());
+        int iResult = pSpecChannel->Write(uiFlags, uiStepSeq, std::move(const_cast<RedisReply&>(oReply)));
+        if (iResult == ERR_OK)
+        {
+            return(pLaborShared->AddSpecChannel(Type(), uiFromLabor, uiToLabor, pChannel));
+        }
+        return(iResult);
+    }
+    else
+    {
+        pSpecChannel = std::static_pointer_cast<SpecChannel<RedisReply>>(pChannel);
+        if (pSpecChannel == nullptr)
+        {
+            return(ERR_SPEC_CHANNEL_CAST);
+        }
+        int iResult = pSpecChannel->Write(uiFlags, uiStepSeq, std::move(const_cast<RedisReply&>(oReply)));
+        if (iResult == ERR_OK)
+        {
+            pLaborShared->GetDispatcher(uiToLabor)->AsyncSend(pSpecChannel->MutableWatcher()->MutableAsyncWatcher());
+        }
+        return(iResult);
+    }
+}
+
+// response
+int CodecResp::Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, const RedisReply& oReply)
+{
+    uint32 uiFrom;
+    uint32 uiTo;
+    std::static_pointer_cast<SpecChannel<RedisReply>>(pChannel)->GetEnds(uiFrom, uiTo);
+    return(Write(uiTo, uiFrom, uiFlags, uiStepSeq, oReply));
+}
+
 E_CODEC_STATUS CodecResp::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
     return(CODEC_STATUS_OK);

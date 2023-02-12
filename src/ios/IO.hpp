@@ -51,49 +51,100 @@ public:
     template<typename ...Targs>
     static bool SendRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SocketChannel> pChannel, Targs&&... args);
 
+    static std::shared_ptr<SocketChannel> ApplySocketChannel(Actor* pActor, const ChannelOption& stOption, const std::string& strIdentify);
+
+    static std::shared_ptr<SocketChannel> ApplySocketChannel(Actor* pActor, const ChannelOption& stOption, const std::string& strHost, int iPort);
+
     // for spec channel
-    template <typename ...Targs>
+    template<typename ...Targs>
     static bool TransmitTo(Actor* pActor, uint32 uiTargetLaborId, uint32 uiCallbackStepSeq, Targs&&... args);
-    
-    template <typename ...Targs>
-    static bool SendTo(Actor* pActor, const std::string& strIdentify, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args);
+
+    // for spec channel, package deliver
+    template<typename ...Targs>
+    static bool DeliverTo(Actor* pActor, uint32 uiTargetLaborId, uint32 uiCallbackStepSeq, Targs&&... args);
+
+    template<typename ...Targs>
+    static bool DeliverReply(Actor* pActor, std::shared_ptr<SocketChannel> pChannel, uint32 uiPeerStepSeq, Targs&&... args);
 
     template <typename ...Targs>
-    static bool SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    static bool SendWithoutOption(Actor* pActor, const std::string& strIdentify, Targs&&... args);
 
     template <typename ...Targs>
-    static bool SendTo(Actor* pActor, const std::string& strHost, int iPort, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    static bool SendTo(Actor* pActor, const std::string& strIdentify, const ChannelOption& stOption, Targs&&... args);
 
     template <typename ...Targs>
-    static bool SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strHost, int iPort, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    static bool SendWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, Targs&&... args);
 
     template <typename ...Targs>
-    static bool SendRoundRobin(Actor* pActor, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    static bool SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, const ChannelOption& stOption, Targs&&... args);
 
     template <typename ...Targs>
-    static bool SendRoundRobin(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    static bool SendWithoutOption(Actor* pActor, const std::string& strHost, int iPort, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendTo(Actor* pActor, const std::string& strHost, int iPort, const ChannelOption& stOption, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strHost, int iPort, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strHost, int iPort, const ChannelOption& stOption, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendRoundRobinWithoutOption(Actor* pActor, const std::string& strNodeType, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendRoundRobin(Actor* pActor, const std::string& strNodeType, const ChannelOption& stOption, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendRoundRobinWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendRoundRobin(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, const ChannelOption& stOption, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendOrientedWithoutOption(Actor* pActor, const std::string& strNodeType,
+            uint32 uiFactor, Targs&&... args);
 
     template <typename ...Targs>
     static bool SendOriented(Actor* pActor, const std::string& strNodeType,
-            bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args);
+            uint32 uiFactor, const ChannelOption& stOption, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendOrientedWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq,
+            const std::string& strNodeType, uint32 uiFactor, Targs&&... args);
 
     template <typename ...Targs>
     static bool SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType,
-            bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args);
+            uint32 uiFactor, const ChannelOption& stOption, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendOrientedWithoutOption(Actor* pActor, const std::string& strNodeType,
+            const std::string& strFactor, Targs&&... args);
 
     template <typename ...Targs>
     static bool SendOriented(Actor* pActor, const std::string& strNodeType,
-            bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args);
+            const std::string& strFactor, const ChannelOption& stOption, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool SendOrientedWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType,
+            const std::string& strFactor, Targs&&... args);
 
     template <typename ...Targs>
     static bool SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType,
-            bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args);
+            const std::string& strFactor, const ChannelOption& stOption, Targs&&... args);
 
     template <typename ...Targs>
-    static bool Broadcast(Actor* pActor, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    static bool BroadcastWithoutOption(Actor* pActor, const std::string& strNodeType, Targs&&... args);
 
     template <typename ...Targs>
-    static bool Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    static bool Broadcast(Actor* pActor, const std::string& strNodeType, const ChannelOption& stOption, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool BroadcastWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, Targs&&... args);
+
+    template <typename ...Targs>
+    static bool Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, const ChannelOption& stOption, Targs&&... args);
 
     template <typename ...Targs>
     static uint32 SendToSelf(Actor* pActor, Targs&&... args);
@@ -116,7 +167,7 @@ public:
     template<typename ...Targs>
     static bool OnResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, uint32 uiStreamId, E_CODEC_STATUS eCodecStatus, Targs&&... args);
 
-    // SelfChannel response, SpecChannel response
+    // SelfChannel response,  SpecChannel response
     template<typename ...Targs>
     static bool OnResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel, uint32 uiStepSeq, Targs&&... args);
 
@@ -141,8 +192,20 @@ public:
 
 protected:
     template <typename ...Targs>
-    static bool AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, const std::string& strHost,
-            int iPort, int iRemoteWorkerIndex, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args);
+    static bool AutoSendWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, Targs&&... args);
+    template <typename ...Targs>
+    static bool AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq,
+            const std::string& strHost, int iPort, const ChannelOption& stOption, Targs&&... args);
+    template <typename ...Targs>
+    static bool AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq,
+            const std::string& strIdentify, const ChannelOption& stOption, Targs&&... args);
+    template <typename ...Targs>
+    static bool AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq,
+            const std::string& strIdentify, const std::string& strHost, int iPort,
+            int iRemoteWorkerIndex, const ChannelOption& stOption, Targs&&... args);
+    static std::shared_ptr<SocketChannel> NewSocketChannel(Dispatcher* pDispatcher, const ChannelOption& stOption,
+            const std::string& strIdentify, const std::string& strHost, int iPort, int iRemoteWorkerIndex);
+    static bool SplitIdentify(const std::string& strIdentify, std::string& strHost, int& iPort, int& iWorkerIndex, std::string& strError);
     static in_addr_t inet_addr(const char* text, uint32 len);
 };
 
@@ -215,7 +278,7 @@ bool IO<T>::SendResponse(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel>
         LOG4_TRACE_DISPATCH("CODEC_UNKNOW is invalid, channel had not been init?");
         return(false);
     }
-    if (pChannel->GetCodecType() == CODEC_DIRECT) // self channel
+    if (pChannel->GetCodecType() == CODEC_DIRECT)   // self channel
     {
         auto pSelfChannel = std::dynamic_pointer_cast<SelfChannel>(pChannel);
         if (pSelfChannel == nullptr)
@@ -397,6 +460,87 @@ bool IO<T>::SendRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_p
 }
 
 template<typename T>
+std::shared_ptr<SocketChannel> IO<T>::ApplySocketChannel(Actor* pActor, const ChannelOption& stOption, const std::string& strIdentify)
+{
+    if (pActor == nullptr)
+    {
+        return(nullptr);
+    }
+    else
+    {
+        std::string strError;
+        std::string strHost;
+        int iPort = 0;
+        int iRemoteWorkerIndex = -1;
+        if (!SplitIdentify(strIdentify, strHost, iPort, iRemoteWorkerIndex, strError))
+        {
+            pActor->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "%s", strError.c_str());
+            return(nullptr);
+        }
+        auto pDispatcher = pActor->m_pLabor->GetDispatcher();
+        auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(strIdentify);
+        if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+        {
+            return(NewSocketChannel(pDispatcher, stOption, strIdentify, strHost, iPort, iRemoteWorkerIndex));
+        }
+        else
+        {
+            if (named_iter->second.empty())
+            {
+                return(NewSocketChannel(pDispatcher, stOption, strIdentify, strHost, iPort, iRemoteWorkerIndex));
+            }
+            else
+            {
+                auto channel_iter = named_iter->second.begin();
+                auto pChannel = *channel_iter;
+                if (!pChannel->IsPipeline())
+                {
+                    named_iter->second.erase(channel_iter);
+                }
+                return(pChannel);
+            }
+        }
+    }
+}
+
+template<typename T>
+std::shared_ptr<SocketChannel> IO<T>::ApplySocketChannel(Actor* pActor, const ChannelOption& stOption, const std::string& strHost, int iPort)
+{
+    if (pActor == nullptr)
+    {
+        return(nullptr);
+    }
+    else
+    {
+        std::ostringstream ossIdentify;
+        ossIdentify << strHost << ":" << iPort;
+        auto pDispatcher = pActor->m_pLabor->GetDispatcher();
+        auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(ossIdentify.str());
+        if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+        {
+            return(NewSocketChannel(pDispatcher, stOption, ossIdentify.str(), strHost, iPort, -1));
+        }
+        else
+        {
+            if (named_iter->second.empty())
+            {
+                return(NewSocketChannel(pDispatcher, stOption, ossIdentify.str(), strHost, iPort, -1));
+            }
+            else
+            {
+                auto channel_iter = named_iter->second.begin();
+                auto pChannel = *channel_iter;
+                if (!pChannel->IsPipeline())
+                {
+                    named_iter->second.erase(channel_iter);
+                }
+                return(pChannel);
+            }
+        }
+    }
+}
+
+template<typename T>
 template<typename ...Targs>
 bool IO<T>::TransmitTo(Actor* pActor, uint32 uiTargetLaborId, uint32 uiCallbackStepSeq, Targs&&... args)
 {
@@ -412,7 +556,57 @@ bool IO<T>::TransmitTo(Actor* pActor, uint32 uiTargetLaborId, uint32 uiCallbackS
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::SendTo(Actor* pActor, const std::string& strIdentify, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool IO<T>::DeliverTo(Actor* pActor, uint32 uiTargetLaborId, uint32 uiCallbackStepSeq, Targs&&... args)
+{
+    return(TransmitTo(pActor, uiTargetLaborId, uiCallbackStepSeq, std::forward<Targs>(args)...));
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::DeliverReply(Actor* pActor, std::shared_ptr<SocketChannel> pChannel, uint32 uiPeerStepSeq, Targs&&... args)
+{
+    if (uiPeerStepSeq == 0)
+    {
+        pActor->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
+               "no peer step seq for response");
+        return(false);
+    }
+    int iResult = T::Write(pChannel, 0, uiPeerStepSeq, std::forward<Targs>(args)...);
+    if (ERR_OK == iResult)
+    {
+        return(true);
+    }
+    pActor->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
+            "spec channel error %d", iResult);
+    return(false);
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendWithoutOption(Actor* pActor, const std::string& strIdentify, Targs&&... args)
+{
+    if (pActor == nullptr)
+    {
+        return(false);
+    }
+    else
+    {
+        if (pActor->WantResponse())
+        {
+            return(SendWithoutOption(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
+                    strIdentify, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(SendWithoutOption(pActor->m_pLabor->GetDispatcher(), 0,
+                    strIdentify, std::forward<Targs>(args)...));
+        }
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendTo(Actor* pActor, const std::string& strIdentify, const ChannelOption& stOption, Targs&&... args)
 {
     if (pActor == nullptr)
     {
@@ -423,100 +617,40 @@ bool IO<T>::SendTo(Actor* pActor, const std::string& strIdentify, int iSocketTyp
         if (pActor->WantResponse())
         {
             return(SendTo(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
-                    strIdentify, iSocketType, bWithSsl, bPipeline,
-                    std::forward<Targs>(args)...));
+                    strIdentify, stOption, std::forward<Targs>(args)...));
         }
         else
         {
             return(SendTo(pActor->m_pLabor->GetDispatcher(), 0,
-                    strIdentify, iSocketType, bWithSsl, bPipeline,
-                    std::forward<Targs>(args)...));
+                    strIdentify, stOption, std::forward<Targs>(args)...));
         }
     }
 }
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool IO<T>::SendWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, Targs&&... args)
 {
     LOG4_TRACE_DISPATCH("identify: %s", strIdentify.c_str());
-    // 将strIdentify分割的功能只在此SendTo()函数内两处调用，定义为Dispatcher的成员函数语义上不太合适，故定义lambda表达式
-    auto split = [](const std::string& strIdentify, std::string& strHost, int& iPort, int& iWorkerIndex, std::string& strError)->bool
-    {
-        size_t iPosIpPortSeparator = strIdentify.rfind(':');
-        size_t iPosPortWorkerIndexSeparator = strIdentify.rfind('.');
-        if (iPosIpPortSeparator == std::string::npos)
-        {
-            return(false);
-        }
-        strHost = strIdentify.substr(0, iPosIpPortSeparator);
-        std::string strPort;
-        if (iPosPortWorkerIndexSeparator != std::string::npos && iPosPortWorkerIndexSeparator > iPosIpPortSeparator)
-        {
-            strPort = strIdentify.substr(iPosIpPortSeparator + 1, iPosPortWorkerIndexSeparator - (iPosIpPortSeparator + 1));
-            iPort = atoi(strPort.c_str());
-            if (iPort == 0)
-            {
-                return(false);
-            }
-            std::string strWorkerIndex = strIdentify.substr(iPosPortWorkerIndexSeparator + 1, std::string::npos);
-            if (strWorkerIndex.size() > 0)
-            {
-                iWorkerIndex = atoi(strWorkerIndex.c_str());
-                if (iWorkerIndex > 200)
-                {
-                    strError = "worker index must smaller than 200";
-                    return(false);
-                }
-            }
-        }
-        else
-        {
-            strPort = strIdentify.substr(iPosIpPortSeparator + 1, std::string::npos);
-            iPort = atoi(strPort.c_str());
-            if (iPort == 0)
-            {
-                return(false);
-            }
-        }
-        return(true);
-    };
 
     auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
     {
         LOG4_TRACE_DISPATCH("no channel match %s.", strIdentify.c_str());
-        std::string strError;
-        std::string strHost;
-        int iPort = 0;
-        int iWorkerIndex = -1;
-        if (!split(strIdentify, strHost, iPort, iWorkerIndex, strError))
-        {
-            pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "%s", strError.c_str());
-            return(false);
-        }
-        return(AutoSend(pDispatcher, uiStepSeq, strIdentify, strHost, iPort, iWorkerIndex, iSocketType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        return(AutoSendWithoutOption(pDispatcher, uiStepSeq, strIdentify, std::forward<Targs>(args)...));
     }
     else
     {
         if (named_iter->second.empty())
         {
-            std::string strError;
-            std::string strHost;
-            int iPort = 0;
-            int iWorkerIndex = -1;
-            if (!split(strIdentify, strHost, iPort, iWorkerIndex, strError))
-            {
-                pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "%s", strError.c_str());
-                return(false);
-            }
-            return(AutoSend(pDispatcher, uiStepSeq, strIdentify, strHost, iPort, iWorkerIndex, iSocketType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            return(AutoSendWithoutOption(pDispatcher, uiStepSeq, strIdentify, std::forward<Targs>(args)...));
         }
         else
         {
             auto channel_iter = named_iter->second.begin();
-            bool bResult = SendRequest(pDispatcher, uiStepSeq, (*channel_iter), std::forward<Targs>(args)...);
-            if (!bPipeline && bResult)
+            auto pChannel = *channel_iter;
+            bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
+            if (!pChannel->IsPipeline() && bResult)
             {
                 named_iter->second.erase(channel_iter);
             }
@@ -527,7 +661,62 @@ bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string&
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::SendTo(Actor* pActor, const std::string& strHost, int iPort, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, const ChannelOption& stOption, Targs&&... args)
+{
+    LOG4_TRACE_DISPATCH("identify: %s", strIdentify.c_str());
+
+    auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(strIdentify);
+    if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+    {
+        LOG4_TRACE_DISPATCH("no channel match %s.", strIdentify.c_str());
+        return(AutoSend(pDispatcher, uiStepSeq, strIdentify, stOption, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        if (named_iter->second.empty())
+        {
+            return(AutoSend(pDispatcher, uiStepSeq, strIdentify, stOption, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            auto channel_iter = named_iter->second.begin();
+            auto pChannel = *channel_iter;
+            bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
+            if (!pChannel->IsPipeline() && bResult)
+            {
+                named_iter->second.erase(channel_iter);
+            }
+            return(bResult);
+        }
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendWithoutOption(Actor* pActor, const std::string& strHost, int iPort, Targs&&... args)
+{
+    if (pActor == nullptr)
+    {
+        return(false);
+    }
+    else
+    {
+        if (pActor->WantResponse())
+        {
+            return(SendWithoutOption(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(), strHost, iPort,
+                    std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(SendWithoutOption(pActor->m_pLabor->GetDispatcher(), 0, strHost, iPort,
+                    std::forward<Targs>(args)...));
+        }
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendTo(Actor* pActor, const std::string& strHost, int iPort, const ChannelOption& stOption, Targs&&... args)
 {
     if (pActor == nullptr)
     {
@@ -538,21 +727,19 @@ bool IO<T>::SendTo(Actor* pActor, const std::string& strHost, int iPort, int iSo
         if (pActor->WantResponse())
         {
             return(SendTo(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
-                    strHost, iPort, iSocketType, bWithSsl, bPipeline,
-                    std::forward<Targs>(args)...));
+                    strHost, iPort, stOption, std::forward<Targs>(args)...));
         }
         else
         {
             return(SendTo(pActor->m_pLabor->GetDispatcher(), 0,
-                    strHost, iPort, iSocketType, bWithSsl, bPipeline,
-                    std::forward<Targs>(args)...));
+                    strHost, iPort, stOption, std::forward<Targs>(args)...));
         }
     }
 }
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strHost, int iPort, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool IO<T>::SendWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strHost, int iPort, Targs&&... args)
 {
     pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "host %s port %d", strHost.c_str(), iPort);
     std::ostringstream ossIdentify;
@@ -561,17 +748,18 @@ bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string&
     if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
     {
         LOG4_TRACE_DISPATCH("no channel match %s.", ossIdentify.str().c_str());
-        return(AutoSend(pDispatcher, uiStepSeq, ossIdentify.str(), strHost, iPort, 0, iSocketType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        return(AutoSendWithoutOption(pDispatcher, uiStepSeq, strHost, iPort, std::forward<Targs>(args)...));
     }
     else
     {
         auto channel_iter = named_iter->second.begin();
         if (channel_iter == named_iter->second.end())
         {
-            return(AutoSend(pDispatcher, uiStepSeq, ossIdentify.str(), strHost, iPort, 0, iSocketType, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            return(AutoSendWithoutOption(pDispatcher, uiStepSeq, strHost, iPort, std::forward<Targs>(args)...));
         }
-        bool bResult = SendRequest(pDispatcher, uiStepSeq, (*channel_iter), std::forward<Targs>(args)...);
-        if (!bPipeline && bResult)
+        auto pChannel = *channel_iter;
+        bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
+        if (!pChannel->IsPipeline() && bResult)
         {
             named_iter->second.erase(channel_iter);
         }
@@ -581,7 +769,37 @@ bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string&
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::SendRoundRobin(Actor* pActor, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strHost, int iPort, const ChannelOption& stOption, Targs&&... args)
+{
+    pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "host %s port %d", strHost.c_str(), iPort);
+    std::ostringstream ossIdentify;
+    ossIdentify << strHost << ":" << iPort;
+    auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(ossIdentify.str());
+    if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+    {
+        LOG4_TRACE_DISPATCH("no channel match %s.", ossIdentify.str().c_str());
+        return(AutoSend(pDispatcher, uiStepSeq, strHost, iPort, stOption, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        auto channel_iter = named_iter->second.begin();
+        if (channel_iter == named_iter->second.end())
+        {
+            return(AutoSend(pDispatcher, uiStepSeq, strHost, iPort, stOption, std::forward<Targs>(args)...));
+        }
+        auto pChannel = *channel_iter;
+        bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
+        if (!pChannel->IsPipeline() && bResult)
+        {
+            named_iter->second.erase(channel_iter);
+        }
+        return(bResult);
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendRoundRobinWithoutOption(Actor* pActor, const std::string& strNodeType, Targs&&... args)
 {
     if (pActor == nullptr)
     {
@@ -591,22 +809,43 @@ bool IO<T>::SendRoundRobin(Actor* pActor, const std::string& strNodeType, bool b
     {
         if (pActor->WantResponse())
         {
-            return(SendRoundRobin(pActor->m_pLabor->GetDispatcher(),
-                    pActor->GetSequence(), strNodeType, bWithSsl, bPipeline,
-                    std::forward<Targs>(args)...));
+            return(SendRoundRobinWithoutOption(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
+                    strNodeType, std::forward<Targs>(args)...));
         }
         else
         {
-            return(SendRoundRobin(pActor->m_pLabor->GetDispatcher(),
-                    0, strNodeType, bWithSsl, bPipeline,
-                    std::forward<Targs>(args)...));
+            return(SendRoundRobinWithoutOption(pActor->m_pLabor->GetDispatcher(), 0,
+                    strNodeType, std::forward<Targs>(args)...));
         }
     }
 }
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::SendRoundRobin(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool IO<T>::SendRoundRobin(Actor* pActor, const std::string& strNodeType, const ChannelOption& stOption, Targs&&... args)
+{
+    if (pActor == nullptr)
+    {
+        return(false);
+    }
+    else
+    {
+        if (pActor->WantResponse())
+        {
+            return(SendRoundRobin(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
+                    strNodeType, stOption, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(SendRoundRobin(pActor->m_pLabor->GetDispatcher(), 0,
+                    strNodeType, stOption, std::forward<Targs>(args)...));
+        }
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendRoundRobinWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, Targs&&... args)
 {
     LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
@@ -614,18 +853,36 @@ bool IO<T>::SendRoundRobin(Dispatcher* pDispatcher, uint32 uiStepSeq, const std:
     {
         pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
                 "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
-        SendTo(pDispatcher, 0, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline);
+        SendWithoutOption(pDispatcher, 0, strOnlineNode);
     }
     if (pDispatcher->m_pSessionNode->GetNode(strNodeType, strOnlineNode))
     {
-        return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        auto pChannelOption = pDispatcher->GetChannelOption(strNodeType);
+        if (pChannelOption == nullptr)
+        {
+            ChannelOption stOption;
+            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, *(pChannelOption.get()), std::forward<Targs>(args)...));
+        }
     }
     else
     {
         LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
         if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
         {
-            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            auto pChannelOption = pDispatcher->GetChannelOption(strNodeType);
+            if (pChannelOption == nullptr)
+            {
+                ChannelOption stOption;
+                return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+            }
+            else
+            {
+                return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, *(pChannelOption.get()), std::forward<Targs>(args)...));
+            }
         }
         LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
@@ -634,8 +891,36 @@ bool IO<T>::SendRoundRobin(Dispatcher* pDispatcher, uint32 uiStepSeq, const std:
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::SendOriented(Actor* pActor, const std::string& strNodeType,
-        bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args)
+bool IO<T>::SendRoundRobin(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, const ChannelOption& stOption, Targs&&... args)
+{
+    LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
+    std::string strOnlineNode;
+    if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
+    {
+        pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
+                "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
+        SendWithoutOption(pDispatcher, 0, strOnlineNode);
+    }
+    if (pDispatcher->m_pSessionNode->GetNode(strNodeType, strOnlineNode))
+    {
+        return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+        if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
+        {
+            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+        }
+        LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
+        return(false);
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendOrientedWithoutOption(Actor* pActor, const std::string& strNodeType,
+        uint32 uiFactor, Targs&&... args)
 {
     if (pActor == nullptr)
     {
@@ -645,42 +930,82 @@ bool IO<T>::SendOriented(Actor* pActor, const std::string& strNodeType,
     {
         if (pActor->WantResponse())
         {
-            return(SendOriented(pActor->m_pLabor->GetDispatcher(),
-                    pActor->GetSequence(), strNodeType, bWithSsl, bPipeline, uiFactor,
-                    std::forward<Targs>(args)...));
+            return(SendOrientedWithoutOption(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
+                    strNodeType, uiFactor, std::forward<Targs>(args)...));
         }
         else
         {
-            return(SendOriented(pActor->m_pLabor->GetDispatcher(),
-                    0, strNodeType, bWithSsl, bPipeline, uiFactor,
-                    std::forward<Targs>(args)...));
+            return(SendOrientedWithoutOption(pActor->m_pLabor->GetDispatcher(), 0,
+                    strNodeType, uiFactor, std::forward<Targs>(args)...));
         }
     }
 }
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType,
-        bool bWithSsl, bool bPipeline, uint32 uiFactor, Targs&&... args)
+bool IO<T>::SendOriented(Actor* pActor, const std::string& strNodeType,
+        uint32 uiFactor, const ChannelOption& stOption, Targs&&... args)
+{
+    if (pActor == nullptr)
+    {
+        return(false);
+    }
+    else
+    {
+        if (pActor->WantResponse())
+        {
+            return(SendOriented(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
+                    strNodeType, uiFactor, stOption, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(SendOriented(pActor->m_pLabor->GetDispatcher(), 0,
+                    strNodeType, uiFactor, stOption, std::forward<Targs>(args)...));
+        }
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendOrientedWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType,
+        uint32 uiFactor, Targs&&... args)
 {
     LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
     if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
     {
         pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
-                "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
-        SendTo(pDispatcher, 0, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline);
+                        "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
+        SendWithoutOption(pDispatcher, 0, strOnlineNode);
     }
     if (pDispatcher->m_pSessionNode->GetNode(strNodeType, uiFactor, strOnlineNode))
     {
-        return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        auto pChannelOption = pDispatcher->GetChannelOption(strNodeType);
+        if (pChannelOption == nullptr)
+        {
+            ChannelOption stOption;
+            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, *(pChannelOption.get()), std::forward<Targs>(args)...));
+        }
     }
     else
     {
         LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
         if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
         {
-            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            auto pChannelOption = pDispatcher->GetChannelOption(strNodeType);
+            if (pChannelOption == nullptr)
+            {
+                ChannelOption stOption;
+                return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+            }
+            else
+            {
+                return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, *(pChannelOption.get()), std::forward<Targs>(args)...));
+            }
         }
         LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
@@ -689,53 +1014,27 @@ bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::s
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::SendOriented(Actor* pActor, const std::string& strNodeType,
-        bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args)
-{
-    if (pActor == nullptr)
-    {
-        return(false);
-    }
-    else
-    {
-        if (pActor->WantResponse())
-        {
-            return(SendOriented(pActor->m_pLabor->GetDispatcher(),
-                    pActor->GetSequence(), strNodeType, bWithSsl, bPipeline, strFactor,
-                    std::forward<Targs>(args)...));
-        }
-        else
-        {
-            return(SendOriented(pActor->m_pLabor->GetDispatcher(),
-                    0, strNodeType, bWithSsl, bPipeline, strFactor,
-                    std::forward<Targs>(args)...));
-        }
-    }
-}
-
-template<typename T>
-template<typename ...Targs>
-bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType,
-        bool bWithSsl, bool bPipeline, const std::string& strFactor, Targs&&... args)
+bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq,
+        const std::string& strNodeType, uint32 uiFactor, const ChannelOption& stOption, Targs&&... args)
 {
     LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
     std::string strOnlineNode;
     if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
     {
         pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
-                "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
-        SendTo(pDispatcher, 0, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline);
+                        "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
+        SendWithoutOption(pDispatcher, 0, strOnlineNode);
     }
-    if (pDispatcher->m_pSessionNode->GetNode(strNodeType, strFactor, strOnlineNode))
+    if (pDispatcher->m_pSessionNode->GetNode(strNodeType, uiFactor, strOnlineNode))
     {
-        return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+        return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
     }
     else
     {
         LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
         if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
         {
-            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...));
+            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
         }
         LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
         return(false);
@@ -744,7 +1043,8 @@ bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::s
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::Broadcast(Actor* pActor, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool IO<T>::SendOrientedWithoutOption(Actor* pActor, const std::string& strNodeType,
+        const std::string& strFactor, Targs&&... args)
 {
     if (pActor == nullptr)
     {
@@ -754,22 +1054,233 @@ bool IO<T>::Broadcast(Actor* pActor, const std::string& strNodeType, bool bWithS
     {
         if (pActor->WantResponse())
         {
-            return(Broadcast(pActor->m_pLabor->GetDispatcher(),
-                    pActor->GetSequence(), strNodeType, bWithSsl, bPipeline,
-                    std::forward<Targs>(args)...));
+            return(SendOrientedWithoutOption(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
+                    strNodeType, strFactor, std::forward<Targs>(args)...));
         }
         else
         {
-            return(Broadcast(pActor->m_pLabor->GetDispatcher(),
-                    0, strNodeType, bWithSsl, bPipeline,
-                    std::forward<Targs>(args)...));
+            return(SendOrientedWithoutOption(pActor->m_pLabor->GetDispatcher(), 0,
+                    strNodeType, strFactor, std::forward<Targs>(args)...));
         }
     }
 }
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool IO<T>::SendOriented(Actor* pActor, const std::string& strNodeType,
+        const std::string& strFactor, const ChannelOption& stOption, Targs&&... args)
+{
+    if (pActor == nullptr)
+    {
+        return(false);
+    }
+    else
+    {
+        if (pActor->WantResponse())
+        {
+            return(SendOriented(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
+                    strNodeType, strFactor, stOption, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(SendOriented(pActor->m_pLabor->GetDispatcher(), 0,
+                    strNodeType, strFactor, stOption, std::forward<Targs>(args)...));
+        }
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendOrientedWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType,
+        const std::string& strFactor, Targs&&... args)
+{
+    LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
+    std::string strOnlineNode;
+    if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
+    {
+        pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
+                        "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
+        SendWithoutOption(pDispatcher, 0, strOnlineNode);
+    }
+    if (pDispatcher->m_pSessionNode->GetNode(strNodeType, strFactor, strOnlineNode))
+    {
+        auto pChannelOption = pDispatcher->GetChannelOption(strNodeType);
+        if (pChannelOption == nullptr)
+        {
+            ChannelOption stOption;
+            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, *(pChannelOption.get()), std::forward<Targs>(args)...));
+        }
+    }
+    else
+    {
+        LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+        if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
+        {
+            auto pChannelOption = pDispatcher->GetChannelOption(strNodeType);
+            if (pChannelOption == nullptr)
+            {
+                ChannelOption stOption;
+                return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+            }
+            else
+            {
+                return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, *(pChannelOption.get()), std::forward<Targs>(args)...));
+            }
+        }
+        LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
+        return(false);
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::SendOriented(Dispatcher* pDispatcher, uint32 uiStepSeq,
+        const std::string& strNodeType, const std::string& strFactor, const ChannelOption& stOption, Targs&&... args)
+{
+    LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
+    std::string strOnlineNode;
+    if (pDispatcher->m_pSessionNode->NodeDetect(strNodeType, strOnlineNode))
+    {
+        pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
+                        "NodeDetect(%s, %s)", strNodeType.c_str(), strOnlineNode.c_str());
+        SendWithoutOption(pDispatcher, 0, strOnlineNode);
+    }
+    if (pDispatcher->m_pSessionNode->GetNode(strNodeType, strFactor, strOnlineNode))
+    {
+        return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+        if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
+        {
+            return(SendTo(pDispatcher, uiStepSeq, strOnlineNode, stOption, std::forward<Targs>(args)...));
+        }
+        LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
+        return(false);
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::BroadcastWithoutOption(Actor* pActor, const std::string& strNodeType, Targs&&... args)
+{
+    if (pActor == nullptr)
+    {
+        return(false);
+    }
+    else
+    {
+        if (pActor->WantResponse())
+        {
+            return(BroadcastWithoutOption(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
+                    strNodeType, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(BroadcastWithoutOption(pActor->m_pLabor->GetDispatcher(), 0,
+                    strNodeType, std::forward<Targs>(args)...));
+        }
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::Broadcast(Actor* pActor, const std::string& strNodeType, const ChannelOption& stOption, Targs&&... args)
+{
+    if (pActor == nullptr)
+    {
+        return(false);
+    }
+    else
+    {
+        if (pActor->WantResponse())
+        {
+            return(Broadcast(pActor->m_pLabor->GetDispatcher(), pActor->GetSequence(),
+                    strNodeType, stOption, std::forward<Targs>(args)...));
+        }
+        else
+        {
+            return(Broadcast(pActor->m_pLabor->GetDispatcher(), 0,
+                    strNodeType, stOption, std::forward<Targs>(args)...));
+        }
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::BroadcastWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, Targs&&... args)
+{
+    LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
+    std::set<std::string> setOnlineNodes;
+    if (pDispatcher->m_pSessionNode->GetNode(strNodeType, setOnlineNodes))
+    {
+        bool bSendResult = false;
+        auto pChannelOption = pDispatcher->GetChannelOption(strNodeType);
+        if (pChannelOption == nullptr)
+        {
+            ChannelOption stOption;
+            for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
+            {
+                bSendResult |= SendTo(pDispatcher, uiStepSeq, *node_iter, stOption, std::forward<Targs>(args)...);
+            }
+        }
+        else
+        {
+            for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
+            {
+                bSendResult |= SendTo(pDispatcher, uiStepSeq, *node_iter, *(pChannelOption.get()), std::forward<Targs>(args)...);
+            }
+        }
+        return(bSendResult);
+    }
+    else
+    {
+        if ("BEACON" == strNodeType)
+        {
+            pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "no beacon config.");
+        }
+        else
+        {
+            LOG4_TRACE_DISPATCH("node type \"%s\" not found, go to SplitAddAndGetNode.", strNodeType.c_str());
+            std::string strOnlineNode;
+            if (pDispatcher->m_pSessionNode->SplitAddAndGetNode(strNodeType, strOnlineNode))
+            {
+                if (pDispatcher->m_pSessionNode->GetNode(strNodeType, setOnlineNodes))
+                {
+                    bool bSendResult = false;
+                    auto pChannelOption = pDispatcher->GetChannelOption(strNodeType);
+                    if (pChannelOption == nullptr)
+                    {
+                        ChannelOption stOption;
+                        for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
+                        {
+                            bSendResult |= SendTo(pDispatcher, uiStepSeq, *node_iter, stOption, std::forward<Targs>(args)...);
+                        }
+                    }
+                    else
+                    {
+                        for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
+                        {
+                            bSendResult |= SendTo(pDispatcher, uiStepSeq, *node_iter, *(pChannelOption.get()), std::forward<Targs>(args)...);
+                        }
+                    }
+                    return(bSendResult);
+                }
+            }
+            LOG4_TRACE_DISPATCH("no online node match node_type \"%s\"", strNodeType.c_str());
+        }
+        return(false);
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strNodeType, const ChannelOption& stOption, Targs&&... args)
 {
     LOG4_TRACE_DISPATCH("node_type: %s", strNodeType.c_str());
     std::set<std::string> setOnlineNodes;
@@ -778,7 +1289,7 @@ bool IO<T>::Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::stri
         bool bSendResult = false;
         for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
         {
-            bSendResult |= SendTo(pDispatcher, uiStepSeq, *node_iter, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...);
+            bSendResult |= SendTo(pDispatcher, uiStepSeq, *node_iter, stOption, std::forward<Targs>(args)...);
         }
         return(bSendResult);
     }
@@ -799,7 +1310,7 @@ bool IO<T>::Broadcast(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::stri
                     bool bSendResult = false;
                     for (auto node_iter = setOnlineNodes.begin(); node_iter != setOnlineNodes.end(); ++node_iter)
                     {
-                        bSendResult |= SendTo(pDispatcher, uiStepSeq, *node_iter, SOCKET_STREAM, bWithSsl, bPipeline, std::forward<Targs>(args)...);
+                        bSendResult |= SendTo(pDispatcher, uiStepSeq, *node_iter, stOption, std::forward<Targs>(args)...);
                     }
                     return(bSendResult);
                 }
@@ -825,93 +1336,72 @@ uint32 IO<T>::SendToSelf(Actor* pActor, Targs&&... args)
 
 template<typename T>
 template<typename ...Targs>
-bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, const std::string& strHost,
-        int iPort, int iRemoteWorkerIndex, int iSocketType, bool bWithSsl, bool bPipeline, Targs&&... args)
+bool IO<T>::AutoSendWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, Targs&&... args)
 {
-    LOG4_TRACE_DISPATCH("identify %s, host %s port %d, remote_worker_index %d",
-            strIdentify.c_str(), strHost.c_str(), iPort, iRemoteWorkerIndex);
-    struct addrinfo stAddrHints;
-    struct addrinfo* pAddrResult = nullptr;
-    struct addrinfo* pAddrCurrent = nullptr;
-    auto pSessionAddr = std::static_pointer_cast<TimerAddrinfo>(pDispatcher->m_pLabor->GetActorBuilder()->GetSession(strIdentify));
-    if (pSessionAddr != nullptr)
+    auto pChannelOption = pDispatcher->GetChannelOption(strIdentify);
+    if (pChannelOption == nullptr)
     {
-        pAddrResult = pSessionAddr->GetAddrinfo();
+        ChannelOption stOption;
+        return(AutoSend(pDispatcher, uiStepSeq, strIdentify, stOption, std::forward<Targs>(args)...));
     }
-    if (pAddrResult == nullptr)
+    else
     {
-        memset(&stAddrHints, 0, sizeof(struct addrinfo));
-        stAddrHints.ai_family = AF_UNSPEC;
-        stAddrHints.ai_socktype = iSocketType;
-        stAddrHints.ai_protocol = IPPROTO_IP;
-        if (inet_addr(strHost.data(), strHost.length()) != 0)
-        {
-            stAddrHints.ai_flags |= (AI_NUMERICHOST | AI_NUMERICSERV);
-        }
-        LOG4_TRACE_DISPATCH("get addrinfo for %s", strIdentify.c_str());
-        int iCode = getaddrinfo(strHost.c_str(), std::to_string(iPort).c_str(), &stAddrHints, &pAddrResult);
-        if (0 != iCode)
-        {
-            LOG4_TRACE_DISPATCH("getaddrinfo(\"%s\", \"%d\") error %d: %s",
-                    strHost.c_str(), iPort, iCode, gai_strerror(iCode));
-            return(false);
-        }
-        if (pSessionAddr == nullptr)
-        {
-            pSessionAddr = std::static_pointer_cast<TimerAddrinfo>(
-                    pDispatcher->m_pLabor->GetActorBuilder()->MakeSharedSession(nullptr, "neb::TimerAddrinfo", strIdentify));
-        }
-        if (pSessionAddr != nullptr)
-        {
-            pSessionAddr->MigrateAddrinfo(pAddrResult);
-        }
+        return(AutoSend(pDispatcher, uiStepSeq, strIdentify, (*pChannelOption.get()), std::forward<Targs>(args)...));
     }
-    int iFd = -1;
-    for (pAddrCurrent = pAddrResult;
-            pAddrCurrent != NULL; pAddrCurrent = pAddrCurrent->ai_next)
-    {
-        iFd = socket(pAddrCurrent->ai_family,
-                pAddrCurrent->ai_socktype, pAddrCurrent->ai_protocol);
-        if (iFd == -1)
-        {
-            continue;
-        }
+}
 
-        break;
-    }
-
-    x_sock_set_block(iFd, 0);
-    int nREUSEADDR = 1;
-    int iKeepAlive = 1;
-    int iKeepIdle = 60;
-    int iKeepInterval = 5;
-    int iKeepCount = 3;
-    int iTcpNoDelay = 1;
-    int iTcpQuickAck = 1;
-    setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
-    setsockopt(iFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive));
-    setsockopt(iFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle));
-    setsockopt(iFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval));
-    setsockopt(iFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount));
-    setsockopt(iFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay));
-    setsockopt(iFd, IPPROTO_TCP, TCP_QUICKACK, (void*)&iTcpQuickAck, sizeof(iTcpQuickAck));
-    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(pDispatcher, iFd, true, bWithSsl);
-    if (nullptr != pChannel)
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq,
+        const std::string& strHost, int iPort, const ChannelOption& stOption, Targs&&... args)
+{
+    std::ostringstream ossIdentify;
+    ossIdentify << strHost << ":" << iPort;
+    auto pChannelOption = pDispatcher->GetChannelOption(ossIdentify.str());
+    if (pChannelOption == nullptr)
     {
-        connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
-        if (pSessionAddr != nullptr && pAddrResult != pSessionAddr->GetAddrinfo())
-        {
-            freeaddrinfo(pAddrResult);
-        }
-        pDispatcher->m_pLabor->IoStatAddConnection(IO_STAT_UPSTREAM_NEW_CONNECTION);
-        ev_tstamp dIoTimeout = (pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection > 0)
-            ? pDispatcher->m_pLabor->GetNodeInfo().dConnectionProtection : pDispatcher->m_pLabor->GetNodeInfo().dIoTimeout;
-        pDispatcher->AddIoTimeout(pChannel, dIoTimeout);
-        pDispatcher->AddIoReadEvent(pChannel);
-        pDispatcher->AddIoWriteEvent(pChannel);
-        std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetIdentify(strIdentify);
-        std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetRemoteAddr(strHost);
-        std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetPipeline(bPipeline);
+        ChannelOption stOption;
+        return(AutoSend(pDispatcher, uiStepSeq, ossIdentify.str(),
+                strHost, iPort, -1, stOption, std::forward<Targs>(args)...));
+    }
+    else
+    {
+        return(AutoSend(pDispatcher, uiStepSeq, ossIdentify.str(),
+                strHost, iPort, -1, (*pChannelOption.get()), std::forward<Targs>(args)...));
+    }
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq,
+        const std::string& strIdentify, const ChannelOption& stOption, Targs&&... args)
+{
+    std::string strError;
+    std::string strHost;
+    int iPort = 0;
+    int iRemoteWorkerIndex = -1;
+    if (!SplitIdentify(strIdentify, strHost, iPort, iRemoteWorkerIndex, strError))
+    {
+        pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__, "%s", strError.c_str());
+        return(false);
+    }
+    return(AutoSend(pDispatcher, uiStepSeq, strIdentify,
+            strHost, iPort, iRemoteWorkerIndex, stOption, std::forward<Targs>(args)...));
+}
+
+template<typename T>
+template<typename ...Targs>
+bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq,
+        const std::string& strIdentify, const std::string& strHost, int iPort,
+        int iRemoteWorkerIndex, const ChannelOption& stOption, Targs&&... args)
+{
+    std::shared_ptr<SocketChannel> pChannel = NewSocketChannel(pDispatcher, stOption, strIdentify, strHost, iPort, iRemoteWorkerIndex);
+    if (nullptr == pChannel)
+    {
+        return(false);
+    }
+    else
+    {
         E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
         if (pChannel->WithSsl())
         {
@@ -944,20 +1434,124 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::strin
         {
             pDispatcher->DiscardSocketChannel(pChannel);
         }
+        return(true);
+    }
+}
+
+template<typename T>
+std::shared_ptr<SocketChannel> IO<T>::NewSocketChannel(Dispatcher* pDispatcher, const ChannelOption& stOption,
+        const std::string& strIdentify, const std::string& strHost, int iPort, int iRemoteWorkerIndex)
+{
+    if (pDispatcher->GetChannelOption(strIdentify) == nullptr)
+    {
+        pDispatcher->SetChannelOption(strIdentify, stOption);
+    }
+    struct addrinfo stAddrHints;
+    struct addrinfo* pAddrResult = nullptr;
+    struct addrinfo* pAddrCurrent = nullptr;
+    auto pSessionAddr = std::dynamic_pointer_cast<TimerAddrinfo>(pDispatcher->m_pLabor->GetActorBuilder()->GetSession(strIdentify));
+    if (pSessionAddr != nullptr)
+    {
+        pAddrResult = pSessionAddr->GetAddrinfo();
+    }
+    if (pAddrResult == nullptr)
+    {
+        memset(&stAddrHints, 0, sizeof(struct addrinfo));
+        stAddrHints.ai_family = AF_UNSPEC;
+        stAddrHints.ai_socktype = stOption.iSocketType;
+        stAddrHints.ai_protocol = IPPROTO_IP;
+        if (inet_addr(strHost.data(), strHost.length()) != 0)
+        {
+            stAddrHints.ai_flags |= (AI_NUMERICHOST | AI_NUMERICSERV);
+        }
+
+        LOG4_TRACE_DISPATCH("getaddrinfo for %s", strIdentify.c_str());
+        int iCode = getaddrinfo(strHost.c_str(), std::to_string(iPort).c_str(), &stAddrHints, &pAddrResult);
+        if (0 != iCode)
+        {
+            LOG4_TRACE_DISPATCH("getaddrinfo(\"%s\", \"%d\") error %d: %s",
+                    strHost.c_str(), iPort, iCode, gai_strerror(iCode));
+            return(nullptr);
+        }
+        if (pSessionAddr == nullptr)
+        {
+            pSessionAddr = std::dynamic_pointer_cast<TimerAddrinfo>(
+                    pDispatcher->m_pLabor->GetActorBuilder()->MakeSharedSession(nullptr, "neb::TimerAddrinfo", strIdentify));
+        }
+        if (pSessionAddr != nullptr)
+        {
+            pSessionAddr->MigrateAddrinfo(pAddrResult);
+        }
+    }
+    int iFd = -1;
+    for (pAddrCurrent = pAddrResult;
+            pAddrCurrent != NULL; pAddrCurrent = pAddrCurrent->ai_next)
+    {
+        iFd = socket(pAddrCurrent->ai_family,
+                pAddrCurrent->ai_socktype, pAddrCurrent->ai_protocol);
+        if (iFd == -1)
+        {
+            continue;
+        }
+
+        break;
+    }
+
+    /* No address succeeded */
+//    if (pAddrCurrent == NULL)
+//    {
+//        LOG4_TRACE_DISPATCH("Could not connect to \"%s:%d\"", strHost.c_str(), iPort);
+//        freeaddrinfo(pAddrResult);           /* No longer needed */
+//        return(false);
+//    }
+
+    x_sock_set_block(iFd, 0);
+    int nREUSEADDR = 1;
+    int iKeepAlive = 1;
+    int iKeepIdle = 60;
+    int iKeepInterval = 5;
+    int iKeepCount = 3;
+    int iTcpNoDelay = 1;
+    int iTcpQuickAck = 1;
+    setsockopt(iFd, SOL_SOCKET, SO_REUSEADDR, (const char*)&nREUSEADDR, sizeof(int));
+    setsockopt(iFd, SOL_SOCKET, SO_KEEPALIVE, (void*)&iKeepAlive, sizeof(iKeepAlive));
+    setsockopt(iFd, IPPROTO_TCP, TCP_KEEPIDLE, (void*) &iKeepIdle, sizeof(iKeepIdle));
+    setsockopt(iFd, IPPROTO_TCP, TCP_KEEPINTVL, (void *)&iKeepInterval, sizeof(iKeepInterval));
+    setsockopt(iFd, IPPROTO_TCP, TCP_KEEPCNT, (void*)&iKeepCount, sizeof (iKeepCount));
+    setsockopt(iFd, IPPROTO_TCP, TCP_NODELAY, (void*)&iTcpNoDelay, sizeof(iTcpNoDelay));
+    setsockopt(iFd, IPPROTO_TCP, TCP_QUICKACK, (void*)&iTcpQuickAck, sizeof(iTcpQuickAck));
+    std::shared_ptr<SocketChannel> pChannel = CreateSocketChannel(pDispatcher, iFd, true, stOption.bWithSsl);
+    if (nullptr != pChannel)
+    {
+        connect(iFd, pAddrCurrent->ai_addr, pAddrCurrent->ai_addrlen);
+        if (pSessionAddr != nullptr && pAddrResult != pSessionAddr->GetAddrinfo())
+        {
+            freeaddrinfo(pAddrResult);           /* No longer needed */
+        }
+        pDispatcher->m_pLabor->IoStatAddConnection(IO_STAT_UPSTREAM_NEW_CONNECTION);
+        ev_tstamp dIoTimeout = stOption.dKeepAlive;
+        pChannel->SetKeepAlive(dIoTimeout);
+        pDispatcher->AddIoTimeout(pChannel, dIoTimeout);
+        pDispatcher->AddIoReadEvent(pChannel);
+        pDispatcher->AddIoWriteEvent(pChannel);
+        std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetIdentify(strIdentify);
+        std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetRemoteAddr(strHost);
+        std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetPipeline(stOption.bPipeline);
+        pDispatcher->m_pLastActivityChannel = pChannel;
 
         std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
         std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetRemoteWorkerIndex(iRemoteWorkerIndex);
-        if (bPipeline)
+        if (stOption.bPipeline)
         {
             pDispatcher->AddNamedSocketChannel(strIdentify, pChannel);
         }
-        return(true);
+        return(pChannel);
     }
     else    // 没有足够资源分配给新连接，直接close掉
     {
         freeaddrinfo(pAddrResult);           /* No longer needed */
         close(iFd);
-        return(false);
+        return(nullptr);
     }
 }
 
@@ -1172,7 +1766,9 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::OnResponse(ActorBuilder* pBuilder, std::shared_ptr<SocketChannel> pChannel, uint32 uiStreamId, E_CODEC_STATUS eCodecStatus, Targs&&... args)
 {
+    LOG4_TRACE_BUILDER("stream id = %u, eCodecStatus = %d", uiStreamId, eCodecStatus);
     auto uiStepSeq = pChannel->PopStepSeq(uiStreamId, eCodecStatus);
+    LOG4_TRACE_BUILDER("stream id = %u, step seq = %u", uiStreamId, uiStepSeq);
     auto step_iter = pBuilder->m_mapCallbackStep.find(uiStepSeq);
     if (!pChannel->IsPipeline() && pChannel->PipelineIsEmpty())
     {
@@ -1180,9 +1776,7 @@ bool IO<T>::OnResponse(ActorBuilder* pBuilder, std::shared_ptr<SocketChannel> pC
     }
     if (step_iter == pBuilder->m_mapCallbackStep.end())
     {
-        pBuilder->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__,
-                "no callback for reply from %s!", pChannel->GetIdentify().c_str());
-        LOG4_TRACE_BUILDER("no callback for reply from %s, stream id %u, step seq %u",
+        LOG4_TRACE_BUILDER("no callback for reply from %s, stream id %u, step seq %u!",
                 pChannel->GetIdentify().c_str(), uiStreamId, uiStepSeq);
         return(false);
     }
@@ -1274,8 +1868,7 @@ std::shared_ptr<SocketChannel> IO<T>::CreateSocketChannel(Dispatcher* pDispatche
         if (pChannel != nullptr)
         {
             pDispatcher->m_mapSocketChannel.insert(std::make_pair(iFd, pChannel));
-            LOG4_TRACE_DISPATCH(
-                "new channel for fd %d with codec type %d", pChannel->GetFd(), pChannel->GetCodecType());
+            LOG4_TRACE_DISPATCH("new channel[%d] with codec type %d", pChannel->GetFd(), pChannel->GetCodecType());
         }
         return(pChannel);
     }
@@ -1285,6 +1878,48 @@ std::shared_ptr<SocketChannel> IO<T>::CreateSocketChannel(Dispatcher* pDispatche
         return(iter->second);
     }
 }
+
+template<typename T>
+bool IO<T>::SplitIdentify(const std::string& strIdentify, std::string& strHost, int& iPort, int& iWorkerIndex, std::string& strError)
+{
+    size_t iPosIpPortSeparator = strIdentify.rfind(':');
+    size_t iPosPortWorkerIndexSeparator = strIdentify.rfind('.');
+    if (iPosIpPortSeparator == std::string::npos)
+    {
+        return(false);
+    }
+    strHost = strIdentify.substr(0, iPosIpPortSeparator);
+    std::string strPort;
+    if (iPosPortWorkerIndexSeparator != std::string::npos && iPosPortWorkerIndexSeparator > iPosIpPortSeparator)
+    {
+        strPort = strIdentify.substr(iPosIpPortSeparator + 1, iPosPortWorkerIndexSeparator - (iPosIpPortSeparator + 1));
+        iPort = atoi(strPort.c_str());
+        if (iPort == 0)
+        {
+            return(false);
+        }
+        std::string strWorkerIndex = strIdentify.substr(iPosPortWorkerIndexSeparator + 1, std::string::npos);
+        if (strWorkerIndex.size() > 0)
+        {
+            iWorkerIndex = atoi(strWorkerIndex.c_str());
+            if (iWorkerIndex > 200)
+            {
+                strError = "worker index must smaller than 200";
+                return(false);
+            }
+        }
+    }
+    else
+    {
+        strPort = strIdentify.substr(iPosIpPortSeparator + 1, std::string::npos);
+        iPort = atoi(strPort.c_str());
+        if (iPort == 0)
+        {
+            return(false);
+        }
+    }
+    return(true);
+};
 
 } /* namespace neb */
 

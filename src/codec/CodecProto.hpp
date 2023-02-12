@@ -31,7 +31,6 @@ public:
     }
 
     // request
-    template<typename ...Targs>
     static int Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
     {
         return(CodecProto::Write(Type(), uiFromLabor, uiToLabor, uiFlags, uiStepSeq,
@@ -39,7 +38,6 @@ public:
     }
 
     // response
-    template<typename ...Targs>
     static int Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     {
         return(CodecProto::Write(Type(), pChannel, uiFlags, uiStepSeq, iCmd, uiSeq, std::move(const_cast<MsgBody&>(oMsgBody))));
@@ -55,10 +53,8 @@ protected:
     E_CODEC_STATUS ChannelSticky(const MsgHead& oMsgHead, const MsgBody& oMsgBody);
 
     // request
-    template<typename ...Targs>
     static int Write(uint32 uiCodecType, uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, MsgHead&& oMsgHead, MsgBody&& oMsgBody);
     // response
-    template<typename ...Targs>
     static int Write(uint32 uiCodecType, std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, int32 iCmd, uint32 uiSeq, MsgBody&& oMsgBody);
 
 private:
@@ -83,7 +79,6 @@ public:
     }
     
     // request
-    template<typename ...Targs>
     static int Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
     {
         return(CodecProto::Write(Type(), uiFromLabor, uiToLabor, uiFlags, uiStepSeq,
@@ -91,7 +86,6 @@ public:
     }
 
     // response
-    template<typename ...Targs>
     static int Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     {
         return(CodecProto::Write(Type(), pChannel, uiFlags, uiStepSeq, iCmd, uiSeq, std::move(const_cast<MsgBody&>(oMsgBody))));
@@ -116,7 +110,6 @@ public:
     }
     
     // request
-    template<typename ...Targs>
     static int Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const MsgHead& oMsgHead, const MsgBody& oMsgBody)
     {
         return(CodecProto::Write(Type(), uiFromLabor, uiToLabor, uiFlags, uiStepSeq,
@@ -124,69 +117,11 @@ public:
     }
 
     // response
-    template<typename ...Targs>
     static int Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
     {
         return(CodecProto::Write(Type(), pChannel, uiFlags, uiStepSeq, iCmd, uiSeq, std::move(const_cast<MsgBody&>(oMsgBody))));
     }
 };
-
-template<typename ...Targs>
-int CodecProto::Write(uint32 uiCodecType, uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, MsgHead&& oMsgHead, MsgBody&& oMsgBody)
-{
-    if (uiFromLabor == uiToLabor)
-    {
-        return(ERR_SPEC_CHANNEL_TARGET);
-    }
-    std::shared_ptr<SpecChannel<MsgBody, MsgHead>> pSpecChannel = nullptr;
-    auto pLaborShared = LaborShared::Instance();
-    auto pChannel = pLaborShared->GetSpecChannel(uiCodecType, uiFromLabor, uiToLabor);
-    if (pChannel == nullptr)
-    {
-        pSpecChannel = std::make_shared<SpecChannel<MsgBody, MsgHead>>(
-                uiFromLabor, uiToLabor, pLaborShared->GetSpecChannelQueueSize(), true);
-        if (pSpecChannel == nullptr)
-        {
-            return(ERR_SPEC_CHANNEL_CREATE);
-        }
-        pChannel = std::dynamic_pointer_cast<SocketChannel>(pSpecChannel);
-        auto pWatcher = pSpecChannel->MutableWatcher();
-        pWatcher->Set(pChannel, uiCodecType);
-        int iResult = pSpecChannel->Write(uiFlags, uiStepSeq, std::forward<MsgHead>(oMsgHead), std::forward<MsgBody>(oMsgBody));
-        if (iResult == ERR_OK)
-        {
-            return(pLaborShared->AddSpecChannel(uiCodecType, uiFromLabor, uiToLabor, pChannel));
-        }
-        return(iResult);
-    }
-    else
-    {
-        pSpecChannel = std::static_pointer_cast<SpecChannel<MsgBody, MsgHead>>(pChannel);
-        if (pSpecChannel == nullptr)
-        {
-            return(ERR_SPEC_CHANNEL_CAST);
-        }
-        int iResult = pSpecChannel->Write(uiFlags, uiStepSeq, std::forward<MsgHead>(oMsgHead), std::forward<MsgBody>(oMsgBody));
-        if (iResult == ERR_OK)
-        {
-            pLaborShared->GetDispatcher(uiToLabor)->AsyncSend(pSpecChannel->MutableWatcher()->MutableAsyncWatcher());
-        }
-        return(iResult);
-    }
-}
-
-template<typename ...Targs>
-int CodecProto::Write(uint32 uiCodecType, std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, int32 iCmd, uint32 uiSeq, MsgBody&& oMsgBody)
-{
-    uint32 uiFrom;
-    uint32 uiTo;
-    MsgHead oMsgHead;
-    oMsgHead.set_cmd(iCmd);
-    oMsgHead.set_seq(uiSeq);
-    std::static_pointer_cast<SpecChannel<MsgBody, MsgHead>>(pChannel)->GetEnds(uiFrom, uiTo);
-    return(Write(uiCodecType, uiTo, uiFrom, uiFlags, uiStepSeq, std::forward<MsgHead>(oMsgHead), std::forward<MsgBody>(oMsgBody)));
-}
-
 
 } /* namespace neb */
 
