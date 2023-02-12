@@ -28,11 +28,6 @@ ActorSender::~ActorSender()
 {
 }
 
-void ActorSender::SetAuth(Actor* pActor, const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword)
-{
-    pActor->m_pLabor->GetDispatcher()->SetAuth(strNodeType, strAuth, strPassword);
-}
-
 bool ActorSender::SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel)
 {
     return(IO<void>::Send(pChannel));
@@ -62,41 +57,45 @@ bool ActorSender::SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel,
 
 bool ActorSender::SendTo(Actor* pActor, const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
+    ChannelOption stOption;
+    stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pActor->GetTraceId());
-    return(IO<CodecNebula>::SendTo(pActor, strIdentify, SOCKET_STREAM, false, true, iCmd, uiSeq, oMsgBody));
+    return(IO<CodecNebula>::SendTo(pActor, strIdentify, stOption, iCmd, uiSeq, oMsgBody));
 }
 
 bool ActorSender::SendTo(Actor* pActor, const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq)
 {
-    bool bWithSsl = false;
-    bool bPipeline = false;
+    ChannelOption stOption;
     if (oHttpMsg.headers().find("x-trace-id") == oHttpMsg.headers().end())
     {
         (const_cast<HttpMsg&>(oHttpMsg)).mutable_headers()->insert({"x-trace-id", pActor->GetTraceId()});
     }
     if (oHttpMsg.http_major() >= 2)
     {
-        bPipeline = true;
+        stOption.bPipeline = true;
     }
     std::string strSchema = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(":"));
     std::transform(strSchema.begin(), strSchema.end(), strSchema.begin(), [](unsigned char c)->unsigned char {return std::tolower(c);});
     if (strSchema == std::string("https"))
     {
-        bWithSsl = true;
+        stOption.bWithSsl = true;
     }
     if (oHttpMsg.http_major() == 2)
     {
-        return(IO<CodecHttp2>::SendTo(pActor, strHost, iPort, bWithSsl, bPipeline, oHttpMsg));
+        return(IO<CodecHttp2>::SendTo(pActor, strHost, iPort, stOption, oHttpMsg));
     }
     else
     {
-        return(IO<CodecHttp>::SendTo(pActor, strHost, iPort, bWithSsl, bPipeline, oHttpMsg));
+        return(IO<CodecHttp>::SendTo(pActor, strHost, iPort, stOption, oHttpMsg));
     }
 }
 
 bool ActorSender::SendTo(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
-    return(IO<CodecResp>::SendTo(pActor, strIdentify, SOCKET_STREAM, bWithSsl, bPipeline, oRedisMsg));
+    ChannelOption stOption;
+    stOption.bPipeline = bPipeline;
+    stOption.bPipeline = bWithSsl;
+    return(IO<CodecResp>::SendTo(pActor, strIdentify, SOCKET_STREAM, stOption, oRedisMsg));
 }
 
 bool ActorSender::SendToCluster(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
@@ -106,45 +105,51 @@ bool ActorSender::SendToCluster(Actor* pActor, const std::string& strIdentify, c
 
 bool ActorSender::SendRoundRobin(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline)
 {
-    return(IO<CodecResp>::SendRoundRobin(pActor, strIdentify, bWithSsl, bPipeline, oRedisMsg));
+    ChannelOption stOption;
+    stOption.bPipeline = bPipeline;
+    stOption.bPipeline = bWithSsl;
+    return(IO<CodecResp>::SendRoundRobin(pActor, strIdentify, stOption, oRedisMsg));
 }
 
 bool ActorSender::SendTo(Actor* pActor, const std::string& strIdentify, const char* pRawData, uint32 uiRawDataSize, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
-    return(IO<CodecRaw>::SendTo(pActor, strIdentify, SOCKET_STREAM, bWithSsl, bPipeline, pRawData, uiRawDataSize));
-}
-
-bool ActorSender::SendTo(Actor* pActor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
-{
-    (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pActor->GetTraceId());
-    return(pActor->m_pLabor->GetDispatcher()->SendTo(iCmd, uiSeq, oMsgBody));
+    ChannelOption stOption;
+    stOption.bPipeline = bPipeline;
+    stOption.bPipeline = bWithSsl;
+    return(IO<CodecRaw>::SendTo(pActor, strIdentify, stOption, pRawData, uiRawDataSize));
 }
 
 bool ActorSender::SendRoundRobin(Actor* pActor, const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
+    ChannelOption stOption;
+    stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pActor->GetTraceId());
-    return(IO<CodecNebula>::SendRoundRobin(pActor, strNodeType, false, true, iCmd, uiSeq, oMsgBody));
+    return(IO<CodecNebula>::SendRoundRobin(pActor, strNodeType, stOption, iCmd, uiSeq, oMsgBody));
 }
 
 bool ActorSender::SendOriented(Actor* pActor, const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
+    ChannelOption stOption;
+    stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pActor->GetTraceId());
     if (eCodecType == CODEC_NEBULA)
     {
-        return(IO<CodecNebula>::SendOriented(pActor, strNodeType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
+        return(IO<CodecNebula>::SendOriented(pActor, strNodeType, uiFactor, stOption, iCmd, uiSeq, oMsgBody));
     }
     else if (eCodecType == CODEC_NEBULA_IN_NODE)
     {
-        return(IO<CodecNebulaInNode>::SendOriented(pActor, strNodeType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
+        return(IO<CodecNebulaInNode>::SendOriented(pActor, strNodeType, uiFactor, stOption, iCmd, uiSeq, oMsgBody));
     }
     else
     {
-        return(IO<CodecProto>::SendOriented(pActor, strNodeType, false, true, uiFactor, iCmd, uiSeq, oMsgBody));
+        return(IO<CodecProto>::SendOriented(pActor, strNodeType, uiFactor, stOption, iCmd, uiSeq, oMsgBody));
     }
 }
 
 bool ActorSender::SendOriented(Actor* pActor, const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
+    ChannelOption stOption;
+    stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(pActor->GetTraceId());
     if (oMsgBody.has_req_target())
     {
@@ -156,15 +161,15 @@ bool ActorSender::SendOriented(Actor* pActor, const std::string& strNodeType, in
         {
             if (eCodecType == CODEC_NEBULA)
             {
-                return(IO<CodecNebula>::SendOriented(pActor, strNodeType, false, true, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody));
+                return(IO<CodecNebula>::SendOriented(pActor, strNodeType, oMsgBody.req_target().route_id(), stOption, iCmd, uiSeq, oMsgBody));
             }
             else if (eCodecType == CODEC_NEBULA_IN_NODE)
             {
-                return(IO<CodecNebulaInNode>::SendOriented(pActor, strNodeType, false, true, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody));
+                return(IO<CodecNebulaInNode>::SendOriented(pActor, strNodeType, oMsgBody.req_target().route_id(), stOption, iCmd, uiSeq, oMsgBody));
             }
             else
             {
-                return(IO<CodecProto>::SendOriented(pActor, strNodeType, false, true, oMsgBody.req_target().route_id(), iCmd, uiSeq, oMsgBody));
+                return(IO<CodecProto>::SendOriented(pActor, strNodeType, oMsgBody.req_target().route_id(), stOption, iCmd, uiSeq, oMsgBody));
             }
         }
         else
@@ -332,7 +337,10 @@ bool ActorSender::SendTo(Actor* pActor, const std::string& strUrl, const std::st
 
 bool ActorSender::SendRoundRobin(Actor* pActor, const std::string& strIdentify, const CassMessage& oCassMsg, bool bWithSsl, bool bPipeline)
 {
-    return(IO<CodecCass>::SendRoundRobin(pActor, strIdentify, bWithSsl, bPipeline, oCassMsg));
+    ChannelOption stOption;
+    stOption.bPipeline = bPipeline;
+    stOption.bWithSsl = bWithSsl;
+    return(IO<CodecCass>::SendRoundRobin(pActor, strIdentify, stOption, oCassMsg));
 }
 
 } /* namespace neb */

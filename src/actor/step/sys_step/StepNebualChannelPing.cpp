@@ -1,28 +1,28 @@
 /*******************************************************************************
  * Project:  Nebula
- * @file     StepIoTimeout2.cpp
+ * @file     StepNebualChannelPing.cpp
  * @brief 
  * @author   Bwar
  * @date:    2016年8月30日
  * @note
  * Modify history:
  ******************************************************************************/
-#include "actor/step/sys_step/StepIoTimeout.hpp"
+#include "actor/step/sys_step/StepNebualChannelPing.hpp"
 #include "ios/Dispatcher.hpp"
 
 namespace neb
 {
 
-StepIoTimeout::StepIoTimeout(std::shared_ptr<SocketChannel> pChannel)
+StepNebualChannelPing::StepNebualChannelPing(std::shared_ptr<SocketChannel> pChannel)
     : m_pChannel(pChannel)
 {
 }
 
-StepIoTimeout::~StepIoTimeout()
+StepNebualChannelPing::~StepNebualChannelPing()
 {
 }
 
-E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
+E_CMD_STATUS StepNebualChannelPing::Emit(int iErrno, const std::string& strErrMsg,
         void* data)
 {
     MsgBody oOutMsgBody;
@@ -37,14 +37,14 @@ E_CMD_STATUS StepIoTimeout::Emit(int iErrno, const std::string& strErrMsg,
     }
 }
 
-E_CMD_STATUS StepIoTimeout::Callback(std::shared_ptr<SocketChannel> pChannel,
+E_CMD_STATUS StepNebualChannelPing::Callback(std::shared_ptr<SocketChannel> pChannel,
         const MsgHead& oInMsgHead, const MsgBody& oInMsgBody, void* data)
 {
     GetLabor(this)->GetDispatcher()->AddIoTimeout(pChannel);
     return(CMD_STATUS_COMPLETED);
 }
 
-E_CMD_STATUS StepIoTimeout::Timeout()
+E_CMD_STATUS StepNebualChannelPing::Timeout()
 {
     GetLabor(this)->GetDispatcher()->Disconnect(m_pChannel);
     return(CMD_STATUS_FAULT);

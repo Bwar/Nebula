@@ -72,6 +72,7 @@ public:
     virtual void SetClientData(const std::string& strClientData);
     virtual void SetIdentify(const std::string& strIdentify);
     virtual void SetRemoteAddr(const std::string& strRemoteAddr);
+    virtual void SetKeepAlive(ev_tstamp dTime);
 
     bool IsMigrated() const
     {

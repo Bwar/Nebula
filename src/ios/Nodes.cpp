@@ -404,36 +404,45 @@ bool Nodes::SplitAddAndGetNode(const std::string& strNodeType, std::string& strN
     return(GetNode(strNodeType, strNodeIdentify));
 }
 
-bool Nodes::GetAuth(const std::string& strNodeType, std::string& strAuth, std::string& strPassword)
+bool Nodes::GetAuth(const std::string& strIdentify, std::string& strAuth, std::string& strPassword)
 {
-    auto node_type_iter = m_mapNode.find(strNodeType);
-    if (node_type_iter == m_mapNode.end())
+    auto iter = m_mapChannelOption.find(strIdentify);
+    if (iter == m_mapChannelOption.end())
     {
         return(false);
     }
     else
     {
-        strAuth = node_type_iter->second->strAuth;
-        strPassword = node_type_iter->second->strPassword;
+        strAuth = iter->second->strAuth;
+        strPassword = iter->second->strPassword;
         return(true);
     }
 }
 
-void Nodes::SetAuth(const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword)
+std::shared_ptr<ChannelOption> Nodes::GetChannelOption(const std::string& strIdentify)
 {
-    auto node_type_iter = m_mapNode.find(strNodeType);
-    if (node_type_iter == m_mapNode.end())
+    auto iter = m_mapChannelOption.find(strIdentify);
+    if (iter == m_mapChannelOption.end())
     {
-        std::shared_ptr<tagNode> pNode = std::make_shared<tagNode>();
-        m_mapNode.insert(std::make_pair(strNodeType, pNode));
-        pNode->strNodeType = strNodeType;
-        pNode->strAuth = strAuth;
-        pNode->strPassword = strPassword;
+        return(nullptr);
     }
     else
     {
-        node_type_iter->second->strAuth = strAuth;
-        node_type_iter->second->strPassword = strPassword;
+        return(iter->second);
+    }
+}
+
+void Nodes::SetChannelOption(const std::string& strIdentify, const ChannelOption& stOption)
+{
+    auto pOption = std::make_shared<ChannelOption>(stOption);
+    auto iter = m_mapChannelOption.find(strIdentify);
+    if (iter == m_mapChannelOption.end())
+    {
+        m_mapChannelOption.insert(std::make_pair(strIdentify, pOption));
+    }
+    else
+    {
+        iter->second = pOption;
     }
 }
 

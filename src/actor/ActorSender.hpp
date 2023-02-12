@@ -40,14 +40,11 @@ public:
     ActorSender();
     virtual ~ActorSender();
 
-    static void SetAuth(Actor* pActor, const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword);
-
     static bool SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel);
 
     // send pb message
     static bool SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     static bool SendTo(Actor* pActor, const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
-    static bool SendTo(Actor* pActor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     static bool SendRoundRobin(Actor* pActor, const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
     static bool SendOriented(Actor* pActor, const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
     static bool SendOriented(Actor* pActor, const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);

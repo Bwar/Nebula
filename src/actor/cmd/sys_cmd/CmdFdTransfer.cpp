@@ -59,6 +59,7 @@ bool CmdFdTransfer::AnyMessage(
         if (CODEC_NEBULA == oFdTransferInfo.codec_type())
         {
             GetLabor(this)->GetDispatcher()->AddIoTimeout(pNewChannel, GetNodeInfo().dIoTimeout);
+            pNewChannel->SetKeepAlive(GetNodeInfo().dIoTimeout);
             std::shared_ptr<Step> pStepTellWorker
                 = GetLabor(this)->GetActorBuilder()->MakeSharedStep(nullptr, "neb::StepTellWorker", pNewChannel);
             if (nullptr == pStepTellWorker)
@@ -73,6 +74,7 @@ bool CmdFdTransfer::AnyMessage(
             ev_tstamp dIoTimeout = (GetNodeInfo().dConnectionProtection > 0)
                     ? GetNodeInfo().dConnectionProtection : GetNodeInfo().dIoTimeout;
             GetLabor(this)->GetDispatcher()->AddIoTimeout(pNewChannel, dIoTimeout);
+            pNewChannel->SetKeepAlive(dIoTimeout);
         }
         GetLabor(this)->IoStatAddConnection(IO_STAT_DOWNSTREAM_NEW_CONNECTION);
         return(true);

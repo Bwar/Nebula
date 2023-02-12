@@ -129,10 +129,6 @@ public:
     bool SendDataReport(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
     std::shared_ptr<SocketChannel> StressSend(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType = CODEC_NEBULA);
 
-    // SendTo() for unix domain socket
-    bool SendTo(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-    bool SendTo(int iFd, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);
-
     std::shared_ptr<SocketChannel> GetLastActivityChannel();
     bool Disconnect(std::shared_ptr<SocketChannel> pChannel, bool bChannelNotice = true);
     bool Disconnect(const std::string& strIdentify, bool bChannelNotice = true);
@@ -145,10 +141,12 @@ public:
     void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     void CircuitBreak(const std::string& strIdentify);
+    void SetChannelPingStep(int iCodec, const std::string& strStepName);
     void SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData);
     bool IsNodeType(const std::string& strNodeIdentify, const std::string& strNodeType);
-    bool GetAuth(const std::string& strNodeType, std::string& strAuth, std::string& strPassword);
-    void SetAuth(const std::string& strNodeType, const std::string& strAuth, const std::string& strPassword);
+    bool GetAuth(const std::string& strIdentify, std::string& strAuth, std::string& strPassword);
+    std::shared_ptr<ChannelOption> GetChannelOption(const std::string& strIdentify);
+    void SetChannelOption(const std::string& strIdentify, const ChannelOption& stOption);
 
     time_t GetNowTime() const
     {
@@ -194,6 +192,7 @@ protected:
     bool AddClientConnFrequencyTimeout(const char* pAddr, ev_tstamp dTimeout = 60.0);
     bool AcceptFdAndTransfer(int iFd, int iFamily = AF_INET, int iBonding = 0);
     bool AcceptServerConn(int iFd);
+    bool PingChannel(std::shared_ptr<SocketChannel> pChannel);
     void CheckFailedNode();
     void EvBreak();
 
@@ -211,8 +210,7 @@ private:
 
     /* named Channel */
     std::unordered_map<std::string, std::unordered_set<std::shared_ptr<SocketChannel> > > m_mapNamedSocketChannel;      ///< key为Identify，连接存在时，if(http连接)set.size()>=1;else set.size()==1;
-    std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapLoaderAndWorkerChannel;     ///< Loader和Worker之间通信通道
-    std::unordered_map<int32, std::shared_ptr<SocketChannel> >::iterator m_iterLoaderAndWorkerChannel;
+    std::unordered_map<int32, std::string> m_mapChannelPingStepName;   // CODEC_TYPE as key 
 
     std::unordered_map<std::string, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率
 

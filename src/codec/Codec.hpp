@@ -45,11 +45,12 @@ enum E_CODEC_TYPE
     CODEC_NEBULA_IN_NODE    = 8,        ///< 节点各进程间通信协议，与CODEC_NEBULA协议相同，使用的编解码类也相同，只为区别节点内部连接与外部连接
     CODEC_RESP              = 9,        ///< redis数据传输协议resp
     CODEC_HTTP2             = 10,       ///< http2编解码
-    CODEC_DIRECT            = 11,       ///< 虚拟编解码类型，用于SelfChannel，以参数方式直接传递数据包
-    CODEC_CASS              = 12,       ///< cassandra scylladb
-    CODEC_RAW               = 13,       ///< 裸数据传输
-    CODEC_TRANSFER          = 14,       ///< 虚拟编解码类型，用于SpecChannel
-    CODEC_CHANNEL_MIGRATE   = 15,       ///< 虚拟编解码类型，用于SocketChannel迁移
+    CODEC_CASS              = 11,       ///< cassandra scylladb
+    CODEC_RAW               = 12,       ///< 裸数据传输
+
+    CODEC_DIRECT            = 51,       ///< 虚拟编解码类型，用于SelfChannel，以参数方式直接传递数据包
+    CODEC_TRANSFER          = 52,       ///< 虚拟编解码类型，用于SpecChannel
+    CODEC_CHANNEL_MIGRATE   = 53,       ///< 虚拟编解码类型，用于SocketChannel迁移
 
     CODEC_MAX
 };

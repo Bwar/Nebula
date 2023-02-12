@@ -190,7 +190,7 @@ public:
     }
     */
 
-    void SetKeepAlive(ev_tstamp dTime)
+    virtual void SetKeepAlive(ev_tstamp dTime)
     {
         m_dKeepAlive = dTime;
     }
@@ -377,8 +377,7 @@ template<typename T>
 bool SocketChannelImpl<T>::NeedAliveCheck() const
 {
     if (CODEC_HTTP == m_pCodec->GetCodecType()
-            || CODEC_NEBULA == m_pCodec->GetCodecType()
-            || CODEC_NEBULA_IN_NODE == m_pCodec->GetCodecType())
+            || CODEC_HTTP2 == m_pCodec->GetCodecType())
     {
         return(false);
     }
@@ -451,7 +450,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
         }
     }
 
-    if (m_uiMsgNum < 1)
+    if (m_uiMsgNum < 1 && !IsClient())
     {
         m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
     }
@@ -836,7 +835,10 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
             ++m_uiMsgNum;
             if (m_uiMsgNum == 1)
             {
-                m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+                if (!IsClient())
+                {
+                    m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+                }
                 m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
             }
         }
@@ -851,8 +853,8 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
                 if (!IsClient())
                 {
                     m_pSendBuff->Clear();
+                    return(CODEC_STATUS_INVALID);
                 }
-                return(CODEC_STATUS_INVALID);
             }
         }
         return(eCodecStatus);
@@ -893,7 +895,10 @@ E_CODEC_STATUS SocketChannelImpl<T>::Fetch(Targs&&... args)
         ++m_uiMsgNum;
         if (m_uiMsgNum == 1)
         {
-            m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+            if (!IsClient())
+            {
+                m_dKeepAlive = m_pLabor->GetNodeInfo().dIoTimeout;
+            }
             m_ucChannelStatus = CHANNEL_STATUS_ESTABLISHED;
         }
     }
@@ -903,7 +908,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Fetch(Targs&&... args)
         {
             m_pRecvBuff->SetReadIndex(uiReadIndex);
         }
-        if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus)
+        if (0 == m_uiMsgNum && CODEC_STATUS_PAUSE != eCodecStatus && !IsClient())
         {
             return(CODEC_STATUS_INVALID);
         }

@@ -189,7 +189,6 @@ void Split(const std::string& strSrc, const std::string& strPattern, std::vector
     p = strsep(&buff, strPattern.data());
     while (p != NULL)
     {
-        printf("%s\n", p);
         vecDest.push_back(p);
         p = strsep(&buff, strPattern.data());
     }
