@@ -276,6 +276,25 @@ E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::sha
             }
         }
             break;
+        case CODEC_DELIVER:
+        {
+            Package oPackage;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<Package>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oPackage))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<DeliverCmd>::OnRequest(pDispatcher, pChannel, (int32)CMD_REQ_DELIVER, std::move(oPackage));
+                }
+                else
+                {
+                    IO<DeliverStep>::OnResponse(pDispatcher, pChannel, uiStepSeq, std::move(oPackage));
+                }
+            }
+        }
+            break;
         case CODEC_UNKNOW:
             break;
         default:

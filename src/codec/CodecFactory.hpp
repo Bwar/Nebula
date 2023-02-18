@@ -24,11 +24,13 @@
 #include "actor/cmd/Module.hpp"
 #include "actor/cmd/RedisCmd.hpp"
 #include "actor/cmd/RawCmd.hpp"
+#include "actor/cmd/DeliverCmd.hpp"
 #include "actor/step/PbStep.hpp"
 #include "actor/step/HttpStep.hpp"
 #include "actor/step/RedisStep.hpp"
 #include "actor/step/RawStep.hpp"
 #include "actor/step/CassStep.hpp"
+#include "actor/step/DeliverStep.hpp"
 
 namespace neb
 {

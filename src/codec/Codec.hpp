@@ -51,6 +51,7 @@ enum E_CODEC_TYPE
     CODEC_DIRECT            = 51,       ///< 虚拟编解码类型，用于SelfChannel，以参数方式直接传递数据包
     CODEC_TRANSFER          = 52,       ///< 虚拟编解码类型，用于SpecChannel
     CODEC_CHANNEL_MIGRATE   = 53,       ///< 虚拟编解码类型，用于SocketChannel迁移
+    CODEC_DELIVER           = 54,       ///< 虚拟编解码类型，用于SpecChannel直传数据包
 
     CODEC_MAX
 };

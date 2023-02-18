@@ -34,6 +34,11 @@ public:
     Package& operator=(const Package& oPackage) = delete;
     Package& operator=(Package&& oPackage);
 
+    int GetPayloadType() const
+    {
+        return(m_iType);
+    }
+
     /**
      * @brief put item into package
      * @note put item into package, and clear source address of the item.

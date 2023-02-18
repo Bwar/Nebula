@@ -149,7 +149,7 @@ bool Manager::InitLogger(const CJsonObject& oJsonConf)
         {
             bool bConsoleLog = false;
             m_oCurrentConf.Get("console_log", bConsoleLog);
-            m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, bAlwaysFlushLog, this);
+            m_pLogger = std::make_shared<NetLogger>(strLogname, iLogLevel, iMaxLogFileSize, iMaxLogFileNum, bAlwaysFlushLog, bConsoleLog, this);
         }
         m_pLogger->SetNetLogLevel(iNetLogLevel);
         LOG4_NOTICE("%s program begin, and work path %s...", oJsonConf("server_name").c_str(), m_stNodeInfo.strWorkPath.c_str());

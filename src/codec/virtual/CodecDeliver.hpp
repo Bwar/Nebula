@@ -26,7 +26,7 @@ public:
 
     static E_CODEC_TYPE Type()
     {
-        return(CODEC_RESP);
+        return(CODEC_DELIVER);
     }
 
     // request

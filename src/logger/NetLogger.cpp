@@ -27,9 +27,9 @@ NetLogger::NetLogger(const std::string& strLogFile, int iLogLev, unsigned int ui
       m_bEnableNetLogger(false), m_pLabor(pLabor), m_pLog(nullptr)
 {
 #if __cplusplus >= 201401L
-    m_pLog = std::make_unique<neb::FileLogger>(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex, bConsoleLog, bAlwaysFlush);
+    m_pLog = std::make_unique<neb::FileLogger>(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex, bAlwaysFlush, bConsoleLog);
 #else
-    m_pLog = std::unique_ptr<FileLogger>(new FileLogger(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex, bConsoleLog, bAlwaysFlush));
+    m_pLog = std::unique_ptr<FileLogger>(new FileLogger(strLogFile, iLogLev, uiMaxFileSize, uiMaxRollFileIndex, bAlwaysFlush, bConsoleLog));
 #endif
 }
 
