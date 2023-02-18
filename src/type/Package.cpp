@@ -8,6 +8,7 @@
  * Modify history:
  ******************************************************************************/
 #include "Package.hpp"
+#include <iostream>
 
 namespace neb
 {
@@ -26,6 +27,12 @@ Package::Package(Package&& oPackage)
 
 Package::~Package()
 {
+    if (m_pPayload != nullptr)
+    {
+        std::cerr << "there may be payload memory leak!" << std::endl;
+        free(m_pPayload);   // There may be destructors that have not been called, it should be avoided.
+        m_pPayload = nullptr;
+    }
 }
 
 Package& Package::operator=(Package&& oPackage)

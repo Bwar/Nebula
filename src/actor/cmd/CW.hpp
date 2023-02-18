@@ -46,6 +46,8 @@ enum E_CMD
     CMD_RSP_FD_TRANSFER                 = 20,   ///< 通过SpecChannel传送文件描述符响应（无须响应）
     CMD_REQ_CHANNEL_MIGRATE             = 21,   ///< 通过SpecChannel迁移SocketChannel请求
     CMD_RSP_CHANNEL_MIGRATE             = 22,   ///< 通过SpecChannel迁移SocketChannel响应（无须响应）
+    CMD_REQ_DELIVER                     = 23,   ///< 通过SpecChannel直传Package请求
+    CMD_RSP_DELIVER                     = 24,   ///< 通过SpecChannel直传Package响应
 
     CMD_REQ_NODE_STATUS_REPORT          = 101,  ///< 节点Server状态上报请求（各节点向控制中心上报自身状态信息）
     CMD_RSP_NODE_STATUS_REPORT          = 102,  ///< 节点Server状态上报应答
