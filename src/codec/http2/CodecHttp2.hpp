@@ -17,6 +17,8 @@
 #include "H2Comm.hpp"
 #include "Tree.hpp"
 #include "Http2Header.hpp"
+#include "channel/SpecChannel.hpp"
+#include "labor/LaborShared.hpp"
 
 namespace neb
 {
@@ -44,7 +46,10 @@ public:
         return(CODEC_HTTP2);
     }
 
-    virtual bool DecodeWithReator() const
+    static int Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const HttpMsg& oHttpMsg);
+    static int Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, const HttpMsg& oHttpMsg);
+
+    virtual bool DecodeWithReactor() const
     {
         return(true);
     }

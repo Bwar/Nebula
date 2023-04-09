@@ -12,7 +12,9 @@
 namespace neb
 {
 
-CodecDeliver::CodecDeliver()
+CodecDeliver::CodecDeliver(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+        std::shared_ptr<SocketChannel> pBindChannel)
+    : Codec(pLogger, eCodecType, pBindChannel)
 {
 }
 
@@ -72,6 +74,37 @@ int CodecDeliver::Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags,
     std::static_pointer_cast<SpecChannel<Package>>(pChannel)->GetEnds(uiFrom, uiTo);
     return(Write(uiTo, uiFrom, uiFlags, uiStepSeq, std::forward<Package>(oPackage)));
 }
+
+E_CODEC_STATUS CodecDeliver::Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    LOG4_ERROR("invalid");
+    return(CODEC_STATUS_ERR);
+}
+
+E_CODEC_STATUS CodecDeliver::Encode(Package&& oPackage, CBuffer* pBuff)
+{
+    LOG4_ERROR("invalid");
+    return(CODEC_STATUS_ERR);
+}
+
+E_CODEC_STATUS CodecDeliver::Encode(Package&& oPackage, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    LOG4_ERROR("invalid");
+    return(CODEC_STATUS_ERR);
+}
+
+E_CODEC_STATUS CodecDeliver::Decode(CBuffer* pBuff, Package&& oPackage)
+{
+    LOG4_ERROR("invalid");
+    return(CODEC_STATUS_ERR);
+}
+
+E_CODEC_STATUS CodecDeliver::Decode(CBuffer* pBuff, Package&& oPackage, CBuffer* pReactBuff)
+{
+    LOG4_ERROR("invalid");
+    return(CODEC_STATUS_ERR);
+}
+
 
 } /* namespace neb */
 

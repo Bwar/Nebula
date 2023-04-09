@@ -10,6 +10,8 @@
 #ifndef SRC_TYPE_PACKAGE_HPP_
 #define SRC_TYPE_PACKAGE_HPP_
 
+#include <memory>
+
 namespace neb
 {
 
@@ -45,10 +47,10 @@ public:
      * The item class must implement a static Type() method.
      */
     template<typename T>
-    void Pack(T** item);
+    void Pack(std::shared_ptr<T>* item);
 
     template<typename T>
-    void Pack(int type, T** item);
+    void Pack(int type, std::shared_ptr<T>* item);
 
     /**
      * @brief take out item from package
@@ -56,38 +58,42 @@ public:
      * The item class must implement a static Type() method.
      */
     template<typename T>
-    bool Unpack(T** item);
+    bool Unpack(std::shared_ptr<T>* item);
 
     template<typename T>
-    bool Unpack(int type, T** item);
+    bool Unpack(int type, std::shared_ptr<T>* item);
 
 private:
     int m_iType = 0;
-    void* m_pPayload = nullptr;
+    std::shared_ptr<void> m_pPayload = nullptr;
 };
 
 template<typename T>
-void Package::Pack(T** item)
+void Package::Pack(std::shared_ptr<T>* item)
 {
     m_iType = T::Type();
-    m_pPayload = (void*)(*item);
+    m_pPayload = *item;
     *item = nullptr;
 }
 
 template<typename T>
-void Package::Pack(int type, T** item)
+void Package::Pack(int type, std::shared_ptr<T>* item)
 {
     m_iType = type;
-    m_pPayload = (void*)(*item);
+    m_pPayload = *item;
     *item = nullptr;
 }
 
 template<typename T>
-bool Package::Unpack(T** item)
+bool Package::Unpack(std::shared_ptr<T>* item)
 {
     if (T::Type() == m_iType)
     {
-        *item = (T*)m_pPayload;
+        *item = std::static_pointer_cast<T>(m_pPayload);
+        if (*item == nullptr)
+        {
+            return(false);
+        }
         m_pPayload = nullptr;
         m_iType = 0;
         return(true);
@@ -96,11 +102,15 @@ bool Package::Unpack(T** item)
 }
 
 template<typename T>
-bool Package::Unpack(int type, T** item)
+bool Package::Unpack(int type, std::shared_ptr<T>* item)
 {
     if (type == m_iType)
     {
-        *item = (T*)m_pPayload;
+        *item = std::static_pointer_cast<T>(m_pPayload);
+        if (*item == nullptr)
+        {
+            return(false);
+        }
         m_pPayload = nullptr;
         m_iType = 0;
         return(true);

@@ -55,9 +55,14 @@ ActorBuilder::~ActorBuilder()
     }
 }
 
-bool ActorBuilder::Init(CJsonObject& oBootLoadConf, CJsonObject& oDynamicLoadConf)
+bool ActorBuilder::Init()
 {
     LoadSysCmd();
+    return(true);
+}
+
+bool ActorBuilder::LoadCmd(CJsonObject& oBootLoadConf, CJsonObject& oDynamicLoadConf)
+{
     BootLoadCmd(oBootLoadConf);
     DynamicLoad(oDynamicLoadConf);
     std::string strReportSessionId = "neb::SessionDataReport";
@@ -70,7 +75,7 @@ bool ActorBuilder::Init(CJsonObject& oBootLoadConf, CJsonObject& oDynamicLoadCon
     return(true);
 }
 
-bool ActorBuilder::Init(CJsonObject& oDynamicLoadConf)
+bool ActorBuilder::LoadCmd(CJsonObject& oDynamicLoadConf)
 {
     DynamicLoad(oDynamicLoadConf);
     return(true);
@@ -204,11 +209,17 @@ bool ActorBuilder::OnMessage(std::shared_ptr<SocketChannel> pChannel, const MsgH
             if (CMD_REQ_SET_LOG_LEVEL == oMsgHead.cmd())
             {
                 LogLevel oLogLevel;
-                oLogLevel.ParseFromString(oMsgBody.data());
-                LOG4_INFO("log level set to %d, net_log_level set to %d",
-                        oLogLevel.log_level(), oLogLevel.net_log_level());
-                m_pLogger->SetLogLevel(oLogLevel.log_level());
-                m_pLogger->SetNetLogLevel(oLogLevel.net_log_level());
+                if (oLogLevel.ParseFromString(oMsgBody.data()))
+                {
+                    LOG4_INFO("log level set to %d, net_log_level set to %d",
+                            oLogLevel.log_level(), oLogLevel.net_log_level());
+                    m_pLogger->SetLogLevel(oLogLevel.log_level());
+                    m_pLogger->SetNetLogLevel(oLogLevel.net_log_level());
+                }
+                else
+                {
+                    LOG4_ERROR("LogLevel parse failed.");
+                }
             }
             else if (CMD_REQ_RELOAD_SO == oMsgHead.cmd())
             {

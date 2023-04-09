@@ -6,7 +6,7 @@
     "//access_port": "对系统外提供服务监听的端口",
     "access_port": 9988,
     "access_ports":[],
-    "//access_codec": "接入端编解码器，见codec/Codec.hpp中E_CODEC_TYPE枚举定义"
+    "//access_codec": "接入端编解码器，见codec/Codec.hpp中E_CODEC_TYPE枚举定义",
     "access_codec": 4,
     "access_socket_type":"TCP",
     "//need_channel_verify":"是否需要连接验证，如设置为true，第一个消息必须是验证消息，未经验证的连接收到第二个消息会被立即关闭",
@@ -31,13 +31,15 @@
     "connection_dispatcher":{"round_robin":0, "min_load":1, "client_addr_hash":2},
     "connection_dispatch":0,
     "//access_port_to_worker":"端口到worker映射关系",
-    "access_port_to_worker":[
+    "access_port_to_worker":{
         "9919":[1,3,5,7,9,11,13,15],
         "9921":[2,4,6,8,10,12,14,16]
-    ],
+    },
     "daemonize":true,
     "//worker_capacity": "子进程最大工作负荷",
     "worker_capacity": 1000000,
+    "//loader_custom_start_service":"是否由loader线程自定义开启端口",
+    "loader_custom_start_service":false,
     "//config_path": "配置文件路径（相对路径）",
     "config_path": "conf/",
     "//log_path": "日志文件路径（相对路径）",

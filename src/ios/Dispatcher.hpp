@@ -154,7 +154,7 @@ public:
     }
     long GetNowTimeMs() const
     {
-        return((long)ev_now(m_loop) * 1000);
+        return((long)(ev_now(m_loop) * 1000));
     }
     std::shared_ptr<NetLogger> GetLogger() const
     {

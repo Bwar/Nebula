@@ -20,6 +20,7 @@ struct ChannelOption
     bool bPipeline = false;
     bool bWithSsl = false;
     int iSocketType = SOCKET_STREAM;
+    uint32 uiMaxSendBuffSize = gc_iMaxBuffLen;
     ev_tstamp dKeepAlive = 7.0;
     std::string strAuth;
     std::string strPassword;

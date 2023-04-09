@@ -40,6 +40,8 @@ void DecodeParameter(const std::string& strParameter, std::map<std::string, std:
 
 void Split(const std::string& strSrc, const std::string& strPattern, std::vector<std::string>& vecDest);
 
+std::string& Trim(std::string &s);
+
 } /* namespace neb */
 
 #endif /* STRINGCODER_HPP_ */

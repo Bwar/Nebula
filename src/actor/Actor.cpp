@@ -134,7 +134,7 @@ std::shared_ptr<Session> Actor::GetSession(uint32 uiSessionId)
 std::shared_ptr<Session> Actor::GetSession(const std::string& strSessionId)
 {
     auto pSession = m_pLabor->GetActorBuilder()->GetSession(strSessionId);
-    if (pSession == nullptr)
+    if (pSession == nullptr && GetWorkerIndex() != 0)
     {
         auto pActorBuilder = m_pLabor->GetLoaderActorBuilder();
         if (pActorBuilder != nullptr)

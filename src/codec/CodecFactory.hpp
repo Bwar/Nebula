@@ -65,6 +65,9 @@ public:
     static bool OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SelfChannel> pChannel, const char* pRaw, uint32 uiRawSize);
     static bool OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, const char* pRaw, uint32 uiRawSize);
 
+    static bool OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SelfChannel> pChannel, int32 iCmd, Package&& oPackage);
+    static bool OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, Package&& oPackage);
+
     //static bool OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SelfChannel> pChannel, const CassMessage& oCassMsg);
     static bool OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, const CassMessage& oCassMsg);
 
