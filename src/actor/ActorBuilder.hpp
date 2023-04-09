@@ -85,8 +85,9 @@ public:
 public:
     ActorBuilder(Labor* pLabor, std::shared_ptr<NetLogger> pLogger);
     virtual ~ActorBuilder();
-    bool Init(CJsonObject& oBootLoadConf, CJsonObject& oDynamicLoadConf);
-    bool Init(CJsonObject& oDynamicLoadConf);
+    bool Init();
+    bool LoadCmd(CJsonObject& oBootLoadConf, CJsonObject& oDynamicLoadConf);
+    bool LoadCmd(CJsonObject& oDynamicLoadConf);
 
     static void StepTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void SessionTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
@@ -149,6 +150,7 @@ public:
     bool ReloadCmdConf();
     bool AddNetLogMsg(const MsgBody& oMsgBody);
     void AddChainConf(const std::string& strChainKey, std::queue<std::vector<std::string> >&& queChainBlocks);
+    // The application layer should call this function carefully to prevent the worker from deleting ther loader's session
     void RemoveSession(std::shared_ptr<Session> pSession);
 
 protected:

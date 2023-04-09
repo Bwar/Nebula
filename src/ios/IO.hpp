@@ -212,7 +212,7 @@ protected:
 template<typename T>
 bool IO<T>::Send(std::shared_ptr<SocketChannel> pChannel)
 {
-    if (pChannel->m_pImpl == nullptr)
+    if (pChannel == nullptr || pChannel->m_pImpl == nullptr)
     {
         return(false);
     }
@@ -235,7 +235,7 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::SendResponse(Actor* pActor, std::shared_ptr<SocketChannel> pChannel, Targs&&... args)
 {
-    if (pActor == nullptr)
+    if (pActor == nullptr || pChannel == nullptr)
     {
         return(false);
     }
@@ -359,7 +359,7 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::SendRequest(Actor* pActor, std::shared_ptr<SocketChannel> pChannel, Targs&&... args)
 {
-    if (pActor == nullptr)
+    if (pActor == nullptr || pChannel == nullptr)
     {
         return(false);
     }
@@ -382,7 +382,7 @@ template<typename T>
 template<typename ...Targs>
 bool IO<T>::SendRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SocketChannel> pChannel, Targs&&... args)
 {
-    if (pChannel->m_pImpl == nullptr)
+    if (pChannel == nullptr || pChannel->m_pImpl == nullptr)
     {
         pDispatcher->Logger(neb::Logger::ERROR, __FILE__, __LINE__, __FUNCTION__,
                 "no channel impl");

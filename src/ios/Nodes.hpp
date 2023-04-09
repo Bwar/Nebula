@@ -144,10 +144,10 @@ public:
 
     void CheckFailedNode();
 
-protected:
-    uint32 hash_fnv1_64(const char *key, size_t key_length);
-    uint32 hash_fnv1a_64(const char *key, size_t key_length);
-    uint32_t murmur3_32(const char *key, uint32_t len, uint32_t seed);
+public:
+    static uint32 hash_fnv1_64(const char *key, size_t key_length);
+    static uint32 hash_fnv1a_64(const char *key, size_t key_length);
+    static uint32_t murmur3_32(const char *key, uint32_t len, uint32_t seed);
 
 private:
     const int m_iHashAlgorithm;

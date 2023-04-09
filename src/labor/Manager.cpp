@@ -183,7 +183,8 @@ bool Manager::InitActorBuilder()
         LOG4_ERROR("new ActorBuilder error: %s", e.what());
         return(false);
     }
-    if (!m_pActorBuilder->Init(
+    m_pActorBuilder->Init();
+    if (!m_pActorBuilder->LoadCmd(
             m_oCurrentConf["load_config"]["manager"]["boot_load"],
             m_oCurrentConf["load_config"]["manager"]["dynamic_loading"]))
     {
@@ -192,8 +193,8 @@ bool Manager::InitActorBuilder()
     }
     if (m_stNodeInfo.bThreadMode)
     {
-        m_pActorBuilder->Init(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"]);
-        m_pActorBuilder->Init(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"]);
+        m_pActorBuilder->LoadCmd(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"]);
+        m_pActorBuilder->LoadCmd(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"]);
     }
     return(true);
 }

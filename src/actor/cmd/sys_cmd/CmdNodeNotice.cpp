@@ -35,6 +35,10 @@ bool CmdNodeNotice::AnyMessage(
     MsgBody oOutMsgBody;
 
     CJsonObject oJson;
+    if (oInMsgBody.data().empty())
+    {
+        return(false);
+    }
     if (oJson.Parse(oInMsgBody.data()))
     {
         LOG4_DEBUG("CmdNodeNotice seq[%llu] jsonbuf[%s] Parse is ok",

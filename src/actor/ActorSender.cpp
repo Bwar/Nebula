@@ -197,7 +197,7 @@ bool ActorSender::SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel,
     oHttpMsg.mutable_headers()->insert({"content-type", "application/grpc"});
     oHttpMsg.add_adding_never_index_headers("grpc-status");
     oHttpMsg.add_adding_never_index_headers("grpc-message");
-    oHttpMsg.add_adding_never_index_headers("x-trace-id");
+    //oHttpMsg.add_adding_never_index_headers("x-trace-id");
     if (eStatus == GRPC_OK)
     {
         uint8 ucCompressedFlag = 0;
@@ -245,7 +245,7 @@ bool ActorSender::SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel,
     pHeader = oHttpMsg.add_trailer_header();
     pHeader->set_name("grpc-message");
     pHeader->set_value(strStatusMessage);
-    return(SendTo(pActor, pChannel, oHttpMsg));
+    return(IO<CodecHttp2>::SendResponse(pActor, pChannel, oHttpMsg));
 }
 
 bool ActorSender::SendTo(Actor* pActor, const std::string& strUrl, const std::string& strGrpcRequest, E_COMPRESSION eCompression)

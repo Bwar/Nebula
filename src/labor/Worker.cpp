@@ -79,7 +79,25 @@ void Worker::Run()
     }
 #endif
 
-    StartService();
+    if (Labor::LABOR_LOADER == GetLaborType())
+    {
+        m_pActorBuilder->LoadCmd(
+                m_oNodeConf["load_config"]["loader"]["boot_load"],
+                m_oNodeConf["load_config"]["loader"]["dynamic_loading"]);
+        bool bLoaderCustomStartService = false;
+        m_oNodeConf.Get("loader_custom_start_service", bLoaderCustomStartService);
+        if (!bLoaderCustomStartService)
+        {
+            StartService();
+        }
+    }
+    else
+    {
+        m_pActorBuilder->LoadCmd(
+                m_oNodeConf["load_config"]["worker"]["boot_load"],
+                m_oNodeConf["load_config"]["worker"]["dynamic_loading"]);
+        StartService();
+    }
     m_pDispatcher->EventRun();
 }
 
@@ -378,9 +396,7 @@ bool Worker::InitActorBuilder()
 {
     if (NewActorBuilder())
     {
-        return(m_pActorBuilder->Init(
-                m_oNodeConf["load_config"]["worker"]["boot_load"],
-                m_oNodeConf["load_config"]["worker"]["dynamic_loading"]));
+        return(m_pActorBuilder->Init());
     }
     return(false);
 }

@@ -168,6 +168,8 @@ public:     // about worker
         }
     }
 
+    void StartService();
+
     template <typename ...Targs>
         void Logger(int iLogLevel, const char* szFileName, unsigned int uiFileLine, const char* szFunction, Targs&&... args);
 
@@ -178,7 +180,6 @@ protected:
     bool NewDispatcher();
     bool NewActorBuilder();
     bool CreateEvents();
-    void StartService();
     void Destroy();
     bool AddPeriodicTaskEvent();
 

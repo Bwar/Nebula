@@ -29,9 +29,7 @@ bool Loader::InitActorBuilder()
     LOG4_TRACE("");
     if (NewActorBuilder())
     {
-        return(GetActorBuilder()->Init(
-                (const_cast<CJsonObject&>(GetNodeConf()))["load_config"]["loader"]["boot_load"],
-                (const_cast<CJsonObject&>(GetNodeConf()))["load_config"]["loader"]["dynamic_loading"]));
+        return(GetActorBuilder()->Init());
     }
     return(false);
 }

@@ -11,6 +11,7 @@
 #define SRC_CODEC_VIRTUAL_CODECDELIVER_HPP_
 
 #include <memory>
+#include "codec/Codec.hpp"
 #include "channel/SpecChannel.hpp"
 #include "labor/LaborShared.hpp"
 #include "type/Package.hpp"
@@ -18,10 +19,11 @@
 namespace neb
 {
 
-class CodecDeliver
+class CodecDeliver: public Codec
 {
 public:
-    CodecDeliver();
+    CodecDeliver(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType,
+            std::shared_ptr<SocketChannel> pBindChannel);
     virtual ~CodecDeliver();
 
     static E_CODEC_TYPE Type()
@@ -34,6 +36,12 @@ public:
 
     // response
     static int Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, Package&& oPackage);
+
+    E_CODEC_STATUS Encode(CBuffer* pBuff, CBuffer* pSecondlyBuff = nullptr);
+    E_CODEC_STATUS Encode(Package&& oPackage, CBuffer* pBuff);
+    E_CODEC_STATUS Encode(Package&& oPackage, CBuffer* pBuff, CBuffer* pSecondlyBuff);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, Package&& oPackage);
+    E_CODEC_STATUS Decode(CBuffer* pBuff, Package&& oPackage, CBuffer* pReactBuff);
 };
 
 } /* namespace neb */

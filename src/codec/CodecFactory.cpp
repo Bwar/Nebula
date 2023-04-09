@@ -435,6 +435,26 @@ bool CodecFactory::OnSpecChannelCreated(uint32 uiCodecType, uint32 uiFromLabor, 
             }
         }
             break;
+        case CODEC_DELIVER:
+        {
+            Package oPackage;
+            auto pSpecChannel = std::static_pointer_cast<SpecChannel<Package>>(pChannel);
+            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            pDispatcher->AddEvent(pSpecChannel->MutableWatcher()->MutableAsyncWatcher(), Dispatcher::AsyncCallback);
+            pDispatcher->m_pLastActivityChannel = pChannel;
+            while (pSpecChannel->Read(uiFlags, uiStepSeq, oPackage))
+            {
+                if (gc_uiCmdReq & uiFlags)
+                {
+                    IO<DeliverCmd>::OnRequest(pDispatcher, pChannel, (int32)CMD_REQ_DELIVER, std::move(oPackage));
+                }
+                else
+                {
+                    IO<DeliverStep>::OnResponse(pDispatcher, pChannel, uiStepSeq, std::move(oPackage));
+                }
+            }
+        }
+            break;
         case CODEC_PRIVATE:
             break;
         case CODEC_CHANNEL_MIGRATE:
@@ -530,6 +550,21 @@ bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfC
     auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
     pDispatcher->m_pLastActivityChannel = pSocketChannel;
     return(IO<RawStep>::OnResponse(pDispatcher, pSocketChannel, pChannel->GetStepSeq(), pRaw, uiRawSize));
+}
+
+bool CodecFactory::OnSelfRequest(Dispatcher* pDispatcher, uint32 uiStepSeq, std::shared_ptr<SelfChannel> pChannel, int32 iCmd, Package&& oPackage)
+{
+    pChannel->SetStepSeq(uiStepSeq);
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<DeliverCmd>::OnRequest(pDispatcher, pSocketChannel, iCmd, std::move(oPackage)));
+}
+
+bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, Package&& oPackage)
+{
+    auto pSocketChannel = std::static_pointer_cast<SocketChannel>(pChannel);
+    pDispatcher->m_pLastActivityChannel = pSocketChannel;
+    return(IO<DeliverStep>::OnResponse(pDispatcher, pSocketChannel, pChannel->GetStepSeq(), std::move(oPackage)));
 }
 
 bool CodecFactory::OnSelfResponse(Dispatcher* pDispatcher, std::shared_ptr<SelfChannel> pChannel, const CassMessage& oCassMsg)

@@ -199,7 +199,7 @@ bool SessionManager::SendToChild(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBo
         MsgBody oOutMsgBody(oMsgBody);
         oMsgHead.set_cmd(iCmd);
         oMsgHead.set_seq(uiSeq);
-        IO<CodecNebulaInNode>::TransmitTo(this, m_vecWorkerInfo[i]->iWorkerIndex, uiSeq, oMsgHead, oMsgBody);
+        IO<CodecNebulaInNode>::TransmitTo(this, m_vecWorkerInfo[i]->iWorkerIndex, uiSeq, oMsgHead, oOutMsgBody);
     }
     return(true);
 }
