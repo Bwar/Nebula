@@ -128,6 +128,10 @@ E_CODEC_STATUS CodecProto::Encode(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgB
 E_CODEC_STATUS CodecProto::Encode(int32 iCmd, uint32 uiSeq,
         const MsgBody& oMsgBody, CBuffer* pBuff, CBuffer* pSecondlyBuff)
 {
+    if (CHANNEL_STATUS_ESTABLISHED == GetBindChannel()->GetChannelStatus())
+    {
+        return(Encode(iCmd, uiSeq, oMsgBody, pBuff));
+    }
     switch (iCmd)
     {
         case CMD_RSP_TELL_WORKER:

@@ -140,6 +140,7 @@ public:
     void DelNamedSocketChannel(const std::string& strIdentify);
     void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
+    void ReplaceNodes(const std::string& strNodeType, const std::set<std::string>& setNodeIdentify);
     void CircuitBreak(const std::string& strIdentify);
     void SetChannelPingStep(int iCodec, const std::string& strStepName);
     void SetClientData(std::shared_ptr<SocketChannel> pChannel, const std::string& strClientData);

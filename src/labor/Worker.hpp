@@ -116,11 +116,11 @@ public:     // about worker
         m_stWorkerInfo.uiRecvByte += uiBytes;
         if (IO_STAT_UPSTREAM_RECV_BYTE & uiIoType)
         {
-            ++m_stWorkerInfo.uiUpStreamRecvByte;
+            m_stWorkerInfo.uiUpStreamRecvByte += uiBytes;
         }
         if (IO_STAT_DOWNSTREAM_RECV_BYTE & uiIoType)
         {
-            ++m_stWorkerInfo.uiDownStreamRecvByte;
+            m_stWorkerInfo.uiDownStreamRecvByte += uiBytes;
         }
     }
     virtual void IoStatAddSendNum(int iFd, uint32 uiIoType)
@@ -140,11 +140,11 @@ public:     // about worker
         m_stWorkerInfo.uiSendByte += uiBytes;
         if (IO_STAT_UPSTREAM_SEND_BYTE & uiIoType)
         {
-            ++m_stWorkerInfo.uiUpStreamSendByte;
+            m_stWorkerInfo.uiUpStreamSendByte += uiBytes;
         }
         if (IO_STAT_DOWNSTREAM_SEND_BYTE & uiIoType)
         {
-            ++m_stWorkerInfo.uiDownStreamSendByte;
+            m_stWorkerInfo.uiDownStreamSendByte += uiBytes;
         }
     }
 

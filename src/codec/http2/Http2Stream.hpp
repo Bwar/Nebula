@@ -84,9 +84,9 @@ public:
 
     void EncodeSetState(const tagH2FrameHead& stFrameHead);
 
-    void WindowInit(uint32 uiWindowSize);
-    void WindowUpdate(int32 iIncrement);
-    void UpdateRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
+    void WindowInit(uint32 uiWindowSize, uint32 uiRecvWindowSize);
+    bool WindowUpdate(int32 iIncrement);
+    bool UpdateRecvWindow(CodecHttp2* pCodecH2, uint32 uiMaxRecvWindowSize, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
     E_CODEC_STATUS SendWaittingFrameData(CodecHttp2* pCodecH2, CBuffer* pBuff);
 
 private:

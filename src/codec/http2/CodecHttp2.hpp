@@ -46,7 +46,10 @@ public:
         return(CODEC_HTTP2);
     }
 
+    // request
     static int Write(uint32 uiFromLabor, uint32 uiToLabor, uint32 uiFlags, uint32 uiStepSeq, const HttpMsg& oHttpMsg);
+
+    // response
     static int Write(std::shared_ptr<SocketChannel> pChannel, uint32 uiFlags, uint32 uiStepSeq, const HttpMsg& oHttpMsg);
 
     virtual bool DecodeWithReactor() const
@@ -66,15 +69,23 @@ public:
     virtual void ConnectionSetting(CBuffer* pBuff);
 
 public:
+    inline bool IsEstablish() const
+    {
+        if (m_bClientPrefaceMagic && m_bServerPreface)
+        {
+            return(true);
+        }
+        return(false);
+    }
     void SetPriority(uint32 uiStreamId, const tagPriority& stPriority);
     void RstStream(uint32 uiStreamId);
     E_H2_ERR_CODE Setting(const std::vector<tagSetting>& vecSetting, bool bRecvSetting = false);
-    void WindowUpdate(uint32 uiStreamId, uint32 uiIncrement);
+    bool WindowUpdate(uint32 uiStreamId, uint32 uiIncrement);
     void UpdateSendWindow(uint32 uiStreamId, uint32 uiSendLength);
     void UpdateRecvWindow(uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff);
-    uint32 GetSendWindowSize()
+    int32 GetSendWindowSize()
     {
-        return(m_uiSendWindowSize);
+        return(m_iSendWindowSize);
     }
     uint32 GetMaxEncodeFrameSize()
     {
@@ -101,6 +112,8 @@ public:
     {
         m_bHasWaittingFrame = bHasWaittingFrame;
     }
+
+    void DebugDecodingTable();
 
 protected:
     uint32 StreamIdGenerate();
@@ -132,19 +145,21 @@ protected:
     void CloseStream(uint32 uiStreamId);
 
 private:
-    bool m_bWantMagic = true;
+    bool m_bClientPrefaceMagic = false;
+    bool m_bServerPreface = false;
     bool m_bHasWaittingFrame = false;
     uint32 m_uiStreamIdGenerate = 0;
     uint32 m_uiGoawayLastStreamId = 0;
     uint32 m_uiSettingsEnablePush = 1;
     uint32 m_uiSettingsHeaderTableSize = 4096;
     uint32 m_uiSettingsMaxConcurrentStreams = 100;
-    uint32 m_uiSettingsMaxWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    int32 m_iSettingsMaxSendWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    int32 m_iSettingsMaxRecvWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
     uint32 m_uiSettingsMaxEncodeFrameSize = DEFAULT_SETTINGS_MAX_FRAME_SIZE;
     uint32 m_uiSettingsMaxDecodeFrameSize = DEFAULT_SETTINGS_MAX_FRAME_SIZE;
     uint32 m_uiSettingsMaxHeaderListSize = 8192;  // TODO SettingsMaxHeaderListSize
-    uint32 m_uiSendWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
-    uint32 m_uiRecvWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    int32 m_iSendWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+    int32 m_iRecvWindowSize = DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE;
     tagH2FrameHead m_stDecodeFrameHead;
     HttpMsg* m_pHoldingHttpMsg = nullptr;       // upgrade未完成时暂存请求
     Http2Frame* m_pFrame = nullptr;

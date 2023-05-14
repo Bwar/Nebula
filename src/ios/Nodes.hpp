@@ -104,6 +104,8 @@ public:
     /** @deprecate */
     void AddNodeKetama(const std::string& strNodeType, const std::string& strNodeIdentify);
 
+    void ReplaceNodes(const std::string& strNodeType, const std::set<std::string>& setNodeIdentify);
+
     /**
      * @brief 添加并获取节点
      * @note 将形如192.168.1.47:6379,192.168.1.53:6379,192.168.1.38:6379的

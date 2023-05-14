@@ -49,7 +49,7 @@ public:
     static std::shared_ptr<SocketChannel> CreateChannel(Labor* pLabor, std::shared_ptr<NetLogger> pLogger, int iFd, E_CODEC_TYPE eCodecType, bool bIsClient, bool bWithSsl);
     static Codec* CreateCodec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYPE eCodecType, std::shared_ptr<SocketChannel> pBindChannel);
 
-    static E_CODEC_STATUS OnEvent(SpecChannelWatcher* pAsyncWatcher, std::shared_ptr<SocketChannel> pChannel);
+    static E_CODEC_STATUS OnEvent(uint32 uiSpecChannelCodecType, std::shared_ptr<SocketChannel> pChannel, Dispatcher* pDispatcher);
     static E_CODEC_STATUS OnEvent(Dispatcher* pDispatcher, std::shared_ptr<SocketChannel> pChannel);
     static bool OnSpecChannelCreated(uint32 uiCodecType, uint32 uiFromLabor, uint32 uiToLabor);
 

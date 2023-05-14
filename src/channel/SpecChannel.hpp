@@ -142,7 +142,7 @@ SpecChannel<Tdata, Thead>::~SpecChannel()
 template<typename Tdata, typename Thead>
 int SpecChannel<Tdata, Thead>::Write(uint32 uiFlags, uint32 uiStepSeq, Tdata&& oData)
 {
-    auto const uiCurrentWrite = m_uiWriteIndex.load(std::memory_order_relaxed);
+    auto uiCurrentWrite = m_uiWriteIndex.load(std::memory_order_relaxed);
     auto uiNextRecord = uiCurrentWrite + 1;
     uiNextRecord = (uiNextRecord == m_uiSize) ? 0 : uiNextRecord;
     if (m_uiEffectiveSize < m_uiSize)
@@ -173,7 +173,7 @@ int SpecChannel<Tdata, Thead>::Write(uint32 uiFlags, uint32 uiStepSeq, Tdata&& o
 template<typename Tdata, typename Thead>
 int SpecChannel<Tdata, Thead>::Write(uint32 uiFlags, uint32 uiStepSeq, Thead&& oHead, Tdata&& oData)
 {
-    auto const uiCurrentWrite = m_uiWriteIndex.load(std::memory_order_relaxed);
+    auto uiCurrentWrite = m_uiWriteIndex.load(std::memory_order_relaxed);
     auto uiNextRecord = uiCurrentWrite + 1;
     uiNextRecord = (uiNextRecord == m_uiSize) ? 0 : uiNextRecord;
     if (m_uiEffectiveSize < m_uiSize)
@@ -206,7 +206,7 @@ int SpecChannel<Tdata, Thead>::Write(uint32 uiFlags, uint32 uiStepSeq, Thead&& o
 template<typename Tdata, typename Thead>
 bool SpecChannel<Tdata, Thead>::Read(uint32& uiFlags, uint32& uiStepSeq, Tdata& oData)
 {
-    auto const uiCurrentRead = m_uiReadIndex.load(std::memory_order_relaxed);
+    auto uiCurrentRead = m_uiReadIndex.load(std::memory_order_relaxed);
     if (uiCurrentRead == m_uiWriteIndex.load(std::memory_order_acquire)) // queue is empty
     {
         return(false);
@@ -225,7 +225,7 @@ bool SpecChannel<Tdata, Thead>::Read(uint32& uiFlags, uint32& uiStepSeq, Tdata& 
 template<typename Tdata, typename Thead>
 bool SpecChannel<Tdata, Thead>::Read(uint32& uiFlags, uint32& uiStepSeq, Thead& oHead, Tdata& oData)
 {
-    auto const uiCurrentRead = m_uiReadIndex.load(std::memory_order_relaxed);
+    auto uiCurrentRead = m_uiReadIndex.load(std::memory_order_relaxed);
     if (uiCurrentRead == m_uiWriteIndex.load(std::memory_order_acquire)) // queue is empty
     {
         return(false);

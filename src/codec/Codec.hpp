@@ -110,13 +110,6 @@ public:
         return(false);
     }
 
-    /**
-     * @see CodecHttp2::ConnectionSetting()
-     */
-    virtual void ConnectionSetting(CBuffer* pBuff)
-    {
-    }
-
     void SetKey(const std::string& strKey)
     {
         m_strKey = strKey;

@@ -16,8 +16,8 @@ namespace neb
 const uint32 H2_FRAME_HEAD_SIZE = 9;
 const uint32 SETTINGS_MAX_FRAME_SIZE = 16777215;                // (2^24) - 1
 const uint32 DEFAULT_SETTINGS_MAX_FRAME_SIZE = 16384;           // (2^14)
-const uint32 SETTINGS_MAX_INITIAL_WINDOW_SIZE = 2147483647;     // (2^31) - 1
-const uint32 DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE = 65535;  // (2^16) - 1
+const int32 SETTINGS_MAX_INITIAL_WINDOW_SIZE = 2147483647;     // (2^31) - 1
+const int32 DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE = 65535;  // (2^16) - 1
 
 /*
  * @see https://httpwg.org/specs/rfc7540.html#FRAME_SIZE_ERROR
@@ -56,6 +56,7 @@ enum E_H2_SETTING_REGISTRY
     H2_SETTINGS_INITIAL_WINDOW_SIZE         = 0x4,
     H2_SETTINGS_MAX_FRAME_SIZE              = 0x5,
     H2_SETTINGS_MAX_HEADER_LIST_SIZE        = 0x6,
+    H2_SETTINGS_GRPC_ALLOW_TRUE_BINARY_METADATA  = 65027,
 };
 
 struct tagH2FrameHead

@@ -326,7 +326,7 @@ bool SessionManager::SetWorkerLoad(uint32 uiWorkerIndex, const ReportRecord& oWo
     }
     if (oWorkerStatus.value_size() < 6)
     {
-        LOG4_ERROR("value size %d error", oWorkerStatus.value_size());
+        LOG4_INFO("value size %d error", oWorkerStatus.value_size());
         return(false);
     }
     m_vecWorkerInfo[uiWorkerIndex]->uiLoad = oWorkerStatus.value(0);

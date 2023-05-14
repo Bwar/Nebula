@@ -39,6 +39,22 @@ E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
     std::string strPadding;
     if (HTTP_REQUEST == oHttpMsg.type())
     {
+        if (oHttpMsg.url().empty())
+        {
+            std::string strUrl;
+            auto pChannel = GetBindChannel();
+            if (pChannel->WithSsl())
+            {
+                strUrl = "https://";
+            }
+            else
+            {
+                strUrl = "http://";
+            }
+            strUrl += pChannel->GetIdentify();
+            strUrl += oHttpMsg.path();
+            (const_cast<HttpMsg&>(oHttpMsg)).set_url(strUrl);
+        }
         m_bChunkNotice = oHttpMsg.chunk_notice();
         stPriority.uiDependency = 0;
         stPriority.ucWeight = 15;
@@ -55,36 +71,45 @@ E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
             pHeader->set_name(":scheme");
             pHeader->set_value("http");
         }
-        struct http_parser_url stUrl;
-        if(0 == http_parser_parse_url(oHttpMsg.url().c_str(), oHttpMsg.url().length(), 0, &stUrl))
+        if (oHttpMsg.url().size() > 0)
         {
-            std::string strAuthority;
-            if(stUrl.field_set & (1 << UF_USERINFO) )
+            struct http_parser_url stUrl;
+            if(0 == http_parser_parse_url(oHttpMsg.url().c_str(), oHttpMsg.url().length(), 0, &stUrl))
             {
-                strAuthority += oHttpMsg.url().substr(stUrl.field_data[UF_USERINFO].off, stUrl.field_data[UF_USERINFO].len);
-                strAuthority += "@";
+                std::string strAuthority;
+                if(stUrl.field_set & (1 << UF_USERINFO) )
+                {
+                    strAuthority += oHttpMsg.url().substr(stUrl.field_data[UF_USERINFO].off, stUrl.field_data[UF_USERINFO].len);
+                    strAuthority += "@";
+                }
+                if(stUrl.field_set & (1 << UF_HOST) )
+                {
+                    strAuthority += oHttpMsg.url().substr(stUrl.field_data[UF_HOST].off, stUrl.field_data[UF_HOST].len);
+                }
+                if(stUrl.field_set & (1 << UF_PORT))
+                {
+                    strAuthority += ":";
+                    strAuthority += oHttpMsg.url().substr(stUrl.field_data[UF_PORT].off, stUrl.field_data[UF_PORT].len);
+                }
+                auto pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
+                pHeader->set_name(":authority");
+                pHeader->set_value(strAuthority);
+                std::string strPath = "/";
+                if(stUrl.field_set & (1 << UF_PATH))
+                {
+                    //strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, stUrl.field_data[UF_PATH].len);
+                    strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off);     // including: ?param1=aaa&param2=bbb
+                }
+                pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
+                pHeader->set_name(":path");
+                pHeader->set_value(strPath);
             }
-            if(stUrl.field_set & (1 << UF_HOST) )
-            {
-                strAuthority += oHttpMsg.url().substr(stUrl.field_data[UF_HOST].off, stUrl.field_data[UF_HOST].len);
-            }
-            if(stUrl.field_set & (1 << UF_PORT))
-            {
-                strAuthority += ":";
-                strAuthority += oHttpMsg.url().substr(stUrl.field_data[UF_PORT].off, stUrl.field_data[UF_PORT].len);
-            }
+        }
+        else
+        {
             auto pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
-            pHeader->set_name(":authority");
-            pHeader->set_value(strAuthority);
-            std::string strPath = "/";
-            if(stUrl.field_set & (1 << UF_PATH))
-            {
-                //strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, stUrl.field_data[UF_PATH].len);
-                strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off);     // including: ?param1=aaa&param2=bbb
-            }
-            pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
             pHeader->set_name(":path");
-            pHeader->set_value(strPath);
+            pHeader->set_value(oHttpMsg.path());
         }
         auto pHeader = (const_cast<HttpMsg&>(oHttpMsg)).add_pseudo_header();
         pHeader->set_name(":method");
@@ -104,7 +129,8 @@ E_CODEC_STATUS Http2Stream::Encode(CodecHttp2* pCodecH2,
 E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
         const tagH2FrameHead& stFrameHead, CBuffer* pBuff, HttpMsg& oHttpMsg, CBuffer* pReactBuff)
 {
-    LOG4_TRACE("m_eStreamState = %d, stFrameHead.ucType = %u", (int)m_eStreamState, (uint32)stFrameHead.ucType);
+    LOG4_TRACE("m_uiStreamId = %u, m_eStreamState = %d, stFrameHead.ucType = %u, stFrameHead.ucFlag = %u, m_bEndHeaders = %d",
+            m_uiStreamId, (int)m_eStreamState, (uint32)stFrameHead.ucType, (uint32)stFrameHead.ucFlag, m_bEndHeaders);
     m_oHttpMsg.set_stream_id(m_uiStreamId);
     E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
     eStatus = m_pFrame->Decode(pCodecH2, stFrameHead, pBuff, m_oHttpMsg, pReactBuff);
@@ -279,6 +305,7 @@ E_CODEC_STATUS Http2Stream::Decode(CodecHttp2* pCodecH2,
             {
                 if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
                 {
+                    LOG4_TRACE("H2_FRAME_FLAG_END_STREAM, m_oHttpMsg.type() = %d", m_oHttpMsg.type());
                     oHttpMsg = std::move(m_oHttpMsg);
                     eStatus = CODEC_STATUS_OK;
                 }
@@ -369,7 +396,7 @@ void Http2Stream::EncodeSetState(const tagH2FrameHead& stFrameHead)
             }
             if (H2_FRAME_FLAG_END_STREAM & stFrameHead.ucFlag)
             {
-                LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_HALF_CLOSE_REMOTE);
+                LOG4_TRACE("stream %u state from %d to %d", m_uiStreamId, m_eStreamState, H2_STREAM_HALF_CLOSE_LOCAL);
                 m_eStreamState = H2_STREAM_HALF_CLOSE_LOCAL;
             }
             break;
@@ -412,35 +439,48 @@ void Http2Stream::EncodeSetState(const tagH2FrameHead& stFrameHead)
     }
 }
 
-void Http2Stream::WindowInit(uint32 uiWindowSize)
+void Http2Stream::WindowInit(uint32 uiSendWindowSize, uint32 uiRecvWindowSize)
 {
-    m_iSendWindowSize = (int32)uiWindowSize;
+    m_iSendWindowSize = (int32)uiSendWindowSize;
+    m_uiRecvWindowSize = uiRecvWindowSize;
 }
 
-void Http2Stream::WindowUpdate(int32 iIncrement)
+bool Http2Stream::WindowUpdate(int32 iIncrement)
 {
-    m_iSendWindowSize += iIncrement;
+    int32 iSendWindowSize = m_iSendWindowSize + iIncrement;
+    LOG4_TRACE("m_iSendWindowSize = %d, iIncrement = %d", m_iSendWindowSize, iIncrement);
+    //if (iSendWindowSize > m_iSettingMaxSendWindowSize)
+    if (iSendWindowSize > SETTINGS_MAX_INITIAL_WINDOW_SIZE)
+    {
+        return(false);
+    }
+    m_iSendWindowSize = iSendWindowSize;
+    return(true);
 }
 
-void Http2Stream::UpdateRecvWindow(CodecHttp2* pCodecH2, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
+bool Http2Stream::UpdateRecvWindow(CodecHttp2* pCodecH2, uint32 uiMaxRecvWindowSize, uint32 uiStreamId, uint32 uiRecvLength, CBuffer* pBuff)
 {
     m_uiRecvWindowSize -= uiRecvLength;
+    LOG4_TRACE("uiMaxRecvWindowSize = %u, m_uiRecvWindowSize = %u, m_eStreamState = %d", uiMaxRecvWindowSize, m_uiRecvWindowSize, m_eStreamState);
     if (m_eStreamState == H2_STREAM_OPEN
             || m_eStreamState == H2_STREAM_IDLE
             || m_eStreamState == H2_STREAM_RESERVED_LOCAL
             || m_eStreamState == H2_STREAM_RESERVED_REMOTE)
     {
-        if (m_uiRecvWindowSize < DEFAULT_SETTINGS_MAX_INITIAL_WINDOW_SIZE / 4)
+        if (m_uiRecvWindowSize < uiMaxRecvWindowSize / 4)
         {
             m_pFrame->EncodeWindowUpdate(pCodecH2, uiStreamId,
-                    SETTINGS_MAX_INITIAL_WINDOW_SIZE - uiRecvLength, pBuff);
-            m_uiRecvWindowSize = SETTINGS_MAX_INITIAL_WINDOW_SIZE;
+                    uiMaxRecvWindowSize - m_uiRecvWindowSize, pBuff);
+            m_uiRecvWindowSize = uiMaxRecvWindowSize;
+            return(true);
         }
     }
+    return(false);
 }
 
 E_CODEC_STATUS Http2Stream::SendWaittingFrameData(CodecHttp2* pCodecH2, CBuffer* pBuff)
 {
+    LOG4_TRACE("stream id %u", m_uiStreamId);
     return(m_pFrame->SendWaittingFrameData(pCodecH2, pBuff));
 }
 

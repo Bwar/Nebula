@@ -72,6 +72,7 @@ public:     // method of ordinary json object
     CJsonObject& operator[](const std::string& strKey);
     std::string operator()(const std::string& strKey) const;
     bool KeyExist(const std::string& strKey) const;
+    int ValueType(const std::string& strKey) const;
     bool Get(const std::string& strKey, CJsonObject& oJsonObject) const;
     bool Get(const std::string& strKey, std::string& strValue) const;
     bool Get(const std::string& strKey, int32& iValue) const;
@@ -141,6 +142,7 @@ public:     // method of json array
     int GetArraySize() const;
     CJsonObject& operator[](unsigned int uiWhich);
     std::string operator()(unsigned int uiWhich) const;
+    int ValueType(int iWhich) const;
     bool Get(int iWhich, CJsonObject& oJsonObject) const;
     bool Get(int iWhich, std::string& strValue) const;
     bool Get(int iWhich, int32& iValue) const;
