@@ -385,6 +385,26 @@ void Nodes::AddNodeKetama(const std::string& strNodeType, const std::string& str
     }
 }
 
+void Nodes::ReplaceNodes(const std::string& strNodeType, const std::set<std::string>& setNodeIdentify)
+{
+    auto node_type_iter = m_mapNode.find(strNodeType);
+    if (node_type_iter == m_mapNode.end())
+    {
+        for (auto it = setNodeIdentify.begin(); it != setNodeIdentify.end(); ++it)
+        {
+            AddNode(strNodeType, *it);
+        }
+    }
+    else
+    {
+        m_mapNode.erase(node_type_iter);
+        for (auto it = setNodeIdentify.begin(); it != setNodeIdentify.end(); ++it)
+        {
+            AddNode(strNodeType, *it);
+        }
+    }
+}
+
 bool Nodes::SplitAddAndGetNode(const std::string& strNodeType, std::string& strNodeIdentify)
 {
     std::vector<std::string> vecAddress;

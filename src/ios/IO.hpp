@@ -1642,6 +1642,7 @@ E_CODEC_STATUS IO<T>::Recv(Dispatcher* pDispatcher, std::shared_ptr<SocketChanne
         }
         pDispatcher->m_pLastActivityChannel = pChannel;
     }
+    pDispatcher->OnIoWrite(pChannel);
     return(eStatus);
 }
 
@@ -1675,6 +1676,7 @@ E_CODEC_STATUS IO<T>::Fetch(Dispatcher* pDispatcher, std::shared_ptr<SocketChann
         }
         pDispatcher->m_pLastActivityChannel = pChannel;
     }
+    pDispatcher->OnIoWrite(pChannel);
     return(eStatus);
 }
 

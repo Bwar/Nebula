@@ -467,7 +467,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
         }
     }
     while (iWrittenLen > 0 && iHadWrittenLen < iNeedWriteLen);
-    LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iHadWrittenLen);
+    LOG4_TRACE("iNeedWriteLen = %d, iWrittenLen = %d, iHadWrittenLen = %d", iNeedWriteLen, iWrittenLen, iHadWrittenLen);
     if (iHadWrittenLen >= 0)
     {
         if (m_bIsClient)
@@ -487,10 +487,14 @@ E_CODEC_STATUS SocketChannelImpl<T>::Send()
         m_dActiveTime = m_pLabor->GetNowTime();
         if (iNeedWriteLen == iHadWrittenLen && 0 == m_pWaitForSendBuff->ReadableBytes())
         {
+            LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d, m_pWaitForSendBuff->ReadableBytes() = %u",
+                    iNeedWriteLen, iHadWrittenLen, m_pWaitForSendBuff->ReadableBytes());
             return(CODEC_STATUS_OK);
         }
         else
         {
+            LOG4_TRACE("iNeedWriteLen = %d, iHadWrittenLen = %d, m_pWaitForSendBuff->ReadableBytes() = %u",
+                    iNeedWriteLen, iHadWrittenLen, m_pWaitForSendBuff->ReadableBytes());
             return(CODEC_STATUS_PAUSE);
         }
     }
@@ -525,8 +529,8 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... ar
     switch (m_ucChannelStatus)
     {
         case CHANNEL_STATUS_ESTABLISHED:
-            eCodecStatus = (static_cast<T*>(m_pCodec))->Encode(std::forward<Targs>(args)..., m_pSendBuff);
-            if (CODEC_STATUS_OK == eCodecStatus && uiStepSeq > 0)
+            eCodecStatus = (static_cast<T*>(m_pCodec))->Encode(std::forward<Targs>(args)..., m_pSendBuff, m_pWaitForSendBuff);
+            if (uiStepSeq > 0 && (CODEC_STATUS_OK == eCodecStatus || CODEC_STATUS_PART_OK == eCodecStatus))
             {
                 uint32 uiStreamId = (static_cast<T*>(m_pCodec))->GetLastStreamId();
                 LOG4_TRACE("uiStreamId = %u", uiStreamId);
@@ -551,7 +555,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... ar
         case CHANNEL_STATUS_TRY_CONNECT:
         case CHANNEL_STATUS_INIT:
             eCodecStatus = (static_cast<T*>(m_pCodec))->Encode(std::forward<Targs>(args)..., m_pSendBuff, m_pWaitForSendBuff);
-            if (CODEC_STATUS_OK == eCodecStatus && uiStepSeq > 0)
+            if (uiStepSeq > 0 && (CODEC_STATUS_OK == eCodecStatus || CODEC_STATUS_PART_OK == eCodecStatus))
             {
                 eCodecStatus = CODEC_STATUS_PAUSE;
                 uint32 uiStreamId = (static_cast<T*>(m_pCodec))->GetLastStreamId();
@@ -649,7 +653,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendResponse(Targs&&... args)
     switch (m_ucChannelStatus)
     {
         case CHANNEL_STATUS_ESTABLISHED:
-            eCodecStatus = (static_cast<T*>(m_pCodec))->Encode(std::forward<Targs>(args)..., m_pSendBuff);
+            eCodecStatus = (static_cast<T*>(m_pCodec))->Encode(std::forward<Targs>(args)..., m_pSendBuff, m_pWaitForSendBuff);
             break;
         case CHANNEL_STATUS_CLOSED:
             LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
@@ -661,7 +665,7 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendResponse(Targs&&... args)
         case CHANNEL_STATUS_CONNECTED:
         case CHANNEL_STATUS_TRY_CONNECT:
         case CHANNEL_STATUS_INIT:
-            eCodecStatus = (static_cast<T*>(m_pCodec))->Encode(std::forward<Targs>(args)..., m_pWaitForSendBuff);
+            eCodecStatus = (static_cast<T*>(m_pCodec))->Encode(std::forward<Targs>(args)..., m_pSendBuff, m_pWaitForSendBuff);
             break;
         default:
             LOG4_ERROR("%s invalid connection status %d!", m_strIdentify.c_str(), (int)m_ucChannelStatus);
@@ -817,19 +821,13 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
         E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
         if (m_pCodec->DecodeWithReactor())
         {
-            size_t uiSendBuffLen = m_pSendBuff->ReadableBytes();
             eCodecStatus = (static_cast<T*>(m_pCodec))->Decode(m_pRecvBuff, std::forward<Targs>(args)..., m_pSendBuff);
-            if (m_pSendBuff->ReadableBytes() > uiSendBuffLen
-                    && (eCodecStatus == CODEC_STATUS_OK || eCodecStatus == CODEC_STATUS_PART_OK))
-            {
-                Send();
-            }
         }
         else
         {
             eCodecStatus = (static_cast<T*>(m_pCodec))->Decode(m_pRecvBuff, std::forward<Targs>(args)...);
         }
-        if (CODEC_STATUS_OK == eCodecStatus || CODEC_STATUS_PART_OK == eCodecStatus)
+        if (CODEC_STATUS_OK == eCodecStatus || CODEC_STATUS_PART_OK == eCodecStatus || CODEC_STATUS_PART_ERR == eCodecStatus)
         {
             ++m_uiUnitTimeMsgNum;
             ++m_uiMsgNum;
@@ -877,19 +875,13 @@ E_CODEC_STATUS SocketChannelImpl<T>::Fetch(Targs&&... args)
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     if (m_pCodec->DecodeWithReactor())
     {
-        size_t uiSendBuffLen = m_pSendBuff->ReadableBytes();
         eCodecStatus = (static_cast<T*>(m_pCodec))->Decode(m_pRecvBuff, std::forward<Targs>(args)..., m_pSendBuff);
-        if (m_pSendBuff->ReadableBytes() > uiSendBuffLen
-                && (eCodecStatus == CODEC_STATUS_OK || eCodecStatus == CODEC_STATUS_PART_OK))
-        {
-            Send();
-        }
     }
     else
     {
         eCodecStatus = (static_cast<T*>(m_pCodec))->Decode(m_pRecvBuff, std::forward<Targs>(args)...);
     }
-    if (CODEC_STATUS_OK == eCodecStatus || CODEC_STATUS_PART_OK == eCodecStatus)
+    if (CODEC_STATUS_OK == eCodecStatus || CODEC_STATUS_PART_OK == eCodecStatus || CODEC_STATUS_PART_ERR == eCodecStatus)
     {
         ++m_uiUnitTimeMsgNum;
         ++m_uiMsgNum;
@@ -988,7 +980,6 @@ bool SocketChannelImpl<T>::SetCodec(Codec* pCodec)
     {
         delete m_pCodec;
     }
-    pCodec->ConnectionSetting(m_pSendBuff);
     m_pCodec = pCodec;
     return(true);
 }

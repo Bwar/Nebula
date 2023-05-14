@@ -184,8 +184,10 @@ void DecodeParameter(const std::string& strParameter, std::map<std::string, std:
 void Split(const std::string& strSrc, const std::string& strPattern, std::vector<std::string>& vecDest)
 {
     vecDest.clear();
+    std::string strForSplit;
+    strForSplit.assign(strSrc.data(), strSrc.size());
     char* p;
-    char* buff = const_cast<char*>(strSrc.data());
+    char* buff = const_cast<char*>(strForSplit.data());
     p = strsep(&buff, strPattern.data());
     while (p != NULL)
     {
@@ -201,8 +203,8 @@ std::string& Trim(std::string &s)
         return s;
     }
 
-    s.erase(0,s.find_first_not_of(" "));
-    s.erase(s.find_last_not_of(" ") + 1);
+    s.erase(0,s.find_first_not_of(" \t\f\v\r\n"));
+    s.erase(s.find_last_not_of(" \t\f\v\r\n") + 1);
     return s;
 }
 

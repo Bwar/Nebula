@@ -176,11 +176,11 @@ Codec* CodecFactory::CreateCodec(std::shared_ptr<NetLogger> pLogger, E_CODEC_TYP
     return(pCodec);
 }
 
-E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::shared_ptr<SocketChannel> pChannel)
+E_CODEC_STATUS CodecFactory::OnEvent(uint32 uiSpecChannelCodecType, std::shared_ptr<SocketChannel> pChannel, Dispatcher* pDispatcher)
 {
     uint32 uiFlags = 0;
     uint32 uiStepSeq = 0;
-    switch (pAsyncWatcher->GetCodecType())
+    switch (uiSpecChannelCodecType)
     {
         case CODEC_PROTO:
         case CODEC_NEBULA:
@@ -189,7 +189,10 @@ E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::sha
             MsgHead oMsgHead;
             MsgBody oMsgBody;
             auto pSpecChannel = std::static_pointer_cast<SpecChannel<MsgBody, MsgHead>>(pChannel);
-            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            if (pDispatcher == nullptr)
+            {
+                pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            }
             pDispatcher->m_pLastActivityChannel = pChannel;
             while (pSpecChannel->Read(uiFlags, uiStepSeq, oMsgHead, oMsgBody))
             {
@@ -209,7 +212,10 @@ E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::sha
         {
             HttpMsg oHttpMsg;
             auto pSpecChannel = std::static_pointer_cast<SpecChannel<HttpMsg>>(pChannel);
-            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            if (pDispatcher == nullptr)
+            {
+                pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            }
             pDispatcher->m_pLastActivityChannel = pChannel;
             while (pSpecChannel->Read(uiFlags, uiStepSeq, oHttpMsg))
             {
@@ -228,7 +234,10 @@ E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::sha
         {
             RedisMsg oRedisMsg;
             auto pSpecChannel = std::static_pointer_cast<SpecChannel<RedisMsg>>(pChannel);
-            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            if (pDispatcher == nullptr)
+            {
+                pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            }
             pDispatcher->m_pLastActivityChannel = pChannel;
             while (pSpecChannel->Read(uiFlags, uiStepSeq, oRedisMsg))
             {
@@ -247,7 +256,10 @@ E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::sha
         {
             CassResponse oCassResponse;
             auto pSpecChannel = std::static_pointer_cast<SpecChannel<CassResponse>>(pChannel);
-            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            if (pDispatcher == nullptr)
+            {
+                pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            }
             pDispatcher->m_pLastActivityChannel = pChannel;
             while (pSpecChannel->Read(uiFlags, uiStepSeq, oCassResponse))
             {
@@ -261,7 +273,10 @@ E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::sha
         {
             SocketChannelPack oPack;
             auto pSpecChannel = std::static_pointer_cast<SpecChannel<SocketChannelPack>>(pChannel);
-            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            if (pDispatcher == nullptr)
+            {
+                pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            }
             pDispatcher->m_pLastActivityChannel = pChannel;
             while (pSpecChannel->Read(uiFlags, uiStepSeq, oPack))
             {
@@ -280,7 +295,10 @@ E_CODEC_STATUS CodecFactory::OnEvent(SpecChannelWatcher* pAsyncWatcher, std::sha
         {
             Package oPackage;
             auto pSpecChannel = std::static_pointer_cast<SpecChannel<Package>>(pChannel);
-            auto pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            if (pDispatcher == nullptr)
+            {
+                pDispatcher = LaborShared::Instance()->GetDispatcher(pSpecChannel->GetOwnerId());
+            }
             pDispatcher->m_pLastActivityChannel = pChannel;
             while (pSpecChannel->Read(uiFlags, uiStepSeq, oPackage))
             {
@@ -680,7 +698,8 @@ E_CODEC_STATUS CodecFactory::OnHttpEvent(Dispatcher* pDispatcher, std::shared_pt
                             oOutHttpMsg.set_status_code(404);
                             oOutHttpMsg.set_http_major(oHttpMsg.http_major());
                             oOutHttpMsg.set_http_minor(oHttpMsg.http_minor());
-                            IO<CodecHttp2>::SendRequest(pDispatcher, 0, pChannel, oOutHttpMsg);
+                            oOutHttpMsg.set_stream_id(oHttpMsg.stream_id());
+                            IO<CodecHttp2>::SendResponse(pDispatcher, pChannel, oOutHttpMsg);
                         }
                     }
                     else
@@ -701,7 +720,7 @@ E_CODEC_STATUS CodecFactory::OnHttpEvent(Dispatcher* pDispatcher, std::shared_pt
                         oOutHttpMsg.set_status_code(404);
                         oOutHttpMsg.set_http_major(oHttpMsg.http_major());
                         oOutHttpMsg.set_http_minor(oHttpMsg.http_minor());
-                        IO<CodecHttp>::SendRequest(pDispatcher, 0, pChannel, oOutHttpMsg);
+                        IO<CodecHttp>::SendResponse(pDispatcher, pChannel, oOutHttpMsg);
                     }
                 }
                 else
@@ -802,7 +821,7 @@ bool CodecFactory::AutoSwitchCodec(Dispatcher* pDispatcher,
 {
     for (uint32 i = uiLastCodecPos + 1; i < s_vecAutoSwitchCodec.size(); ++i)
     {
-        if (eOriginCodecType == s_vecAutoSwitchCodec[i])
+        if (eOriginCodecType == s_vecAutoSwitchCodec[i] || CODEC_UNKNOW == s_vecAutoSwitchCodec[i])
         {
             continue;
         }

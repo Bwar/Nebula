@@ -174,52 +174,61 @@ E_CODEC_STATUS CodecHttp::Encode(const HttpMsg& oHttpMsg, CBuffer* pBuff)
         std::string strHost;
         std::string strPath;
         struct http_parser_url stUrl;
-        if(0 == http_parser_parse_url(oHttpMsg.url().c_str(), oHttpMsg.url().length(), 0, &stUrl))
+        if (oHttpMsg.url().size() > 0)
         {
-            if(stUrl.field_set & (1 << UF_PORT))
+            if(0 == http_parser_parse_url(oHttpMsg.url().c_str(), oHttpMsg.url().length(), 0, &stUrl))
             {
-                iPort = stUrl.port;
+                if(stUrl.field_set & (1 << UF_PORT))
+                {
+                    iPort = stUrl.port;
+                }
+                else
+                {
+                    iPort = 80;
+                }
+
+                if(stUrl.field_set & (1 << UF_HOST) )
+                {
+                    strHost = oHttpMsg.url().substr(stUrl.field_data[UF_HOST].off, stUrl.field_data[UF_HOST].len);
+                }
+
+                if(stUrl.field_set & (1 << UF_PATH))
+                {
+                    strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, stUrl.field_data[UF_PATH].len);
+                }
+
+                if (iPort == 80)
+                {
+                    std::string strSchema = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(':'));
+                    std::transform(strSchema.begin(), strSchema.end(), strSchema.begin(), [](unsigned char c) -> unsigned char { return std::tolower(c); });
+                    if (strSchema == std::string("https"))
+                    {
+                        iPort = 443;
+                    }
+                }
             }
             else
             {
-                iPort = 80;
+                LOG4_WARNING("http_parser_parse_url error!");
+                m_mapAddingHttpHeader.clear();
+                return(CODEC_STATUS_ERR);
             }
-
-            if(stUrl.field_set & (1 << UF_HOST) )
+            if (stUrl.field_data[UF_PATH].off >= oHttpMsg.url().size())
             {
-                strHost = oHttpMsg.url().substr(stUrl.field_data[UF_HOST].off, stUrl.field_data[UF_HOST].len);
+                LOG4_WARNING("invalid url \"%s\"!", oHttpMsg.url().c_str());
+                m_mapAddingHttpHeader.clear();
+                return(CODEC_STATUS_ERR);
             }
-
-            if(stUrl.field_set & (1 << UF_PATH))
-            {
-                strPath = oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, stUrl.field_data[UF_PATH].len);
-            }
-
-            if (iPort == 80)
-            {
-                std::string strSchema = oHttpMsg.url().substr(0, oHttpMsg.url().find_first_of(':'));
-                std::transform(strSchema.begin(), strSchema.end(), strSchema.begin(), [](unsigned char c) -> unsigned char { return std::tolower(c); });
-                if (strSchema == std::string("https"))
-                {
-                    iPort = 443;
-                }
-            }
+            iWriteSize = pBuff->Printf("%s %s HTTP/%u.%u\r\n", http_method_str((http_method)oHttpMsg.method()),
+                            oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, std::string::npos).c_str(),
+                            oHttpMsg.http_major(), oHttpMsg.http_minor());
         }
         else
         {
-            LOG4_WARNING("http_parser_parse_url error!");
-            m_mapAddingHttpHeader.clear();
-            return(CODEC_STATUS_ERR);
+            iWriteSize = pBuff->Printf("%s %s HTTP/%u.%u\r\n", http_method_str((http_method)oHttpMsg.method()),
+                            oHttpMsg.path().c_str(),
+                            oHttpMsg.http_major(), oHttpMsg.http_minor());
         }
-        if (stUrl.field_data[UF_PATH].off >= oHttpMsg.url().size())
-        {
-            LOG4_WARNING("invalid url \"%s\"!", oHttpMsg.url().c_str());
-            m_mapAddingHttpHeader.clear();
-            return(CODEC_STATUS_ERR);
-        }
-        iWriteSize = pBuff->Printf("%s %s HTTP/%u.%u\r\n", http_method_str((http_method)oHttpMsg.method()),
-                        oHttpMsg.url().substr(stUrl.field_data[UF_PATH].off, std::string::npos).c_str(),
-                        oHttpMsg.http_major(), oHttpMsg.http_minor());
         if (iWriteSize < 0)
         {
             pBuff->SetWriteIndex(pBuff->GetWriteIndex() - iHadEncodedSize);

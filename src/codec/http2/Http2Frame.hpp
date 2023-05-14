@@ -115,7 +115,7 @@ protected:
 
     E_CODEC_STATUS EncodeData(CodecHttp2* pCodecH2,
             uint32 uiStreamId, const HttpMsg& oHttpMsg, bool bEndStream,
-            const std::string& strPadding, CBuffer* pBuff);
+            const std::string& strPadding, uint32 uiDataOffset, CBuffer* pBuff);
     E_CODEC_STATUS EncodeHeaders(CodecHttp2* pCodecH2,
             uint32 uiStreamId, const HttpMsg& oHttpMsg, int iHeaderType,
             const tagPriority& stPriority, const std::string& strPadding,
@@ -152,9 +152,11 @@ private:
     friend class Http2Stream;
 
     static std::unordered_set<uint8> s_setFrameType;
-    std::list<CBuffer*> m_listWaittingFrameData;
+    HttpMsg m_oSendingHttpMsg;
+    uint32 m_uiHadEncodeDataLen = 0;
+    std::string m_strPadding;
     tagH2FrameHead m_stLastDataFrameHead;
-    Http2Stream* m_pStream;
+    Http2Stream* m_pStream = nullptr;
 };
 
 } /* namespace neb */

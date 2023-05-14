@@ -110,7 +110,7 @@ void Dispatcher::AsyncCallback(struct ev_loop* loop, struct ev_async* watcher, i
     {
         auto pWatcher = static_cast<SpecChannelWatcher*>(watcher->data);
         auto pChannel = pWatcher->GetSocketChannel();
-        CodecFactory::OnEvent(pWatcher, pChannel);
+        CodecFactory::OnEvent(pWatcher->GetCodecType(), pChannel, nullptr);
     }
 }
 
@@ -231,18 +231,7 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
 {
     if (CODEC_NEBULA == pChannel->GetCodecType())  // 系统内部Server间通信
     {
-        if (pChannel->GetRemoteWorkerIndex() < 0) // connect to Manager
-        {
-            std::shared_ptr<Step> pStepTellWorker
-                = m_pLabor->GetActorBuilder()->MakeSharedStep(nullptr, "neb::StepTellWorker", pChannel);
-            if (nullptr == pStepTellWorker)
-            {
-                return(false);
-            }
-            pStepTellWorker->Emit(ERR_OK);
-            pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
-        }
-        else
+        if (pChannel->IsClient())
         {
             if (CHANNEL_STATUS_TRY_CONNECT == pChannel->GetChannelStatus())  // connect之后的第一个写事件
             {
@@ -259,6 +248,20 @@ bool Dispatcher::OnIoWrite(std::shared_ptr<SocketChannel> pChannel)
                     m_pLabor->GetActorBuilder()->RemoveStep(pStepConnectWorker);
                 }
                 return(true);
+            }
+        }
+        else
+        {
+            if (pChannel->GetRemoteWorkerIndex() < 0) // connect to Manager
+            {
+                std::shared_ptr<Step> pStepTellWorker
+                    = m_pLabor->GetActorBuilder()->MakeSharedStep(nullptr, "neb::StepTellWorker", pChannel);
+                if (nullptr == pStepTellWorker)
+                {
+                    return(false);
+                }
+                pStepTellWorker->Emit(ERR_OK);
+                pChannel->SetChannelStatus(CHANNEL_STATUS_ESTABLISHED);
             }
         }
     }
@@ -625,6 +628,11 @@ void Dispatcher::DelNodeIdentify(const std::string& strNodeType, const std::stri
     {
         m_pLogger->EnableNetLogger(false);
     }
+}
+
+void Dispatcher::ReplaceNodes(const std::string& strNodeType, const std::set<std::string>& setNodeIdentify)
+{
+    m_pSessionNode->ReplaceNodes(strNodeType, setNodeIdentify);
 }
 
 void Dispatcher::CircuitBreak(const std::string& strIdentify)
