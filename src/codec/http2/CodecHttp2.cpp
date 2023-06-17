@@ -558,6 +558,7 @@ void CodecHttp2::SetPriority(uint32 uiStreamId, const tagPriority& stPriority)
         if (pDependencyStreamWeight == nullptr)
         {
             pCurrentStreamWeight->pRightBrother = m_pStreamWeightRoot->pFirstChild;
+            pCurrentStreamWeight->pParent = m_pStreamWeightRoot;
             m_pStreamWeightRoot->pFirstChild = pCurrentStreamWeight;
         }
         else
