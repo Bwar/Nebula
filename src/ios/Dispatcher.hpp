@@ -42,7 +42,7 @@ extern "C" {
 
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
+#include <list>
 #include <sstream>
 #include <memory>
 
@@ -65,6 +65,7 @@ class LoadStress;  // not in Nebula project
 class Actor;
 class ActorBuilder;
 class CmdFdTransfer;
+class PollingWatcher;
 struct tagClientConnWatcherData;
 template<typename T> class IO;
 
@@ -72,6 +73,8 @@ typedef void (*signal_callback)(struct ev_loop*,ev_signal*,int);
 typedef void (*timer_callback)(struct ev_loop*,ev_timer*,int);
 typedef void (*idle_callback)(struct ev_loop*,ev_idle*,int);
 typedef void (*async_callback)(struct ev_loop*,ev_async*,int);
+typedef void (*prepare_callback)(struct ev_loop*, ev_prepare*, int);
+typedef void (*check_callback)(struct ev_loop*, ev_check*, int);
 
 enum E_DISPATCHER
 {
@@ -101,7 +104,7 @@ public:
 
     Dispatcher(Labor* pLabor, std::shared_ptr<NetLogger> pLogger);
     virtual ~Dispatcher();
-    bool Init();
+    bool Init(uint32 uiUpstreamConnectionPoolSize, uint32 uiMaxSendBuffSize, uint32 uiMaxRecvBuffSize);
 
 public:
     static void IoCallback(struct ev_loop* loop, struct ev_io* watcher, int revents);
@@ -109,6 +112,10 @@ public:
     static void PeriodicTaskCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
     static void SignalCallback(struct ev_loop* loop, struct ev_signal* watcher, int revents);
     static void AsyncCallback(struct ev_loop* loop, struct ev_async* watcher, int revents);
+    static void IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int revents);
+    static void PollingCallback(struct ev_loop* loop, struct ev_timer* watcher, int revents);
+    static void PrepareCallback(struct ev_loop* loop, struct ev_prepare* watcher, int revents);
+    static void CheckCallback(struct ev_loop* loop, struct ev_check* watcher, int revents);
     static void ClientConnFrequencyTimeoutCallback(struct ev_loop* loop, ev_timer* watcher, int revents);
 
     bool OnIoRead(std::shared_ptr<SocketChannel> pChannel);
@@ -117,6 +124,7 @@ public:
     bool OnIoTimeout(std::shared_ptr<SocketChannel> pChannel);
     bool OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, ev_timer* watcher);
     bool DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
+    bool ReactSend(std::shared_ptr<SocketChannel> pChannel);
     bool MigrateChannelRecvAndHandle(std::shared_ptr<SocketChannel> pChannel);
 
     template <typename ...Targs>
@@ -137,6 +145,8 @@ public:
 public:
     void SetChannelIdentify(std::shared_ptr<SocketChannel> pChannel, const std::string& strIdentify);
     bool AddNamedSocketChannel(const std::string& strIdentify, std::shared_ptr<SocketChannel> pChannel);
+    bool AdjustNamedSocketChannel(std::shared_ptr<SocketChannel> pChannel);
+    std::shared_ptr<SocketChannel> ApplyNamedSocketChannel(const std::string& strIdentify, uint32& uiPoolSize);
     void DelNamedSocketChannel(const std::string& strIdentify);
     void AddNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
     void DelNodeIdentify(const std::string& strNodeType, const std::string& strIdentify);
@@ -149,6 +159,10 @@ public:
     std::shared_ptr<ChannelOption> GetChannelOption(const std::string& strIdentify);
     void SetChannelOption(const std::string& strIdentify, const ChannelOption& stOption);
 
+    uint32 GetUpstreamConnectionPoolSize() const
+    {
+        return(m_uiUpstreamConnectionPoolSize);
+    }
     time_t GetNowTime() const
     {
         return((time_t)ev_now(m_loop));
@@ -185,6 +199,8 @@ protected:
     bool AddEvent(ev_timer* timer_watcher, timer_callback pFunc, ev_tstamp dTimeout);
     bool AddEvent(ev_idle* idle_watcher, idle_callback pFunc);
     bool AddEvent(ev_async* async_watcher, async_callback pFunc);
+    bool AddEvent(ev_prepare* prepare_watcher, prepare_callback pFunc);
+    bool AddEvent(ev_check* check_watcher, check_callback pFunc);
     bool RefreshEvent(ev_timer* timer_watcher, ev_tstamp dTimeout);
     bool DelEvent(ev_io* io_watcher);
     bool DelEvent(ev_timer* timer_watcher);
@@ -196,12 +212,15 @@ protected:
     bool PingChannel(std::shared_ptr<SocketChannel> pChannel);
     void CheckFailedNode();
     void EvBreak();
+    PollingWatcher* MutablePollingWatcher();
 
 private:
     char* m_pErrBuff;
+    uint32 m_uiUpstreamConnectionPoolSize;
     Labor* m_pLabor;
     struct ev_loop* m_loop;
     time_t m_lLastCheckNodeTime;
+    PollingWatcher* m_pPollingWatcher;
     std::shared_ptr<NetLogger> m_pLogger;
     std::unique_ptr<Nodes> m_pSessionNode;
     std::shared_ptr<SocketChannel> m_pLastActivityChannel;  // 最近一个发送或接收过数据的channel
@@ -210,7 +229,7 @@ private:
     std::unordered_map<int32, std::shared_ptr<SocketChannel> > m_mapSocketChannel;
 
     /* named Channel */
-    std::unordered_map<std::string, std::unordered_set<std::shared_ptr<SocketChannel> > > m_mapNamedSocketChannel;      ///< key为Identify，连接存在时，if(http连接)set.size()>=1;else set.size()==1;
+    std::unordered_map<std::string, std::list<std::shared_ptr<SocketChannel> > > m_mapNamedSocketChannel;      ///< key为Identify，连接存在时，if(http连接)set.size()>=1;else set.size()==1;
     std::unordered_map<int32, std::string> m_mapChannelPingStepName;   // CODEC_TYPE as key 
 
     std::unordered_map<std::string, uint32> m_mapClientConnFrequency;   ///< 客户端连接频率

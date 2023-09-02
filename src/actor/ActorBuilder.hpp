@@ -139,7 +139,7 @@ public:
     bool RegisterActor(const std::string& strActorName, Actor* pNewActor, Actor* pCreator = nullptr);
 
 public:
-    bool SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq, bool bEnableReadOnly);
+    bool SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq, uint32 uiReadMode = 0);
     virtual std::shared_ptr<Session> GetSession(uint32 uiSessionId);
     virtual std::shared_ptr<Session> GetSession(const std::string& strSessionId);
     virtual bool ExecStep(uint32 uiStepSeq, int iErrno = ERR_OK, const std::string& strErrMsg = "", void* data = NULL);

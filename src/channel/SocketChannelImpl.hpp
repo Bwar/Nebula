@@ -220,6 +220,8 @@ public:
         m_strRemoteAddr = strRemoteAddr;
     }
 
+    void SetMaxBuffSize(uint32 uiMaxSendBuffSize, uint32 uiMaxRecvBuffSize);
+
     void SetSecretKey(const std::string& strKey);
 
     void SetRemoteWorkerIndex(int16 iRemoteWorkerIndex);
@@ -242,6 +244,8 @@ private:
     int32 m_iFd;                          ///< 文件描述符
     uint32 m_uiSeq;                       ///< 文件描述符创建时对应的序列号
     uint32 m_bPipeline;                   ///< 是否支持pipeline
+    uint32 m_uiMaxSendBuffSize;
+    uint32 m_uiMaxRecvBuffSize;
     uint32 m_uiUnitTimeMsgNum;            ///< 统计单位时间内接收消息数量
     uint32 m_uiMsgNum;                    ///< 接收消息数量
     ev_tstamp m_dActiveTime;              ///< 最后一次访问时间
@@ -274,6 +278,7 @@ SocketChannelImpl<T>::SocketChannelImpl(Labor* pLabor, std::shared_ptr<NetLogger
     : SocketChannel(pLogger, bIsClient, bWithSsl),
       m_ucChannelStatus(CHANNEL_STATUS_INIT),m_eLastCodecStatus(CODEC_STATUS_OK),
       m_iRemoteWorkerIdx(-1), m_iFd(iFd), m_uiSeq(ulSeq), m_bPipeline(true),
+      m_uiMaxSendBuffSize(gc_iMaxBuffLen * 100), m_uiMaxRecvBuffSize(gc_iMaxBuffLen * 100),
       m_uiUnitTimeMsgNum(0), m_uiMsgNum(0),
       m_dActiveTime(0.0), m_dPenultimateActiveTime(0.0), m_dLastRecvTime(0.0), m_dKeepAlive(dKeepAlive),
       m_pRecvBuff(nullptr), m_pSendBuff(nullptr), m_pWaitForSendBuff(nullptr),
@@ -525,6 +530,13 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendRequest(uint32 uiStepSeq, Targs&&... ar
         LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
         return(CODEC_STATUS_ERR);
     }
+    if (m_pSendBuff->ReadableBytes() > m_uiMaxSendBuffSize
+            || m_pWaitForSendBuff->ReadableBytes() > m_uiMaxSendBuffSize)
+    {
+        LOG4_ERROR("max send buff size %u, and now send buff size %u, send wait buff size %u, overflow.",
+                m_uiMaxSendBuffSize, m_pSendBuff->ReadableBytes(), m_pWaitForSendBuff->ReadableBytes());
+        return(CODEC_STATUS_PART_ERR);
+    }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     switch (m_ucChannelStatus)
     {
@@ -649,6 +661,13 @@ E_CODEC_STATUS SocketChannelImpl<T>::SendResponse(Targs&&... args)
         LOG4_ERROR("no codec found, please check whether the CODEC_TYPE is valid.");
         return(CODEC_STATUS_ERR);
     }
+    if (m_pSendBuff->ReadableBytes() > m_uiMaxSendBuffSize
+            || m_pWaitForSendBuff->ReadableBytes() > m_uiMaxSendBuffSize)
+    {
+        LOG4_ERROR("max send buff size %u, and now send buff size %u, send wait buff size %u, overflow.",
+                m_uiMaxSendBuffSize, m_pSendBuff->ReadableBytes(), m_pWaitForSendBuff->ReadableBytes());
+        return(CODEC_STATUS_PART_ERR);
+    }
     E_CODEC_STATUS eCodecStatus = CODEC_STATUS_OK;
     switch (m_ucChannelStatus)
     {
@@ -756,6 +775,12 @@ E_CODEC_STATUS SocketChannelImpl<T>::Recv(Targs&&... args)
         LOG4_WARNING("%s channel_fd[%d], channel_seq[%d], channel_status[%d] remote %s EOF.",
                 m_strIdentify.c_str(), m_iFd, m_uiSeq, (int)m_ucChannelStatus, m_strRemoteAddr.c_str());
         return(CODEC_STATUS_ERR);
+    }
+    if (m_pRecvBuff->ReadableBytes() > m_uiMaxRecvBuffSize)
+    {
+        LOG4_ERROR("max recv buff size %u, and now recv buff size %u, overflow.",
+                m_uiMaxRecvBuffSize, m_pRecvBuff->ReadableBytes());
+        return(CODEC_STATUS_PART_ERR);
     }
     if (m_pCodec == nullptr)
     {
@@ -912,6 +937,13 @@ E_CODEC_STATUS SocketChannelImpl<T>::Fetch(Targs&&... args)
         return(m_eLastCodecStatus);
     }
     return(eCodecStatus);
+}
+
+template<typename T>
+void SocketChannelImpl<T>::SetMaxBuffSize(uint32 uiMaxSendBuffSize, uint32 uiMaxRecvBuffSize)
+{
+    m_uiMaxSendBuffSize = uiMaxSendBuffSize;
+    m_uiMaxRecvBuffSize = uiMaxRecvBuffSize;
 }
 
 template<typename T>

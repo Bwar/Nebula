@@ -193,13 +193,13 @@ void FileLogger::AppendLogPattern(int iLev, const char* szFileName, unsigned int
     }
     m_strLogLine.clear();
     m_strLogLine.append(m_strLogFormatTime);
-    m_strLogLine.append(std::to_string(timeval.tv_usec / 1000));
+    m_strLogLine.append(ToString((uint64)timeval.tv_usec / 1000));
     m_strLogLine.append("]");
     m_strLogLine.append(LogLevMsg[iLev]);
     m_strLogLine.append(" ");
     m_strLogLine.append(szFileName);
     m_strLogLine.append(":");
-    m_strLogLine.append(std::to_string(uiFileLine));
+    m_strLogLine.append(ToString(uiFileLine));
     m_strLogLine.append(" ");
     m_strLogLine.append(szFunction);
     m_strLogLine.append(" ");
@@ -237,13 +237,13 @@ void FileLogger::AppendLogPattern(const std::string& strTraceId, int iLev, const
     }
     m_strLogLine.clear();
     m_strLogLine.append(m_strLogFormatTime);
-    m_strLogLine.append(std::to_string(timeval.tv_usec / 1000));
+    m_strLogLine.append(ToString((uint64)timeval.tv_usec / 1000));
     m_strLogLine.append("]");
     m_strLogLine.append(LogLevMsg[iLev]);
     m_strLogLine.append(" ");
     m_strLogLine.append(szFileName);
     m_strLogLine.append(":");
-    m_strLogLine.append(std::to_string(uiFileLine));
+    m_strLogLine.append(ToString(uiFileLine));
     m_strLogLine.append(" ");
     m_strLogLine.append(szFunction);
     m_strLogLine.append(" ");

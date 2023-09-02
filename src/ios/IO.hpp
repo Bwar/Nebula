@@ -216,19 +216,41 @@ bool IO<T>::Send(std::shared_ptr<SocketChannel> pChannel)
     {
         return(false);
     }
+    auto pDispatcher = pChannel->GetLabor()->GetDispatcher();
+    E_CODEC_STATUS eStatus = CODEC_STATUS_OK;
     if (pChannel->WithSsl())
     {
 #ifdef WITH_OPENSSL
-        std::static_pointer_cast<SocketChannelSslImpl<T>>(pChannel->m_pImpl)->Send();
+        eStatus = std::static_pointer_cast<SocketChannelSslImpl<T>>(pChannel->m_pImpl)->Send();
 #else
-        std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->Send();
+        eStatus = std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->Send();
 #endif
     }
     else
     {
-        std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->Send();
+        eStatus = std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->Send();
     }
-    return(true);
+    switch (eStatus)
+    {
+        case CODEC_STATUS_OK:
+            return(true);
+        case CODEC_STATUS_PAUSE:
+        case CODEC_STATUS_WANT_WRITE:
+        case CODEC_STATUS_PART_OK:
+            pDispatcher->AddIoWriteEvent(pChannel);
+            return(true);
+        case CODEC_STATUS_WANT_READ:
+            pDispatcher->RemoveIoWriteEvent(pChannel);
+            return(true);
+        case CODEC_STATUS_EOF:
+            LOG4_INFO_DISPATCH("eStatus = %d, %s", eStatus, pChannel->GetIdentify().c_str());
+            pDispatcher->DiscardSocketChannel(pChannel);
+            return(true);
+        default:
+            LOG4_INFO_DISPATCH("eStatus = %d, %s", eStatus, pChannel->GetIdentify().c_str());
+            pDispatcher->DiscardSocketChannel(pChannel);
+            return(false);
+    }
 }
 
 template<typename T>
@@ -478,27 +500,20 @@ std::shared_ptr<SocketChannel> IO<T>::ApplySocketChannel(Actor* pActor, const Ch
             return(nullptr);
         }
         auto pDispatcher = pActor->m_pLabor->GetDispatcher();
-        auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(strIdentify);
-        if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+        uint32 uiConnectionPoolSize = 0;
+        auto pChannel = pDispatcher->ApplyNamedSocketChannel(strIdentify, uiConnectionPoolSize);
+        if (pChannel != nullptr)
+        {
+            return(pChannel);
+        }
+        if (uiConnectionPoolSize < pDispatcher->GetUpstreamConnectionPoolSize())
         {
             return(NewSocketChannel(pDispatcher, stOption, strIdentify, strHost, iPort, iRemoteWorkerIndex));
         }
         else
         {
-            if (named_iter->second.empty())
-            {
-                return(NewSocketChannel(pDispatcher, stOption, strIdentify, strHost, iPort, iRemoteWorkerIndex));
-            }
-            else
-            {
-                auto channel_iter = named_iter->second.begin();
-                auto pChannel = *channel_iter;
-                if (!pChannel->IsPipeline())
-                {
-                    named_iter->second.erase(channel_iter);
-                }
-                return(pChannel);
-            }
+            LOG4_ERROR_ACTOR("connection pool size of \"%s\" overload.", strIdentify.c_str());
+            return(nullptr);
         }
     }
 }
@@ -515,27 +530,20 @@ std::shared_ptr<SocketChannel> IO<T>::ApplySocketChannel(Actor* pActor, const Ch
         std::ostringstream ossIdentify;
         ossIdentify << strHost << ":" << iPort;
         auto pDispatcher = pActor->m_pLabor->GetDispatcher();
-        auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(ossIdentify.str());
-        if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+        uint32 uiConnectionPoolSize = 0;
+        auto pChannel = pDispatcher->ApplyNamedSocketChannel(ossIdentify.str(), uiConnectionPoolSize);
+        if (pChannel != nullptr)
+        {
+            return(pChannel);
+        }
+        if (uiConnectionPoolSize < pDispatcher->GetUpstreamConnectionPoolSize())
         {
             return(NewSocketChannel(pDispatcher, stOption, ossIdentify.str(), strHost, iPort, -1));
         }
         else
         {
-            if (named_iter->second.empty())
-            {
-                return(NewSocketChannel(pDispatcher, stOption, ossIdentify.str(), strHost, iPort, -1));
-            }
-            else
-            {
-                auto channel_iter = named_iter->second.begin();
-                auto pChannel = *channel_iter;
-                if (!pChannel->IsPipeline())
-                {
-                    named_iter->second.erase(channel_iter);
-                }
-                return(pChannel);
-            }
+            LOG4_ERROR_ACTOR("connection pool size of \"%s\" overload.", ossIdentify.str().c_str());
+            return(nullptr);
         }
     }
 }
@@ -632,30 +640,21 @@ template<typename ...Targs>
 bool IO<T>::SendWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, Targs&&... args)
 {
     LOG4_TRACE_DISPATCH("identify: %s", strIdentify.c_str());
-
-    auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(strIdentify);
-    if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+    uint32 uiConnectionPoolSize = 0;
+    auto pChannel = pDispatcher->ApplyNamedSocketChannel(strIdentify, uiConnectionPoolSize);
+    if (pChannel != nullptr)
     {
-        LOG4_TRACE_DISPATCH("no channel match %s.", strIdentify.c_str());
+        bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
+        return(bResult);
+    }
+    if (uiConnectionPoolSize < pDispatcher->GetUpstreamConnectionPoolSize())
+    {
         return(AutoSendWithoutOption(pDispatcher, uiStepSeq, strIdentify, std::forward<Targs>(args)...));
     }
     else
     {
-        if (named_iter->second.empty())
-        {
-            return(AutoSendWithoutOption(pDispatcher, uiStepSeq, strIdentify, std::forward<Targs>(args)...));
-        }
-        else
-        {
-            auto channel_iter = named_iter->second.begin();
-            auto pChannel = *channel_iter;
-            bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
-            if (!pChannel->IsPipeline() && bResult)
-            {
-                named_iter->second.erase(channel_iter);
-            }
-            return(bResult);
-        }
+        LOG4_ERROR_DISPATCH("connection pool size of \"%s\" overload.", strIdentify.c_str());
+        return(false);
     }
 }
 
@@ -664,30 +663,21 @@ template<typename ...Targs>
 bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string& strIdentify, const ChannelOption& stOption, Targs&&... args)
 {
     LOG4_TRACE_DISPATCH("identify: %s", strIdentify.c_str());
-
-    auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(strIdentify);
-    if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+    uint32 uiConnectionPoolSize = 0;
+    auto pChannel = pDispatcher->ApplyNamedSocketChannel(strIdentify, uiConnectionPoolSize);
+    if (pChannel != nullptr)
     {
-        LOG4_TRACE_DISPATCH("no channel match %s.", strIdentify.c_str());
-        return(AutoSend(pDispatcher, uiStepSeq, strIdentify, stOption, std::forward<Targs>(args)...));
+        bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
+        return(bResult);
+    }
+    if (uiConnectionPoolSize < pDispatcher->GetUpstreamConnectionPoolSize())
+    {
+        return(AutoSendWithoutOption(pDispatcher, uiStepSeq, strIdentify, std::forward<Targs>(args)...));
     }
     else
     {
-        if (named_iter->second.empty())
-        {
-            return(AutoSend(pDispatcher, uiStepSeq, strIdentify, stOption, std::forward<Targs>(args)...));
-        }
-        else
-        {
-            auto channel_iter = named_iter->second.begin();
-            auto pChannel = *channel_iter;
-            bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
-            if (!pChannel->IsPipeline() && bResult)
-            {
-                named_iter->second.erase(channel_iter);
-            }
-            return(bResult);
-        }
+        LOG4_ERROR_DISPATCH("connection pool size of \"%s\" overload.", strIdentify.c_str());
+        return(false);
     }
 }
 
@@ -744,26 +734,21 @@ bool IO<T>::SendWithoutOption(Dispatcher* pDispatcher, uint32 uiStepSeq, const s
     pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "host %s port %d", strHost.c_str(), iPort);
     std::ostringstream ossIdentify;
     ossIdentify << strHost << ":" << iPort;
-    auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(ossIdentify.str());
-    if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+    uint32 uiConnectionPoolSize = 0;
+    auto pChannel = pDispatcher->ApplyNamedSocketChannel(ossIdentify.str(), uiConnectionPoolSize);
+    if (pChannel != nullptr)
     {
-        LOG4_TRACE_DISPATCH("no channel match %s.", ossIdentify.str().c_str());
+        bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
+        return(bResult);
+    }
+    if (uiConnectionPoolSize < pDispatcher->GetUpstreamConnectionPoolSize())
+    {
         return(AutoSendWithoutOption(pDispatcher, uiStepSeq, strHost, iPort, std::forward<Targs>(args)...));
     }
     else
     {
-        auto channel_iter = named_iter->second.begin();
-        if (channel_iter == named_iter->second.end())
-        {
-            return(AutoSendWithoutOption(pDispatcher, uiStepSeq, strHost, iPort, std::forward<Targs>(args)...));
-        }
-        auto pChannel = *channel_iter;
-        bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
-        if (!pChannel->IsPipeline() && bResult)
-        {
-            named_iter->second.erase(channel_iter);
-        }
-        return(bResult);
+        LOG4_ERROR_DISPATCH("connection pool size of \"%s\" overload.", ossIdentify.str().c_str());
+        return(false);
     }
 }
 
@@ -774,26 +759,21 @@ bool IO<T>::SendTo(Dispatcher* pDispatcher, uint32 uiStepSeq, const std::string&
     pDispatcher->Logger(neb::Logger::TRACE, __FILE__, __LINE__, __FUNCTION__, "host %s port %d", strHost.c_str(), iPort);
     std::ostringstream ossIdentify;
     ossIdentify << strHost << ":" << iPort;
-    auto named_iter = pDispatcher->m_mapNamedSocketChannel.find(ossIdentify.str());
-    if (named_iter == pDispatcher->m_mapNamedSocketChannel.end())
+    uint32 uiConnectionPoolSize = 0;
+    auto pChannel = pDispatcher->ApplyNamedSocketChannel(ossIdentify.str(), uiConnectionPoolSize);
+    if (pChannel != nullptr)
     {
-        LOG4_TRACE_DISPATCH("no channel match %s.", ossIdentify.str().c_str());
+        bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
+        return(bResult);
+    }
+    if (uiConnectionPoolSize < pDispatcher->GetUpstreamConnectionPoolSize())
+    {
         return(AutoSend(pDispatcher, uiStepSeq, strHost, iPort, stOption, std::forward<Targs>(args)...));
     }
     else
     {
-        auto channel_iter = named_iter->second.begin();
-        if (channel_iter == named_iter->second.end())
-        {
-            return(AutoSend(pDispatcher, uiStepSeq, strHost, iPort, stOption, std::forward<Targs>(args)...));
-        }
-        auto pChannel = *channel_iter;
-        bool bResult = SendRequest(pDispatcher, uiStepSeq, pChannel, std::forward<Targs>(args)...);
-        if (!pChannel->IsPipeline() && bResult)
-        {
-            named_iter->second.erase(channel_iter);
-        }
-        return(bResult);
+        LOG4_ERROR_DISPATCH("connection pool size of \"%s\" overload.", ossIdentify.str().c_str());
+        return(false);
     }
 }
 
@@ -1427,14 +1407,29 @@ bool IO<T>::AutoSend(Dispatcher* pDispatcher, uint32 uiStepSeq,
             pDispatcher->m_pLabor->IoStatAddSendNum(pChannel->GetFd(), IO_STAT_DOWNSTREAM_SEND_NUM);
         }
         pDispatcher->m_pLastActivityChannel = pChannel;
-        if (CODEC_STATUS_OK != eCodecStatus
-                && CODEC_STATUS_PAUSE != eCodecStatus
-                && CODEC_STATUS_WANT_WRITE != eCodecStatus
-                && CODEC_STATUS_WANT_READ != eCodecStatus)
+        switch (eCodecStatus)
         {
-            pDispatcher->DiscardSocketChannel(pChannel);
+            case CODEC_STATUS_OK:
+                return(true);
+            case CODEC_STATUS_PAUSE:
+            case CODEC_STATUS_WANT_WRITE:
+            case CODEC_STATUS_PART_OK:
+                pDispatcher->AddIoWriteEvent(pChannel);
+                return(true);
+            case CODEC_STATUS_WANT_READ:
+                pDispatcher->RemoveIoWriteEvent(pChannel);
+                return(true);
+            case CODEC_STATUS_EOF:      // a case: http1.0 respone and close
+                pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
+                        "eStatus = %d, %s", eCodecStatus, pChannel->GetIdentify().c_str());
+                pDispatcher->DiscardSocketChannel(pChannel);
+                return(true);
+            default:
+                pDispatcher->Logger(neb::Logger::INFO, __FILE__, __LINE__, __FUNCTION__,
+                        "eStatus = %d, %s", eCodecStatus, pChannel->GetIdentify().c_str());
+                pDispatcher->DiscardSocketChannel(pChannel);
+                return(false);
         }
-        return(true);
     }
 }
 
@@ -1496,6 +1491,12 @@ std::shared_ptr<SocketChannel> IO<T>::NewSocketChannel(Dispatcher* pDispatcher, 
 
         break;
     }
+    if (iFd == -1)
+    {
+        char szErrBuff[256] = {0};
+        LOG4_ERROR_DISPATCH("error %d: %s", errno, strerror_r(errno, szErrBuff, 256));
+        return(nullptr);
+    }
 
     /* No address succeeded */
 //    if (pAddrCurrent == NULL)
@@ -1537,14 +1538,12 @@ std::shared_ptr<SocketChannel> IO<T>::NewSocketChannel(Dispatcher* pDispatcher, 
         std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetIdentify(strIdentify);
         std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetRemoteAddr(strHost);
         std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetPipeline(stOption.bPipeline);
+        std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetMaxBuffSize(stOption.uiMaxSendBuffSize, stOption.uiMaxRecvBuffSize);
         pDispatcher->m_pLastActivityChannel = pChannel;
 
         std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetChannelStatus(CHANNEL_STATUS_TRY_CONNECT);
         std::static_pointer_cast<SocketChannelImpl<T>>(pChannel->m_pImpl)->SetRemoteWorkerIndex(iRemoteWorkerIndex);
-        if (stOption.bPipeline)
-        {
-            pDispatcher->AddNamedSocketChannel(strIdentify, pChannel);
-        }
+        pDispatcher->AddNamedSocketChannel(strIdentify, pChannel);
         return(pChannel);
     }
     else    // 没有足够资源分配给新连接，直接close掉
@@ -1642,7 +1641,10 @@ E_CODEC_STATUS IO<T>::Recv(Dispatcher* pDispatcher, std::shared_ptr<SocketChanne
         }
         pDispatcher->m_pLastActivityChannel = pChannel;
     }
-    pDispatcher->OnIoWrite(pChannel);
+    if (pChannel->GetFd() > 0)
+    {
+        pDispatcher->ReactSend(pChannel);
+    }
     return(eStatus);
 }
 
@@ -1676,7 +1678,10 @@ E_CODEC_STATUS IO<T>::Fetch(Dispatcher* pDispatcher, std::shared_ptr<SocketChann
         }
         pDispatcher->m_pLastActivityChannel = pChannel;
     }
-    pDispatcher->OnIoWrite(pChannel);
+    if (pChannel->GetFd() > 0)
+    {
+        pDispatcher->ReactSend(pChannel);
+    }
     return(eStatus);
 }
 
@@ -1772,10 +1777,7 @@ bool IO<T>::OnResponse(ActorBuilder* pBuilder, std::shared_ptr<SocketChannel> pC
     auto uiStepSeq = pChannel->PopStepSeq(uiStreamId, eCodecStatus);
     LOG4_TRACE_BUILDER("stream id = %u, step seq = %u", uiStreamId, uiStepSeq);
     auto step_iter = pBuilder->m_mapCallbackStep.find(uiStepSeq);
-    if (!pChannel->IsPipeline() && pChannel->PipelineIsEmpty())
-    {
-        pBuilder->m_pLabor->GetDispatcher()->AddNamedSocketChannel(pChannel->GetIdentify(), pChannel); // push back to named socket channel pool.
-    }
+    pBuilder->m_pLabor->GetDispatcher()->AdjustNamedSocketChannel(pChannel);
     if (step_iter == pBuilder->m_mapCallbackStep.end())
     {
         LOG4_TRACE_BUILDER("no callback for reply from %s, stream id %u, step seq %u!",

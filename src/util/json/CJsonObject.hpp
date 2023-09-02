@@ -215,10 +215,10 @@ private:
     std::map<std::string, CJsonObject*> m_mapJsonObjectRef;
     std::map<std::string, CJsonObject*>::iterator m_object_iter;
 #else
-    std::unordered_map<unsigned int, CJsonObject*> m_mapJsonArrayRef;
-    std::unordered_map<std::string, CJsonObject*>::iterator m_object_iter;
-    std::unordered_map<std::string, CJsonObject*> m_mapJsonObjectRef;
-    std::unordered_map<unsigned int, CJsonObject*>::iterator m_array_iter;
+    mutable std::unordered_map<unsigned int, CJsonObject*> m_mapJsonArrayRef;
+    mutable std::unordered_map<std::string, CJsonObject*>::iterator m_object_iter;
+    mutable std::unordered_map<std::string, CJsonObject*> m_mapJsonObjectRef;
+    mutable std::unordered_map<unsigned int, CJsonObject*>::iterator m_array_iter;
 #endif
 };
 

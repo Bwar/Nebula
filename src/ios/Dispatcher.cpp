@@ -10,11 +10,13 @@
 
 #include "Dispatcher.hpp"
 #include <algorithm>
+#include <sys/time.h>
 #include "Definition.hpp"
 #include "labor/Manager.hpp"
 #include "labor/Worker.hpp"
 #include "IO.hpp"
 #include "ChannelWatcher.hpp"
+#include "PollingWatcher.hpp"
 #include "actor/Actor.hpp"
 #include "actor/step/Step.hpp"
 #include "actor/step/RedisStep.hpp"
@@ -28,7 +30,8 @@ namespace neb
 {
 
 Dispatcher::Dispatcher(Labor* pLabor, std::shared_ptr<NetLogger> pLogger)
-   : m_pErrBuff(NULL), m_pLabor(pLabor), m_loop(NULL), m_lLastCheckNodeTime(0),
+   : m_pErrBuff(NULL), m_uiUpstreamConnectionPoolSize(100), m_pLabor(pLabor), m_loop(NULL), m_lLastCheckNodeTime(0),
+     m_pPollingWatcher(nullptr),
      m_pLogger(pLogger), m_pSessionNode(nullptr)
 {
     m_pErrBuff = (char*)malloc(gc_iErrBuffLen);
@@ -111,6 +114,84 @@ void Dispatcher::AsyncCallback(struct ev_loop* loop, struct ev_async* watcher, i
         auto pWatcher = static_cast<SpecChannelWatcher*>(watcher->data);
         auto pChannel = pWatcher->GetSocketChannel();
         CodecFactory::OnEvent(pWatcher->GetCodecType(), pChannel, nullptr);
+    }
+}
+
+void Dispatcher::IdleCallback(struct ev_loop* loop, struct ev_idle* watcher, int revents)
+{
+}
+
+void Dispatcher::PollingCallback(struct ev_loop* loop, ev_timer* watcher, int revents)
+{
+    if (watcher->data != NULL)
+    {
+        auto pWatcher = static_cast<PollingWatcher*>(watcher->data);
+        auto pDispatcher = pWatcher->GetDispatcher();
+        uint32 uiCodecType = 0;
+        uint32 uiFromLabor = 0;
+        uint32 uiOwnerLabor = pWatcher->GetLaborId();
+        struct timeval timeval;
+        long lBeginTime = 0;
+        long lEndTime = 0;
+        ev_tstamp dTimeout = 0.0;
+        gettimeofday(&timeval, NULL);
+        lBeginTime = timeval.tv_sec * 1000000 + timeval.tv_usec;
+        auto pChannel = LaborShared::Instance()->PollSpecChannel(pDispatcher, uiOwnerLabor, uiFromLabor, uiCodecType);
+        LOG4_TRACE_DISPATCH("uiCodecType = %u, uiFromLabor = %u, uiOwnerLabor = %u", uiCodecType, uiFromLabor, uiOwnerLabor);
+        while (pChannel)
+        {
+            CodecFactory::OnEvent(uiCodecType, pChannel, pDispatcher);
+            ++uiFromLabor;
+            pChannel = LaborShared::Instance()->PollSpecChannel(pDispatcher, uiOwnerLabor, uiFromLabor, uiCodecType);
+            LOG4_TRACE_DISPATCH("uiCodecType = %u, uiFromLabor = %u, uiOwnerLabor = %u", uiCodecType, uiFromLabor, uiOwnerLabor);
+        }
+        gettimeofday(&timeval, NULL);
+        lEndTime = timeval.tv_sec * 1000000 + timeval.tv_usec;
+        dTimeout = 0.001 - (double(lEndTime - lBeginTime) / 1000000);
+        dTimeout = (dTimeout <= 0) ? 0.001 : dTimeout;
+        pDispatcher->RefreshEvent(watcher, dTimeout);
+    }
+}
+
+void Dispatcher::PrepareCallback(struct ev_loop* loop, struct ev_prepare* watcher, int revents)
+{
+    if (watcher->data != NULL)
+    {
+        auto pWatcher = static_cast<PollingWatcher*>(watcher->data);
+        auto pDispatcher = pWatcher->GetDispatcher();
+        uint32 uiCodecType = 0;
+        uint32 uiFromLabor = 0;
+        uint32 uiOwnerLabor = pWatcher->GetLaborId();
+        auto pChannel = LaborShared::Instance()->PollSpecChannel(pDispatcher, uiOwnerLabor, uiFromLabor, uiCodecType);
+        LOG4_TRACE_DISPATCH("uiCodecType = %u, uiFromLabor = %u, uiOwnerLabor = %u", uiCodecType, uiFromLabor, uiOwnerLabor);
+        while (pChannel)
+        {
+            CodecFactory::OnEvent(uiCodecType, pChannel, pDispatcher);
+            ++uiFromLabor;
+            pChannel = LaborShared::Instance()->PollSpecChannel(pDispatcher, uiOwnerLabor, uiFromLabor, uiCodecType);
+            LOG4_TRACE_DISPATCH("uiCodecType = %u, uiFromLabor = %u, uiOwnerLabor = %u", uiCodecType, uiFromLabor, uiOwnerLabor);
+        }
+    }
+}
+
+void Dispatcher::CheckCallback(struct ev_loop* loop, struct ev_check* watcher, int revents)
+{
+    if (watcher->data != NULL)
+    {
+        auto pWatcher = static_cast<PollingWatcher*>(watcher->data);
+        auto pDispatcher = pWatcher->GetDispatcher();
+        uint32 uiCodecType = 0;
+        uint32 uiFromLabor = 0;
+        uint32 uiOwnerLabor = pWatcher->GetLaborId();
+        auto pChannel = LaborShared::Instance()->PollSpecChannel(pDispatcher, uiOwnerLabor, uiFromLabor, uiCodecType);
+        LOG4_TRACE_DISPATCH("uiCodecType = %u, uiFromLabor = %u, uiOwnerLabor = %u", uiCodecType, uiFromLabor, uiOwnerLabor);
+        while (pChannel)
+        {
+            CodecFactory::OnEvent(uiCodecType, pChannel, pDispatcher);
+            ++uiFromLabor;
+            pChannel = LaborShared::Instance()->PollSpecChannel(pDispatcher, uiOwnerLabor, uiFromLabor, uiCodecType);
+            LOG4_TRACE_DISPATCH("uiCodecType = %u, uiFromLabor = %u, uiOwnerLabor = %u", uiCodecType, uiFromLabor, uiOwnerLabor);
+        }
     }
 }
 
@@ -202,6 +283,17 @@ bool Dispatcher::DataRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
             DiscardSocketChannel(pChannel);
             return(false);
     }
+}
+
+bool Dispatcher::ReactSend(std::shared_ptr<SocketChannel> pChannel)
+{
+    LOG4_TRACE("");
+    auto eStatus = pChannel->Send();
+    if (CODEC_STATUS_PAUSE == eStatus || CODEC_STATUS_WANT_WRITE == eStatus)
+    {
+        AddIoWriteEvent(pChannel);
+    }
+    return(true);
 }
 
 bool Dispatcher::MigrateChannelRecvAndHandle(std::shared_ptr<SocketChannel> pChannel)
@@ -360,6 +452,9 @@ bool Dispatcher::OnClientConnFrequencyTimeout(tagClientConnWatcherData* pData, e
 
 void Dispatcher::EventRun()
 {
+    // AddEvent(MutablePollingWatcher()->MutablePrepareWatcher(), Dispatcher::PrepareCallback);
+    // AddEvent(MutablePollingWatcher()->MutableCheckWatcher(), Dispatcher::CheckCallback);
+    // AddEvent(MutablePollingWatcher()->MutableTimerWatcher(), Dispatcher::PollingCallback, 0.001);
     ev_run (m_loop, 0);
 }
 
@@ -528,7 +623,7 @@ bool Dispatcher::Disconnect(const std::string& strIdentify, bool bChannelNotice)
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter != m_mapNamedSocketChannel.end())
     {
-        std::unordered_set<std::shared_ptr<SocketChannel>>::iterator channel_iter;
+        std::list<std::shared_ptr<SocketChannel>>::iterator channel_iter;
         while (named_iter->second.size() > 1)
         {
             channel_iter = named_iter->second.begin();
@@ -571,16 +666,74 @@ bool Dispatcher::AddNamedSocketChannel(const std::string& strIdentify, std::shar
     auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
     if (named_iter == m_mapNamedSocketChannel.end())
     {
-        std::unordered_set<std::shared_ptr<SocketChannel>> setChannel;
-        setChannel.insert(pChannel);
-        m_mapNamedSocketChannel.insert(std::make_pair(strIdentify, std::move(setChannel)));
+        std::list<std::shared_ptr<SocketChannel>> listChannel;
+        listChannel.push_back(pChannel);
+        m_mapNamedSocketChannel.insert(std::make_pair(strIdentify, std::move(listChannel)));
     }
     else
     {
-        named_iter->second.insert(pChannel);
+        named_iter->second.push_back(pChannel);
     }
     pChannel->SetIdentify(strIdentify);
     return(true);
+}
+
+bool Dispatcher::AdjustNamedSocketChannel(std::shared_ptr<SocketChannel> pChannel)
+{
+    auto named_iter = m_mapNamedSocketChannel.find(pChannel->GetIdentify());
+    if (named_iter == m_mapNamedSocketChannel.end())
+    {
+        std::list<std::shared_ptr<SocketChannel>> listChannel;
+        listChannel.push_front(pChannel);
+        m_mapNamedSocketChannel.insert(std::make_pair(pChannel->GetIdentify(), std::move(listChannel)));
+    }
+    else
+    {
+        if (!pChannel->IsPipeline() && pChannel->PipelineIsEmpty())
+        {
+            for (auto it = named_iter->second.begin(); it != named_iter->second.end(); ++it)
+            {
+                if ((*it)->GetSequence() == pChannel->GetSequence())
+                {
+                    named_iter->second.erase(it);
+                    break;
+                }
+            }
+            named_iter->second.push_front(pChannel);
+        }
+    }
+    return(true);
+}
+
+std::shared_ptr<SocketChannel> Dispatcher::ApplyNamedSocketChannel(const std::string& strIdentify, uint32& uiPoolSize)
+{
+    auto named_iter = m_mapNamedSocketChannel.find(strIdentify);
+    if (named_iter == m_mapNamedSocketChannel.end())
+    {
+        uiPoolSize = 0;
+        return(nullptr);
+    }
+    else
+    {
+        for (auto it = named_iter->second.begin(); it != named_iter->second.end(); ++it)
+        {
+            if ((*it)->IsPipeline())
+            {
+                uiPoolSize = named_iter->second.size();
+                return(*it);
+            }
+            else if ((*it)->PipelineIsEmpty())
+            {
+                auto pChannel = *it;
+                named_iter->second.erase(it);
+                named_iter->second.push_back(pChannel);
+                uiPoolSize = named_iter->second.size();
+                return(pChannel);
+            }
+        }
+        uiPoolSize = named_iter->second.size();
+        return(nullptr);
+    }
 }
 
 void Dispatcher::DelNamedSocketChannel(const std::string& strIdentify)
@@ -715,6 +868,28 @@ bool Dispatcher::AddEvent(ev_async* async_watcher, async_callback pFunc)
     }
     ev_async_init(async_watcher, pFunc);
     ev_async_start(m_loop, async_watcher);
+    return(true);
+}
+
+bool Dispatcher::AddEvent(ev_prepare* prepare_watcher, prepare_callback pFunc)
+{
+    if (NULL == prepare_watcher)
+    {
+        return(false);
+    }
+    ev_prepare_init(prepare_watcher, pFunc);
+    ev_prepare_start(m_loop, prepare_watcher);
+    return(true);
+}
+
+bool Dispatcher::AddEvent(ev_check* check_watcher, check_callback pFunc)
+{
+    if (NULL == check_watcher)
+    {
+        return(false);
+    }
+    ev_check_init(check_watcher, pFunc);
+    ev_check_start(m_loop, check_watcher);
     return(true);
 }
 
@@ -856,7 +1031,7 @@ int32 Dispatcher::GetConnectionNum() const
     return((int32)m_mapSocketChannel.size());
 }
 
-bool Dispatcher::Init()
+bool Dispatcher::Init(uint32 uiUpstreamConnectionPoolSize, uint32 uiMaxSendBuffSize, uint32 uiMaxRecvBuffSize)
 {
 #if __cplusplus >= 201401L
     m_pSessionNode = std::make_unique<Nodes>();
@@ -866,6 +1041,11 @@ bool Dispatcher::Init()
     SetChannelPingStep(CODEC_PROTO, "neb::StepNebulaChannelPing");
     SetChannelPingStep(CODEC_NEBULA, "neb::StepNebulaChannelPing");
     SetChannelPingStep(CODEC_RESP, "neb::StepRedisChannelPing");
+    m_uiUpstreamConnectionPoolSize = uiUpstreamConnectionPoolSize;
+    ChannelOption stOption;
+    stOption.uiMaxSendBuffSize = uiMaxSendBuffSize;
+    stOption.uiMaxRecvBuffSize = uiMaxRecvBuffSize;
+    m_pSessionNode->SetDefaultChannelOption(stOption);
     return(true);
 }
 
@@ -878,6 +1058,11 @@ void Dispatcher::Destroy()
 {
     m_mapSocketChannel.clear();
     m_mapNamedSocketChannel.clear();
+    if (m_pPollingWatcher != nullptr)
+    {
+        delete m_pPollingWatcher;
+        m_pPollingWatcher = nullptr;
+    }
     if (m_loop != NULL)
     {
         ev_loop_destroy(m_loop);
@@ -1299,6 +1484,7 @@ bool Dispatcher::AcceptFdAndTransfer(int iFd, int iFamily, int iBonding)
         else
         {
             LOG4_ERROR("transfer fd %d to worker %d error %d", iAcceptFd, iWorkerId, iResult);
+            close(iAcceptFd);
             return(false);
         }
     }
@@ -1399,6 +1585,28 @@ void Dispatcher::CheckFailedNode()
 void Dispatcher::EvBreak()
 {
     ev_break (m_loop, EVBREAK_ALL);
+}
+
+PollingWatcher* Dispatcher::MutablePollingWatcher()
+{
+    if (m_pPollingWatcher == nullptr)
+    {
+        uint32 uiLaborId = 0;
+        if (Labor::LABOR_MANAGER == m_pLabor->GetLaborType())
+        {
+            uiLaborId = LaborShared::Instance()->GetManagerLaborId();
+        }
+        else if (Labor::LABOR_LOADER == m_pLabor->GetLaborType())
+        {
+            uiLaborId = 0;
+        }
+        else
+        {
+            uiLaborId = ((Worker*)m_pLabor)->GetWorkerInfo().iWorkerIndex;
+        }
+        m_pPollingWatcher = new PollingWatcher(this, uiLaborId);
+    }
+    return(m_pPollingWatcher);
 }
 
 }

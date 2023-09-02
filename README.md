@@ -133,6 +133,9 @@ A simple testing can be start with a NebulaInterface only, and also can be start
    - add spec channel
    - use SpecChannel instead of unix socket to transfer file descriptors
    - add SocketChannel migration between threads
+   - add the client connection pool management
+   - increase the transceiver buffer size limit
+   - optimize the new connection processing
    - remove process mode
 #### v1.7.3
    - error callback caused by fuse node detection bug fixed

@@ -564,6 +564,9 @@ std::shared_ptr<Actor> ActorBuilder::InitializeSharedActor(Actor* pCreator, std:
                 return(pSharedActor);
             }
             break;
+        case Actor::ACT_UNDEFINE:
+            return(pSharedActor);
+            break;
         default:
             LOG4_ERROR("\"%s\" must be a Step, a Session, an Operator, a Cmd or a Module.",
                     strActorName.c_str());
@@ -811,13 +814,18 @@ bool ActorBuilder::RegisterActor(const std::string& strActorName, Actor* pNewAct
     return(true);
 }
 
-bool ActorBuilder::SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq, bool bEnableReadOnly)
+bool ActorBuilder::SendToCluster(const std::string& strIdentify, bool bWithSsl, bool bPipeline, const RedisMsg& oRedisMsg, uint32 uiStepSeq, uint32 uiReadMode)
 {
     bool bSendResult = false;
     auto iter = m_mapClusterChannelStep.find(strIdentify);
     if (iter == m_mapClusterChannelStep.end())
     {
-        auto pSharedStep = MakeSharedStep(nullptr, "neb::StepRedisCluster", strIdentify, (bool)bWithSsl, (bool)bPipeline, (bool)bEnableReadOnly);
+        ChannelOption stOption;
+        stOption.bPipeline = bPipeline;
+        stOption.bWithSsl = bWithSsl;
+        stOption.uiMaxSendBuffSize = m_pLabor->GetNodeInfo().uiMaxChannelSendBuffSize;
+        stOption.uiMaxRecvBuffSize = m_pLabor->GetNodeInfo().uiMaxChannelRecvBuffSize;
+        auto pSharedStep = MakeSharedStep(nullptr, "neb::StepRedisCluster", strIdentify, stOption, uiReadMode);
         if (pSharedStep != nullptr)
         {
             m_mapClusterChannelStep.insert(std::make_pair(strIdentify, pSharedStep));
@@ -966,7 +974,7 @@ void ActorBuilder::DynamicLoad(CJsonObject& oDynamicLoadingConf)
         {
             std::string strSoFile = m_pLabor->GetNodeInfo().strWorkPath + std::string("/")
                     + oDynamicLoadingConf[i]("so_path") + std::string(".") + oDynamicLoadingConf[i]("version");
-            if (m_pLabor->GetNodeInfo().bThreadMode && Labor::LABOR_MANAGER != m_pLabor->GetLaborType())
+            if (Labor::LABOR_MANAGER != m_pLabor->GetLaborType())
             {
                 LoadDynamicSymbol(oDynamicLoadingConf[i]);
             }

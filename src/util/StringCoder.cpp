@@ -184,15 +184,18 @@ void DecodeParameter(const std::string& strParameter, std::map<std::string, std:
 void Split(const std::string& strSrc, const std::string& strPattern, std::vector<std::string>& vecDest)
 {
     vecDest.clear();
-    std::string strForSplit;
-    strForSplit.assign(strSrc.data(), strSrc.size());
-    char* p;
-    char* buff = const_cast<char*>(strForSplit.data());
-    p = strsep(&buff, strPattern.data());
-    while (p != NULL)
+    if (strSrc.size() > 0)
     {
-        vecDest.push_back(p);
+        std::string strForSplit;
+        strForSplit.assign(strSrc.data(), strSrc.size());
+        char* p;
+        char* buff = const_cast<char*>(strForSplit.data());
         p = strsep(&buff, strPattern.data());
+        while (p != NULL)
+        {
+            vecDest.push_back(p);
+            p = strsep(&buff, strPattern.data());
+        }
     }
 }
 

@@ -57,7 +57,7 @@ public:
     static bool SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel, const RedisReply& oRedisReply);
     static bool SendTo(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiStepSeq = 0);
     static bool SendRoundRobin(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = false);
-    static bool SendToCluster(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, bool bEnableReadOnly = false);
+    static bool SendToCluster(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiReadMode = 0);
 
     // send raw message
     static bool SendTo(Actor* pActor, std::shared_ptr<SocketChannel> pChannel, const char* pRawData, uint32 uiRawDataSize);

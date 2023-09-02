@@ -249,12 +249,12 @@ protected:
      * @param oRedisMsg redis消息
      * @param bWithSsl 是否需要SSL
      * @param bPipeline 是否支持pipeline
-     * @param bEnableReadOnly redis cluster集群从节点，官方默认设置的是不分担读请求
+     * @param uiReadMode redis cluster 集群读模式（见E_REDIS_READ_MODE）
      * 只作备份和故障转移用，当有请求读向从节点时，会被重定向对应的主节点来处理。
      * 这个readonly告诉redis cluster从节点客户端愿意读取可能过时的数据并对写请求不感兴趣
      * @return 是否发送成功
      */
-    virtual bool SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, bool bEnableReadOnly = false);
+    virtual bool SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl = false, bool bPipeline = true, uint32 uiReadMode = 0);
     /**
      * @brief 发送redis请求到类似于codis proxy的服务
      */
@@ -295,6 +295,9 @@ protected:
 
     /**
      * @brief 发送请求到当前worker
+     * @note 注意SendToSelf()如果未实际发生IO调用，则会在本函数调用中立即调用当前Step的Callback()，
+     * 如果在Callback()里又调用了当前Step的Emit()，则会在Emit()和Callback()之间发生递归调用，甚至
+     * 可能是无限递归导致栈溢出。故使用SendToSelf()时应避免Emit()和Callback()之间递归调用。
      * @return SelfChannel的seq
      */
     uint32 SendToSelf(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody);

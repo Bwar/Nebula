@@ -102,10 +102,11 @@ const std::unordered_set<std::string> StepRedisCluster::s_setMultipleKeyValueCmd
 };
 
 StepRedisCluster::StepRedisCluster(
-        const std::string& strIdentify,  bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
+        const std::string& strIdentify, const ChannelOption& stOption, uint32 uiReadMode)
     : RedisStep(7.0),
-      m_bWithSsl(bWithSsl), m_bPipeline(bPipeline), m_bEnableReadOnly(bEnableReadOnly),
+      m_uiReadMode(uiReadMode),
       m_uiAddressIndex(0), m_lLastCheckTime(0),
+      m_stOption(stOption),
       m_strIdentify(strIdentify)
 {
     Split(strIdentify, ",", m_vecAddress);
@@ -126,7 +127,7 @@ E_CMD_STATUS StepRedisCluster::Callback(
 {
     std::shared_ptr<RedisRequest> pRedisRequest = nullptr;
     uint32 uiRealStepSeq = 0;
-    if (m_bPipeline)
+    if (m_stOption.bPipeline)
     {
         auto step_iter = m_mapPipelineRequest.find(pChannel->GetIdentify());
         if (step_iter == m_mapPipelineRequest.end())
@@ -342,7 +343,8 @@ E_CMD_STATUS StepRedisCluster::Callback(
 
 E_CMD_STATUS StepRedisCluster::Timeout()
 {
-    SendCmdClusterSlots();
+    //SendCmdClusterSlots();
+    HealthCheck();
     return(CMD_STATUS_RUNNING);
 }
 
@@ -359,7 +361,7 @@ E_CMD_STATUS StepRedisCluster::ErrBack(
 void StepRedisCluster::CmdErrBack(
         std::shared_ptr<SocketChannel> pChannel, int iErrno, const std::string& strErrMsg)
 {
-    if (m_bPipeline)
+    if (m_stOption.bPipeline)
     {
         auto step_iter = m_mapPipelineRequest.find(pChannel->GetIdentify());
         if (step_iter == m_mapPipelineRequest.end())
@@ -484,11 +486,11 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, const RedisMsg& oR
 
 bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<RedisMsg> pRedisMsg)
 {
-    bool bResult = IO<CodecResp>::SendWithoutOption(this, strIdentify, (*pRedisMsg.get()));
+    bool bResult = IO<CodecResp>::SendTo(this, strIdentify, m_stOption, (*pRedisMsg.get()));
     if (bResult)
     {
         auto pChannel = GetLastActivityChannel();
-        auto dPenultimateActiveTime = pChannel->GetPenultimateActiveTime();
+        /*auto dPenultimateActiveTime = pChannel->GetPenultimateActiveTime();
         auto dLastRecvTime = pChannel->GetLastRecvTime();
         auto dCheckTime = GetNowTime() - GetTimeout();
         if (dPenultimateActiveTime > dCheckTime
@@ -501,8 +503,8 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<Re
             CmdErrBack(pChannel, ERR_DISCONNECT, "death connection closed");
             GetLabor(this)->GetDispatcher()->Disconnect(pChannel);
             return(false);
-        }
-        if (m_bPipeline)
+        }*/
+        if (m_stOption.bPipeline)
         {
             auto iter = m_mapPipelineRequest.find(strIdentify);
             if (iter == m_mapPipelineRequest.end())
@@ -529,6 +531,10 @@ bool StepRedisCluster::SendTo(const std::string& strIdentify, std::shared_ptr<Re
                 LOG4_ERROR("not a pipeline channel.");
             }
         }
+    }
+    else
+    {
+        m_setFailedNode.insert(strIdentify);
     }
     return(bResult);
 }
@@ -664,11 +670,11 @@ bool StepRedisCluster::ExtractCmd(const RedisMsg& oRedisMsg,
             vecSlotId.push_back(CalcSlotId(oRedisMsg.element(1).str().data(), oRedisMsg.element(1).str().length()));
             if (s_setWriteCmd.find(strCmd) == s_setWriteCmd.end())
             {
-                iReadOrWrite = REDIS_CMD_WRITE;
+                iReadOrWrite = REDIS_CMD_READ;
             }
             else
             {
-                iReadOrWrite = REDIS_CMD_READ;
+                iReadOrWrite = REDIS_CMD_WRITE;
             }
             return(true);
         }
@@ -688,29 +694,68 @@ bool StepRedisCluster::GetRedisNode(int iSlotId, int iReadOrWrite, std::string& 
         LOG4_ERROR("no redis node found for slot %d", iSlotId);
         return(false);
     }
-    if ((REDIS_CMD_WRITE == iReadOrWrite)
-            || (slot_iter->second->setFllower.size() == 0)
-            || (!m_bEnableReadOnly))
+    if (REDIS_CMD_WRITE == iReadOrWrite)
     {
         strNodeIdentify = slot_iter->second->strMaster;
         bIsMaster = true;
+        return(true);
     }
     else
     {
-        for (uint32 i = 0; i < slot_iter->second->setFllower.size(); ++i)
+        switch (m_uiReadMode)
         {
-            slot_iter->second->iterFllower++;
-            if (slot_iter->second->iterFllower == slot_iter->second->setFllower.end())
-            {
-                slot_iter->second->iterFllower = slot_iter->second->setFllower.begin();
-            }
+            case REDIS_READ_MODE_MASTER:
+                strNodeIdentify = slot_iter->second->strMaster;
+                bIsMaster = true;
+                return(true);
+            case REDIS_READ_MODE_FLLOWER_MASTER:
+                if (slot_iter->second->iterFllower == slot_iter->second->setFllower.end())
+                {
+                    strNodeIdentify = slot_iter->second->strMaster;
+                    bIsMaster = true;
+                    slot_iter->second->iterFllower = slot_iter->second->setFllower.begin();
+                    return(true);
+                }
+                else
+                {
+                    strNodeIdentify = *(slot_iter->second->iterFllower);
+                    bIsMaster = false;
+                    slot_iter->second->iterFllower++;
+                    auto node_iter = m_setFailedNode.find(strNodeIdentify);
+                    if (node_iter != m_setFailedNode.end())
+                    {
+                        strNodeIdentify = slot_iter->second->strMaster;
+                        bIsMaster = true;
+                    }
+                    return(true);
+                }
+            case REDIS_READ_MODE_FLLOWER:
+                for (uint32 i = 0; i < slot_iter->second->setFllower.size(); ++i)
+                {
+                    slot_iter->second->iterFllower++;
+                    if (slot_iter->second->iterFllower == slot_iter->second->setFllower.end())
+                    {
+                        slot_iter->second->iterFllower = slot_iter->second->setFllower.begin();
+                    }
+                    strNodeIdentify = *(slot_iter->second->iterFllower);
+                    bIsMaster = false;
+                    slot_iter->second->iterFllower++;
+                    auto node_iter = m_setFailedNode.find(strNodeIdentify);
+                    if (node_iter == m_setFailedNode.end())
+                    {
+                        return(true);
+                    }
+                }
+                LOG4_ERROR("no redis node found for slot %d", iSlotId);
+                return(false);
+            default:
+                strNodeIdentify = slot_iter->second->strMaster;
+                bIsMaster = true;
+                return(true);
+        }
+        {
             strNodeIdentify = *(slot_iter->second->iterFllower);
             bIsMaster = false;
-            auto node_iter = m_setFailedNode.find(strNodeIdentify);
-            if (node_iter == m_setFailedNode.end())
-            {
-                return(true);
-            }
         }
         strNodeIdentify = slot_iter->second->strMaster;
         bIsMaster = true;

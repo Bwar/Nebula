@@ -196,7 +196,7 @@ bool SessionManager::SendToChild(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBo
             continue;
         }
         MsgHead oMsgHead;   // It will be cleared after each successful sending
-        MsgBody oOutMsgBody(oMsgBody);
+        MsgBody oOutMsgBody(oMsgBody);   // It will be cleared after each successful sending
         oMsgHead.set_cmd(iCmd);
         oMsgHead.set_seq(uiSeq);
         IO<CodecNebulaInNode>::TransmitTo(this, m_vecWorkerInfo[i]->iWorkerIndex, uiSeq, oMsgHead, oOutMsgBody);
@@ -213,10 +213,10 @@ bool SessionManager::SendToWorker(int32 iCmd, uint32 uiSeq, const MsgBody& oMsgB
             continue;
         }
         MsgHead oMsgHead;   // It will be cleared after each successful sending
-        MsgBody oOutMsgBody(oMsgBody);
+        MsgBody oOutMsgBody(oMsgBody);   // It will be cleared after each successful sending
         oMsgHead.set_cmd(iCmd);
         oMsgHead.set_seq(uiSeq);
-        IO<CodecNebulaInNode>::TransmitTo(this, m_vecWorkerInfo[i]->iWorkerIndex, uiSeq, oMsgHead, oMsgBody);
+        IO<CodecNebulaInNode>::TransmitTo(this, m_vecWorkerInfo[i]->iWorkerIndex, uiSeq, oMsgHead, oOutMsgBody);
     }
     return(true);
 }
