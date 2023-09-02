@@ -23,6 +23,7 @@ namespace neb
 Nodes::Nodes(int iHashAlgorithm, int iVirtualNodeNum)
     : m_iHashAlgorithm(iHashAlgorithm), m_iVirtualNodeNum(iVirtualNodeNum)
 {
+    m_pDefaultChannelOption = std::make_shared<ChannelOption>();
 }
 
 Nodes::~Nodes()
@@ -444,7 +445,7 @@ std::shared_ptr<ChannelOption> Nodes::GetChannelOption(const std::string& strIde
     auto iter = m_mapChannelOption.find(strIdentify);
     if (iter == m_mapChannelOption.end())
     {
-        return(nullptr);
+        return(m_pDefaultChannelOption);
     }
     else
     {
@@ -464,6 +465,11 @@ void Nodes::SetChannelOption(const std::string& strIdentify, const ChannelOption
     {
         iter->second = pOption;
     }
+}
+
+void Nodes::SetDefaultChannelOption(const ChannelOption& stOption)
+{
+    m_pDefaultChannelOption = std::make_shared<ChannelOption>(stOption);
 }
 
 void Nodes::DelNode(const std::string& strNodeType, const std::string& strNodeIdentify)

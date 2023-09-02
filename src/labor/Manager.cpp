@@ -169,7 +169,8 @@ bool Manager::InitDispatcher()
         return(false);
     }
     LaborShared::Instance(m_stNodeInfo.uiWorkerNum + 2)->AddDispatcher(m_stNodeInfo.uiWorkerNum + 1, m_pDispatcher);
-    return(m_pDispatcher->Init());
+    return(m_pDispatcher->Init(m_stNodeInfo.uiUpstreamConnectionPoolSize,
+                m_stNodeInfo.uiMaxChannelSendBuffSize, m_stNodeInfo.uiMaxChannelRecvBuffSize));
 }
 
 bool Manager::InitActorBuilder()
@@ -191,11 +192,8 @@ bool Manager::InitActorBuilder()
         LOG4_ERROR("ActorBuilder->Init() failed!");
         return(false);
     }
-    if (m_stNodeInfo.bThreadMode)
-    {
-        m_pActorBuilder->LoadCmd(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"]);
-        m_pActorBuilder->LoadCmd(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"]);
-    }
+    m_pActorBuilder->LoadCmd(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"]);
+    m_pActorBuilder->LoadCmd(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"]);
     return(true);
 }
 
@@ -383,6 +381,9 @@ bool Manager::GetConf()
         m_oCurrentConf.Get("connection_protection", m_stNodeInfo.dConnectionProtection);
         m_oCurrentConf.Get("io_timeout", m_stNodeInfo.dIoTimeout);
         m_oCurrentConf.Get("data_report", m_stNodeInfo.dDataReportInterval);
+        m_oCurrentConf.Get("upstream_connection_pool_size", m_stNodeInfo.uiUpstreamConnectionPoolSize);
+        m_oCurrentConf.Get("max_channel_send_buffer_size", m_stNodeInfo.uiMaxChannelSendBuffSize);
+        m_oCurrentConf.Get("max_channel_recv_buffer_size", m_stNodeInfo.uiMaxChannelRecvBuffSize);
         if (m_oLastConf.ToString().length() == 0)
         {
             std::string strSocketType = "TCP";
@@ -420,14 +421,10 @@ bool Manager::GetConf()
 
 bool Manager::Init()
 {
-    m_oCurrentConf.Get("thread_mode", m_stNodeInfo.bThreadMode);
-    if (m_stNodeInfo.bThreadMode)
-    {
-        uint32 uiSpecChannelQueueSize = 128;
-        m_oCurrentConf.Get("spec_channel_queue_size", uiSpecChannelQueueSize);
-        LaborShared::Instance(m_stNodeInfo.uiWorkerNum + 2)->SetSpecChannelQueueSize(uiSpecChannelQueueSize);
-        m_oCurrentConf.Get("async_logger", m_stNodeInfo.bAsyncLogger);
-    }
+    uint32 uiSpecChannelQueueSize = 128;
+    m_oCurrentConf.Get("spec_channel_queue_size", uiSpecChannelQueueSize);
+    LaborShared::Instance(m_stNodeInfo.uiWorkerNum + 2)->SetSpecChannelQueueSize(uiSpecChannelQueueSize);
+    m_oCurrentConf.Get("async_logger", m_stNodeInfo.bAsyncLogger);
     if (!InitLogger(m_oCurrentConf) || !InitDispatcher() || !InitActorBuilder())
     {
         return(false);
@@ -580,10 +577,7 @@ void Manager::RefreshServer()
         {
             MsgBody oMsgBody;
             oMsgBody.set_data(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"].ToString());
-            if (m_stNodeInfo.bThreadMode)
-            {
-                m_pActorBuilder->DynamicLoad(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"]);
-            }
+            m_pActorBuilder->DynamicLoad(m_oCurrentConf["load_config"]["worker"]["dynamic_loading"]);
             m_pSessionManager->SendToWorker(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
         }
         if (m_oLastConf["load_config"]["loader"]["dynamic_loading"].ToString()
@@ -591,10 +585,7 @@ void Manager::RefreshServer()
         {
             MsgBody oMsgBody;
             oMsgBody.set_data(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"].ToString());
-            if (m_stNodeInfo.bThreadMode)
-            {
-                m_pActorBuilder->DynamicLoad(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"]);
-            }
+            m_pActorBuilder->DynamicLoad(m_oCurrentConf["load_config"]["loader"]["dynamic_loading"]);
             m_pSessionManager->SendToLoader(CMD_REQ_RELOAD_SO, GetSequence(), oMsgBody);
         }
     }

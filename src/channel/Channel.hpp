@@ -20,7 +20,8 @@ struct ChannelOption
     bool bPipeline = false;
     bool bWithSsl = false;
     int iSocketType = SOCKET_STREAM;
-    uint32 uiMaxSendBuffSize = gc_iMaxBuffLen;
+    uint32 uiMaxSendBuffSize = gc_iMaxBuffLen * 1024;
+    uint32 uiMaxRecvBuffSize = gc_iMaxBuffLen * 1024;
     ev_tstamp dKeepAlive = 7.0;
     std::string strAuth;
     std::string strPassword;
@@ -31,6 +32,8 @@ struct ChannelOption
         bPipeline = stOption.bPipeline;
         bWithSsl = stOption.bWithSsl;
         iSocketType = stOption.iSocketType;
+        uiMaxSendBuffSize = stOption.uiMaxSendBuffSize;
+        uiMaxRecvBuffSize = stOption.uiMaxRecvBuffSize;
         dKeepAlive = stOption.dKeepAlive;
         strAuth = stOption.strAuth;
         strPassword = stOption.strPassword;
@@ -40,6 +43,8 @@ struct ChannelOption
         bPipeline = stOption.bPipeline;
         bWithSsl = stOption.bWithSsl;
         iSocketType = stOption.iSocketType;
+        uiMaxSendBuffSize = stOption.uiMaxSendBuffSize;
+        uiMaxRecvBuffSize = stOption.uiMaxRecvBuffSize;
         dKeepAlive = stOption.dKeepAlive;
         strAuth = std::move(stOption.strAuth);
         strPassword = std::move(stOption.strPassword);
@@ -49,6 +54,8 @@ struct ChannelOption
         bPipeline = stOption.bPipeline;
         bWithSsl = stOption.bWithSsl;
         iSocketType = stOption.iSocketType;
+        uiMaxSendBuffSize = stOption.uiMaxSendBuffSize;
+        uiMaxRecvBuffSize = stOption.uiMaxRecvBuffSize;
         dKeepAlive = stOption.dKeepAlive;
         strAuth = stOption.strAuth;
         strPassword = stOption.strPassword;
@@ -59,6 +66,8 @@ struct ChannelOption
         bPipeline = stOption.bPipeline;
         bWithSsl = stOption.bWithSsl;
         iSocketType = stOption.iSocketType;
+        uiMaxSendBuffSize = stOption.uiMaxSendBuffSize;
+        uiMaxRecvBuffSize = stOption.uiMaxRecvBuffSize;
         dKeepAlive = stOption.dKeepAlive;
         strAuth = std::move(stOption.strAuth);
         strPassword = std::move(stOption.strPassword);

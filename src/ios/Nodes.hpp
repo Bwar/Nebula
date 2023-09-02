@@ -120,6 +120,7 @@ public:
     std::shared_ptr<ChannelOption> GetChannelOption(const std::string& strIdentify);
 
     void SetChannelOption(const std::string& strIdentify, const ChannelOption& stOption);
+    void SetDefaultChannelOption(const ChannelOption& stOption);
 
     /**
      * @brief 删除节点
@@ -154,7 +155,7 @@ public:
 private:
     const int m_iHashAlgorithm;
     const int m_iVirtualNodeNum;
-
+    std::shared_ptr<ChannelOption> m_pDefaultChannelOption;
     std::unordered_map<std::string, std::shared_ptr<tagNode> > m_mapNode;
     std::unordered_map<std::string, std::set<std::string>> m_mapNodeType;  // key为节点标识
     std::unordered_map<std::string, std::shared_ptr<ChannelOption>> m_mapChannelOption;  // key为节点标识

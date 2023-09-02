@@ -20,10 +20,12 @@ LaborShared* LaborShared::s_pInstance = nullptr;
 std::mutex LaborShared::s_mutex;
 
 LaborShared::LaborShared(uint32 uiLaborNum)
-    : m_uiLaborNum(uiLaborNum), m_uiSpecChannelQueueSize(128), m_uiCodecSize(0)
+    : m_uiLaborNum(uiLaborNum), m_uiSpecChannelQueueSize(512), m_uiCodecSize(0)
 {
     m_vecDispatcher.reserve(uiLaborNum);
     m_vecSpecChannel.reserve(CODEC_MAX + 1);
+    m_vecSpecChannelExist.reserve(CODEC_MAX + 1);
+    m_vecSpecChannelExist.resize(CODEC_MAX + 1, false);
 }
 
 LaborShared::~LaborShared()
@@ -88,25 +90,35 @@ int LaborShared::AddSpecChannel(uint32 uiCodecType, uint32 uiFrom, uint32 uiTo, 
     if (uiCodecType < m_vecSpecChannel.size())
     {
         m_vecSpecChannel[uiCodecType][uiFrom][uiTo] = pChannel;
+        m_vecSpecChannelExist[uiCodecType] = true;
     }
     else
     {
         std::lock_guard<std::mutex> guard(s_mutex);
-        for (uint32 i = m_vecSpecChannel.size(); i <= uiCodecType; ++i)
+        if (uiCodecType < m_vecSpecChannel.size())
         {
-            T_VEC_CHANNEL_FROM vecFrom;
-            vecFrom.reserve(m_uiLaborNum);
-            for (uint32 j = 0; j < m_uiLaborNum; ++j)
-            {
-                auto pTo = std::make_shared<T_VEC_CHANNEL_TO>();
-                T_VEC_CHANNEL_TO vecTo;
-                vecTo.resize(m_uiLaborNum, nullptr);
-                vecFrom.emplace_back(std::move(vecTo));
-            }
-            m_vecSpecChannel.emplace_back(std::move(vecFrom));
+            m_vecSpecChannel[uiCodecType][uiFrom][uiTo] = pChannel;
+            m_vecSpecChannelExist[uiCodecType] = true;
         }
-        m_vecSpecChannel[uiCodecType][uiFrom][uiTo] = pChannel;
-        m_uiCodecSize.store(m_vecSpecChannel.size(), std::memory_order_release);
+        else
+        {
+            for (uint32 i = m_vecSpecChannel.size(); i <= uiCodecType; ++i)
+            {
+                T_VEC_CHANNEL_FROM vecFrom;
+                vecFrom.reserve(m_uiLaborNum);
+                for (uint32 j = 0; j < m_uiLaborNum; ++j)
+                {
+                    auto pTo = std::make_shared<T_VEC_CHANNEL_TO>();
+                    T_VEC_CHANNEL_TO vecTo;
+                    vecTo.resize(m_uiLaborNum, nullptr);
+                    vecFrom.emplace_back(std::move(vecTo));
+                }
+                m_vecSpecChannel.emplace_back(std::move(vecFrom));
+            }
+            m_vecSpecChannel[uiCodecType][uiFrom][uiTo] = pChannel;
+            m_vecSpecChannelExist[uiCodecType] = true;
+            m_uiCodecSize.store(m_vecSpecChannel.size(), std::memory_order_release);
+        }
     }
 
     // notice spec channel created
@@ -179,6 +191,7 @@ std::shared_ptr<SpecChannel<MsgBody, MsgHead>> LaborShared::CreateInternalSpecCh
     if (uiCodecType < m_vecSpecChannel.size())
     {
         m_vecSpecChannel[uiCodecType][uiFrom][uiTo] = pChannel;
+        m_vecSpecChannelExist[uiCodecType] = true;
     }
     else
     {
@@ -196,9 +209,44 @@ std::shared_ptr<SpecChannel<MsgBody, MsgHead>> LaborShared::CreateInternalSpecCh
             m_vecSpecChannel.emplace_back(std::move(vecFrom));
         }
         m_vecSpecChannel[uiCodecType][uiFrom][uiTo] = pChannel;
+        m_vecSpecChannelExist[uiCodecType] = true;
         m_uiCodecSize.store(m_vecSpecChannel.size(), std::memory_order_release);
     }
     return(pSpecChannel);
+}
+
+std::shared_ptr<SocketChannel> LaborShared::PollSpecChannel(Dispatcher* pDispatcher, uint32 uiOwnerId, uint32& uiFromLaborId, uint32& uiCodecType)
+{
+    uint32 uiCodecLoop = 0;
+    for (uint32 i = uiCodecType; i < m_vecSpecChannel.size(); ++i)
+    {
+        if (m_vecSpecChannelExist[i] == false)
+        {
+            continue;
+        }
+        auto& vecFrom = m_vecSpecChannel[i];
+        uint32 j = uiFromLaborId;
+        if (uiCodecLoop > 0)
+        {
+            j = 0;
+        }
+        for (; j < vecFrom.size(); ++j)
+        {
+            auto& vecTo = vecFrom[j];
+            if (uiOwnerId < vecTo.size())
+            {
+                if (vecTo[uiOwnerId] != nullptr)
+                {
+                    uiCodecType = i;
+                    uiFromLaborId = j;
+                    return(vecTo[uiOwnerId]);
+                }
+            }
+        }
+        ++uiCodecLoop;
+    }
+    uiCodecType = CODEC_UNKNOW;
+    return(nullptr);
 }
 
 void LaborShared::AddWorkerThreadId(uint64 ullThreadId)

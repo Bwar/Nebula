@@ -98,9 +98,9 @@ bool ActorSender::SendTo(Actor* pActor, const std::string& strIdentify, const Re
     return(IO<CodecResp>::SendTo(pActor, strIdentify, SOCKET_STREAM, stOption, oRedisMsg));
 }
 
-bool ActorSender::SendToCluster(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
+bool ActorSender::SendToCluster(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiReadMode)
 {
-    return(pActor->m_pLabor->GetActorBuilder()->SendToCluster(strIdentify, bWithSsl, bPipeline, oRedisMsg, pActor->GetSequence(), bEnableReadOnly));
+    return(pActor->m_pLabor->GetActorBuilder()->SendToCluster(strIdentify, bWithSsl, bPipeline, oRedisMsg, pActor->GetSequence(), uiReadMode));
 }
 
 bool ActorSender::SendRoundRobin(Actor* pActor, const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline)

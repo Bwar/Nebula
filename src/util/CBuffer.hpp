@@ -58,8 +58,37 @@ class CBuffer
         inline CBuffer(const char* data, size_t len) :
             m_buffer(const_cast<char*>(data)),
             m_external_readonly_buffer(const_cast<char*>(data)),
-            m_buffer_len(0), m_write_idx(0), m_read_idx(0)
+            m_buffer_len(len), m_write_idx(len), m_read_idx(0)
         {
+        }
+        inline CBuffer(CBuffer&& oBuff) :
+            m_buffer(oBuff.m_buffer),
+            m_external_readonly_buffer(oBuff.m_external_readonly_buffer),
+            m_buffer_len(oBuff.m_buffer_len), m_write_idx(oBuff.m_write_idx), m_read_idx(oBuff.m_read_idx)
+        {
+            oBuff.m_buffer = NULL;
+            oBuff.m_external_readonly_buffer = NULL;
+            oBuff.m_buffer_len = 0;
+            oBuff.m_write_idx = 0;
+            oBuff.m_read_idx = 0;
+        }
+        CBuffer& operator=(CBuffer&& oBuff)
+        {
+            if (m_buffer != NULL)
+            {
+                free(m_buffer);
+            }
+            m_buffer = oBuff.m_buffer;
+            m_external_readonly_buffer = oBuff.m_external_readonly_buffer;
+            m_buffer_len = oBuff.m_buffer_len;
+            m_write_idx = oBuff.m_write_idx;
+            m_read_idx = oBuff.m_read_idx;
+            oBuff.m_buffer = NULL;
+            oBuff.m_external_readonly_buffer = NULL;
+            oBuff.m_buffer_len = 0;
+            oBuff.m_write_idx = 0;
+            oBuff.m_read_idx = 0;
+            return(*this);
         }
         inline size_t GetReadIndex()
         {
@@ -302,7 +331,7 @@ class CBuffer
             {
                 return -1;
             }
-            int ret = Copyout(unit->m_buffer + +unit->m_write_idx,
+            int ret = Copyout(unit->m_buffer + unit->m_write_idx,
                     datlen);
             if (ret > 0)
             {

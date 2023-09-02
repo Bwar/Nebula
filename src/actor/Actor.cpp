@@ -205,6 +205,8 @@ bool Actor::SendTo(std::shared_ptr<SocketChannel> pChannel, const char* pRawData
 bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody, E_CODEC_TYPE eCodecType)
 {
     ChannelOption stOption;
+    stOption.uiMaxSendBuffSize = GetNodeInfo().uiMaxChannelSendBuffSize;
+    stOption.uiMaxRecvBuffSize = GetNodeInfo().uiMaxChannelRecvBuffSize;
     stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
     return(IO<CodecNebula>::SendTo(this, strIdentify, stOption, iCmd, uiSeq, oMsgBody)); 
@@ -213,6 +215,8 @@ bool Actor::SendTo(const std::string& strIdentify, int32 iCmd, uint32 uiSeq, con
 bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMsg, uint32 uiStepSeq)
 {
     ChannelOption stOption;
+    stOption.uiMaxSendBuffSize = GetNodeInfo().uiMaxChannelSendBuffSize;
+    stOption.uiMaxRecvBuffSize = GetNodeInfo().uiMaxChannelRecvBuffSize;
     if (oHttpMsg.headers().find("x-trace-id") == oHttpMsg.headers().end())
     {
         (const_cast<HttpMsg&>(oHttpMsg)).mutable_headers()->insert({"x-trace-id", GetTraceId()});
@@ -240,19 +244,23 @@ bool Actor::SendTo(const std::string& strHost, int iPort, const HttpMsg& oHttpMs
 bool Actor::SendTo(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiStepSeq)
 {
     ChannelOption stOption;
+    stOption.uiMaxSendBuffSize = GetNodeInfo().uiMaxChannelSendBuffSize;
+    stOption.uiMaxRecvBuffSize = GetNodeInfo().uiMaxChannelRecvBuffSize;
     stOption.bPipeline = bPipeline;
     stOption.bWithSsl = bWithSsl;
     return(IO<CodecResp>::SendTo(this, strIdentify, stOption, oRedisMsg));
 }
 
-bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, bool bEnableReadOnly)
+bool Actor::SendToCluster(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline, uint32 uiReadMode)
 {
-    return(m_pLabor->GetActorBuilder()->SendToCluster(strIdentify, bWithSsl, bPipeline, oRedisMsg, GetSequence(), bEnableReadOnly));
+    return(m_pLabor->GetActorBuilder()->SendToCluster(strIdentify, bWithSsl, bPipeline, oRedisMsg, GetSequence(), uiReadMode));
 }
 
 bool Actor::SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedisMsg, bool bWithSsl, bool bPipeline)
 {
     ChannelOption stOption;
+    stOption.uiMaxSendBuffSize = GetNodeInfo().uiMaxChannelSendBuffSize;
+    stOption.uiMaxRecvBuffSize = GetNodeInfo().uiMaxChannelRecvBuffSize;
     stOption.bPipeline = bPipeline;
     stOption.bWithSsl = bWithSsl;
     return(IO<CodecResp>::SendRoundRobin(this, strIdentify, stOption, oRedisMsg));
@@ -261,6 +269,8 @@ bool Actor::SendRoundRobin(const std::string& strIdentify, const RedisMsg& oRedi
 bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     ChannelOption stOption;
+    stOption.uiMaxSendBuffSize = GetNodeInfo().uiMaxChannelSendBuffSize;
+    stOption.uiMaxRecvBuffSize = GetNodeInfo().uiMaxChannelRecvBuffSize;
     stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
     return(IO<CodecNebula>::SendRoundRobin(this, strNodeType, stOption, iCmd, uiSeq, oMsgBody));
@@ -269,6 +279,8 @@ bool Actor::SendRoundRobin(const std::string& strNodeType, int32 iCmd, uint32 ui
 bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     ChannelOption stOption;
+    stOption.uiMaxSendBuffSize = GetNodeInfo().uiMaxChannelSendBuffSize;
+    stOption.uiMaxRecvBuffSize = GetNodeInfo().uiMaxChannelRecvBuffSize;
     stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
     return(IO<CodecNebula>::SendOriented(this, strNodeType, uiFactor, stOption, iCmd, uiSeq, oMsgBody));
@@ -277,6 +289,8 @@ bool Actor::SendOriented(const std::string& strNodeType, uint32 uiFactor, int32 
 bool Actor::SendOriented(const std::string& strNodeType, int32 iCmd, uint32 uiSeq, const MsgBody& oMsgBody)
 {
     ChannelOption stOption;
+    stOption.uiMaxSendBuffSize = GetNodeInfo().uiMaxChannelSendBuffSize;
+    stOption.uiMaxRecvBuffSize = GetNodeInfo().uiMaxChannelRecvBuffSize;
     stOption.bPipeline = true;
     (const_cast<MsgBody&>(oMsgBody)).set_trace_id(GetTraceId());
     if (oMsgBody.has_req_target())

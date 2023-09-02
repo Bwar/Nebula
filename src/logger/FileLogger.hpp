@@ -18,6 +18,7 @@
 #include <fstream>
 #include <sstream>
 #include "Logger.hpp"
+#include "util/StringConverter.hpp"
 
 namespace neb
 {
@@ -79,6 +80,42 @@ protected:
     template<typename T, typename ...Targs> void Append(const char* szFormat, T&& arg, Targs&&... args);
     template<typename T> const char* PrintfAppend(const char* szFormat, T&& arg);
 
+    inline const std::string& ToString(uint64 ullValue)
+    {
+        uint32 uiLength = neb::StringConverter::Digits10(ullValue);
+        m_strConvertMedium.resize(uiLength);
+        neb::StringConverter::uint64ToAscii(ullValue, uiLength, (char*)m_strConvertMedium.data());
+        return(m_strConvertMedium);
+    }
+    inline const std::string& ToString(int64 llValue)
+    {
+        if (llValue < 0)
+        {
+            uint64 ullValue = ~(llValue - 1);
+            uint32 uiLength = neb::StringConverter::Digits10(ullValue);
+            m_strConvertMedium.resize(uiLength + 1);
+            m_strConvertMedium[0] = '-';
+            neb::StringConverter::uint64ToAscii(ullValue, uiLength, (char*)m_strConvertMedium.data() + 1);
+            return(m_strConvertMedium);
+        }
+        else
+        {
+            return(ToString((uint64)llValue));
+        }
+    }
+    inline const std::string& ToString(uint32 uiValue)
+    {
+        return(ToString((uint64)uiValue));
+    }
+    inline const std::string& ToString(int32 iValue)
+    {
+        return(ToString((int64)iValue));
+    }
+    inline const std::string& ToString(float fValue)
+    {
+        return(ToString((int64)fValue));
+    }
+
 private:
     static FileLogger* s_pInstance;
 #if __GNUC__ < 5
@@ -96,6 +133,7 @@ private:
     std::string m_strLogFormatTime;
     std::string m_strLogLine;
     std::string m_strOutStr;
+    std::string m_strConvertMedium;
 };
 
 template<typename ...Targs>

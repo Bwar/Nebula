@@ -102,6 +102,19 @@ E_CODEC_STATUS CodecRaw::Encode(const char* pRaw, uint32 uiRawSize, CBuffer* pBu
     return(Encode(pRaw, uiRawSize, pBuff));
 }
 
+E_CODEC_STATUS CodecRaw::Encode(CBuffer&& oBuff, CBuffer* pBuff, CBuffer* pSecondlyBuff)
+{
+    if (pBuff->ReadableBytes() == 0)
+    {
+        *pBuff = std::move(oBuff);
+    }
+    else
+    {
+        oBuff.Copyout(pBuff, oBuff.ReadableBytes());
+    }
+    return(CODEC_STATUS_OK);
+}
+
 E_CODEC_STATUS CodecRaw::Decode(CBuffer* pBuff, CBuffer& oBuff)
 {
     oBuff.Write(pBuff->GetRawReadBuffer(), pBuff->ReadableBytes());

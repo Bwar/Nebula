@@ -12,7 +12,10 @@
 #include "channel/SocketChannel.hpp"
 #include "ios/Dispatcher.hpp"
 #include "labor/NodeInfo.hpp"
+#include "labor/Labor.hpp"
+#include "codec/CodecFactory.hpp"
 #include "actor/step/PbStep.hpp"
+
 
 namespace neb
 {
@@ -75,6 +78,7 @@ bool CmdFdTransfer::AnyMessage(
                     ? GetNodeInfo().dConnectionProtection : GetNodeInfo().dIoTimeout;
             GetLabor(this)->GetDispatcher()->AddIoTimeout(pNewChannel, dIoTimeout);
             pNewChannel->SetKeepAlive(dIoTimeout);
+            CodecFactory::OnEvent(GetLabor(this)->GetDispatcher(), pNewChannel);
         }
         GetLabor(this)->IoStatAddConnection(IO_STAT_DOWNSTREAM_NEW_CONNECTION);
         return(true);

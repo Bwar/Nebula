@@ -43,31 +43,34 @@ bool CmdSpecChannelCreated::AnyMessage(
     }
     else    // forward notifications through manager
     {
-        auto pChannel = LaborShared::Instance()->GetSpecChannel(CodecNebulaInNode::Type(), GetLaborId(), oSpecInfo.to_labor());
-        if (pChannel == nullptr)
+        LOG4_INFO("this labor %u, spec channel from %u to %u created, with codec type %u",
+                GetLaborId(), oSpecInfo.from_labor(), oSpecInfo.to_labor(), oSpecInfo.codec_type());
+        auto pTransitChannel = LaborShared::Instance()->GetSpecChannel(CodecNebulaInNode::Type(), GetLaborId(), oSpecInfo.to_labor());
+        if (pTransitChannel == nullptr)
         {
             LOG4_ERROR("no codec_type %u channel from %u to %u", CodecNebulaInNode::Type(), GetLaborId(), oSpecInfo.to_labor());
             return(false);
         }
         else
         {
-            auto pNoticeSpecChannel = std::static_pointer_cast<SpecChannel<MsgBody, MsgHead>>(pChannel);
+            auto pNoticeSpecChannel = std::static_pointer_cast<SpecChannel<MsgBody, MsgHead>>(pTransitChannel);
             if (pNoticeSpecChannel == nullptr)
             {
                 LOG4_ERROR("spec channel cast failed.");
                 return(false);
             }
-            int iResult = pNoticeSpecChannel->Write(gc_uiCmdReq, 0,
+            int iCmd = oInMsgHead.cmd();
+            int iErrno = pNoticeSpecChannel->Write(iCmd, 0,
                     std::move(const_cast<MsgHead&>(oInMsgHead)),
                     std::move(const_cast<MsgBody&>(oInMsgBody)));
-            if (iResult == ERR_OK)
+            if (iErrno == ERR_OK)
             {
                 LaborShared::Instance()->GetDispatcher(oSpecInfo.to_labor())->AsyncSend(
                         pNoticeSpecChannel->MutableWatcher()->MutableAsyncWatcher());
             }
             else
             {
-                LOG4_ERROR("no codec_type %u channel write error %d", CodecNebulaInNode::Type(), iResult);
+                LOG4_ERROR("no codec_type %u channel write error %d", CodecNebulaInNode::Type(), iErrno);
                 return(false);
             }
         }

@@ -34,7 +34,9 @@ struct NodeInfo
     int32 iGatewayPort              = 0;            ///< 对Client服务的真实端口
     int32 iBacklog                  = 100;          ///< 监听队列长度
     int32 iConnectionDispatch       = 0;            ///< 新建连接分发方式
-    bool bThreadMode                = false;        ///< 是否线程模型
+    uint32 uiUpstreamConnectionPoolSize = 20;       ///< 客户端连接池大小
+    uint32 uiMaxChannelSendBuffSize = 10485760;     ///< Nebula最大发送缓冲区
+    uint32 uiMaxChannelRecvBuffSize = 10485760;     ///< Nebula最大接收缓冲区
     bool bAsyncLogger               = false;        ///< 是否启用异步文件日志
     bool bIsAccess                  = false;        ///< 是否接入Server
     bool bChannelVerify             = false;        ///< 是否需要连接验证

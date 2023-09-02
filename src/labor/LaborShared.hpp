@@ -51,6 +51,14 @@ public:
     int AddSpecChannel(uint32 uiCodecType, uint32 uiFrom, uint32 uiTo, std::shared_ptr<SocketChannel> pChannel);
     std::shared_ptr<SpecChannel<MsgBody, MsgHead>> CreateInternalSpecChannel(uint32 uiFrom, uint32 uiTo);
 
+    /**
+     * @brief 轮询SpecChannel
+     * @param[in] uiOwnerId 接收LaborId
+     * @param[in,out] uiFromLaborId 发送LaborId
+     * @param[in,out] uiCodecType 编解码类型
+     */
+    std::shared_ptr<SocketChannel> PollSpecChannel(Dispatcher* pDispatcher, uint32 uiOwnerId, uint32& uiFromLaborId, uint32& uiCodecType);
+
     uint32 GetLaborNum() const
     {
         return(m_uiLaborNum);
@@ -88,6 +96,7 @@ private:
     std::atomic<uint32> m_uiCodecSize;
     std::vector<Dispatcher*> m_vecDispatcher;
     T_VECCHANNEL_CODEC_TYPE m_vecSpecChannel;
+    std::vector<bool> m_vecSpecChannelExist;
     std::vector<uint64> m_vecWorkerThreadId;
 };
 

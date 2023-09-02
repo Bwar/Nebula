@@ -48,13 +48,10 @@ Worker::~Worker()
 void Worker::Run()
 {
     LOG4_TRACE("%s:%d", __FILE__, __LINE__);
-    if (m_stNodeInfo.bThreadMode)
-    {
-        char szThreadName[64] = {0};
-        snprintf(szThreadName, sizeof(szThreadName), "%s_W%d", m_oNodeConf("server_name").c_str(), m_stWorkerInfo.iWorkerIndex);
-        pthread_setname_np(pthread_self(), szThreadName);
-        LaborShared::Instance()->AddWorkerThreadId(gettid());
-    }
+    char szThreadName[64] = {0};
+    snprintf(szThreadName, sizeof(szThreadName), "%s_W%d", m_oNodeConf("server_name").c_str(), m_stWorkerInfo.iWorkerIndex);
+    pthread_setname_np(pthread_self(), szThreadName);
+    LaborShared::Instance()->AddWorkerThreadId(gettid());
 
     if (!CreateEvents())
     {
@@ -65,7 +62,7 @@ void Worker::Run()
 #ifndef __CYGWIN__
     bool bCpuAffinity = false;
     m_oNodeConf.Get("cpu_affinity", bCpuAffinity);
-    if (bCpuAffinity && m_stNodeInfo.bThreadMode)
+    if (bCpuAffinity)
     {
         int iCpuNum = sysconf(_SC_NPROCESSORS_CONF);
         cpu_set_t stCpuMask;
@@ -206,15 +203,7 @@ bool Worker::Init(CJsonObject& oJsonConf)
 {
     char szProcessName[64] = {0};
     snprintf(szProcessName, sizeof(szProcessName), "%s_W%d", oJsonConf("server_name").c_str(), m_stWorkerInfo.iWorkerIndex);
-    oJsonConf.Get("thread_mode", m_stNodeInfo.bThreadMode);
-    if (m_stNodeInfo.bThreadMode)
-    {
-        oJsonConf.Get("async_logger", m_stNodeInfo.bAsyncLogger);
-    }
-    else
-    {
-        ngx_setproctitle(szProcessName);
-    }
+    oJsonConf.Get("async_logger", m_stNodeInfo.bAsyncLogger);
     oJsonConf.Get("io_timeout", m_stNodeInfo.dIoTimeout);
     if (!oJsonConf.Get("step_timeout", m_stNodeInfo.dStepTimeout))
     {
@@ -230,6 +219,9 @@ bool Worker::Init(CJsonObject& oJsonConf)
     oJsonConf.Get("need_channel_verify", m_stNodeInfo.bChannelVerify);
     oJsonConf.Get("gateway", m_stNodeInfo.strGateway);
     oJsonConf.Get("gateway_port", m_stNodeInfo.iGatewayPort);
+    oJsonConf.Get("upstream_connection_pool_size", m_stNodeInfo.uiUpstreamConnectionPoolSize);
+    oJsonConf.Get("max_channel_send_buffer_size", m_stNodeInfo.uiMaxChannelSendBuffSize);
+    oJsonConf.Get("max_channel_recv_buffer_size", m_stNodeInfo.uiMaxChannelRecvBuffSize);
     m_oNodeConf = oJsonConf;
     m_oCustomConf = oJsonConf["custom"];
     std::ostringstream oss;
@@ -249,20 +241,6 @@ bool Worker::Init(CJsonObject& oJsonConf)
 
     bool bCpuAffinity = false;
     oJsonConf.Get("cpu_affinity", bCpuAffinity);
-    if (bCpuAffinity && !m_stNodeInfo.bThreadMode)
-    {
-#ifndef __CYGWIN__
-        /* get logical cpu number */
-        int iCpuNum = sysconf(_SC_NPROCESSORS_CONF);;                               ///< cpu数量
-        cpu_set_t stCpuMask;                                                        ///< cpu set
-        CPU_ZERO(&stCpuMask);
-        CPU_SET(m_stWorkerInfo.iWorkerIndex % iCpuNum, &stCpuMask);
-        if (sched_setaffinity(0, sizeof(cpu_set_t), &stCpuMask) == -1)
-        {
-            LOG4_WARNING("sched_setaffinity failed.");
-        }
-#endif
-    }
 
     if (oJsonConf["with_ssl"]("config_path").length() > 0)
     {
@@ -387,7 +365,8 @@ bool Worker::InitDispatcher()
 {
     if (NewDispatcher())
     {
-        return(m_pDispatcher->Init());
+        return(m_pDispatcher->Init(m_stNodeInfo.uiUpstreamConnectionPoolSize,
+                    m_stNodeInfo.uiMaxChannelSendBuffSize, m_stNodeInfo.uiMaxChannelRecvBuffSize));
     }
     return(false);
 }
@@ -432,14 +411,6 @@ bool Worker::NewActorBuilder()
 
 bool Worker::CreateEvents()
 {
-    if (!m_stNodeInfo.bThreadMode)
-    {
-        signal(SIGPIPE, SIG_IGN);
-        // 注册信号事件
-        ev_signal* signal_watcher = (ev_signal*)malloc(sizeof(ev_signal));
-        signal_watcher->data = (void*)this;
-        m_pDispatcher->AddEvent(signal_watcher, Dispatcher::SignalCallback, SIGINT);
-    }
     AddPeriodicTaskEvent();
     return(true);
 }
